@@ -10,7 +10,8 @@
 	</parent>
 	<groupId>com.epmapat</groupId>
 	<artifactId>erp_epmapat</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<version>v1</version>
 	<name>erp_epmapat</name>
 	<description>ERP de la EPMAPAT</description>
 	<properties>
@@ -43,6 +44,11 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+				<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 
 	<build>
