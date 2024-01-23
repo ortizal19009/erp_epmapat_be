@@ -19,6 +19,7 @@ public interface SuspensionesR extends JpaRepository<SuspensionesM, Long>{
 	public List<SuspensionesM> findByNumero(Long numero);
 	@Query(value = "SELECT * FROM suspensiones s WHERE tipo = 2 ORDER BY idsuspension DESC LIMIT 10", nativeQuery = true)
 	public List<SuspensionesM> findHabilitaciones();
+	
 	SuspensionesM findFirstByOrderByIdsuspensionDesc();
 
 }

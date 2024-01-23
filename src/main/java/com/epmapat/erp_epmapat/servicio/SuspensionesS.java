@@ -110,7 +110,7 @@ public class SuspensionesS implements SuspensionesR{
 		
 		return null;
 	}
-	
+
 	@Override
 	public Page<SuspensionesM> findAll(Pageable pageable) {
 		
@@ -146,7 +146,7 @@ public class SuspensionesS implements SuspensionesR{
 		
 		suspensionesR.deleteById(id);
 	}
-	
+
 	@Override
 	public void delete(SuspensionesM entity) {
 		
@@ -202,9 +202,20 @@ public class SuspensionesS implements SuspensionesR{
 		return null;
 	}
 	@Override
-	public SuspensionesM findFirstByOrderByIdsuspensionDesc() {
+	public List<SuspensionesM> findByFecha(Date desde, Date hasta) {
+		return suspensionesR.findByFecha(desde, hasta);
+	}
+
+	@Override
+	public List<SuspensionesM> findLastTen() {
 		
-		return suspensionesR.findFirstByOrderByIdsuspensionDesc();
+		return suspensionesR.findLastTen();
+	}
+
+	@Override
+	public List<SuspensionesM> findByNumero(Long numero) {
+		
+		return suspensionesR.findByNumero(numero);
 	}
 	@Override
 	public List<SuspensionesM> findHabilitaciones(){
@@ -212,27 +223,15 @@ public class SuspensionesS implements SuspensionesR{
 	}
 
 	@Override
-	public List<SuspensionesM> findByFecha(Date desde, Date hasta) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public List<SuspensionesM> findByFechaHabilitaciones(Date desde, Date hasta) {
-		// TODO Auto-generated method stub
-		return null;
+		return suspensionesR.findByFechaHabilitaciones(desde, hasta);
 	}
 
 	@Override
-	public List<SuspensionesM> findLastTen() {
-		// TODO Auto-generated method stub
-		return null;
+	public SuspensionesM findFirstByOrderByIdsuspensionDesc() {
+		
+		return suspensionesR.findFirstByOrderByIdsuspensionDesc();
 	}
-
-	@Override
-	public List<SuspensionesM> findByNumero(Long numero) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
 }

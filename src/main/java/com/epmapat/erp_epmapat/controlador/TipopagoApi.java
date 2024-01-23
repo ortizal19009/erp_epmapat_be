@@ -33,7 +33,7 @@ public class TipopagoApi {
     }
 
     @GetMapping
-    public List<Tipopago> getAllNovedades() {
+    public List<Tipopago> getAll() {
         return TipopagoServicio.findAll();
     }
 
