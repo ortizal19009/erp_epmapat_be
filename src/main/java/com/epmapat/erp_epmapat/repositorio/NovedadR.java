@@ -14,5 +14,7 @@ public interface NovedadR extends JpaRepository<Novedad, Long>{
    //Validación de Descripcion
    @Query(value = "SELECT * FROM novedades WHERE descripcion=?1", nativeQuery = true)
 	List<Novedad> findByDescri(String descripcion);
+   @Query(value = "SELECT * FROM novedades WHERE estado = ?1 ORDER BY idnovedad DESC", nativeQuery = true)
+   List<Novedad> findByEstado(Long estado);
 
 }

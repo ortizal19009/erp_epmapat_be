@@ -53,9 +53,9 @@ public class Abonados {
 	@JoinColumn(name = "idestadom_estadom")
 	private Estadom idestadom_estadom;
 	private Long medidorprincipal;
-	@ManyToMany
+	/*@ManyToMany
 	@JoinTable(name = "servxabo", joinColumns = @JoinColumn(name = "idabonado_abonados"), inverseJoinColumns = @JoinColumn(name = "idservicio_servicios"))
-	Set<ServiciosM> servSeleccionados = new HashSet<>();
+	Set<ServiciosM> servSeleccionados = new HashSet<>();*/
 	private Long usucrea;
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
@@ -296,7 +296,7 @@ public class Abonados {
 		this.lecturainicial = lecturainicial;
 	}
 
-	public Set<ServiciosM> getServSeleccionados() {
+	/*public Set<ServiciosM> getServSeleccionados() {
 		return servSeleccionados;
 	}
 
@@ -306,6 +306,6 @@ public class Abonados {
 
 	public void addServicio(ServiciosM serviciosM) {
 		servSeleccionados.add(serviciosM);
-	}
+	}*/
 
 }

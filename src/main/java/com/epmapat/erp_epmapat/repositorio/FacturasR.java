@@ -25,7 +25,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long>{
 	public List<Facturas> findByIdabonado(Long idabonado);
 
 	//Planillas por Cliente (sinCobrar)
-	@Query(value = "SELECT * FROM facturas WHERE pagado = 0 and totaltarifa > 0 and estado = 1 and idcliente=?1 ORDER BY idabonado, idfactura", nativeQuery=true)
+	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0  and idcliente=?1 and fechaconvenio is null and fechacobro is null ORDER BY idabonado, idfactura", nativeQuery=true)
 	public List<Facturas> findSinCobro(Long idcliente);
 
 	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY nrofactura", nativeQuery=true)

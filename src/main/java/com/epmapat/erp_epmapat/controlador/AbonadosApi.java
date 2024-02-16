@@ -22,9 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Abonados;
-import com.epmapat.erp_epmapat.modelo.ServiciosM;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
-import com.epmapat.erp_epmapat.servicio.ServiciosS;
+
 
 @RestController
 @RequestMapping("/abonados")
@@ -35,8 +34,8 @@ public class AbonadosApi {
 	@Autowired
 	private AbonadoServicio aboServicio;
 
-	@Autowired
-	private ServiciosS serviciosS;
+	/*@Autowired
+	private ServiciosS serviciosS;*/
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
@@ -144,12 +143,12 @@ public class AbonadosApi {
 		return ResponseEntity.ok(!(aboServicio.findById(idabonado) != null));
 	}
 
-	@PutMapping("/{idabonado}/s/{idservicio}")
+	/*@PutMapping("/{idabonado}/s/{idservicio}")
 	public Abonados addServxAbo(@PathVariable Long idabonado, @PathVariable Long idservicio) {
 		Abonados abonadoM = aboServicio.findById(idabonado).get();
 		ServiciosM serviciosM = serviciosS.findById(idservicio).get();
 		abonadoM.addServicio(serviciosM);
 		return aboServicio.save(abonadoM);
-	}
+	}*/
 
 }

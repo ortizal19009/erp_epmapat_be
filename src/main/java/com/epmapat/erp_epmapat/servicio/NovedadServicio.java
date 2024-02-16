@@ -194,4 +194,10 @@ public class NovedadServicio implements NovedadR {
         return null;
     }
 
+	@Override
+	public List<Novedad> findByEstado(Long estado) {
+		// TODO Auto-generated method stub
+		return dao.findByEstado(estado);
+	}
+
 }

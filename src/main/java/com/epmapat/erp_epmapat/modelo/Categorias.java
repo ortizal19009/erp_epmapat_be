@@ -32,60 +32,7 @@ public class Categorias {
 	@Column(name = "fecmodi")
 	private Date fecmodi;
 	
-	public BigDecimal getFijo31() {
-		return fijo31;
-	}
-
-	public void setFijo31(BigDecimal fijo31) {
-		this.fijo31 = fijo31;
-	}
-
-	public BigDecimal getFijo32() {
-		return fijo32;
-	}
-
-	public void setFijo32(BigDecimal fijo32) {
-		this.fijo32 = fijo32;
-	}
-
-	public BigDecimal getFijo51() {
-		return fijo51;
-	}
-
-	public void setFijo51(BigDecimal fijo51) {
-		this.fijo51 = fijo51;
-	}
-
-	public BigDecimal getFijo52() {
-		return fijo52;
-	}
-
-	public void setFijo52(BigDecimal fijo52) {
-		this.fijo52 = fijo52;
-	}
-
-	public BigDecimal getFijo53() {
-		return fijo53;
-	}
-
-	public void setFijo53(BigDecimal fijo53) {
-		this.fijo53 = fijo53;
-	}
-
-	public BigDecimal getFijo54() {
-		return fijo54;
-	}
-
-	public void setFijo54(BigDecimal fijo54) {
-		this.fijo54 = fijo54;
-	}
-
-	private BigDecimal fijo31;
-   private BigDecimal fijo32;
-   private BigDecimal fijo51;
-   private BigDecimal fijo52;
-   private BigDecimal fijo53;
-   private BigDecimal fijo54;
+	
 
 	
 	public String getCodigo() {

@@ -27,9 +27,9 @@ public class ServiciosM {
 	private Long swinvent; 
 	private Long facturable;
 	private String descripcion; 
-	@JsonIgnore
+	/*@JsonIgnore
 	@ManyToMany(mappedBy = "servSeleccionados")
-	Set<Abonados> aboSeleccionados = new HashSet<>();
+	Set<Abonados> aboSeleccionados = new HashSet<>();*/
 	private Long usucrea; 
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso=ISO.DATE)
@@ -139,11 +139,11 @@ public class ServiciosM {
 	public void setFecmodi(Date fecmodi) {
 		this.fecmodi = fecmodi;
 	}
-	public Set<Abonados> getAboSeleccionados() {
+	/*public Set<Abonados> getAboSeleccionados() {
 		return aboSeleccionados;
 	}
 	public void setAboSeleccionados(Set<Abonados> aboSeleccionados) {
 		this.aboSeleccionados = aboSeleccionados;
-	}
+	}*/
 
 }
