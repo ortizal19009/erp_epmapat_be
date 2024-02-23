@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.repositorio;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,5 +21,10 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long>{
 	//Rubroxfac de un Rubro (movimientos de un Rubro)
 	@Query(value = "SELECT * FROM rubroxfac WHERE idrubro_rubros =?1 order by idrubroxfac desc limit 100", nativeQuery=true)
 	public List<Rubroxfac> findByIdrubro(Long idrubro);
-	
+
+	//Campos específicos: Rubro y Valor de una Factura (Planilla)
+    @Query("SELECT new map(" +
+            "r.descripcion as descripcion, " + "rf.valorunitario as valorunitario) " +
+            "FROM Rubroxfac rf INNER JOIN Rubros r ON r.idrubro = rf.idrubro_rubros WHERE rf.idfactura_facturas=?1 order by rf.idrubro_rubros")
+    List<Map<String, Object>> rubrosByIdfactura(Long idfactura);
 }

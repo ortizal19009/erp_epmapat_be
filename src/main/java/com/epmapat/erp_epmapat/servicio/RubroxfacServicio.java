@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.servicio;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,10 @@ public class RubroxfacServicio {
 	// Grabar
 	public <S extends Rubroxfac> S save(S entity) {
 		return dao.save(entity);
+	}
+	//Campos Rubro y valor de una Planilla
+	public List<Map<String, Object>> rubrosByIdfactura(Long idfactura) {
+		return dao.rubrosByIdfactura(idfactura);
 	}
 
 }

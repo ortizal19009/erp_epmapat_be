@@ -7,6 +7,8 @@ import javax.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
+
 @Entity
 @Table(name= "cajas")
 
@@ -31,7 +33,17 @@ public class Cajas {
 	@DateTimeFormat(iso = ISO.DATE)
 	@Column(name="fecmodi")
 	private Date fecmodi;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="idusuario_usuarios")
+	private Usuarios idusuario_usuarios; 
+	private String ultimafact; 
 	
+	public String getUltimafact() {
+		return ultimafact;
+	}
+	public void setUltimafact(String ultimafact) {
+		this.ultimafact = ultimafact;
+	}
 	public Long getIdcaja() {
 		return idcaja;
 	}
@@ -81,8 +93,25 @@ public class Cajas {
 	public void setFecmodi(Date fecmodi) {
 		this.fecmodi = fecmodi;
 	}
+	public Cajas() {
+		super();
+		
+	}
+	public PtoEmisionM getIdptoemision_ptoemision() {
+		return idptoemision_ptoemision;
+	}
+	public void setIdptoemision_ptoemision(PtoEmisionM idptoemision_ptoemision) {
+		this.idptoemision_ptoemision = idptoemision_ptoemision;
+	}
+	public Usuarios getIdusuario_usuarios() {
+		return idusuario_usuarios;
+	}
+	public void setIdusuario_usuarios(Usuarios idusuario_usuarios) {
+		this.idusuario_usuarios = idusuario_usuarios;
+	}
+	
 	public Cajas(Long idcaja, String descripcion, String codigo, Long estado, PtoEmisionM idptoemision_ptoemision,
-			Long usucrea, Date feccrea, Long usumodi, Date fecmodi) {
+			Long usucrea, Date feccrea, Long usumodi, Date fecmodi, Usuarios idusuario_usuarios, String ultimafact) {
 		super();
 		this.idcaja = idcaja;
 		this.descripcion = descripcion;
@@ -93,16 +122,8 @@ public class Cajas {
 		this.feccrea = feccrea;
 		this.usumodi = usumodi;
 		this.fecmodi = fecmodi;
-	}
-	public Cajas() {
-		super();
-		
-	}
-	public PtoEmisionM getIdptoemision_ptoemision() {
-		return idptoemision_ptoemision;
-	}
-	public void setIdptoemision_ptoemision(PtoEmisionM idptoemision_ptoemision) {
-		this.idptoemision_ptoemision = idptoemision_ptoemision;
+		this.idusuario_usuarios = idusuario_usuarios;
+		this.ultimafact = ultimafact; 
 	}
 
 }

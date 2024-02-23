@@ -82,9 +82,18 @@ public class CajasApi {
 	}
 
 	@DeleteMapping(value = "/{idcaja}")
-	private ResponseEntity<Boolean> deleteCaja(@PathVariable("idcaja") Long idcaja) {
+	public ResponseEntity<Boolean> deleteCaja(@PathVariable("idcaja") Long idcaja) {
 		cajaServicio.deleteById(idcaja);
 		return ResponseEntity.ok(!(cajaServicio.findById(idcaja) != null));
+	}
+	@GetMapping("usuario/{idusuario}")
+	public ResponseEntity<Cajas> getByIdUsuario(@PathVariable("idusuario") Long idusuario){
+		Cajas caja = cajaServicio.findCajaByIdUsuario(idusuario);
+		if(caja != null) {
+			return ResponseEntity.ok(caja);			
+		}else {
+			return ResponseEntity.noContent().build(); 
+		}
 	}
 
 }

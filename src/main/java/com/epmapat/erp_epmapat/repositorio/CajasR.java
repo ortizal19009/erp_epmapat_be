@@ -20,5 +20,7 @@ public interface CajasR extends JpaRepository<Cajas, Long> {
    //Puntos de emision por Establecimiento
    @Query(value = "SELECT * FROM cajas WHERE idptoemision_ptoemision=?1 ORDER BY codigo", nativeQuery=true)
 	public List<Cajas> findByIdptoemision(Long idptoemision);
+   @Query(value = "SELECT * FROM cajas WHERE idusuario_usuarios = ?1", nativeQuery = true)
+   public Cajas findCajaByIdUsuario(Long idusuario); 
 
 }
