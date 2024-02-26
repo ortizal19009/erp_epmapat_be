@@ -109,5 +109,12 @@ public class FacturasApi {
 		Facturas updateFacturas = facServicio.save( y );
 		return ResponseEntity.ok(updateFacturas);		
 		}
+	
+	@GetMapping("/validador/{codrecaudador}")
+	public ResponseEntity<Facturas> validarUltimaFactura(@PathVariable("codrecaudador")String codrecaudador){
+		Facturas factura = facServicio.validarUltimafactura(codrecaudador);
+		return ResponseEntity.ok(factura);
+	}
+	
 
 }

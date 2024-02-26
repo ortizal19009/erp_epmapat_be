@@ -62,5 +62,8 @@ public class FacturaServicio {
 	public void setDao(FacturasR dao) {
 		this.dao = dao;
 	}
+	public Facturas validarUltimafactura(String codrecaudador) {
+		return dao.validarUltimafactura(codrecaudador);
+	}
 
 }

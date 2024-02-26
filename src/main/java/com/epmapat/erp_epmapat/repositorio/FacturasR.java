@@ -33,4 +33,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long>{
 	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY nrofactura", nativeQuery=true)
 	public List<Facturas> findByIdFactura(Long idabonado);
 	
+	//VALIDACION DE LA ULTIMA FACTURA DEL RECAUDADOR
+	@Query(value = "select *, substring(nrofactura, 9) as nrofac from facturas where nrofactura like %?1% and not nrofactura  is null order by nrofac desc limit 1;",nativeQuery = true)
+	public Facturas validarUltimafactura(String codrecaudador);
 }

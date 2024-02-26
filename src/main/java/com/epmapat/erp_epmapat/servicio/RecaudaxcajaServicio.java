@@ -19,5 +19,8 @@ public class RecaudaxcajaServicio {
    public List<Recaudaxcaja> findByCaja(Long idcaja, Date desde, Date hasta) {
       return dao.findByCaja(idcaja, desde, hasta);
    }
+   public Recaudaxcaja findLastConexion(Long idcaja) {
+	   return dao.findLastConexion(idcaja);
+   }
 
 }

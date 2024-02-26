@@ -29,11 +29,9 @@ public class Recaudaxcaja {
    private Date fechafinlabor;
    private LocalTime horainicio;
    private LocalTime horafin;
-
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idcaja_cajas")
    private Cajas idcaja_cajas;
-
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idusuario_usuarios")
    private Usuarios idusuario_usuarios;
