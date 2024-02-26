@@ -16,6 +16,9 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 
 	@Query(value = "SELECT * FROM abonados AS a JOIN clientes AS c ON a.idcliente_clientes = c.idcliente WHERE CAST(a.idabonado AS varchar) LIKE %?1% OR c.cedula LIKE %?1% OR LOWER(c.nombre) LIKE %?1% ORDER BY c.nombre ASC", nativeQuery = true)
 	public List<Abonados> findAll(String consultaDatos);
+	
+	@Query(value = "SELECT * FROM abonados where idabonado = ?1", nativeQuery = true)
+	public Abonados findOne(Long idabonado);
 
 	// Abonado por ID (o sea por Cuenta con abonados/id)
 	@Query(value = "SELECT * FROM abonados WHERE idabonado=?1", nativeQuery = true)

@@ -87,5 +87,8 @@ public class AbonadoServicio {
 	public boolean clienteTieneAbonados(Long idcliente) {
 		return dao.existsByIdcliente_clientes(idcliente);
 	}
+	public Abonados findOne(Long idabonado) {
+		return dao.findOne(idabonado);
+	}
 
 }

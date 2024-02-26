@@ -142,6 +142,12 @@ public class AbonadosApi {
 		aboServicio.deleteById(idabonado);
 		return ResponseEntity.ok(!(aboServicio.findById(idabonado) != null));
 	}
+	@GetMapping("/oneabonado")
+	public ResponseEntity<Abonados> getOne(@RequestParam("idabonado") Long idabonado){
+		Abonados abonado = aboServicio.findOne(idabonado);
+		return ResponseEntity.ok(abonado);
+		
+	}
 
 	/*@PutMapping("/{idabonado}/s/{idservicio}")
 	public Abonados addServxAbo(@PathVariable Long idabonado, @PathVariable Long idservicio) {
