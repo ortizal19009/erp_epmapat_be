@@ -2,6 +2,7 @@ package com.epmapat.erp_epmapat.servicio;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ public class RecaudaxcajaServicio {
 
 	public <S extends Recaudaxcaja> S save(S entity) {
 		return dao.save(entity);
+	}
+	public Optional<Recaudaxcaja> findByIdrecaudaxcaja(Long idrecaudaxcaja){
+		return dao.findById(idrecaudaxcaja);
 	}
 
 }

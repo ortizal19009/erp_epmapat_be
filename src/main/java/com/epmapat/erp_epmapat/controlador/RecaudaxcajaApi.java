@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 
@@ -11,10 +12,12 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Recaudaxcaja;
 import com.epmapat.erp_epmapat.servicio.RecaudaxcajaServicio;
 
@@ -44,7 +47,27 @@ public class RecaudaxcajaApi {
 	}
 	@PostMapping
 	public ResponseEntity<Recaudaxcaja> saveRecaudaxcaja(@RequestBody Recaudaxcaja recxcaja){
+		LocalTime ahora= LocalTime.now();
+		recxcaja.setHorainicio(ahora);
 		return ResponseEntity.ok(recaxcajaServicio.save(recxcaja));
+	}
+	@PutMapping("/{idrecaudaxcaja}")
+	public ResponseEntity<Recaudaxcaja> updateRecaudaxCaja(@PathVariable("idrecaudaxcaja")Long idrecaudaxcaja, @RequestBody Recaudaxcaja recaudaxcaja){
+		LocalTime ahora= LocalTime.now();
+		Recaudaxcaja recxcaja = recaxcajaServicio.findByIdrecaudaxcaja(idrecaudaxcaja)
+				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe ese abonado con ese Id: " + idrecaudaxcaja)));
+		recxcaja.setEstado(recaudaxcaja.getEstado()); 
+		recxcaja.setFacinicio(recaudaxcaja.getFacinicio());
+		recxcaja.setFacfin(recaudaxcaja.getFacfin());
+		recxcaja.setFechainiciolabor(recaudaxcaja.getFechainiciolabor());
+		recxcaja.setFechafinlabor(recaudaxcaja.getFechafinlabor());
+		recxcaja.setHorainicio(recaudaxcaja.getHorainicio());
+		recxcaja.setHorafin(ahora);
+		recxcaja.setIdcaja_cajas(recaudaxcaja.getIdcaja_cajas());
+		recxcaja.setIdusuario_usuarios(recaudaxcaja.getIdusuario_usuarios());
+		Recaudaxcaja update = recaxcajaServicio.save(recxcaja);
+		
+		return ResponseEntity.ok(update);
 	}
 
 }
