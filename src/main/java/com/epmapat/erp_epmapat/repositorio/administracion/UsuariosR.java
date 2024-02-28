@@ -10,6 +10,7 @@ import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 public interface UsuariosR extends JpaRepository<Usuarios, Long> {
 
    // Todos (Excepto el Administrador)
+   @SuppressWarnings("null")
    @Query(value = "SELECT * FROM usuarios order by identificausu", nativeQuery = true)
    List<Usuarios> findAll();
 
@@ -19,11 +20,5 @@ public interface UsuariosR extends JpaRepository<Usuarios, Long> {
 
    @Query(value = "SELECT * FROM usuarios where identificausu=?1 AND codusu=?2", nativeQuery = true)
    Usuarios findUsuario(String a, String b);
-
-   // @Query(value = "SELECT 1 FROM usuarios WHERE identificausu=?1 AND codusu=?2", nativeQuery = true)
-   // Boolean exists(String a, String b);
-
-   // @Query(value = "SELECT EXISTS (SELECT 1 FROM usuarios WHERE identificausu=?1 AND codusu=?2)", nativeQuery = true)
-	// boolean existe(String a, String b);
 
 }

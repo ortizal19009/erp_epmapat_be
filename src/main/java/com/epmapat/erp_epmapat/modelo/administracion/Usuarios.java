@@ -33,10 +33,27 @@ public class Usuarios {
    @Column(name = "fecmodi")
    private ZonedDateTime fecmodi;
    private Boolean otrapestania;
-   private Long idperfil_perfiles;
    private String alias;
+   private String priusu;
+   private String perfil;
 
    // ====== Getteres y Setters =======
+   public String getPerfil() {
+      return perfil;
+   }
+
+   public void setPerfil(String perfil) {
+      this.perfil = perfil;
+   }
+
+   public String getPriusu() {
+      return priusu;
+   }
+
+   public void setPriusu(String priusu) {
+      this.priusu = priusu;
+   }
+
    public LocalDate getFdesde() {
       return fdesde;
    }
@@ -123,14 +140,6 @@ public class Usuarios {
 
    public void setFecmodi(ZonedDateTime fecmodi) {
       this.fecmodi = fecmodi;
-   }
-
-   public Long getIdperfil_perfiles() {
-      return idperfil_perfiles;
-   }
-
-   public void setIdperfil_perfiles(Long idperfil_perfiles) {
-      this.idperfil_perfiles = idperfil_perfiles;
    }
 
    public Boolean getOtrapestania() {

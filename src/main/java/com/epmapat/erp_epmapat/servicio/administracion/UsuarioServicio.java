@@ -30,17 +30,14 @@ public class UsuarioServicio {
       return dao.findByIdentificausu(identificausu);
    }
 
+   @SuppressWarnings("null")
    public Optional<Usuarios> findById(Long id) {
       return dao.findById(id);
    }
 
+   @SuppressWarnings("null")
    public <S extends Usuarios> S save(S entity) {
       return dao.save(entity);
    }
-
-   // Verifica
-   // public boolean existe(String a, String b) {
-   // return dao.existe(a, b);
-   // }
 
 }

@@ -31,13 +31,6 @@ public class UsuariosApi {
       return usuServicio.findAll();
    }
 
-   // Busca
-   // @GetMapping("/usuario")
-   // public boolean exists(@Param(value = "a") String a, @Param(value = "b")
-   // String b) {
-   // return usuServicio.existe(a, b);
-   // }
-
    @GetMapping("/usuario")
    public Usuarios getUsuario(@Param(value = "a") String a, @Param(value = "b") String b) {
       if (a != null && b != null) {
@@ -82,6 +75,8 @@ public class UsuariosApi {
       y.setFecmodi(x.getFecmodi());
       y.setOtrapestania(x.getOtrapestania());
       y.setAlias(x.getAlias());
+      y.setPriusu(x.getPriusu());
+      y.setPerfil(x.getPerfil());
 
       Usuarios actualizar = usuServicio.save(y);
       return ResponseEntity.ok(actualizar);
