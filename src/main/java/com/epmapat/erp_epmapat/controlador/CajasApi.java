@@ -77,6 +77,8 @@ public class CajasApi {
 		cajaM.setFeccrea(cajam.getFeccrea());
 		cajaM.setUsumodi(cajam.getUsumodi());
 		cajaM.setFecmodi(cajam.getFecmodi());
+		cajaM.setIdusuario_usuarios(cajam.getIdusuario_usuarios());
+		cajaM.setUltimafact(cajam.getUltimafact());
 		Cajas updateCaja = cajaServicio.save(cajaM);
 		return ResponseEntity.ok(updateCaja);
 	}
