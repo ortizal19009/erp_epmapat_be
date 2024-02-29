@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.repositorio;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -36,4 +37,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long>{
 	//VALIDACION DE LA ULTIMA FACTURA DEL RECAUDADOR
 	@Query(value = "select *, substring(nrofactura, 9) as nrofac from facturas where nrofactura like %?1% and not nrofactura  is null order by nrofac desc limit 1;",nativeQuery = true)
 	public Facturas validarUltimafactura(String codrecaudador);
+	
+	@Query(value = "select * from facturas where usuariocobro = ?1 and fechacobro between( ?2 and ?3) order by horacobro" , nativeQuery = true)
+	public List<Facturas> findByUsucobro(Long idusuario, Date dfecha, Date hfecha);
 }

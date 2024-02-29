@@ -1,9 +1,11 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -50,8 +53,7 @@ public class FacturasApi {
 	@GetMapping("/{idfactura}")
 	public ResponseEntity<Facturas> getById(@PathVariable Long idfactura) {
 		Facturas x = facServicio.findById(idfactura)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones(
-						("No existe la Factura  Id: " + idfactura)));
+				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe la Factura  Id: " + idfactura)));
 		return ResponseEntity.ok(x);
 	}
 
@@ -69,13 +71,13 @@ public class FacturasApi {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public Facturas saveFacturas(@RequestBody Facturas x) {
-		return facServicio.save( x );
+		return facServicio.save(x);
 	}
 
 	@PutMapping("/{idfactura}")
-	public ResponseEntity<Facturas> updateFacturas(@PathVariable long idfactura, @RequestBody Facturas x){
+	public ResponseEntity<Facturas> updateFacturas(@PathVariable long idfactura, @RequestBody Facturas x) {
 		Facturas y = facServicio.findById(idfactura)
-				.orElseThrow(()-> new ResourceNotFoundExcepciones("No existe esa factura con ese id"+idfactura));
+				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
 		y.setConveniopago(x.getConveniopago());
 		y.setEstado(x.getEstado());
 		y.setEstadoconvenio(x.getEstadoconvenio());
@@ -106,15 +108,21 @@ public class FacturasApi {
 		y.setUsucrea(x.getUsucrea());
 		y.setUsumodi(x.getUsumodi());
 		y.setValorbase(x.getValorbase());
-		Facturas updateFacturas = facServicio.save( y );
-		return ResponseEntity.ok(updateFacturas);		
-		}
-	
+		Facturas updateFacturas = facServicio.save(y);
+		return ResponseEntity.ok(updateFacturas);
+	}
+
 	@GetMapping("/validador/{codrecaudador}")
-	public ResponseEntity<Facturas> validarUltimaFactura(@PathVariable("codrecaudador")String codrecaudador){
+	public ResponseEntity<Facturas> validarUltimaFactura(@PathVariable("codrecaudador") String codrecaudador) {
 		Facturas factura = facServicio.validarUltimafactura(codrecaudador);
 		return ResponseEntity.ok(factura);
 	}
-	
+
+	@GetMapping("/reportes/individual")
+	public ResponseEntity<List<Facturas>> getByUsucobro(@RequestParam("idusuario") Long idusuario,
+			@RequestParam("dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dfecha,@RequestParam("hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hfecha) {
+		List<Facturas> facturas = facServicio.findByUsucobro(idusuario, dfecha, hfecha);
+		return ResponseEntity.ok(facturas);
+	}
 
 }

@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,6 +65,9 @@ public class FacturaServicio {
 	}
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
+	}
+	public List<Facturas> findByUsucobro(Long idusuario, Date dfecha, Date hfecha){
+		return dao.findByUsucobro(idusuario, dfecha, hfecha);
 	}
 
 }
