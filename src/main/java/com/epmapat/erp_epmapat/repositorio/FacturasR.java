@@ -38,6 +38,6 @@ public interface FacturasR extends JpaRepository<Facturas, Long>{
 	@Query(value = "select *, substring(nrofactura, 9) as nrofac from facturas where nrofactura like %?1% and not nrofactura  is null order by nrofac desc limit 1;",nativeQuery = true)
 	public Facturas validarUltimafactura(String codrecaudador);
 	
-	@Query(value = "select * from facturas where usuariocobro = ?1 and fechacobro between( ?2 and ?3) order by horacobro" , nativeQuery = true)
+	@Query(nativeQuery = true ,value = "select * from facturas f where f.usuariocobro = ?1 and (f.fechacobro between ?2 and ?3)")
 	public List<Facturas> findByUsucobro(Long idusuario, Date dfecha, Date hfecha);
 }

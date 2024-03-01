@@ -1,5 +1,7 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -120,9 +122,30 @@ public class FacturasApi {
 
 	@GetMapping("/reportes/individual")
 	public ResponseEntity<List<Facturas>> getByUsucobro(@RequestParam("idusuario") Long idusuario,
-			@RequestParam("dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dfecha,@RequestParam("hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hfecha) {
+			@RequestParam("dfecha")  @DateTimeFormat(pattern = "yyyy-MM-dd")  Date dfecha,
+			@RequestParam("hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd")  Date hfecha) {
+		System.out.println(dfecha);
+		System.out.println(hfecha);
+		/*Date d = null;
+		Date h = null; 
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			d = dateFormat.parse(dfecha);
+			h = dateFormat.parse(hfecha);
+		} catch (ParseException e) {
+			
+			e.printStackTrace();
+		}
+		
+		System.out.println(d);
+		System.out.println(h);*/
 		List<Facturas> facturas = facServicio.findByUsucobro(idusuario, dfecha, hfecha);
+		if (!facturas.isEmpty()) {
+			
 		return ResponseEntity.ok(facturas);
+		}else {
+			return ResponseEntity.noContent().build();
+		}
 	}
 
 }
