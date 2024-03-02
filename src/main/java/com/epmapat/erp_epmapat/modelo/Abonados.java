@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.modelo;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.*;
@@ -69,7 +70,9 @@ public class Abonados {
 	@DateTimeFormat(iso = ISO.DATE)
 	@Column(name = "fecmodi")
 	private Date fecmodi;
-
+	private Boolean adultomayor;
+	private Boolean municipio; 
+	private Long promedio; 
 	public Abonados() {
 		super();
 	}
@@ -79,7 +82,7 @@ public class Abonados {
 			String departamento, String piso, Clientes idresponsable, Categorias idcategoria_categorias,
 			Rutas idruta_rutas, Clientes idcliente_clientes, Ubicacionm idubicacion_ubicacion,
 			Tipopago idtipopago_tipopago, Estadom idestadom_estadom, Long medidorprincipal, Long usucrea,
-			Date feccrea, Long usumodi, Date fecmodi) {
+			Date feccrea, Long usumodi, Date fecmodi, Boolean adultomayor, Boolean municipio, Long promedio) {
 		super();
 		this.idabonado = idabonado;
 		this.nromedidor = nromedidor;
@@ -105,10 +108,36 @@ public class Abonados {
 		this.feccrea = feccrea;
 		this.usumodi = usumodi;
 		this.fecmodi = fecmodi;
+		this.adultomayor = adultomayor; 
+		this.municipio = municipio; 
+		this.promedio = promedio;
 	}
 
 	public Long getIdabonado() {
 		return idabonado;
+	}
+
+	public Boolean getAdultomayor() {
+		return adultomayor;
+	}
+
+	public void setAdultomayor(Boolean adultomayor) {
+		this.adultomayor = adultomayor;
+	}
+	public Long getPromedio() {
+		return promedio;
+	}
+
+	public void setPromedio(Long promedio) {
+		this.promedio = promedio;
+	}
+
+	public Boolean getMunicipio() {
+		return municipio;
+	}
+
+	public void setMunicipio(Boolean municipio) {
+		this.municipio = municipio;
 	}
 
 	public void setIdabonado(Long idabonado) {
