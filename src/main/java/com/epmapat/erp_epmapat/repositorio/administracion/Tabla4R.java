@@ -9,6 +9,7 @@ import com.epmapat.erp_epmapat.modelo.administracion.Tabla4;
 
 public interface Tabla4R extends JpaRepository<Tabla4, Long> {
 
+   @SuppressWarnings("null")
    @Query(value = "SELECT * FROM tabla4 order by tipocomprobante", nativeQuery=true)
 	List<Tabla4> findAll();
    

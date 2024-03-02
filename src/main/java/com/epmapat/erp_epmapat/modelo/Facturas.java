@@ -3,8 +3,6 @@ package com.epmapat.erp_epmapat.modelo;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.*;
 
@@ -74,25 +72,29 @@ public class Facturas implements Serializable {
 	private BigDecimal valorbase;
 	private Long idabonado;
 	private BigDecimal interescobrado;
-	@ManyToMany
-	@JoinTable(name = "rubroxfac", joinColumns = @JoinColumn(name = "idfactura_facturas"), inverseJoinColumns = @JoinColumn(name = "idrubro_rubros"))
-	private Set<Rubros> rubros = new HashSet<>();
-
-	public void addRubros(Rubros rubro) {
-
-		rubros.add(rubro);
-		rubro.getFacturas().add(this);
-	}
-
-	public void removeRubros(Rubros rubro) {
-		rubros.remove(rubro);
-		rubro.getFacturas().remove(this);
-	}
+	/*
+	 * @ManyToMany
+	 * 
+	 * @JoinTable(name = "rubroxfac", joinColumns = @JoinColumn(name =
+	 * "idfactura_facturas"), inverseJoinColumns = @JoinColumn(name =
+	 * "idrubro_rubros"))
+	 * private Set<Rubros> rubros = new HashSet<>();
+	 * 
+	 * public void addRubros(Rubros rubro) {
+	 * 
+	 * rubros.add(rubro);
+	 * rubro.getFacturas().add(this);
+	 * }
+	 * 
+	 * public void removeRubros(Rubros rubro) {
+	 * rubros.remove(rubro);
+	 * rubro.getFacturas().remove(this);
+	 * }
+	 */
 
 	public Facturas() {
 		super();
 	}
-	
 
 	public Facturas(Long idfactura, Modulos idmodulo, Clientes idcliente, String nrofactura, Long porcexoneracion,
 			String razonexonera, BigDecimal totaltarifa, Integer pagado, Long usuariocobro, Date fechacobro,
@@ -100,7 +102,7 @@ public class Facturas implements Serializable {
 			Date fechaeliminacion, String razoneliminacion, Long conveniopago, Date fechaconvenio, Long estadoconvenio,
 			Long formapago, String refeformapago, String horacobro, Long usuariotransferencia, Date fechatransferencia,
 			Long usucrea, Date feccrea, Long usumodi, Date fecmodi, BigDecimal valorbase, Long idabonado,
-			BigDecimal interescobrado, Set<Rubros> rubros) {
+			BigDecimal interescobrado) {
 		super();
 		this.idfactura = idfactura;
 		this.idmodulo = idmodulo;
@@ -134,7 +136,7 @@ public class Facturas implements Serializable {
 		this.valorbase = valorbase;
 		this.idabonado = idabonado;
 		this.interescobrado = interescobrado;
-		this.rubros = rubros;
+
 	}
 
 	public BigDecimal getInterescobrado() {
@@ -145,14 +147,15 @@ public class Facturas implements Serializable {
 		this.interescobrado = interescobrado;
 	}
 
-	public Set<Rubros> getRubros() {
-		return rubros;
-	}
-
-	public void setRubros(Set<Rubros> rubros) {
-		this.rubros = rubros;
-	}
-
+	/*
+	 * public Set<Rubros> getRubros() {
+	 * return rubros;
+	 * }
+	 * 
+	 * public void setRubros(Set<Rubros> rubros) {
+	 * this.rubros = rubros;
+	 * }
+	 */
 	public Long getIdfactura() {
 		return idfactura;
 	}

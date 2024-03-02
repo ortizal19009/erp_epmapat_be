@@ -61,7 +61,7 @@ public class Reclamos {
 	
 	public Reclamos() {
 		super();
-		// TODO Auto-generated constructor stub
+	
 	}
 	public Reclamos(Long idreclamo, String observacion, Long referencia, Date fechaasignacion, Long estado,
 			String referenciadireccion, String piso, String departamento, Date fechamaxcontesta, Date fechacontesta,

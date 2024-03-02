@@ -52,7 +52,7 @@ public class Transaci {
 
 	public Transaci() {
 		super();
-		// TODO Auto-generated constructor stub
+	
 	}
 
 	public Transaci(Long idtransa, Long orden, String codcue, BigDecimal valor, Long debcre, String descri,

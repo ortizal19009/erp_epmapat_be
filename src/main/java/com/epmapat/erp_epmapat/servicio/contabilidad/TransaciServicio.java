@@ -40,91 +40,91 @@ public class TransaciServicio implements TransaciR {
 
 	@Override
 	public List<Transaci> findAll(Sort sort) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public List<Transaci> findAllById(Iterable<Long> ids) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public <S extends Transaci> List<S> saveAll(Iterable<S> entities) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public void flush() {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	@Override
 	public <S extends Transaci> S saveAndFlush(S entity) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public <S extends Transaci> List<S> saveAllAndFlush(Iterable<S> entities) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public void deleteAllInBatch(Iterable<Transaci> entities) {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	@Override
 	public void deleteAllByIdInBatch(Iterable<Long> ids) {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	@Override
 	public void deleteAllInBatch() {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	@Override
 	public Transaci getOne(Long id) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public Transaci getById(Long id) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public Transaci getReferenceById(Long id) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public <S extends Transaci> List<S> findAll(Example<S> example) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public <S extends Transaci> List<S> findAll(Example<S> example, Sort sort) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public Page<Transaci> findAll(Pageable pageable) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
@@ -135,19 +135,19 @@ public class TransaciServicio implements TransaciR {
 
 	@Override
 	public Optional<Transaci> findById(Long id) {
-		// TODO Auto-generated method stub
+		
 		return dao.findById(id);
 	}
 
 	@Override
 	public boolean existsById(Long id) {
-		// TODO Auto-generated method stub
+		
 		return false;
 	}
 
 	@Override
 	public long count() {
-		// TODO Auto-generated method stub
+		
 		return 0;
 	}
 

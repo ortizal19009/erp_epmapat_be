@@ -18,7 +18,7 @@ public class Niveles {
 	}
 	public Niveles() {
 		super();
-		// TODO Auto-generated constructor stub
+	
 	}
 	public Long getIdnivel() {
 		return idnivel;

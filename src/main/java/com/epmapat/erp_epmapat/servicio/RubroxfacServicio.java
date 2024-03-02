@@ -32,5 +32,8 @@ public class RubroxfacServicio {
 	public List<Map<String, Object>> rubrosByIdfactura(Long idfactura) {
 		return dao.rubrosByIdfactura(idfactura);
 	}
+	public Double findRubroxfac(Long idfactura){
+	return dao.findSuma(idfactura);
+	}
 
 }

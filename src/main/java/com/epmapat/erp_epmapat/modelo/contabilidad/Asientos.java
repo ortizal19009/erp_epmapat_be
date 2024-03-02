@@ -58,7 +58,7 @@ public class Asientos {
 
 	public Asientos() {
 		super();
-		// TODO Auto-generated constructor stub
+	
 	}
 
 	public Asientos(Long idasiento, Long asiento, Date fecha, Integer tipasi, Integer tipcom, Long compro, Long numcue,

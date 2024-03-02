@@ -27,4 +27,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long>{
             "r.descripcion as descripcion, " + "rf.valorunitario as valorunitario) " +
             "FROM Rubroxfac rf INNER JOIN Rubros r ON r.idrubro = rf.idrubro_rubros WHERE rf.idfactura_facturas=?1 order by rf.idrubro_rubros")
     List<Map<String, Object>> rubrosByIdfactura(Long idfactura);
+
+	@Query(value = "select sum(valorunitario)  from rubroxfac r where idfactura_facturas = ?1",nativeQuery = true)
+	Double findSuma(Long idfactura);
 }

@@ -28,7 +28,7 @@ public class TpCertifica {
 	private Date fecmodi;
 	public TpCertifica() {
 		super();
-		// TODO Auto-generated constructor stub
+	
 	}
 	public TpCertifica(Long idtpcertifica, String descripcion, Long usucrea, Date feccrea, Long usumodi, Date fecmodi) {
 		super();

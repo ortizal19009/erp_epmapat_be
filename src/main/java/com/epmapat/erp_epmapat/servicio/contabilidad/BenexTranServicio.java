@@ -186,13 +186,13 @@ public class BenexTranServicio implements BenexTranR {
 
 	@Override
 	public List<BenexTran> getEgresos(String codcue) {
-		// TODO Auto-generated method stub
+		
 		return dao.getEgresos(codcue);
 	}
 
 	@Override
 	public List<BenexTran> getByIdBene(Long idbene) {
-		// TODO Auto-generated method stub
+		
 		return dao.getByIdBene(idbene);
 	}
 	@Override

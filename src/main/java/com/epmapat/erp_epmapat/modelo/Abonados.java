@@ -1,8 +1,6 @@
 package com.epmapat.erp_epmapat.modelo;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.*;
 
@@ -13,7 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 @Table(name = "abonados")
 
 public class Abonados {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idabonado;
@@ -53,9 +51,14 @@ public class Abonados {
 	@JoinColumn(name = "idestadom_estadom")
 	private Estadom idestadom_estadom;
 	private Long medidorprincipal;
-	/*@ManyToMany
-	@JoinTable(name = "servxabo", joinColumns = @JoinColumn(name = "idabonado_abonados"), inverseJoinColumns = @JoinColumn(name = "idservicio_servicios"))
-	Set<ServiciosM> servSeleccionados = new HashSet<>();*/
+	/*
+	 * @ManyToMany
+	 * 
+	 * @JoinTable(name = "servxabo", joinColumns = @JoinColumn(name =
+	 * "idabonado_abonados"), inverseJoinColumns = @JoinColumn(name =
+	 * "idservicio_servicios"))
+	 * Set<ServiciosM> servSeleccionados = new HashSet<>();
+	 */
 	private Long usucrea;
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
@@ -196,7 +199,7 @@ public class Abonados {
 		return idresponsable;
 	}
 
-	public void setIdresponsable(Clientes idresponsable ) {
+	public void setIdresponsable(Clientes idresponsable) {
 		this.idresponsable = idresponsable;
 	}
 
@@ -296,16 +299,18 @@ public class Abonados {
 		this.lecturainicial = lecturainicial;
 	}
 
-	/*public Set<ServiciosM> getServSeleccionados() {
-		return servSeleccionados;
-	}
-
-	public void setServSeleccionados(Set<ServiciosM> servSeleccionados) {
-		this.servSeleccionados = servSeleccionados;
-	}
-
-	public void addServicio(ServiciosM serviciosM) {
-		servSeleccionados.add(serviciosM);
-	}*/
+	/*
+	 * public Set<ServiciosM> getServSeleccionados() {
+	 * return servSeleccionados;
+	 * }
+	 * 
+	 * public void setServSeleccionados(Set<ServiciosM> servSeleccionados) {
+	 * this.servSeleccionados = servSeleccionados;
+	 * }
+	 * 
+	 * public void addServicio(ServiciosM serviciosM) {
+	 * servSeleccionados.add(serviciosM);
+	 * }
+	 */
 
 }

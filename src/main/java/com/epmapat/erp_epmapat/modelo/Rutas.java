@@ -44,7 +44,7 @@ public class Rutas {
 	
 	public Rutas() {
 		super();
-		// TODO Auto-generated constructor stub
+	
 	}
 	public Long getIdruta() {
 		return idruta;

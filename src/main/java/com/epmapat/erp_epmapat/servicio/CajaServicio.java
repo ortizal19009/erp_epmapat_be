@@ -182,7 +182,7 @@ public class CajaServicio implements CajasR{
 
 	@Override
 	public Cajas findCajaByIdUsuario(Long idusuario) {
-		// TODO Auto-generated method stub
+		
 		return dao.findCajaByIdUsuario(idusuario);
 	}
 

@@ -28,7 +28,7 @@ public class NiifHomologa {
 
 	public NiifHomologa() {
 		super();
-		// TODO Auto-generated constructor stub
+	
 	}
 
 	public NiifHomologa(Long idhomologa, String codcueniif, String codcue, NiifCuentas idniifcue, Cuentas idcuenta) {

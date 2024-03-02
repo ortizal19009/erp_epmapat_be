@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.servicio.RubroxfacServicio;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/rubroxfac")
@@ -30,13 +31,18 @@ public class RubroxfacApi {
    }
 
    @GetMapping("/rubro/{idrubro}")
-	public List<Rubroxfac> getByIdrubro(@PathVariable Long idrubro){
-		return rxfServicio.getByIdrubro(idrubro);
-	}
+   public List<Rubroxfac> getByIdrubro(@PathVariable Long idrubro) {
+      return rxfServicio.getByIdrubro(idrubro);
+   }
 
-	@PostMapping
+   @PostMapping
    public Rubroxfac save(@RequestBody Rubroxfac x) {
-      return rxfServicio.save( x );
+      return rxfServicio.save(x);
+   }
+
+   @GetMapping("/sumavalores")
+   public Double findRubroxfac(@RequestParam("idfactura") Long idfactura) {
+       return rxfServicio.findRubroxfac(idfactura);
    }
 
 }

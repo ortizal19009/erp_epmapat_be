@@ -60,164 +60,164 @@ public class CatalogoitemServicio implements CatalogoitemsR {
    
    @Override
    public void deleteAllByIdInBatch(Iterable<Long> ids) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'deleteAllByIdInBatch'");
    }
 
    @Override
    public void deleteAllInBatch() {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'deleteAllInBatch'");
    }
 
    @Override
    public void deleteAllInBatch(Iterable<Catalogoitems> entities) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'deleteAllInBatch'");
    }
 
    @Override
    public List<Catalogoitems> findAll(Sort sort) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'findAll'");
    }
 
    @Override
    public <S extends Catalogoitems> List<S> findAll(Example<S> example) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'findAll'");
    }
 
    @Override
    public <S extends Catalogoitems> List<S> findAll(Example<S> example, Sort sort) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'findAll'");
    }
 
    @Override
    public List<Catalogoitems> findAllById(Iterable<Long> ids) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'findAllById'");
    }
 
    @Override
    public void flush() {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'flush'");
    }
 
    @Override
    public Catalogoitems getById(Long id) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'getById'");
    }
 
    @Override
    public Catalogoitems getOne(Long id) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'getOne'");
    }
 
    @Override
    public Catalogoitems getReferenceById(Long id) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'getReferenceById'");
    }
 
    @Override
    public <S extends Catalogoitems> List<S> saveAll(Iterable<S> entities) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'saveAll'");
    }
 
    @Override
    public <S extends Catalogoitems> List<S> saveAllAndFlush(Iterable<S> entities) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'saveAllAndFlush'");
    }
 
    @Override
    public <S extends Catalogoitems> S saveAndFlush(S entity) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'saveAndFlush'");
    }
 
    @Override
    public Page<Catalogoitems> findAll(Pageable pageable) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'findAll'");
    }
 
    @Override
    public long count() {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'count'");
    }
 
    @Override
    public void delete(Catalogoitems entity) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'delete'");
    }
 
    @Override
    public void deleteAll() {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'deleteAll'");
    }
 
    @Override
    public void deleteAll(Iterable<? extends Catalogoitems> entities) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'deleteAll'");
    }
 
    @Override
    public void deleteAllById(Iterable<? extends Long> ids) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'deleteAllById'");
    }
 
    @Override
    public void deleteById(Long id) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'deleteById'");
    }
 
    @Override
    public boolean existsById(Long id) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'existsById'");
    }
 
    @Override
    public <S extends Catalogoitems> long count(Example<S> example) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'count'");
    }
 
    @Override
    public <S extends Catalogoitems> boolean exists(Example<S> example) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'exists'");
    }
 
    @Override
    public <S extends Catalogoitems> Page<S> findAll(Example<S> example, Pageable pageable) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'findAll'");
    }
 
    @Override
    public <S extends Catalogoitems, R> R findBy(Example<S> example,
          Function<FetchableFluentQuery<S>, R> queryFunction) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'findBy'");
    }
 
    @Override
    public <S extends Catalogoitems> Optional<S> findOne(Example<S> example) {
-      // TODO Auto-generated method stub
+      
       throw new UnsupportedOperationException("Unimplemented method 'findOne'");
    }
    

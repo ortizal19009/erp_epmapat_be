@@ -114,91 +114,91 @@ public class RubroServicio implements RubrosR {
 
    @Override
    public <S extends Rubros> List<S> findAll(Example<S> example) {
-      // TODO Auto-generated method stub
+      
       return null;
    }
 
    @Override
    public <S extends Rubros> List<S> findAll(Example<S> example, Sort sort) {
-      // TODO Auto-generated method stub
+      
       return null;
    }
 
    @Override
    public Page<Rubros> findAll(Pageable pageable) {
-      // TODO Auto-generated method stub
+      
       return null;
    }
 
    @Override
    public boolean existsById(Long id) {
-      // TODO Auto-generated method stub
+      
       return false;
    }
 
    @Override
    public long count() {
-      // TODO Auto-generated method stub
+      
       return 0;
    }
 
    @Override
    public void deleteById(Long id) {
-      // TODO Auto-generated method stub
+      
 
    }
 
    @Override
    public void delete(Rubros entity) {
-      // TODO Auto-generated method stub
+      
 
    }
 
    @Override
    public void deleteAllById(Iterable<? extends Long> ids) {
-      // TODO Auto-generated method stub
+      
 
    }
 
    @Override
    public void deleteAll(Iterable<? extends Rubros> entities) {
-      // TODO Auto-generated method stub
+      
 
    }
 
    @Override
    public void deleteAll() {
-      // TODO Auto-generated method stub
+      
 
    }
 
    @Override
    public <S extends Rubros> Optional<S> findOne(Example<S> example) {
-      // TODO Auto-generated method stub
+      
       return Optional.empty();
    }
 
    @Override
    public <S extends Rubros> Page<S> findAll(Example<S> example, Pageable pageable) {
-      // TODO Auto-generated method stub
+      
       return null;
    }
 
    @Override
    public <S extends Rubros> long count(Example<S> example) {
-      // TODO Auto-generated method stub
+      
       return 0;
    }
 
    @Override
    public <S extends Rubros> boolean exists(Example<S> example) {
-      // TODO Auto-generated method stub
+      
       return false;
    }
 
    @Override
    public <S extends Rubros, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
-      // TODO Auto-generated method stub
+      
       return null;
    }
 

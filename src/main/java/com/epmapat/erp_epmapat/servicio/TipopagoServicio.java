@@ -45,157 +45,157 @@ public class TipopagoServicio implements TipopagoR {
 
     @Override
     public void deleteAllInBatch() {
-        // TODO Auto-generated method stub
+        
         
     }
 
     @Override
     public void deleteAllInBatch(Iterable<Tipopago> entities) {
-        // TODO Auto-generated method stub
+        
         
     }
 
     @Override
     public List<Tipopago> findAll(Sort sort) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public <S extends Tipopago> List<S> findAll(Example<S> example) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public <S extends Tipopago> List<S> findAll(Example<S> example, Sort sort) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public List<Tipopago> findAllById(Iterable<Long> ids) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public void flush() {
-        // TODO Auto-generated method stub
+        
         
     }
 
     @Override
     public Tipopago getById(Long id) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public Tipopago getOne(Long id) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public Tipopago getReferenceById(Long id) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public <S extends Tipopago> List<S> saveAll(Iterable<S> entities) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public <S extends Tipopago> List<S> saveAllAndFlush(Iterable<S> entities) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public <S extends Tipopago> S saveAndFlush(S entity) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public Page<Tipopago> findAll(Pageable pageable) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public long count() {
-        // TODO Auto-generated method stub
+        
         return 0;
     }
 
     @Override
     public void delete(Tipopago entity) {
-        // TODO Auto-generated method stub
+        
         
     }
 
     @Override
     public void deleteAll() {
-        // TODO Auto-generated method stub
+        
         
     }
 
     @Override
     public void deleteAll(Iterable<? extends Tipopago> entities) {
-        // TODO Auto-generated method stub
+        
         
     }
 
     @Override
     public void deleteAllById(Iterable<? extends Long> ids) {
-        // TODO Auto-generated method stub
+        
         
     }
 
     @Override
     public boolean existsById(Long id) {
-        // TODO Auto-generated method stub
+        
         return false;
     }
 
     @Override
     public <S extends Tipopago> long count(Example<S> example) {
-        // TODO Auto-generated method stub
+        
         return 0;
     }
 
     @Override
     public <S extends Tipopago> boolean exists(Example<S> example) {
-        // TODO Auto-generated method stub
+        
         return false;
     }
 
     @Override
     public <S extends Tipopago> Page<S> findAll(Example<S> example, Pageable pageable) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public <S extends Tipopago, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public <S extends Tipopago> Optional<S> findOne(Example<S> example) {
-        // TODO Auto-generated method stub
+        
         return null;
     }
 
     @Override
     public void deleteAllByIdInBatch(Iterable<Long> ids) {
-        // TODO Auto-generated method stub
+        
         
     }
 

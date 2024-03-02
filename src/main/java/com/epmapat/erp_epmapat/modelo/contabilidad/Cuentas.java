@@ -47,7 +47,7 @@ public class Cuentas {
 
 	public Cuentas() {
 		super();
-		// TODO Auto-generated constructor stub
+	
 	}
 	public Cuentas(Long idcuenta, String codcue, String nomcue, String grucue, Niveles idnivel, Boolean movcue,
 			String asodebe, String asohaber, BigDecimal debito, BigDecimal credito, BigDecimal saldo,

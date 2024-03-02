@@ -30,7 +30,7 @@ public class ConciliaBan {
 	private Cuentas idcuenta;
 	public ConciliaBan() {
 		super();
-		// TODO Auto-generated constructor stub
+	
 	}
 	public ConciliaBan(Long idconcilia, Long mes, BigDecimal libinicial, BigDecimal libdebitos, BigDecimal libcreditos,
 			BigDecimal libdepositos, BigDecimal libcheques, BigDecimal liberrores, BigDecimal baninicial,
