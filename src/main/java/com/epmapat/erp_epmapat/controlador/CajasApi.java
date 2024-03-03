@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Cajas;
 import com.epmapat.erp_epmapat.servicio.CajaServicio;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 @RestController
 @RequestMapping("/cajas")
