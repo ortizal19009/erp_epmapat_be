@@ -16,8 +16,8 @@ import com.epmapat.erp_epmapat.modelo.Cajas;
 import com.epmapat.erp_epmapat.repositorio.CajasR;
 
 @Service
-public class CajaServicio implements CajasR{
-	
+public class CajaServicio implements CajasR {
+
 	@Autowired
 	private CajasR dao;
 
@@ -38,7 +38,7 @@ public class CajaServicio implements CajasR{
 
 	@Override
 	public List<Cajas> findByDescri(String descripcion) {
-		return dao.findByDescri( descripcion );
+		return dao.findByDescri(descripcion);
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class CajaServicio implements CajasR{
 		return dao.findByIdptoemision(idptoemision);
 	}
 
-	//==========================================================
+	// ==========================================================
 	@Override
 	public List<Cajas> findAll(Sort sort) {
 		return null;
@@ -182,8 +182,13 @@ public class CajaServicio implements CajasR{
 
 	@Override
 	public Cajas findCajaByIdUsuario(Long idusuario) {
-		
+
 		return dao.findCajaByIdUsuario(idusuario);
+	}
+
+	@Override
+	public List<Cajas> findCajasActivas() {
+		return dao.findCajasActivas();
 	}
 
 }

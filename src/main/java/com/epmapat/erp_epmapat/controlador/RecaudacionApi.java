@@ -1,5 +1,7 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Recaudacion;
 import com.epmapat.erp_epmapat.servicio.RecaudacionServicio;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/recaudacion")
@@ -34,4 +37,11 @@ public class RecaudacionApi {
    public Recaudacion saveRecaudacion(@RequestBody Recaudacion x) {
       return recaServicio.save(x);
    }
+
+   @GetMapping("/reporte/totalxrecaudor")
+   public Double totalRecaudado(@RequestParam("idrecaudador") Long idrecaudador,
+         @RequestParam("fechacobro") Date fechacobro) {
+      return recaServicio.totalRecaudado(idrecaudador, fechacobro);
+   }
+
 }

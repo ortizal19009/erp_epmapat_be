@@ -22,5 +22,7 @@ public interface CajasR extends JpaRepository<Cajas, Long> {
 	public List<Cajas> findByIdptoemision(Long idptoemision);
    @Query(value = "SELECT * FROM cajas WHERE idusuario_usuarios = ?1", nativeQuery = true)
    public Cajas findCajaByIdUsuario(Long idusuario); 
+   @Query(value = "SELECT * FROM cajas WHERE not idusuario_usuarios is null and estado = 1 ", nativeQuery = true)
+   public List<Cajas> findCajasActivas(); 
 
 }

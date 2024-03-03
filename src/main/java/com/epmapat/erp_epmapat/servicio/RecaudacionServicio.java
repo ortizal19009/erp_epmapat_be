@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +15,16 @@ public class RecaudacionServicio {
    @Autowired
    private RecaudacionR dao;
 
-   @SuppressWarnings("null")
    public <S extends Recaudacion> S save(S entity) {
       return dao.save(entity);
    }
 
-   @SuppressWarnings("null")
    public Optional<Recaudacion> findById(Long id) {
       return dao.findById(id);
+   }
+
+   public Double totalRecaudado(Long idrecaudador, Date fechacobro) {
+      return dao.totalRecaudado(idrecaudador, fechacobro);
    }
 
 }
