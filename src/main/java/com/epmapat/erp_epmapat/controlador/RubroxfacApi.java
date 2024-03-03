@@ -1,9 +1,11 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.servicio.RubroxfacServicio;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,6 +46,10 @@ public class RubroxfacApi {
    @GetMapping("/sumavalores")
    public Double findRubroxfac(@RequestParam("idfactura") Long idfactura) {
        return rxfServicio.findRubroxfac(idfactura);
+   }
+   @GetMapping("/reportes/fechacobro")
+   public List<RubroxfacI> getByFechaCobro(@RequestParam("fechacobro") @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechacobro) {
+       return rxfServicio.getByFechaCobro(fechacobro);
    }
 
 }

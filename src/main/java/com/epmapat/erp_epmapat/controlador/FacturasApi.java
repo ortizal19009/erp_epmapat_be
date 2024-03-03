@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.servicio.FacturaServicio;
 
@@ -121,13 +122,25 @@ public class FacturasApi {
 
 	@GetMapping("/reportes/individual")
 	public ResponseEntity<List<Facturas>> getByUsucobro(@RequestParam("idusuario") Long idusuario,
-			@RequestParam("dfecha")  @DateTimeFormat(pattern = "yyyy-MM-dd")  Date dfecha,
-			@RequestParam("hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd")  Date hfecha) {
+			@RequestParam("dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dfecha,
+			@RequestParam("hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hfecha) {
 		List<Facturas> facturas = facServicio.findByUsucobro(idusuario, dfecha, hfecha);
 		if (!facturas.isEmpty()) {
-			
-		return ResponseEntity.ok(facturas);
-		}else {
+
+			return ResponseEntity.ok(facturas);
+		} else {
+			return ResponseEntity.noContent().build();
+		}
+	}
+
+	@GetMapping("/reportes/fechacobro")
+	public ResponseEntity<List<FacturasI>> getByFechacobro(
+			@RequestParam("fechacobro") @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechacobro) {
+		List<FacturasI> facturas = facServicio.findByFechacobro(fechacobro);
+		if (!facturas.isEmpty()) {
+
+			return ResponseEntity.ok(facturas);
+		} else {
 			return ResponseEntity.noContent().build();
 		}
 	}

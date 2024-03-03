@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 
@@ -21,25 +22,28 @@ public class FacturaServicio {
 	}
 
 	public List<Facturas> findDesde(Long desde, Long hasta) {
-		return dao.findDesde( desde, hasta );
+		return dao.findDesde(desde, hasta);
 	}
 
 	public Optional<Facturas> findById(Long idfactura) {
 		return dao.findById(idfactura);
 	}
-	//Planillas por Cliente
-	public List<Facturas> findByIdcliente(Long idcliente){
+
+	// Planillas por Cliente
+	public List<Facturas> findByIdcliente(Long idcliente) {
 		return dao.findByIdcliente(idcliente);
 	}
-	//Planillas por Abonado
-	public List<Facturas> findByIdabonado(Long idabonado){
+
+	// Planillas por Abonado
+	public List<Facturas> findByIdabonado(Long idabonado) {
 		return dao.findByIdabonado(idabonado);
 	}
-	//Planillas por Cliente sin Cobro
-	public List<Facturas> findSinCobro(Long idcliente){
-	return dao.findSinCobro(idcliente);
+
+	// Planillas por Cliente sin Cobro
+	public List<Facturas> findSinCobro(Long idcliente) {
+		return dao.findSinCobro(idcliente);
 	}
-	
+
 	public void deleteById(Long id) {
 		dao.deleteById(id);
 	}
@@ -49,7 +53,7 @@ public class FacturaServicio {
 	}
 
 	// public List<Facturas> findByNroFactura(String nfactura){
-	// 	return dao.findByNroFactura(nfactura);
+	// return dao.findByNroFactura(nfactura);
 	// }
 
 	public <S extends Facturas> S save(S entity) {
@@ -63,11 +67,17 @@ public class FacturaServicio {
 	public void setDao(FacturasR dao) {
 		this.dao = dao;
 	}
+
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
 	}
-	public List<Facturas> findByUsucobro(Long idusuario, Date dfecha, Date hfecha){
+
+	public List<Facturas> findByUsucobro(Long idusuario, Date dfecha, Date hfecha) {
 		return dao.findByUsucobro(idusuario, dfecha, hfecha);
+	}
+
+	public List<FacturasI> findByFechacobro(Date fechacobro) {
+		return dao.findByFechacobro(fechacobro);
 	}
 
 }

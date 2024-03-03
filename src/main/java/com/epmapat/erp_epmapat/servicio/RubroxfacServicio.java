@@ -1,11 +1,13 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
 
@@ -28,12 +30,18 @@ public class RubroxfacServicio {
 	public <S extends Rubroxfac> S save(S entity) {
 		return dao.save(entity);
 	}
-	//Campos Rubro y valor de una Planilla
+
+	// Campos Rubro y valor de una Planilla
 	public List<Map<String, Object>> rubrosByIdfactura(Long idfactura) {
 		return dao.rubrosByIdfactura(idfactura);
 	}
-	public Double findRubroxfac(Long idfactura){
-	return dao.findSuma(idfactura);
+
+	public Double findRubroxfac(Long idfactura) {
+		return dao.findSuma(idfactura);
+	}
+
+	public List<RubroxfacI> getByFechaCobro(Date fechacobro) {
+		return dao.getByFechaCobro(fechacobro);
 	}
 
 }

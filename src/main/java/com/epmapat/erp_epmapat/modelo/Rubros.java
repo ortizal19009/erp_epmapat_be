@@ -2,10 +2,15 @@ package com.epmapat.erp_epmapat.modelo;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.*;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "rubros")
@@ -41,10 +46,8 @@ public class Rubros {
 	/*
 	 * @JsonIgnore
 	 * 
-	 * @ManyToMany(mappedBy="rubros")
+	 * @ManyToMany(mappedBy = "rubros")
 	 * public Set<Facturas> facturas = new HashSet<>();
-	 * 
-	 * 
 	 * 
 	 * public Set<Facturas> getFacturas() {
 	 * return facturas;
@@ -59,10 +62,8 @@ public class Rubros {
 	}
 
 	public Rubros(Long idrubro, String descripcion, Boolean estado, Boolean calculable, BigDecimal valor, Boolean swiva,
-			Integer tipo,
-			Long esiva, Long esdebito, Long facturable, Modulos idmodulo_modulos, Long usucrea, Date feccrea,
-			Long usumodi, Date fecmodi) {
-		super();
+			Integer tipo, Long esiva, Long esdebito, Long facturable, Modulos idmodulo_modulos, Long usucrea,
+			Date feccrea, Long usumodi, Date fecmodi) {
 		this.idrubro = idrubro;
 		this.descripcion = descripcion;
 		this.estado = estado;
