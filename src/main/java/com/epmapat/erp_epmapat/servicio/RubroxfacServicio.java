@@ -40,10 +40,12 @@ public class RubroxfacServicio {
 		return dao.findSuma(idfactura);
 	}
 
-	public List<RubroxfacI> getByFechaCobro(Date fechacobro) {
-		return dao.getByFechaCobro(fechacobro);
+	public List<RubroxfacI> getByFechaCobro(Date d, Date h) {
+		return dao.getByFechaCobro(d, h);
 	}
 
-
+	public List<Rubroxfac> findByFecha(Date d, Date h) {
+		return dao.findByFecha(d, h);
+	}
 
 }
