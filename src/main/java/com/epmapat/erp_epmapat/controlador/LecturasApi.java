@@ -70,6 +70,11 @@ public class LecturasApi {
 	public List<Lecturas> getByIdfactura(@PathVariable Long idfactura) {
 		return lecServicio.findByIdfactura( idfactura );
 	}
+	//Busca por Planilla (Es una a una)
+	@GetMapping("/onePlanilla/{idfactura}")
+	public Lecturas getOnefactura(@PathVariable Long idfactura) {
+		return lecServicio.findOnefactura( idfactura );
+	}
 
 	@GetMapping("/{idlectura}")
 	public ResponseEntity<Lecturas> getByIdlectura(@PathVariable Long idlectura) {

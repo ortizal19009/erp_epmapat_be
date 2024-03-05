@@ -14,7 +14,6 @@ public class AnulpagoServicio {
    @Autowired
    private AnulpagoR dao;
 
-   @SuppressWarnings("null")
    public Optional<Anulpago> findById(Long id) {
       return dao.findById(id);
    }

@@ -41,6 +41,9 @@ public interface LecturasR extends JpaRepository<Lecturas, Long>{
 	//Lectura por Planilla (Es una a una)
 	@Query(value = "SELECT * FROM lecturas WHERE idfactura=?1 ", nativeQuery = true)
 	public List<Lecturas> findByIdfactura(Long idfactura);
+	//Lectura por Planilla (Es una a una)
+	@Query(value = "SELECT * FROM lecturas WHERE idfactura=?1 ", nativeQuery = true)
+	public Lecturas findOnefactura(Long idfactura);
 
 	//Lecturas de una Emisión
 	@Query(value = "SELECT * FROM lecturas WHERE idemision=?1 ", nativeQuery = true)

@@ -51,6 +51,10 @@ public class LecturaServicio {
    public List<Lecturas> findByIdfactura(Long idfactura) {
       return dao.findByIdfactura( idfactura );
    }
+   //Lectura por Planilla
+   public Lecturas findOnefactura(Long idfactura) {
+      return dao.findOnefactura( idfactura );
+   }
    //Lecuras de una Emision
    public List<Lecturas> findByIdemision(Long idemision) {
       return dao.findByIdemision( idemision );

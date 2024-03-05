@@ -59,4 +59,11 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
             "a.direccionubicacion as direccionubicacion, " + "c.telefono as telefono, " + "c.fechanacimiento as fechanacimiento, " +"c.email as email) " +
             "FROM Clientes c INNER JOIN Abonados a ON c.idcliente = a.idcliente_clientes")
     List<Map<String, Object>> allAbonadosCampos();
+	 //Campos específicos de Clientes y Abonados
+/*     @Query("SELECT new map(" +
+	 			"a.idabonado as idabonado, " +
+            "c.nombre as nombre, " + "c.cedula as cedula, " + "c.direccion as direccion, " + 
+            "a.direccionubicacion as direccionubicacion, " + "c.telefono as telefono, " + "c.fechanacimiento as fechanacimiento, " +"c.email as email) " +
+            "FROM Abonados a INNER JOIN Categorias a ON c.idcliente = a.idcliente_clientes")
+    List<Map<String, Object>> getOneAbonado(Long idabonado); */
 }

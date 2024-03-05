@@ -34,7 +34,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// @Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1
 	// and fechaconvenio is null and fechacobro is null and fechaeliminacion is null
 	// and fechaanulacion is null ORDER BY idabonado, idfactura", nativeQuery=true)
-	@Query(value = "select * from facturas where (estado = 3 or ((estado = 2 or estado = 1 ) and pagado = 0 and fechacobro is null) and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null)  and idcliente = ?1 ORDER BY idabonado, idfactura", nativeQuery = true)
+	//@Query(value = "select * from facturas where (estado = 3 or ((estado = 2 or estado = 1 ) and pagado = 0 and fechacobro is null) and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null) and totaltarifa > 0 and idcliente = ?1 ORDER BY idabonado, idfactura", nativeQuery = true)
+	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery=true)
 	public List<Facturas> findSinCobro(Long idcliente);
 
 	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY nrofactura", nativeQuery = true)

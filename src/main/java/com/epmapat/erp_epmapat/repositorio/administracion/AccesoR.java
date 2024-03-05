@@ -9,7 +9,6 @@ import com.epmapat.erp_epmapat.modelo.administracion.Acceso;
 
 public interface AccesoR extends JpaRepository<Acceso, Long>{
    
-   @SuppressWarnings("null")
    @Query(value = "SELECT * FROM acceso order by codacc", nativeQuery = true)
    List<Acceso> findAll();
    

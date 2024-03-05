@@ -1,4 +1,6 @@
 package com.epmapat.erp_epmapat.servicio;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +15,15 @@ public class FacxrecaudaServicio {
    @Autowired
    private FacxrecaudaR dao;
 
-   @SuppressWarnings("null")
    public <S extends Facxrecauda> S save(S entity) {
       return dao.save(entity);
    }
 
-   @SuppressWarnings("null")
    public Optional<Facxrecauda> findById(Long id) {
       return dao.findById(id);
    }
+   	public List<Facxrecauda> getByUsuFecha(Long idusuario, Date d, Date h) {
+		return dao.getByUsuFecha(idusuario, d, h);
+	}
 
 }

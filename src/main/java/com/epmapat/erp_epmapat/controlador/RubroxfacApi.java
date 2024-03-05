@@ -45,11 +45,10 @@ public class RubroxfacApi {
 
    @GetMapping("/sumavalores")
    public Double findRubroxfac(@RequestParam("idfactura") Long idfactura) {
-       return rxfServicio.findRubroxfac(idfactura);
+      return rxfServicio.findRubroxfac(idfactura);
    }
-   @GetMapping("/reportes/fechacobro")
-   public List<RubroxfacI> getByFechaCobro(@RequestParam("fechacobro") @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechacobro) {
-       return rxfServicio.getByFechaCobro(fechacobro);
-   }
+
+
+
 
 }

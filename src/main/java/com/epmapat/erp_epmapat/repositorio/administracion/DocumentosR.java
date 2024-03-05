@@ -9,7 +9,6 @@ import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
 
 public interface DocumentosR extends JpaRepository<Documentos, Long>{
 
-   @SuppressWarnings("null")
    @Query(value = "SELECT * FROM documentos order by nomdoc", nativeQuery=true)
 	List<Documentos> findAll();
 

@@ -44,4 +44,6 @@ public class RubroxfacServicio {
 		return dao.getByFechaCobro(fechacobro);
 	}
 
+
+
 }

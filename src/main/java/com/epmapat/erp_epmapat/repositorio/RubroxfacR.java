@@ -41,4 +41,6 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	 */
 	@Query(value = "select rf.idrubro_rubros , sum(rf.valorunitario) from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where f.fechacobro = ?1 group by rf.idrubro_rubros ", nativeQuery = true)
 	List<RubroxfacI> getByFechaCobro(Date fechacobro);
+
+
 }

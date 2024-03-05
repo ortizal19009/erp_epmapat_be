@@ -25,7 +25,6 @@ public class AboxSuspensionS implements AboxSuspensionR{
 		return aboxsuspensionR.findByIdsuspension(idsuspension);
 	}
 	
-	@SuppressWarnings("null")
 	@Override
 	public List<AboxSuspensionM> findAll() {
 		return aboxsuspensionR.findAll();
