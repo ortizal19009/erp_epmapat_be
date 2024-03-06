@@ -24,5 +24,8 @@ public interface RubrosR extends JpaRepository<Rubros, Long>{
 	//Rubros de Emisión
 	@Query(value="SELECT * FROM rubros WHERE idmodulo_modulos=4 and estado order by idrubro", nativeQuery = true)
 	public List<Rubros> findEmision();
+	
+	@Query(value = "SELECT * FROM rubros WHERE idrubro = ?1", nativeQuery = true)
+	public Rubros findByIdRubro(Long idrubro);
 
 }

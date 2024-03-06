@@ -102,6 +102,7 @@ public class RubroServicio implements RubrosR {
       return null;
    }
 
+   @SuppressWarnings("null")
    @Override
    public Rubros getById(Long id) {
       return null;
@@ -114,92 +115,91 @@ public class RubroServicio implements RubrosR {
 
    @Override
    public <S extends Rubros> List<S> findAll(Example<S> example) {
-      
+
       return null;
    }
 
    @Override
    public <S extends Rubros> List<S> findAll(Example<S> example, Sort sort) {
-      
+
       return null;
    }
 
    @Override
    public Page<Rubros> findAll(Pageable pageable) {
-      
+
       return null;
    }
 
    @Override
    public boolean existsById(Long id) {
-      
+
       return false;
    }
 
    @Override
    public long count() {
-      
+
       return 0;
    }
 
    @Override
    public void deleteById(Long id) {
-      
 
    }
 
    @Override
    public void delete(Rubros entity) {
-      
 
    }
 
    @Override
    public void deleteAllById(Iterable<? extends Long> ids) {
-      
 
    }
 
    @Override
    public void deleteAll(Iterable<? extends Rubros> entities) {
-      
 
    }
 
    @Override
    public void deleteAll() {
-      
 
    }
 
    @Override
    public <S extends Rubros> Optional<S> findOne(Example<S> example) {
-      
+
       return Optional.empty();
    }
 
    @Override
    public <S extends Rubros> Page<S> findAll(Example<S> example, Pageable pageable) {
-      
+
       return null;
    }
 
    @Override
    public <S extends Rubros> long count(Example<S> example) {
-      
+
       return 0;
    }
 
    @Override
    public <S extends Rubros> boolean exists(Example<S> example) {
-      
+
       return false;
    }
 
    @Override
    public <S extends Rubros, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
-      
+
       return null;
    }
 
+   @Override
+   public Rubros findByIdRubro(Long idrubro) {
+      return dao.findByIdRubro(idrubro);
+   }
 }

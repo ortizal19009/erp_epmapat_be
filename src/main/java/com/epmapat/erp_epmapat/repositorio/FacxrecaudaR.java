@@ -8,9 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.epmapat.erp_epmapat.modelo.Facxrecauda;
 
-public interface FacxrecaudaR extends JpaRepository<Facxrecauda, Long>{
+public interface FacxrecaudaR extends JpaRepository<Facxrecauda, Long> {
 
-    	@Query(value = "select * from facxrecauda fr join facturas f on fr.idfactura = f.idfactura where f.usuariocobro = ?1 and (f.fechacobro BETWEEN ?2 AND ?3)", nativeQuery = true)
+	@Query(value = "select * from facxrecauda fr join recaudacion r on fr.idrecaudacion = r.idrecaudacion where r.recaudador = ?1 and (Date(r.fechacobro) BETWEEN ?2 AND ?3) order by r.fechacobro asc", nativeQuery = true)
 	List<Facxrecauda> getByUsuFecha(Long idusuario, Date d, Date h);
+	
+	
 
 }

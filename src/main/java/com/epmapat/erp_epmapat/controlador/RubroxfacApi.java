@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -54,10 +53,16 @@ public class RubroxfacApi {
          @RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
       return rxfServicio.getByFechaCobro(d, h);
    }
+
    @GetMapping("/reportes/fecha")
    public List<Rubroxfac> getByFecha(@RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
          @RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
       return rxfServicio.findByFecha(d, h);
+   }
+
+   @GetMapping("/sincobro/rubxfa")
+   public List<Rubroxfac> getSinCobroRF(@RequestParam("cuenta") Long cuenta) {
+      return rxfServicio.findSinCobroRF(cuenta);
    }
 
 }

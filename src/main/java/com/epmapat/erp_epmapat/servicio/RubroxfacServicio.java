@@ -48,4 +48,8 @@ public class RubroxfacServicio {
 		return dao.findByFecha(d, h);
 	}
 
+	public List<Rubroxfac> findSinCobroRF(Long cuenta) {
+		return dao.findSinCobroRF(cuenta);
+	}
+
 }

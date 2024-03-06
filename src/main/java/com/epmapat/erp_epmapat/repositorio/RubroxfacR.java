@@ -42,8 +42,10 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "select rf.idrubro_rubros , sum(rf.valorunitario) from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where f.fechacobro = ?1 group by rf.idrubro_rubros ", nativeQuery = true)
 	List<RubroxfacI> getByFechaCobro(Date d, Date h);
 
-	@Query(value = "SELECT * FROM rubrosxfac rf JOIN facturas rf.idfactura_facturas ON f.idfactura WHERE f.fechacobro between ?1 and ?2", nativeQuery = true)
+	@Query(value = "SELECT * FROM rubroxfac rf JOIN facturas f ON rf.idfactura_facturas = f.idfactura WHERE f.fechacobro between ?1 and ?2", nativeQuery = true)
 	public List<Rubroxfac> findByFecha(Date d, Date h);
- 
 
+	/* SIN COBRO 2.0 */
+	@Query(value = "select * from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where totaltarifa > 0 and idcliente=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaanulacion is null and f.fechaeliminacion is null ORDER BY f.idabonado, f.idfactura ", nativeQuery = true)
+	public List<Rubroxfac> findSinCobroRF(Long cuenta);
 }

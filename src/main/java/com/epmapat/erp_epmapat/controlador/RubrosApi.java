@@ -50,6 +50,7 @@ public class RubrosApi {
 		return ResponseEntity.ok(rubros);
 	}
 
+
 	//Por Módulo y Descripción
 	@GetMapping("/idmodulo")
 	public List<Rubros> valNombre(@Param(value = "idmodulo") Long idmodulo,
