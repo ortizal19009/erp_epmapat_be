@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.modelo;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 import javax.persistence.*;
@@ -20,10 +21,10 @@ public class Intereses {
 	private Long mes;
 	private BigDecimal porcentaje; 
 	private Long usucrea;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "feccrea")
-	private Date feccrea;
+	/* @Temporal(TemporalType.DATE)
+	@DateTimeFormat(iso = ISO.DATE)*/
+	@Column(name = "feccrea") 
+	private LocalDate feccrea;
 	private Long usumodi;
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
@@ -34,7 +35,7 @@ public class Intereses {
 		super();
 	}
 
-	public Intereses(Long idinteres, Long anio, Long mes, BigDecimal porcentaje, Long usucrea, Date feccrea, Long usumodi,
+	public Intereses(Long idinteres, Long anio, Long mes, BigDecimal porcentaje, Long usucrea, LocalDate feccrea, Long usumodi,
 			Date fecmodi) {
 		super();
 		this.idinteres = idinteres;
@@ -81,10 +82,10 @@ public class Intereses {
 	public void setUsucrea(Long usucrea) {
 		this.usucrea = usucrea;
 	}
-	public Date getFeccrea() {
+	public LocalDate getFeccrea() {
 		return feccrea;
 	}
-	public void setFeccrea(Date feccrea) {
+	public void setFeccrea(LocalDate feccrea) {
 		this.feccrea = feccrea;
 	}
 	public Long getUsumodi() {
