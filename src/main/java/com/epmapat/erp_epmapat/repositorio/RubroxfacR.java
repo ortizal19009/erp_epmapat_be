@@ -25,6 +25,10 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "SELECT * FROM rubroxfac WHERE idrubro_rubros =?1 order by idrubroxfac desc limit 100", nativeQuery = true)
 	public List<Rubroxfac> findByIdrubro(Long idrubro);
 
+	// Rubros de una Planilla (Sin rubro 165 (Iva del siim 'esiva'))
+	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and idrubro_rubros <> 165 order by idrubro_rubros", nativeQuery = true)
+	public List<Rubroxfac> findByIdfactura1(Long idfactura);
+
 	// Campos específicos: Rubro y Valor de una Factura (Planilla)
 	@Query("SELECT new map(" +
 			"r.descripcion as descripcion, " + "rf.valorunitario as valorunitario) " +

@@ -102,7 +102,6 @@ public class RubroServicio implements RubrosR {
       return null;
    }
 
-   @SuppressWarnings("null")
    @Override
    public Rubros getById(Long id) {
       return null;

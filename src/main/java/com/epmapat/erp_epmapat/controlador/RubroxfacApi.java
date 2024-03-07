@@ -33,6 +33,11 @@ public class RubroxfacApi {
       return rxfServicio.getByIdfactura(idfactura);
    }
 
+   @GetMapping("/esiva")
+   public List<Rubroxfac> getByIdfactura1(@Param(value = "idfactura") Long idfactura) {
+      return rxfServicio.getByIdfactura1(idfactura);
+   }
+
    @GetMapping("/rubro/{idrubro}")
    public List<Rubroxfac> getByIdrubro(@PathVariable Long idrubro) {
       return rxfServicio.getByIdrubro(idrubro);
