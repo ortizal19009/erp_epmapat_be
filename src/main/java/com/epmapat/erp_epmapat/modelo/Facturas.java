@@ -2,12 +2,9 @@ package com.epmapat.erp_epmapat.modelo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.*;
-
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 @Entity
 @Table(name = "facturas")
@@ -28,122 +25,51 @@ public class Facturas implements Serializable {
 	private BigDecimal totaltarifa;
 	private Integer pagado;
 	private Long usuariocobro;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE_TIME)
-	@Column(name = "fechacobro")
-	private Date fechacobro;
+	// @Temporal(TemporalType.DATE)
+	// @DateTimeFormat(iso = ISO.DATE_TIME)
+	// @Column(name = "fechacobro")
+	private LocalDate fechacobro;
 	private Long estado;
 	private Long usuarioanulacion;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fechaanulacion")
-	private Date fechaanulacion;
+	// @Temporal(TemporalType.DATE)
+	// @DateTimeFormat(iso = ISO.DATE)
+	// @Column(name = "fechaanulacion")
+	private LocalDate fechaanulacion;
 	private String razonanulacion;
 	private Long usuarioeliminacion;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fechaeliminacion")
-	private Date fechaeliminacion;
+	// @Temporal(TemporalType.DATE)
+	// @DateTimeFormat(iso= ISO.DATE)
+	// @Column ( name = "fechaeliminacion")
+	private LocalDate fechaeliminacion;
 	private String razoneliminacion;
 	private Long conveniopago;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fechaconvenio")
-	private Date fechaconvenio;
+	// @Temporal(TemporalType.DATE)
+	// @DateTimeFormat(iso= ISO.DATE)
+	// @Column(name = "fechaconvenio")
+	private LocalDate fechaconvenio;
 	private Long estadoconvenio;
 	private Long formapago;
 	private String refeformapago;
 	private String horacobro;
 	private Long usuariotransferencia;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fechatransferencia")
-	private Date fechatransferencia;
+	// @Temporal(TemporalType.DATE)
+	// @DateTimeFormat(iso = ISO.DATE)
+	// @Column(name = "fechatransferencia")
+	private LocalDate fechatransferencia;
 	private Long usucrea;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "feccrea")
-	private Date feccrea;
+
+	// @Temporal(TemporalType.DATE)
+	// @DateTimeFormat(iso=ISO.DATE)
+	// @Column(name = "feccrea")
+	private LocalDate feccrea;
 	private Long usumodi;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fecmodi")
-	private Date fecmodi;
+	// @Temporal(TemporalType.DATE)
+	// @DateTimeFormat(iso = ISO.DATE)
+	// @Column(name = "fecmodi")
+	private LocalDate fecmodi;
 	private BigDecimal valorbase;
 	private Long idabonado;
 	private BigDecimal interescobrado;
-
-	/*
-	 * @ManyToMany
-	 * 
-	 * @JoinTable(name = "rubroxfac", joinColumns = @JoinColumn(name =
-	 * "idfactura_facturas"), inverseJoinColumns = @JoinColumn(name =
-	 * "idrubro_rubros"))
-	 * private Set<Rubros> rubros = new HashSet<>();
-	 * 
-	 * public void addRubros(Rubros rubro) {
-	 * rubros.add(rubro);
-	 * rubro.getFacturas().add(this);
-	 * }
-	 * 
-	 * public void removeRubros(Rubros rubro) {
-	 * rubros.remove(rubro);
-	 * rubro.getFacturas().remove(this);
-	 * }
-	 * 
-	 * public Set<Rubros> getRubros() {
-	 * return rubros;
-	 * }
-	 * 
-	 * public void setRubros(Set<Rubros> rubros) {
-	 * this.rubros = rubros;
-	 * }
-	 */
-
-	public Facturas() {
-		super();
-	}
-
-	public Facturas(Long idfactura, Modulos idmodulo, Clientes idcliente, String nrofactura, Long porcexoneracion,
-			String razonexonera, BigDecimal totaltarifa, Integer pagado, Long usuariocobro, Date fechacobro,
-			Long estado, Long usuarioanulacion, Date fechaanulacion, String razonanulacion, Long usuarioeliminacion,
-			Date fechaeliminacion, String razoneliminacion, Long conveniopago, Date fechaconvenio, Long estadoconvenio,
-			Long formapago, String refeformapago, String horacobro, Long usuariotransferencia, Date fechatransferencia,
-			Long usucrea, Date feccrea, Long usumodi, Date fecmodi, BigDecimal valorbase, Long idabonado,
-			BigDecimal interescobrado) {
-		this.idfactura = idfactura;
-		this.idmodulo = idmodulo;
-		this.idcliente = idcliente;
-		this.nrofactura = nrofactura;
-		this.porcexoneracion = porcexoneracion;
-		this.razonexonera = razonexonera;
-		this.totaltarifa = totaltarifa;
-		this.pagado = pagado;
-		this.usuariocobro = usuariocobro;
-		this.fechacobro = fechacobro;
-		this.estado = estado;
-		this.usuarioanulacion = usuarioanulacion;
-		this.fechaanulacion = fechaanulacion;
-		this.razonanulacion = razonanulacion;
-		this.usuarioeliminacion = usuarioeliminacion;
-		this.fechaeliminacion = fechaeliminacion;
-		this.razoneliminacion = razoneliminacion;
-		this.conveniopago = conveniopago;
-		this.fechaconvenio = fechaconvenio;
-		this.estadoconvenio = estadoconvenio;
-		this.formapago = formapago;
-		this.refeformapago = refeformapago;
-		this.horacobro = horacobro;
-		this.usuariotransferencia = usuariotransferencia;
-		this.fechatransferencia = fechatransferencia;
-		this.usucrea = usucrea;
-		this.feccrea = feccrea;
-		this.usumodi = usumodi;
-		this.fecmodi = fecmodi;
-		this.valorbase = valorbase;
-		this.idabonado = idabonado;
-		this.interescobrado = interescobrado;
-	}
 
 	public BigDecimal getInterescobrado() {
 		return interescobrado;
@@ -152,6 +78,55 @@ public class Facturas implements Serializable {
 	public void setInterescobrado(BigDecimal interescobrado) {
 		this.interescobrado = interescobrado;
 	}
+
+	public Facturas() {
+		super();
+	}
+
+	// public Facturas(Long idfactura, Modulos idmodulo, Clientes idcliente, String
+	// nrofactura, Long porcexoneracion,
+	// String razonexonera, BigDecimal totaltarifa, Integer pagado, Long
+	// usuariocobro, Date fechacobro, Long estado,
+	// Long usuarioanulacion, Date fechaanulacion, String razonanulacion, Long
+	// usuarioeliminacion,
+	// Date fechaeliminacion, String razoneliminacion, Long conveniopago, Date
+	// fechaconvenio, Long estadoconvenio,
+	// Long formapago, String refeformapago, String horacobro, Long
+	// usuariotransferencia, Date fechatransferencia,
+	// Long usucrea, ZonedDateTime feccrea, Long usumodi, Date fecmodi, BigDecimal
+	// valorbase, Long idabonado) {
+	// this.idfactura = idfactura;
+	// this.idmodulo = idmodulo;
+	// this.idcliente = idcliente;
+	// this.nrofactura = nrofactura;
+	// this.porcexoneracion = porcexoneracion;
+	// this.razonexonera = razonexonera;
+	// this.totaltarifa = totaltarifa;
+	// this.pagado = pagado;
+	// this.usuariocobro = usuariocobro;
+	// this.fechacobro = fechacobro;
+	// this.estado = estado;
+	// this.usuarioanulacion = usuarioanulacion;
+	// this.fechaanulacion = fechaanulacion;
+	// this.razonanulacion = razonanulacion;
+	// this.usuarioeliminacion = usuarioeliminacion;
+	// this.fechaeliminacion = fechaeliminacion;
+	// this.razoneliminacion = razoneliminacion;
+	// this.conveniopago = conveniopago;
+	// this.fechaconvenio = fechaconvenio;
+	// this.estadoconvenio = estadoconvenio;
+	// this.formapago = formapago;
+	// this.refeformapago = refeformapago;
+	// this.horacobro = horacobro;
+	// this.usuariotransferencia = usuariotransferencia;
+	// this.fechatransferencia = fechatransferencia;
+	// this.usucrea = usucrea;
+	// this.feccrea = feccrea;
+	// this.usumodi = usumodi;
+	// this.fecmodi = fecmodi;
+	// this.valorbase = valorbase;
+	// this.idabonado = idabonado;
+	// }
 
 	public Long getIdfactura() {
 		return idfactura;
@@ -225,11 +200,11 @@ public class Facturas implements Serializable {
 		this.usuariocobro = usuariocobro;
 	}
 
-	public Date getFechacobro() {
+	public LocalDate getFechacobro() {
 		return fechacobro;
 	}
 
-	public void setFechacobro(Date fechacobro) {
+	public void setFechacobro(LocalDate fechacobro) {
 		this.fechacobro = fechacobro;
 	}
 
@@ -249,11 +224,11 @@ public class Facturas implements Serializable {
 		this.usuarioanulacion = usuarioanulacion;
 	}
 
-	public Date getFechaanulacion() {
+	public LocalDate getFechaanulacion() {
 		return fechaanulacion;
 	}
 
-	public void setFechaanulacion(Date fechaanulacion) {
+	public void setFechaanulacion(LocalDate fechaanulacion) {
 		this.fechaanulacion = fechaanulacion;
 	}
 
@@ -273,11 +248,11 @@ public class Facturas implements Serializable {
 		this.usuarioeliminacion = usuarioeliminacion;
 	}
 
-	public Date getFechaeliminacion() {
+	public LocalDate getFechaeliminacion() {
 		return fechaeliminacion;
 	}
 
-	public void setFechaeliminacion(Date fechaeliminacion) {
+	public void setFechaeliminacion(LocalDate fechaeliminacion) {
 		this.fechaeliminacion = fechaeliminacion;
 	}
 
@@ -297,11 +272,11 @@ public class Facturas implements Serializable {
 		this.conveniopago = conveniopago;
 	}
 
-	public Date getFechaconvenio() {
+	public LocalDate getFechaconvenio() {
 		return fechaconvenio;
 	}
 
-	public void setFechaconvenio(Date fechaconvenio) {
+	public void setFechaconvenio(LocalDate fechaconvenio) {
 		this.fechaconvenio = fechaconvenio;
 	}
 
@@ -345,11 +320,11 @@ public class Facturas implements Serializable {
 		this.usuariotransferencia = usuariotransferencia;
 	}
 
-	public Date getFechatransferencia() {
+	public LocalDate getFechatransferencia() {
 		return fechatransferencia;
 	}
 
-	public void setFechatransferencia(Date fechatransferencia) {
+	public void setFechatransferencia(LocalDate fechatransferencia) {
 		this.fechatransferencia = fechatransferencia;
 	}
 
@@ -361,11 +336,11 @@ public class Facturas implements Serializable {
 		this.usucrea = usucrea;
 	}
 
-	public Date getFeccrea() {
+	public LocalDate getFeccrea() {
 		return feccrea;
 	}
 
-	public void setFeccrea(Date feccrea) {
+	public void setFeccrea(LocalDate feccrea) {
 		this.feccrea = feccrea;
 	}
 
@@ -377,11 +352,11 @@ public class Facturas implements Serializable {
 		this.usumodi = usumodi;
 	}
 
-	public Date getFecmodi() {
+	public LocalDate getFecmodi() {
 		return fecmodi;
 	}
 
-	public void setFecmodi(Date fecmodi) {
+	public void setFecmodi(LocalDate fecmodi) {
 		this.fecmodi = fecmodi;
 	}
 
