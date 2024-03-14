@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -143,6 +144,46 @@ public class FacturasApi {
 		} else {
 			return ResponseEntity.noContent().build();
 		}
+	}
+	/* =============================================================== */
+	// Una Planilla (como lista)
+	@GetMapping("/planilla")
+	public ResponseEntity<List<Facturas>> buscarPlanilla(@Param(value = "idfactura") Long idfactura) {
+		List<Facturas> x = facServicio.buscarPlanilla(idfactura);
+		if (x.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(x);
+	}
+
+	// Planillas por Abonado y Fecha
+	@GetMapping("/porabonado")
+	public ResponseEntity<List<Facturas>> buscarPorAbonadoYFechaCreacionRange(@Param(value = "idabonado") Long idabonado,
+	@Param("fechaDesde") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaDesde,
+			@Param("fechaHasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaHasta) {
+		List<Facturas> x = facServicio.buscarPorAbonadoYFechaCreacionRange(idabonado, fechaDesde, fechaHasta);
+		if (x.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(x);
+	}
+
+	// IDs de las Planillas sin cobrar de un Abonado
+	@GetMapping("/sincobro")
+	public List<Long> getSinCobroAbo(@Param(value = "idabonado") Long idabonado) {
+		return facServicio.findSinCobroAbo(idabonado);
+	}
+
+	// Planillas sin cobrar de un Abonado (Para convenios)
+	@GetMapping("/sincobrarAbo")
+	public List<Facturas> getSinCobrarAbo(@Param(value = "idabonado") Long idabonado) {
+		return facServicio.findSinCobrarAbo(idabonado);
+	}
+
+	// Planilla por nrofactura
+	@GetMapping("/nrofactura")
+	public List<Facturas> getByNrofactura(@Param(value = "nrofactura") String nrofactura) {
+		return facServicio.findByNrofactura(nrofactura);
 	}
 
 }
