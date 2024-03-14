@@ -3,6 +3,7 @@ package com.epmapat.erp_epmapat.servicio;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,5 +57,24 @@ public class RubroxfacServicio {
 	public List<Rubroxfac> findSinCobroRF(Long cuenta) {
 		return dao.findSinCobroRF(cuenta);
 	}
+	/* ========================================= */
+	
+	
+
+	// Campos Rubro.descripcion y rubroxfac.valorunitario de una Planilla
+	public List<Object[]> findRubros(Long idFactura) {
+		return dao.findRubros(idFactura);
+	}
+
+	// Multa de una Factura
+	public boolean getMulta(Long idfactura) {
+		return dao.findMulta(idfactura);
+	}
+
+	@SuppressWarnings("null")
+	public Optional<Rubroxfac> findById(Long id) {
+		return dao.findById(id);
+	}
+
 
 }
