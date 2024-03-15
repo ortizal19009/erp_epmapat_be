@@ -29,13 +29,31 @@ public class ConveniosApi {
    @Autowired
    private ConvenioServicio convServicio;
 
-   @GetMapping
-   public List<Convenios> getAllConvenios(@Param(value = "dnroconvenio") Long dnro,
-         @Param(value = "hnroconvenio") Long hnro, @Param(value = "nroconvenio") Long nroconvenio) {
-      if (nroconvenio != null)
-         return convServicio.findNroconvenio(nroconvenio);
-      else
-         return convServicio.findAll(dnro, hnro);
+   @GetMapping("/DesdeHasta")
+   public List<Convenios> conveniosDesdeHasta(@Param(value = "desde") Integer desde,
+         @Param(value = "hasta") Integer hasta) {
+      return convServicio.conveniosDesdeHasta(desde, hasta);
+   }
+
+   // Ultimo Nroconvenio
+   @GetMapping("/ultimo")
+   public Convenios ultimoNroconvenio() {
+      return convServicio.ultimoNroconvenio();
+   }
+
+   // Siguiente Nroconvenio
+   @GetMapping("/siguiente")
+   public Integer siguienteNroconvenio() {
+      return convServicio.siguienteNroconvenio();
+   }
+
+   // Valida Nroconvenio
+   @GetMapping("/valNroconvenio")
+   // public ResponseEntity<Boolean> valNroconvenio(@RequestParam Integer
+   // nroconvenio) {
+   public ResponseEntity<Boolean> valNroconvenio( @Param(value = "nroconvenio") Integer nroconvenio ) {
+      boolean b = convServicio.valNroconvenio(nroconvenio);
+      return ResponseEntity.ok(b);
    }
 
    @GetMapping("/{idconvenio}")
@@ -48,7 +66,7 @@ public class ConveniosApi {
 
    @PostMapping
    public Convenios saveConvenios(@RequestBody Convenios x) {
-      return convServicio.save( x );
+      return convServicio.save(x);
    }
 
    @PutMapping("/{idconvenio}")
@@ -57,10 +75,12 @@ public class ConveniosApi {
             .orElseThrow(() -> new ResourceNotFoundExcepciones(
                   ("No existe el Convenio Id: " + idconvenio)));
       y.setReferencia(x.getReferencia());
+      y.setNroautorizacion(x.getNroautorizacion());
       y.setEstado(x.getEstado());
       y.setObservaciones(x.getObservaciones());
-      y.setUsucrea(x.getUsucrea());
-      y.setFeccrea(x.getFeccrea());
+      y.setUsuarioeliminacion(x.getUsuarioeliminacion());
+      y.setFechaeliminacion(x.getFechaeliminacion());
+      y.setRazoneliminacion(x.getRazoneliminacion());
       y.setUsumodi(x.getUsumodi());
       y.setFecmodi(x.getFecmodi());
 

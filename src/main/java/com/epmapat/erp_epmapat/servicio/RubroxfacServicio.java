@@ -17,20 +17,10 @@ public class RubroxfacServicio {
 	@Autowired
 	private RubroxfacR dao;
 
-	// Rubros de una Planilla
-	public List<Rubroxfac> getByIdfactura(Long idfactura) {
-		return dao.findByIdfactura(idfactura);
-	}
 
-	// Movimientos de un Rubro
-	public List<Rubroxfac> getByIdrubro(Long idrubro) {
-		return dao.findByIdrubro(idrubro);
-	}
 
-	// Grabar
-	public <S extends Rubroxfac> S save(S entity) {
-		return dao.save(entity);
-	}
+
+
 
 	// Campos Rubro y valor de una Planilla
 	public List<Map<String, Object>> rubrosByIdfactura(Long idfactura) {
@@ -41,10 +31,7 @@ public class RubroxfacServicio {
 		return dao.findSuma(idfactura);
 	}
 
-	// Rubros de una Planilla
-	public List<Rubroxfac> getByIdfactura1(Long idfactura) {
-		return dao.findByIdfactura1(idfactura);
-	}
+
 
 	public List<RubroxfacI> getByFechaCobro(Date d, Date h) {
 		return dao.getByFechaCobro(d, h);
@@ -57,13 +44,25 @@ public class RubroxfacServicio {
 	public List<Rubroxfac> findSinCobroRF(Long cuenta) {
 		return dao.findSinCobroRF(cuenta);
 	}
-	/* ========================================= */
-	
-	
+
+	// Rubros de una Planilla
+	public List<Rubroxfac> getByIdfactura(Long idfactura) {
+		return dao.findByIdfactura(idfactura);
+	}
+
+	// Rubros de una Planilla
+	public List<Rubroxfac> getByIdfactura1(Long idfactura) {
+		return dao.findByIdfactura1(idfactura);
+	}
 
 	// Campos Rubro.descripcion y rubroxfac.valorunitario de una Planilla
 	public List<Object[]> findRubros(Long idFactura) {
 		return dao.findRubros(idFactura);
+	}
+
+	// Movimientos de un Rubro
+	public List<Rubroxfac> getByIdrubro(Long idrubro) {
+		return dao.findByIdrubro(idrubro);
 	}
 
 	// Multa de una Factura
@@ -71,10 +70,14 @@ public class RubroxfacServicio {
 		return dao.findMulta(idfactura);
 	}
 
+	// Grabar
+	@SuppressWarnings("null")
+	public <S extends Rubroxfac> S save(S entity) {
+		return dao.save(entity);
+	}
+
 	@SuppressWarnings("null")
 	public Optional<Rubroxfac> findById(Long id) {
 		return dao.findById(id);
 	}
-
-
 }

@@ -145,7 +145,6 @@ public class FacturasApi {
 			return ResponseEntity.noContent().build();
 		}
 	}
-	/* =============================================================== */
 	// Una Planilla (como lista)
 	@GetMapping("/planilla")
 	public ResponseEntity<List<Facturas>> buscarPlanilla(@Param(value = "idfactura") Long idfactura) {
@@ -176,8 +175,8 @@ public class FacturasApi {
 
 	// Planillas sin cobrar de un Abonado (Para convenios)
 	@GetMapping("/sincobrarAbo")
-	public List<Facturas> getSinCobrarAbo(@Param(value = "idabonado") Long idabonado) {
-		return facServicio.findSinCobrarAbo(idabonado);
+	public List<Facturas> getSinCobrarAbo(@Param(value = "idmodulo") Long idmodulo, @Param(value = "idabonado") Long idabonado) {
+		return facServicio.findSinCobrarAbo(idmodulo, idabonado);
 	}
 
 	// Planilla por nrofactura

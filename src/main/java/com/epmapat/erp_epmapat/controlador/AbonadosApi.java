@@ -150,6 +150,14 @@ public class AbonadosApi {
 		return ResponseEntity.ok(abonado);
 		
 	}
+	//Un Abonado
+	@GetMapping("/unabonado")
+	public Abonados unAbonado(@Param("idabonado") Long idabonado) {
+		Abonados x = aboServicio.unAbonado(idabonado);
+		if (x == null) {return null;
+		}
+		return x;
+	}
 
 	/*@PutMapping("/{idabonado}/s/{idservicio}")
 	public Abonados addServxAbo(@PathVariable Long idabonado, @PathVariable Long idservicio) {

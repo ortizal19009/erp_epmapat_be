@@ -54,7 +54,6 @@ public class RubroxfacApi {
       return rxfServicio.findSinCobroRF(cuenta);
    }
 
-   /* ============================================== */
    @GetMapping
    public List<Rubroxfac> getByIdfactura(@Param(value = "idfactura") Long idfactura) {
       return rxfServicio.getByIdfactura(idfactura);
@@ -94,12 +93,12 @@ public class RubroxfacApi {
    }
 
    @PutMapping("/{idrubroxfac}")
-	public ResponseEntity<Rubroxfac> updateRubroxfac(@PathVariable Long idrubroxfac, @RequestBody Rubroxfac x) {
-		Rubroxfac y = rxfServicio.findById( idrubroxfac )
-				.orElseThrow(() -> new ResourceNotFoundExcepciones("No se encuenta idrubroxfac: " + idrubroxfac));
-		y.setValorunitario(x.getValorunitario());
-		Rubroxfac z = rxfServicio.save(y);
-		return ResponseEntity.ok( z );
-	}
+   public ResponseEntity<Rubroxfac> updateRubroxfac(@PathVariable Long idrubroxfac, @RequestBody Rubroxfac x) {
+      Rubroxfac y = rxfServicio.findById(idrubroxfac)
+            .orElseThrow(() -> new ResourceNotFoundExcepciones("No se encuenta idrubroxfac: " + idrubroxfac));
+      y.setValorunitario(x.getValorunitario());
+      Rubroxfac z = rxfServicio.save(y);
+      return ResponseEntity.ok(z);
+   }
 
 }

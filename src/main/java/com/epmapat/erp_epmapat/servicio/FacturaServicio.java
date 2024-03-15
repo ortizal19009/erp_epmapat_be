@@ -76,9 +76,10 @@ public class FacturaServicio {
 		return dao.findSinCobroAbo(idabonado);
 	}
 
+
 	// Planillas Sin Cobrar de un Abonado (Para convenios)
-	public List<Facturas> findSinCobrarAbo(Long idabonado) {
-		return dao.findSinCobrarAbo(idabonado);
+	public List<Facturas> findSinCobrarAbo(Long idmodulo, Long idabonado) {
+		return dao.findSinCobrarAbo(idmodulo, idabonado);
 	}
 
 	@SuppressWarnings("null")

@@ -90,5 +90,10 @@ public class AbonadoServicio {
 	public Abonados findOne(Long idabonado) {
 		return dao.findOne(idabonado);
 	}
+	//Un Abonado
+	public Abonados unAbonado(Long idabonado) {
+		return dao.findByIdabonado(idabonado);
+	}
+
 
 }

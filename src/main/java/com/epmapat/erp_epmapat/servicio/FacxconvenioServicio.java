@@ -16,23 +16,23 @@ public class FacxconvenioServicio {
    @Autowired
    FacxconvenioR dao;
 
-   //Solo para brobar en Postman
-	public List<Facxconvenio> find10() {
-		return dao.find10();
-	}
+   // Solo para brobar en Postman
+   public List<Facxconvenio> find10() {
+      return dao.find10();
+   }
 
-   //Facturas por Convenio
+   // Facturas por Convenio
    public List<Facxconvenio> findByConvenio(Long idconvenio) {
-       return dao.findByConvenio(idconvenio);    
-    }
+      return dao.findByConvenio(idconvenio);
+   }
 
-   //Solo para probar en Postman
+   // Solo para probar en Postman
    public Optional<Facxconvenio> findById(Long idfacxconvenio) {
-		return dao.findById(idfacxconvenio);
-	}
+      return dao.findById(idfacxconvenio);
+   }
 
    public <S extends Facxconvenio> S save(S entity) {
-	   return dao.save(entity);
+      return dao.save(entity);
    }
-   
+
 }

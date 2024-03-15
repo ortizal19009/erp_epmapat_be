@@ -16,7 +16,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 
 	@Query(value = "SELECT * FROM abonados AS a JOIN clientes AS c ON a.idcliente_clientes = c.idcliente WHERE CAST(a.idabonado AS varchar) LIKE %?1% OR c.cedula LIKE %?1% OR LOWER(c.nombre) LIKE %?1% ORDER BY c.nombre ASC", nativeQuery = true)
 	public List<Abonados> findAll(String consultaDatos);
-	
+
 	@Query(value = "SELECT * FROM abonados where idabonado = ?1", nativeQuery = true)
 	public Abonados findOne(Long idabonado);
 
@@ -45,25 +45,33 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	@Query(value = "SELECT * FROM abonados WHERE estado=?1", nativeQuery = true)
 	public List<Abonados> findByEstado(Long estado);
 
-	//Cliente tiene Abonados
+	// Cliente tiene Abonados
 	@Query(value = "SELECT EXISTS (SELECT 1 FROM Abonados WHERE idcliente_clientes = ?1)", nativeQuery = true)
 	boolean existsByIdcliente_clientes(Long idcliente);
 
 	@Query(value = "SELECT * FROM abonados a JOIN clientes c ON a.idcliente_clientes = c.idcliente WHERE c.idcliente = ?1", nativeQuery = true)
 	public List<Abonados> findByIdCliente(Long idcliente);
 
-	 //Campos específicos de Clientes y Abonados
-    @Query("SELECT new map(" +
-	 			"a.idabonado as idabonado, " +
-            "c.nombre as nombre, " + "c.cedula as cedula, " + "c.direccion as direccion, " + 
-            "a.direccionubicacion as direccionubicacion, " + "c.telefono as telefono, " + "c.fechanacimiento as fechanacimiento, " +"c.email as email) " +
-            "FROM Clientes c INNER JOIN Abonados a ON c.idcliente = a.idcliente_clientes")
-    List<Map<String, Object>> allAbonadosCampos();
-	 //Campos específicos de Clientes y Abonados
-/*     @Query("SELECT new map(" +
-	 			"a.idabonado as idabonado, " +
-            "c.nombre as nombre, " + "c.cedula as cedula, " + "c.direccion as direccion, " + 
-            "a.direccionubicacion as direccionubicacion, " + "c.telefono as telefono, " + "c.fechanacimiento as fechanacimiento, " +"c.email as email) " +
-            "FROM Abonados a INNER JOIN Categorias a ON c.idcliente = a.idcliente_clientes")
-    List<Map<String, Object>> getOneAbonado(Long idabonado); */
+	// Campos específicos de Clientes y Abonados
+	@Query("SELECT new map(" +
+			"a.idabonado as idabonado, " +
+			"c.nombre as nombre, " + "c.cedula as cedula, " + "c.direccion as direccion, " +
+			"a.direccionubicacion as direccionubicacion, " + "c.telefono as telefono, "
+			+ "c.fechanacimiento as fechanacimiento, " + "c.email as email) " +
+			"FROM Clientes c INNER JOIN Abonados a ON c.idcliente = a.idcliente_clientes")
+	List<Map<String, Object>> allAbonadosCampos();
+	// Campos específicos de Clientes y Abonados
+	/*
+	 * @Query("SELECT new map(" +
+	 * "a.idabonado as idabonado, " +
+	 * "c.nombre as nombre, " + "c.cedula as cedula, " +
+	 * "c.direccion as direccion, " +
+	 * "a.direccionubicacion as direccionubicacion, " + "c.telefono as telefono, " +
+	 * "c.fechanacimiento as fechanacimiento, " +"c.email as email) " +
+	 * "FROM Abonados a INNER JOIN Categorias a ON c.idcliente = a.idcliente_clientes"
+	 * )
+	 * List<Map<String, Object>> getOneAbonado(Long idabonado);
+	 */
+	// Un Abonado
+	Abonados findByIdabonado(Long idabonado);
 }

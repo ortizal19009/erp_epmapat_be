@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.modelo;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import javax.persistence.*;
@@ -23,10 +24,8 @@ public class Cuotas {
 	@JoinColumn(name ="idconvenio_convenios")
 	private Convenios idconvenio_convenios;
    private Long usucrea;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso= ISO.DATE)
-	@Column(name="feccrea")
-   private Date feccrea;
+	
+   private LocalDate feccrea;
    
    public Long getIdcuota() {
       return idcuota;
@@ -58,10 +57,10 @@ public class Cuotas {
    public void setUsucrea(Long usucrea) {
       this.usucrea = usucrea;
    }
-   public Date getFeccrea() {
+   public LocalDate getFeccrea() {
       return feccrea;
    }
-   public void setFeccrea(Date feccrea) {
+   public void setFeccrea(LocalDate feccrea) {
       this.feccrea = feccrea;
    }
 
