@@ -51,7 +51,7 @@ public class ConveniosApi {
    @GetMapping("/valNroconvenio")
    // public ResponseEntity<Boolean> valNroconvenio(@RequestParam Integer
    // nroconvenio) {
-   public ResponseEntity<Boolean> valNroconvenio( @Param(value = "nroconvenio") Integer nroconvenio ) {
+   public ResponseEntity<Boolean> valNroconvenio(@Param(value = "nroconvenio") Integer nroconvenio) {
       boolean b = convServicio.valNroconvenio(nroconvenio);
       return ResponseEntity.ok(b);
    }

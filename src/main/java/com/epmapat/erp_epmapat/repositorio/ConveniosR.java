@@ -26,5 +26,4 @@ public interface ConveniosR extends JpaRepository<Convenios, Serializable> {
 	// Valida Nroconvenio
 	@Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Convenios c WHERE c.nroconvenio = :nroconvenio")
 	boolean valNroconvenio(@Param("nroconvenio") Integer nroconvenio);
-
 }
