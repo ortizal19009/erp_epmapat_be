@@ -9,5 +9,4 @@ public class ErpEpmapatApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ErpEpmapatApplication.class, args);
 	}
- 
 }
