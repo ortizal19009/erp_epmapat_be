@@ -2,9 +2,8 @@ package com.epmapat.erp_epmapat.modelo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
