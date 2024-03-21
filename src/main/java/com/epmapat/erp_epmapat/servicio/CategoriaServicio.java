@@ -17,18 +17,23 @@ public class CategoriaServicio {
 	@Autowired
 	private CategoriaR dao;
 
-	// public List<Categorias> findAll() {
-	// return dao.findAll();
-	// }
+	//Categorias habilitadas
+	public List<String> listaCategorias() {
+		return dao.listaCategorias();
+	 }
 
+
+	@SuppressWarnings("null")
 	public List<Categorias> findAll(Sort sort) {
 		return dao.findAll(sort);
 	}
 
+	@SuppressWarnings("null")
 	public <S extends Categorias> S save(S entity) {
 		return dao.save(entity);
 	}
 
+	@SuppressWarnings("null")
 	public Optional<Categorias> findById(Long id) {
 		return dao.findById(id);
 	}
@@ -49,5 +54,4 @@ public class CategoriaServicio {
 	public BigDecimal sumTotalTarifa() {
 		return dao.sumTotalTarifa();
 	}
-
 }
