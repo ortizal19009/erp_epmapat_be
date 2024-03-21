@@ -31,6 +31,7 @@ public class CategoriasApi {
 	@Autowired
 	private CategoriaServicio cateServicio;
 
+
 	@GetMapping
 	public List<Categorias> getAllCategorias(@Param(value = "descripcion") String descripcion,
 			@Param(value = "idused") Long idused) {
@@ -45,11 +46,17 @@ public class CategoriasApi {
 		}
 	}
 
-    @GetMapping("/suma-totaltarifa")
-    public ResponseEntity<BigDecimal> sumTotalTarifa() {
-        BigDecimal suma = cateServicio.sumTotalTarifa();
-        return ResponseEntity.ok(suma);
-    }
+	// Categorias habilitadas
+	@GetMapping("/categorias")
+	public List<String> obtenerCategorias() {
+		return cateServicio.listaCategorias();
+	}
+
+	@GetMapping("/suma-totaltarifa")
+	public ResponseEntity<BigDecimal> sumTotalTarifa() {
+		BigDecimal suma = cateServicio.sumTotalTarifa();
+		return ResponseEntity.ok(suma);
+	}
 
 	@PostMapping
 	public Categorias saveCategoria(@RequestBody Categorias categoriaM) {
@@ -59,7 +66,8 @@ public class CategoriasApi {
 	@GetMapping("/{idcategoria}")
 	public ResponseEntity<Categorias> getByIdCategoria(@PathVariable Long idcategoria) {
 		Categorias categoriaM = cateServicio.findById(idcategoria)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe la Categoria con el Id: " + idcategoria)));
+				.orElseThrow(
+						() -> new ResourceNotFoundExcepciones(("No existe la Categoria con el Id: " + idcategoria)));
 		return ResponseEntity.ok(categoriaM);
 	}
 
@@ -67,7 +75,8 @@ public class CategoriasApi {
 	public ResponseEntity<Categorias> updateCategoria(@PathVariable Long idcategoria,
 			@RequestBody Categorias categoriam) {
 		Categorias categoriaM = cateServicio.findById(idcategoria)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe esa categoria con ese Id: " + idcategoria)));
+				.orElseThrow(
+						() -> new ResourceNotFoundExcepciones(("No existe esa categoria con ese Id: " + idcategoria)));
 		categoriaM.setDescripcion(categoriam.getDescripcion());
 		categoriaM.setCodigo(categoriam.getCodigo());
 		categoriaM.setHabilitado(categoriam.getHabilitado());
