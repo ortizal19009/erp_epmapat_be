@@ -40,12 +40,22 @@ public class FacxrecaudaApi {
    public Facxrecauda save(@RequestBody Facxrecauda x) {
       return facxrServicio.save(x);
    }
-   
+
    @GetMapping("/reportes/usuario")
    public List<Facxrecauda> getByUsuFecha(@RequestParam("idusuario") Long idusuario,
          @RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
          @RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
       return facxrServicio.getByUsuFecha(idusuario, d, h);
    }
-   
+
+   @GetMapping("/factura")
+   public ResponseEntity<Facxrecauda> getyByIdFactura(@RequestParam("idfactura") Long idfactura) {
+      Facxrecauda facxrecauda = facxrServicio.getByIdFactura(idfactura);
+      if (facxrecauda != null) {
+         return ResponseEntity.ok(facxrecauda);
+      } else {
+         return ResponseEntity.noContent().build();
+      }
+   }
+
 }

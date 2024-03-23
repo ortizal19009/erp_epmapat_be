@@ -1,4 +1,5 @@
 package com.epmapat.erp_epmapat.servicio;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -22,8 +23,13 @@ public class FacxrecaudaServicio {
    public Optional<Facxrecauda> findById(Long id) {
       return dao.findById(id);
    }
-   	public List<Facxrecauda> getByUsuFecha(Long idusuario, Date d, Date h) {
-		return dao.getByUsuFecha(idusuario, d, h);
-	}
+
+   public List<Facxrecauda> getByUsuFecha(Long idusuario, Date d, Date h) {
+      return dao.getByUsuFecha(idusuario, d, h);
+   }
+
+   public Facxrecauda getByIdFactura(Long idfactura) {
+      return dao.getyByIdFactura(idfactura);
+   }
 
 }
