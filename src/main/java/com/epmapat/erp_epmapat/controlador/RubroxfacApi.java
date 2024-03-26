@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -85,6 +86,32 @@ public class RubroxfacApi {
    @GetMapping("/{idrubroxfac}")
    public Optional<Rubroxfac> findByIdRubroxfac(@PathVariable Long idrubroxfac) {
       return rxfServicio.findById(idrubroxfac);
+   }
+
+   // Recaudacion diaria - Total por Rubros (Todas)
+   @GetMapping("/totalrubros")
+   public ResponseEntity<List<Object[]>> getRubroTotals(
+         @Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+      List<Object[]> data = rxfServicio.getRubroTotalsByFechaCobro(fecha);
+      return ResponseEntity.ok(data);
+   }
+
+   // Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
+   @GetMapping("/totalrubrosanterior")
+   public ResponseEntity<List<Object[]>> totalRubrosAnterior(
+         @Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+         @Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
+      List<Object[]> resultados = rxfServicio.totalRubrosAnterior(fecha, hasta);
+      return ResponseEntity.ok(resultados);
+   }
+
+   // Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
+   @GetMapping("/totalrubrosactual")
+   public ResponseEntity<List<Object[]>> totalRubrosActual(
+         @Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+         @Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
+      List<Object[]> resultados = rxfServicio.totalRubrosActual(fecha, hasta);
+      return ResponseEntity.ok(resultados);
    }
 
    @PostMapping

@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -16,12 +17,6 @@ import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
 public class RubroxfacServicio {
 	@Autowired
 	private RubroxfacR dao;
-
-
-
-
-
-
 	// Campos Rubro y valor de una Planilla
 	public List<Map<String, Object>> rubrosByIdfactura(Long idfactura) {
 		return dao.rubrosByIdfactura(idfactura);
@@ -30,8 +25,6 @@ public class RubroxfacServicio {
 	public Double findRubroxfac(Long idfactura) {
 		return dao.findSuma(idfactura);
 	}
-
-
 
 	public List<RubroxfacI> getByFechaCobro(Date d, Date h) {
 		return dao.getByFechaCobro(d, h);
@@ -45,7 +38,7 @@ public class RubroxfacServicio {
 		return dao.findSinCobroRF(cuenta);
 	}
 
-	// Rubros de una Planilla
+		// Rubros de una Planilla
 	public List<Rubroxfac> getByIdfactura(Long idfactura) {
 		return dao.findByIdfactura(idfactura);
 	}
@@ -68,6 +61,23 @@ public class RubroxfacServicio {
 	// Multa de una Factura
 	public boolean getMulta(Long idfactura) {
 		return dao.findMulta(idfactura);
+	}
+
+	// Recaudacion diaria - Total por Rubros (Todos)
+	public List<Object[]> getRubroTotalsByFechaCobro(LocalDate fechaCobro) {
+		return dao.findRubroTotalByRubroxfacAndFechacobro(fechaCobro);
+	}
+
+	// Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
+	public List<Object[]> totalRubrosAnterior(LocalDate fecha, LocalDate hasta) {
+		List<Object[]> resultados = dao.totalRubrosAnterior(fecha, hasta);
+		return resultados;
+	}
+
+	// Recaudacion diaria - Total por Rubros (Desde Facturas) Año actual
+	public List<Object[]> totalRubrosActual(LocalDate fecha, LocalDate hasta) {
+		List<Object[]> resultados = dao.totalRubrosActual(fecha, hasta);
+		return resultados;
 	}
 
 	// Grabar

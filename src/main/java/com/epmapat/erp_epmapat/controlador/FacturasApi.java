@@ -47,74 +47,6 @@ public class FacturasApi {
 		}
 	}
 
-	@GetMapping("/idabonado/{idabonado}")
-	public List<Facturas> getByIdabonado(@PathVariable("idabonado") Long idabonado) {
-		return facServicio.findByIdabonado(idabonado);
-	}
-
-	@GetMapping("/{idfactura}")
-	public ResponseEntity<Facturas> getById(@PathVariable Long idfactura) {
-		Facturas x = facServicio.findById(idfactura)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe la Factura  Id: " + idfactura)));
-		return ResponseEntity.ok(x);
-	}
-
-	// Planillas por Cliente sin cobro
-	@GetMapping("/idcliente/{idcliente}")
-	public List<Facturas> getSinCobro(@PathVariable("idcliente") Long idcliente) {
-		return facServicio.findSinCobro(idcliente);
-	}
-
-	@GetMapping("/f_abonado/{idabonado}")
-	public List<Facturas> getFacturaByAbonado(@PathVariable("idabonado") Long idabonado) {
-		return facServicio.findByIdFactura(idabonado);
-	}
-
-	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public Facturas saveFacturas(@RequestBody Facturas x) {
-		return facServicio.save(x);
-	}
-
-	@PutMapping("/{idfactura}")
-	public ResponseEntity<Facturas> updateFacturas(@PathVariable long idfactura, @RequestBody Facturas x) {
-		Facturas y = facServicio.findById(idfactura)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
-		y.setConveniopago(x.getConveniopago());
-		y.setEstado(x.getEstado());
-		y.setEstadoconvenio(x.getEstadoconvenio());
-		y.setFeccrea(x.getFeccrea());
-		y.setFechaanulacion(x.getFechaanulacion());
-		y.setFechacobro(x.getFechacobro());
-		y.setFechaconvenio(x.getFechaconvenio());
-		y.setFechaeliminacion(x.getFechaeliminacion());
-		y.setFechatransferencia(x.getFechatransferencia());
-		y.setFecmodi(x.getFecmodi());
-		y.setFormapago(x.getFormapago());
-		y.setHoracobro(x.getHoracobro());
-		y.setIdabonado(x.getIdabonado());
-		y.setIdcliente(x.getIdcliente());
-		y.setIdmodulo(x.getIdmodulo());
-		y.setNrofactura(x.getNrofactura());
-		y.setPagado(x.getPagado());
-		y.setPorcexoneracion(x.getPorcexoneracion());
-		y.setRazonanulacion(x.getRazonanulacion());
-		y.setRazoneliminacion(x.getRazoneliminacion());
-		y.setRazonexonera(x.getRazonexonera());
-		y.setRefeformapago(x.getRefeformapago());
-		y.setTotaltarifa(x.getTotaltarifa());
-		y.setUsuarioanulacion(x.getUsuarioanulacion());
-		y.setUsuariocobro(x.getUsuariocobro());
-		y.setUsuarioeliminacion(x.getUsuarioeliminacion());
-		y.setUsuariotransferencia(x.getUsuariotransferencia());
-		y.setUsucrea(x.getUsucrea());
-		y.setUsumodi(x.getUsumodi());
-		y.setValorbase(x.getValorbase());
-		y.setInterescobrado(x.getInterescobrado());
-		Facturas updateFacturas = facServicio.save(y);
-		return ResponseEntity.ok(updateFacturas);
-	}
-
 	@GetMapping("/validador/{codrecaudador}")
 	public ResponseEntity<Facturas> validarUltimaFactura(@PathVariable("codrecaudador") String codrecaudador) {
 		Facturas factura = facServicio.validarUltimafactura(codrecaudador);
@@ -145,6 +77,12 @@ public class FacturasApi {
 			return ResponseEntity.noContent().build();
 		}
 	}
+	
+	@GetMapping("/idabonado/{idabonado}")
+	public List<Facturas> getByIdabonado(@PathVariable("idabonado") Long idabonado) {
+		return facServicio.findByIdabonado(idabonado);
+	}
+
 	// Una Planilla (como lista)
 	@GetMapping("/planilla")
 	public ResponseEntity<List<Facturas>> buscarPlanilla(@Param(value = "idfactura") Long idfactura) {
@@ -158,7 +96,7 @@ public class FacturasApi {
 	// Planillas por Abonado y Fecha
 	@GetMapping("/porabonado")
 	public ResponseEntity<List<Facturas>> buscarPorAbonadoYFechaCreacionRange(@Param(value = "idabonado") Long idabonado,
-	@Param("fechaDesde") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaDesde,
+			@Param("fechaDesde") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaDesde,
 			@Param("fechaHasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaHasta) {
 		List<Facturas> x = facServicio.buscarPorAbonadoYFechaCreacionRange(idabonado, fechaDesde, fechaHasta);
 		if (x.isEmpty()) {
@@ -167,22 +105,114 @@ public class FacturasApi {
 		return ResponseEntity.ok(x);
 	}
 
+	@GetMapping("/{idfactura}")
+	public ResponseEntity<Facturas> getById(@PathVariable Long idfactura) {
+		Facturas x = facServicio.findById(idfactura)
+				.orElseThrow(() -> new ResourceNotFoundExcepciones(
+						("No existe la Factura  Id: " + idfactura)));
+		return ResponseEntity.ok(x);
+	}
+
+	// Planillas sin cobro de un Cliente
+	@GetMapping("/idcliente/{idcliente}")
+	public List<Facturas> getSinCobro(@PathVariable("idcliente") Long idcliente) {
+		return facServicio.findSinCobro(idcliente);
+	}
+
 	// IDs de las Planillas sin cobrar de un Abonado
 	@GetMapping("/sincobro")
 	public List<Long> getSinCobroAbo(@Param(value = "idabonado") Long idabonado) {
 		return facServicio.findSinCobroAbo(idabonado);
 	}
 
-	// Planillas sin cobrar de un Abonado (Para convenios)
+	// Planillas sin cobrar de un Abonado
 	@GetMapping("/sincobrarAbo")
-	public List<Facturas> getSinCobrarAbo(@Param(value = "idmodulo") Long idmodulo, @Param(value = "idabonado") Long idabonado) {
+	public List<Facturas> getSinCobrarAbo(@Param(value = "idmodulo") Long idmodulo,
+			@Param(value = "idabonado") Long idabonado) {
 		return facServicio.findSinCobrarAbo(idmodulo, idabonado);
+	}
+
+	// Cuenta las Planillas pendientes de un Abonado
+	@GetMapping("/pendientesabonado")
+	public ResponseEntity<Long> getCantidadFacturasPendientes(@Param(value = "idabonado") Long idabonado) {
+		return ResponseEntity.ok(facServicio.getCantidadFacturasByAbonadoAndPendientes(idabonado));
+	}
+
+	@GetMapping("/f_abonado/{idabonado}")
+	public List<Facturas> getFacturaByAbonado(@PathVariable("idabonado") Long idabonado) {
+		return facServicio.findByIdFactura(idabonado);
 	}
 
 	// Planilla por nrofactura
 	@GetMapping("/nrofactura")
 	public List<Facturas> getByNrofactura(@Param(value = "nrofactura") String nrofactura) {
 		return facServicio.findByNrofactura(nrofactura);
+	}
+
+	// Recaudacion diaria - Facturas cobradas <Facturas>
+	// @GetMapping("/cobradas")
+	// public List<Facturas> findByFechacobro(@Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+	// 	return facServicio.findByFechacobro(fecha);
+	// }
+
+	// Recaudacion diaria - Facturas cobradas <Facturas>
+	@GetMapping("/cobradastot")
+	public List<Object[]> findByFechacobroTot(@Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+		return facServicio.findByFechacobroTot(fecha);
+	}
+
+	// Recaudacion diaria - Facturas cobradas <Facturas>
+	@GetMapping("/totalformacobro")
+	public List<Object[]> totalFechaFormacobro(@Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+		return facServicio.totalFechaFormacobro(fecha);
+	}
+
+	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
+	public Facturas saveFacturas(@RequestBody Facturas x) {
+		return facServicio.save(x);
+	}
+
+	@PutMapping("/{idfactura}")
+	public ResponseEntity<Facturas> updateFacturas(@PathVariable long idfactura, @RequestBody Facturas x) {
+		Facturas y = facServicio.findById(idfactura)
+				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
+		y.setConveniopago(x.getConveniopago());
+		y.setEstado(x.getEstado());
+		y.setEstadoconvenio(x.getEstadoconvenio());
+		y.setFechaanulacion(x.getFechaanulacion());
+		y.setFechacobro(x.getFechacobro());
+		y.setFechaconvenio(x.getFechaconvenio());
+		y.setFechaeliminacion(x.getFechaeliminacion());
+		y.setFechatransferencia(x.getFechatransferencia());
+		y.setFormapago(x.getFormapago());
+		y.setHoracobro(x.getHoracobro());
+		y.setIdabonado(x.getIdabonado());
+		y.setIdcliente(x.getIdcliente());
+		y.setIdmodulo(x.getIdmodulo());
+		y.setNrofactura(x.getNrofactura());
+		y.setPagado(x.getPagado());
+		y.setPorcexoneracion(x.getPorcexoneracion());
+		y.setRazonanulacion(x.getRazonanulacion());
+		y.setRazoneliminacion(x.getRazoneliminacion());
+		y.setRazonexonera(x.getRazonexonera());
+		y.setRefeformapago(x.getRefeformapago());
+		y.setTotaltarifa(x.getTotaltarifa());
+		y.setUsuarioanulacion(x.getUsuarioanulacion());
+		y.setUsuariocobro(x.getUsuariocobro());
+		y.setUsuarioeliminacion(x.getUsuarioeliminacion());
+		y.setUsuariotransferencia(x.getUsuariotransferencia());
+
+		y.setUsucrea(x.getUsucrea());
+		y.setFeccrea(x.getFeccrea());
+		// y.setFeccrea(x.getFeccrea());
+
+		y.setUsumodi(x.getUsumodi());
+		y.setFecmodi(x.getFecmodi());
+
+		y.setValorbase(x.getValorbase());
+		Facturas updateFacturas = facServicio.save(y);
+		return ResponseEntity.ok(updateFacturas);
 	}
 
 }

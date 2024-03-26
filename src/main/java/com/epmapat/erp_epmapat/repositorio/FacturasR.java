@@ -67,5 +67,27 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Planillas Sin cobrar por modulo y Abonado (para Convenios)
 	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idmodulo=:idmodulo and idabonado=:idabonado and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobrarAbo(Long idmodulo, Long idabonado);
-	
+
+	// Recaudacion diaria - Facturas cobradas <Facturas>
+	// @Query(value = "SELECT * FROM facturas WHERE (fechacobro = ?1 or
+	// fechatransferencia=?1) and fechaanulacion is null and fechaeliminacion is
+	// null ORDER BY idfactura", nativeQuery = true)
+	// public List<Facturas> findByFechacobro(LocalDate fecha);
+	// Recaudacion diaria - Facturas cobradas
+	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f " +
+			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
+			"WHERE date(f.fechacobro) = ?1 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL " +
+			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura")
+	List<Object[]> findByFechacobroTot(LocalDate fecha);
+
+	// Total diario por Forma de cobro
+	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
+			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
+			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
+			+ "WHERE f.fechacobro = :fecha GROUP BY fc.descripcion ORDER BY fc.descripcion")
+	List<Object[]> totalFechaFormacobro(@Param("fecha") LocalDate fecha);
+
+	// Cuenta las Facturas pendientes de un Abonado
+	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=:idabonado and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaanulacion is null and f.fechaeliminacion is null")
+	long countFacturasByAbonadoAndPendientes(@Param("idabonado") Long idabonado);
 }

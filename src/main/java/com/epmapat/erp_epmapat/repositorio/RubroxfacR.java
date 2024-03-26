@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.repositorio;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -41,27 +42,59 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	/* SIN COBRO 2.0 */
 	@Query(value = "select * from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where totaltarifa > 0 and idcliente=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaanulacion is null and f.fechaeliminacion is null ORDER BY f.idabonado, f.idfactura ", nativeQuery = true)
 	public List<Rubroxfac> findSinCobroRF(Long cuenta);
-		// Rubros de una Planilla
-		@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 order by idrubro_rubros", nativeQuery = true)
-		public List<Rubroxfac> findByIdfactura(Long idfactura);
-	
-		// Rubros de una Planilla (Sin rubro 165 (Iva del siim 'esiva'))
-		@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and idrubro_rubros <> 165 order by idrubro_rubros", nativeQuery = true)
-		public List<Rubroxfac> findByIdfactura1(Long idfactura);
-	
-		// Rubroxfac de un Rubro (movimientos de un Rubro)
-		@Query(value = "SELECT * FROM rubroxfac WHERE idrubro_rubros =?1 order by idrubroxfac desc limit 100", nativeQuery = true)
-		public List<Rubroxfac> findByIdrubro(Long idrubro);
-	
-		// Rubro.descripcion y rubroxfac.valorunitario
-		@Query(value = "SELECT r.descripcion, rf.valorunitario "
-				+ "FROM rubroxfac rf "
-				+ "INNER JOIN rubros r ON rf.idrubro_rubros = r.idrubro "
-				+ "WHERE rf.idfactura_facturas = :idFactura", nativeQuery = true)
-		List<Object[]> findRubros(@Param("idFactura") Long idFactura);
-	
-		// Multa en Planilla
-		@Query(value = "SELECT EXISTS (SELECT 1 FROM Rubroxfac WHERE idrubro_rubros = 6 and idfactura_facturas = ?1)", nativeQuery = true)
-		boolean findMulta(Long idfactura);
+
+	// Rubros de una Planilla
+	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 order by idrubro_rubros", nativeQuery = true)
+	public List<Rubroxfac> findByIdfactura(Long idfactura);
+
+	// Rubros de una Planilla (Sin rubro 165 (Iva del siim 'esiva'))
+	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and idrubro_rubros <> 165 order by idrubro_rubros", nativeQuery = true)
+	public List<Rubroxfac> findByIdfactura1(Long idfactura);
+
+	// Rubroxfac de un Rubro (movimientos de un Rubro)
+	@Query(value = "SELECT * FROM rubroxfac WHERE idrubro_rubros =?1 order by idrubroxfac desc limit 100", nativeQuery = true)
+	public List<Rubroxfac> findByIdrubro(Long idrubro);
+
+	// Rubro.descripcion y rubroxfac.valorunitario
+	@Query(value = "SELECT r.descripcion, rf.valorunitario "
+			+ "FROM rubroxfac rf "
+			+ "INNER JOIN rubros r ON rf.idrubro_rubros = r.idrubro "
+			+ "WHERE rf.idfactura_facturas = :idFactura", nativeQuery = true)
+	List<Object[]> findRubros(@Param("idFactura") Long idFactura);
+
+	// Multa en Planilla
+	@Query(value = "SELECT EXISTS (SELECT 1 FROM Rubroxfac WHERE idrubro_rubros = 6 and idfactura_facturas = ?1)", nativeQuery = true)
+	boolean findMulta(Long idfactura);
+
+	@Query("SELECT r.idrubro, r.descripcion, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf INNER JOIN rf.idrubro_rubros r GROUP BY r.idrubro, r.descripcion")
+	List<Object[]> findRubroTotalByRubroxfac();
+
+	// Recaudcion diaria - Total por Rubro (Todas)
+	@Query("SELECT r.idrubro, r.descripcion, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf " +
+			"INNER JOIN rf.idrubro_rubros r " +
+			"INNER JOIN rf.idfactura_facturas f " +
+			"WHERE f.fechacobro = :fechacobro  GROUP BY r.idrubro, r.descripcion")
+	List<Object[]> findRubroTotalByRubroxfacAndFechacobro(@Param("fechacobro") LocalDate fechacobro);
+
+	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf "
+			+
+			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
+			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
+			"WHERE date(f.fechacobro) = ?1 AND f.feccrea <= ?2 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			+
+			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro")
+	List<Object[]> totalRubrosAnterior(LocalDate fecha, LocalDate hasta);
+
+	// Recaudcion diaria - Total por Rubro Año actual (Desde Facturas)
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total " +
+			"FROM Rubroxfac rf " +
+			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
+			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
+			"WHERE date(f.fechacobro) = ?1 AND f.feccrea > ?2 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			+
+			"GROUP BY r.descripcion, r.idrubro " +
+			"ORDER BY r.idrubro")
+	List<Object[]> totalRubrosActual(LocalDate fecha, LocalDate hasta);
 
 }

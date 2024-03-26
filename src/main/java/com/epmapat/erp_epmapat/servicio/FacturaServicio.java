@@ -30,8 +30,6 @@ public class FacturaServicio {
 		return dao.findByFechacobro(fechacobro);
 	}
 	
-	/* ================================================================= */
-
 	public List<Facturas> findAll() {
 		return dao.findAll();
 	}
@@ -60,7 +58,7 @@ public class FacturaServicio {
 		return dao.findByIdfactura(idfactura);
 	}
 
-	//Planillas por Abonado y Fecha
+	// Planillas por Abonado y Fecha
 	public List<Facturas> buscarPorAbonadoYFechaCreacionRange(Long idabonado, LocalDate fechaDesde,
 			LocalDate fechaHasta) {
 		return dao.findByAbonadoAndFechaCreacionRange(idabonado, fechaDesde, fechaHasta);
@@ -76,10 +74,29 @@ public class FacturaServicio {
 		return dao.findSinCobroAbo(idabonado);
 	}
 
+	// Cuenta las Planillas Pendientes de un Abonado
+	public long getCantidadFacturasByAbonadoAndPendientes(Long idabonado) {
+		return dao.countFacturasByAbonadoAndPendientes(idabonado);
+	}
 
 	// Planillas Sin Cobrar de un Abonado (Para convenios)
 	public List<Facturas> findSinCobrarAbo(Long idmodulo, Long idabonado) {
 		return dao.findSinCobrarAbo(idmodulo, idabonado);
+	}
+
+	// Recaudación diaria - Facturas cobrasdas <Facturas>
+	// public List<Facturas> findByFechacobro(LocalDate fecha) {
+	// return dao.findByFechacobro(fecha);
+	// }
+
+	// Recaudación diaria - Facturas cobradas (Sumando los rubros)
+	public List<Object[]> findByFechacobroTot(LocalDate fechaCobro) {
+		return dao.findByFechacobroTot(fechaCobro);
+	}
+
+	// Total diario por Forma de cobro
+	public List<Object[]> totalFechaFormacobro(LocalDate fecha) {
+		return dao.totalFechaFormacobro(fecha);
 	}
 
 	@SuppressWarnings("null")
@@ -107,4 +124,5 @@ public class FacturaServicio {
 	public void setDao(FacturasR dao) {
 		this.dao = dao;
 	}
+	
 }
