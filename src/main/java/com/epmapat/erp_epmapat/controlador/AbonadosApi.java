@@ -24,7 +24,6 @@ import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 
-
 @RestController
 @RequestMapping("/abonados")
 @CrossOrigin(origins = "*")
@@ -34,8 +33,10 @@ public class AbonadosApi {
 	@Autowired
 	private AbonadoServicio aboServicio;
 
-	/*@Autowired
-	private ServiciosS serviciosS;*/
+	/*
+	 * @Autowired
+	 * private ServiciosS serviciosS;
+	 */
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
@@ -60,7 +61,7 @@ public class AbonadosApi {
 		return aboServicio.clienteTieneAbonados(idcliente);
 	}
 
-	//Todos los Abonados, campos específicos
+	// Todos los Abonados, campos específicos
 	@GetMapping("/campos")
 	public List<Map<String, Object>> allAbonadosCampos() {
 		return aboServicio.allAbonadosCampos();
@@ -68,7 +69,7 @@ public class AbonadosApi {
 
 	@PostMapping
 	public Abonados saveAbonados(@RequestBody Abonados x) {
-		return aboServicio.save( x );
+		return aboServicio.save(x);
 	}
 
 	@GetMapping("/tmp")
@@ -80,12 +81,6 @@ public class AbonadosApi {
 	@ResponseStatus(HttpStatus.OK)
 	public List<Abonados> getAbonadoxNcliente(@PathVariable("nombre") String nombreCliente) {
 		return aboServicio.findByNombreCliente(nombreCliente.toLowerCase());
-	}
-
-	@GetMapping("/icliente/{identificacion}")
-	@ResponseStatus(HttpStatus.OK)
-	public List<Abonados> getAbonadoxIcliente(@PathVariable("identificacion") String identificacionCliente) {
-		return aboServicio.findByidentIficacionCliente(identificacionCliente);
 	}
 
 	@GetMapping("/cuenta/{idabonado}")
@@ -144,27 +139,45 @@ public class AbonadosApi {
 		aboServicio.deleteById(idabonado);
 		return ResponseEntity.ok(!(aboServicio.findById(idabonado) != null));
 	}
+
 	@GetMapping("/oneabonado")
-	public ResponseEntity<Abonados> getOne(@RequestParam("idabonado") Long idabonado){
+	public ResponseEntity<Abonados> getOne(@RequestParam("idabonado") Long idabonado) {
 		Abonados abonado = aboServicio.findOne(idabonado);
 		return ResponseEntity.ok(abonado);
-		
+
 	}
-	//Un Abonado
+
+	// Un Abonado
 	@GetMapping("/unabonado")
 	public Abonados unAbonado(@Param("idabonado") Long idabonado) {
 		Abonados x = aboServicio.unAbonado(idabonado);
-		if (x == null) {return null;
+		if (x == null) {
+			return null;
 		}
 		return x;
 	}
 
-	/*@PutMapping("/{idabonado}/s/{idservicio}")
-	public Abonados addServxAbo(@PathVariable Long idabonado, @PathVariable Long idservicio) {
-		Abonados abonadoM = aboServicio.findById(idabonado).get();
-		ServiciosM serviciosM = serviciosS.findById(idservicio).get();
-		abonadoM.addServicio(serviciosM);
-		return aboServicio.save(abonadoM);
-	}*/
+	@GetMapping("/cuenta")
+	@ResponseStatus(HttpStatus.OK)
+	public List<Abonados> getByIdabonado(@Param(value = "idcliente") Long idabonado) {
+		return aboServicio.getByIdabonado(idabonado);
+	}
+
+	@GetMapping("/icliente/{identificacion}")
+	@ResponseStatus(HttpStatus.OK)
+	public List<Abonados> getAbonadoxIcliente(@PathVariable("identificacion") String identificacionCliente) {
+		return aboServicio.findByidentIficacionCliente(identificacionCliente);
+	}
+
+	/*
+	 * @PutMapping("/{idabonado}/s/{idservicio}")
+	 * public Abonados addServxAbo(@PathVariable Long idabonado, @PathVariable Long
+	 * idservicio) {
+	 * Abonados abonadoM = aboServicio.findById(idabonado).get();
+	 * ServiciosM serviciosM = serviciosS.findById(idservicio).get();
+	 * abonadoM.addServicio(serviciosM);
+	 * return aboServicio.save(abonadoM);
+	 * }
+	 */
 
 }

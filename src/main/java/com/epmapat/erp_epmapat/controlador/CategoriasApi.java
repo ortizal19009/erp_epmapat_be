@@ -31,7 +31,6 @@ public class CategoriasApi {
 	@Autowired
 	private CategoriaServicio cateServicio;
 
-
 	@GetMapping
 	public List<Categorias> getAllCategorias(@Param(value = "descripcion") String descripcion,
 			@Param(value = "idused") Long idused) {

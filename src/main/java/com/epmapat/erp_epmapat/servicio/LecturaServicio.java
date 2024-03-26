@@ -15,6 +15,11 @@ public class LecturaServicio {
    @Autowired
    private LecturasR dao;
 
+   // Lectura por Planilla
+   public Lecturas findOnefactura(Long idfactura) {
+      return dao.findOnefactura(idfactura);
+   }
+
    public List<Lecturas> findByIdrutaxemision(Long idrutaxemision) {
       return dao.findByIdrutaxemision(idrutaxemision);
    }
@@ -47,29 +52,33 @@ public class LecturaServicio {
       return dao.findByNCliente(nombre);
    }
 
-   //Lectura por Planilla
+   // Lectura por Planilla
    public List<Lecturas> findByIdfactura(Long idfactura) {
-      return dao.findByIdfactura( idfactura );
+      return dao.findByIdfactura(idfactura);
    }
-   //Lectura por Planilla
-   public Lecturas findOnefactura(Long idfactura) {
-      return dao.findOnefactura( idfactura );
-   }
-   //Lecuras de una Emision
+
+   // Lecuras de una Emision
    public List<Lecturas> findByIdemision(Long idemision) {
-      return dao.findByIdemision( idemision );
+      return dao.findByIdemision(idemision);
    }
 
    public Lecturas getById(Long id) {
       return null;
    }
 
+   @SuppressWarnings("null")
    public Optional<Lecturas> findById(Long id) {
       return dao.findById(id);
    }
 
+   @SuppressWarnings("null")
    public <S extends Lecturas> S saveLectura(S entity) {
       return dao.save(entity);
+   }
+
+   // Ultima lectura de un Abonado
+   public Long ultimaLectura(Long idabonado) {
+      return dao.ultimaLectura(idabonado);
    }
 
 }

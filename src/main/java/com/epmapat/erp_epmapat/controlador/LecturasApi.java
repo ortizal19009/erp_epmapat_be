@@ -27,6 +27,12 @@ public class LecturasApi {
 	@Autowired
 	LecturaServicio lecServicio;
 
+	// Busca por Planilla (Es una a una)
+	@GetMapping("/onePlanilla/{idfactura}")
+	public Lecturas getOnefactura(@PathVariable Long idfactura) {
+		return lecServicio.findOnefactura(idfactura);
+	}
+
 	@GetMapping
 	public List<Lecturas> getByIdemision(@Param(value = "idemision") Long idrutaxemision,
 			@Param(value = "idabonado") Long idabonado) {
@@ -65,15 +71,10 @@ public class LecturasApi {
 		return lecServicio.findByNCliente(cedula);
 	}
 
-	//Busca por Planilla (Es una a una)
+	// Busca por Planilla (Es una a una)
 	@GetMapping("/planilla/{idfactura}")
 	public List<Lecturas> getByIdfactura(@PathVariable Long idfactura) {
-		return lecServicio.findByIdfactura( idfactura );
-	}
-	//Busca por Planilla (Es una a una)
-	@GetMapping("/onePlanilla/{idfactura}")
-	public Lecturas getOnefactura(@PathVariable Long idfactura) {
-		return lecServicio.findOnefactura( idfactura );
+		return lecServicio.findByIdfactura(idfactura);
 	}
 
 	@GetMapping("/{idlectura}")
@@ -84,10 +85,16 @@ public class LecturasApi {
 		return ResponseEntity.ok(lectura);
 	}
 
-	//Lecturas de una Emision
+	// Lecturas de una Emision
 	@GetMapping("/emision/{idemision}")
 	public List<Lecturas> getByIdemision(@PathVariable Long idemision) {
-		return lecServicio.findByIdemision( idemision );
+		return lecServicio.findByIdemision(idemision);
+	}
+
+	// Ultima lectura de un Abonado
+	@GetMapping("/ultimalectura")
+	public Long getUltimaLectura(@Param(value = "idabonado") Long idabonado) {
+		return lecServicio.ultimaLectura(idabonado);
 	}
 
 	@PostMapping
@@ -99,7 +106,7 @@ public class LecturasApi {
 	public ResponseEntity<Lecturas> update(@PathVariable Long idlectura, @RequestBody Lecturas x) {
 		Lecturas y = lecServicio.findById(idlectura)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones(
-						("No existe la Lectura Id: " + idlectura )));
+						("No existe la Lectura Id: " + idlectura)));
 		y.setEstado(x.getEstado());
 		y.setFechaemision(x.getFechaemision());
 		y.setLecturaanterior(x.getLecturaanterior());
