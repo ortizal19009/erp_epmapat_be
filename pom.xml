@@ -5,16 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.18</version>
+		<version>2.7.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.epmapat</groupId>
 	<artifactId>erp_epmapat</artifactId>
-	<version>v1.0</version>
-	<packaging>pom</packaging>
-	<modules>
-		<module>erpepmapatapi</module>
-	</modules>
+	<version>0.0.1-SNAPSHOT</version>
 	<name>erp_epmapat</name>
 	<description>ERP de la EPMAPAT</description>
 	<properties>
@@ -46,11 +42,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
