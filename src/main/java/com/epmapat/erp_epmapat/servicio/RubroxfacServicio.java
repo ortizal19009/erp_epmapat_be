@@ -17,6 +17,7 @@ import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
 public class RubroxfacServicio {
 	@Autowired
 	private RubroxfacR dao;
+
 	// Campos Rubro y valor de una Planilla
 	public List<Map<String, Object>> rubrosByIdfactura(Long idfactura) {
 		return dao.rubrosByIdfactura(idfactura);
@@ -38,7 +39,7 @@ public class RubroxfacServicio {
 		return dao.findSinCobroRF(cuenta);
 	}
 
-		// Rubros de una Planilla
+	// Rubros de una Planilla
 	public List<Rubroxfac> getByIdfactura(Long idfactura) {
 		return dao.findByIdfactura(idfactura);
 	}
@@ -69,14 +70,25 @@ public class RubroxfacServicio {
 	}
 
 	// Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
-	public List<Object[]> totalRubrosAnterior(LocalDate fecha, LocalDate hasta) {
-		List<Object[]> resultados = dao.totalRubrosAnterior(fecha, hasta);
+	public List<Object[]> totalRubrosAnterior(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta) {
+		List<Object[]> resultados = dao.totalRubrosAnterior(d_fecha, h_fecha, hasta);
 		return resultados;
 	}
 
 	// Recaudacion diaria - Total por Rubros (Desde Facturas) Año actual
-	public List<Object[]> totalRubrosActual(LocalDate fecha, LocalDate hasta) {
-		List<Object[]> resultados = dao.totalRubrosActual(fecha, hasta);
+	public List<Object[]> totalRubrosActual(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta) {
+		List<Object[]> resultados = dao.totalRubrosActual(d_fecha, h_fecha, hasta);
+		return resultados;
+	}
+	// Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
+	public List<Object[]> totalRubrosAnteriorByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrecaudador) {
+		List<Object[]> resultados = dao.totalRubrosAnteriorByRecaudador(d_fecha, h_fecha, hasta, idrecaudador);
+		return resultados;
+	}
+
+	// Recaudacion diaria - Total por Rubros (Desde Facturas) Año actual
+	public List<Object[]> totalRubrosActualByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrecaudador) {
+		List<Object[]> resultados = dao.totalRubrosActualByRecaudador(d_fecha, h_fecha, hasta, idrecaudador);
 		return resultados;
 	}
 

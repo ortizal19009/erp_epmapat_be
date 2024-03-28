@@ -81,20 +81,40 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE date(f.fechacobro) = ?1 AND f.feccrea <= ?2 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
 			+
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro")
-	List<Object[]> totalRubrosAnterior(LocalDate fecha, LocalDate hasta);
+	List<Object[]> totalRubrosAnterior(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
 
 	// Recaudcion diaria - Total por Rubro Año actual (Desde Facturas)
 	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total " +
 			"FROM Rubroxfac rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE date(f.fechacobro) = ?1 AND f.feccrea > ?2 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
 			+
 			"GROUP BY r.descripcion, r.idrubro " +
 			"ORDER BY r.idrubro")
-	List<Object[]> totalRubrosActual(LocalDate fecha, LocalDate hasta);
+	List<Object[]> totalRubrosActual(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
+	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf "
+			+
+			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
+			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			+
+			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro")
+	List<Object[]> totalRubrosAnteriorByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
+
+	// Recaudcion diaria - Total por Rubro Año actual (Desde Facturas)
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total " +
+			"FROM Rubroxfac rf " +
+			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
+			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			+
+			"GROUP BY r.descripcion, r.idrubro " +
+			"ORDER BY r.idrubro")
+	List<Object[]> totalRubrosActualByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
 
 }

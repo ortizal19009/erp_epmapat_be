@@ -77,7 +77,7 @@ public class FacturasApi {
 			return ResponseEntity.noContent().build();
 		}
 	}
-	
+
 	@GetMapping("/idabonado/{idabonado}")
 	public List<Facturas> getByIdabonado(@PathVariable("idabonado") Long idabonado) {
 		return facServicio.findByIdabonado(idabonado);
@@ -95,7 +95,8 @@ public class FacturasApi {
 
 	// Planillas por Abonado y Fecha
 	@GetMapping("/porabonado")
-	public ResponseEntity<List<Facturas>> buscarPorAbonadoYFechaCreacionRange(@Param(value = "idabonado") Long idabonado,
+	public ResponseEntity<List<Facturas>> buscarPorAbonadoYFechaCreacionRange(
+			@Param(value = "idabonado") Long idabonado,
 			@Param("fechaDesde") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaDesde,
 			@Param("fechaHasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaHasta) {
 		List<Facturas> x = facServicio.buscarPorAbonadoYFechaCreacionRange(idabonado, fechaDesde, fechaHasta);
@@ -151,20 +152,43 @@ public class FacturasApi {
 
 	// Recaudacion diaria - Facturas cobradas <Facturas>
 	// @GetMapping("/cobradas")
-	// public List<Facturas> findByFechacobro(@Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
-	// 	return facServicio.findByFechacobro(fecha);
+	// public List<Facturas> findByFechacobro(@Param("fecha")
+	// @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+	// return facServicio.findByFechacobro(fecha);
 	// }
 
 	// Recaudacion diaria - Facturas cobradas <Facturas>
 	@GetMapping("/cobradastot")
-	public List<Object[]> findByFechacobroTot(@Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
-		return facServicio.findByFechacobroTot(fecha);
+	public List<Object[]> findByFechacobroTot(
+			@Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
+			@Param("h_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h_fecha) {
+		return facServicio.findByFechacobroTot(d_fecha, h_fecha);
+	}
+
+	// Recaudacion diaria - Facturas cobradas <Facturas>
+	@GetMapping("/reportes/cobradastot")
+	public List<Object[]> findByFechacobroTotByRecaudador(
+			@Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
+			@Param("h_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h_fecha,
+			@Param("idrecaudador") Long idrecaudador) {
+		return facServicio.findByFechacobroTotByRecaudador(d_fecha, h_fecha, idrecaudador);
 	}
 
 	// Recaudacion diaria - Facturas cobradas <Facturas>
 	@GetMapping("/totalformacobro")
-	public List<Object[]> totalFechaFormacobro(@Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
-		return facServicio.totalFechaFormacobro(fecha);
+	public List<Object[]> totalFechaFormacobro(
+			@Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
+			@Param("h_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h_fecha) {
+		return facServicio.totalFechaFormacobro(d_fecha, h_fecha);
+	}
+
+	@GetMapping("/reportes/totalformacobro")
+	public List<Object[]> totalFechaFormacobroByRecaudador(
+			@Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
+			@Param("h_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h_fecha,
+			@Param("idrecaudador") Long idrecaudador) {
+
+		return facServicio.totalFechaFormacobroByRecaudador(d_fecha, h_fecha, idrecaudador);
 	}
 
 	@PostMapping
