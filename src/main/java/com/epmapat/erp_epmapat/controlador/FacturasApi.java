@@ -226,7 +226,7 @@ public class FacturasApi {
 		y.setUsuariocobro(x.getUsuariocobro());
 		y.setUsuarioeliminacion(x.getUsuarioeliminacion());
 		y.setUsuariotransferencia(x.getUsuariotransferencia());
-
+		y.setInterescobrado(x.getInterescobrado());
 		y.setUsucrea(x.getUsucrea());
 		y.setFeccrea(x.getFeccrea());
 		// y.setFeccrea(x.getFeccrea());
