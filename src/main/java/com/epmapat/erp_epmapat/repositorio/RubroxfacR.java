@@ -81,7 +81,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
 			+
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro")
 	List<Object[]> totalRubrosAnterior(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
@@ -91,7 +91,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"FROM Rubroxfac rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
 			+
 			"GROUP BY r.descripcion, r.idrubro " +
 			"ORDER BY r.idrubro")
@@ -101,7 +101,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
 			+
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro")
 	List<Object[]> totalRubrosAnteriorByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
@@ -111,7 +111,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"FROM Rubroxfac rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
 			+
 			"GROUP BY r.descripcion, r.idrubro " +
 			"ORDER BY r.idrubro")
