@@ -130,6 +130,7 @@ public class AbonadosApi {
 		abonadosM.setFecmodi(abonadosm.getFecmodi());
 		abonadosM.setAdultomayor(abonadosm.getAdultomayor());
 		abonadosM.setMunicipio(abonadosm.getMunicipio());
+		abonadosM.setSwalcantarillado(abonadosm.getSwalcantarillado());
 		Abonados updateAbonado = aboServicio.save(abonadosM);
 		return ResponseEntity.ok(updateAbonado);
 	}

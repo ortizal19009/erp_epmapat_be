@@ -70,6 +70,7 @@ public class Facturas implements Serializable {
 	private BigDecimal valorbase;
 	private Long idabonado;
 	private BigDecimal interescobrado;
+	private BigDecimal swiva;
 
 	public BigDecimal getInterescobrado() {
 		return interescobrado;
@@ -374,6 +375,14 @@ public class Facturas implements Serializable {
 
 	public void setIdabonado(Long idabonado) {
 		this.idabonado = idabonado;
+	}
+
+	public BigDecimal getSwiva() {
+		return swiva;
+	}
+
+	public void setSwiva(BigDecimal swiva) {
+		this.swiva = swiva;
 	}
 
 }

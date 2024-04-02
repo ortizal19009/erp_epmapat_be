@@ -1,4 +1,5 @@
 package com.epmapat.erp_epmapat.modelo;
+
 import java.util.Date;
 
 import javax.persistence.*;
@@ -69,8 +70,10 @@ public class Abonados {
 	@Column(name = "fecmodi")
 	private Date fecmodi;
 	private Boolean adultomayor;
-	private Boolean municipio; 
-	private Long promedio; 
+	private Boolean municipio;
+	private Boolean swalcantarillado;
+	private Long promedio;
+
 	public Abonados() {
 		super();
 	}
@@ -80,7 +83,8 @@ public class Abonados {
 			String departamento, String piso, Clientes idresponsable, Categorias idcategoria_categorias,
 			Rutas idruta_rutas, Clientes idcliente_clientes, Ubicacionm idubicacion_ubicacion,
 			Tipopago idtipopago_tipopago, Estadom idestadom_estadom, Long medidorprincipal, Long usucrea,
-			Date feccrea, Long usumodi, Date fecmodi, Boolean adultomayor, Boolean municipio, Long promedio) {
+			Date feccrea, Long usumodi, Date fecmodi, Boolean adultomayor, Boolean municipio, Boolean swalcantarillado,
+			Long promedio) {
 		super();
 		this.idabonado = idabonado;
 		this.nromedidor = nromedidor;
@@ -106,8 +110,9 @@ public class Abonados {
 		this.feccrea = feccrea;
 		this.usumodi = usumodi;
 		this.fecmodi = fecmodi;
-		this.adultomayor = adultomayor; 
-		this.municipio = municipio; 
+		this.adultomayor = adultomayor;
+		this.municipio = municipio;
+		this.swalcantarillado = swalcantarillado;
 		this.promedio = promedio;
 	}
 
@@ -122,6 +127,7 @@ public class Abonados {
 	public void setAdultomayor(Boolean adultomayor) {
 		this.adultomayor = adultomayor;
 	}
+
 	public Long getPromedio() {
 		return promedio;
 	}
@@ -324,6 +330,14 @@ public class Abonados {
 
 	public void setLecturainicial(Long lecturainicial) {
 		this.lecturainicial = lecturainicial;
+	}
+
+	public Boolean getSwalcantarillado() {
+		return swalcantarillado;
+	}
+
+	public void setSwalcantarillado(Boolean swalcantarillado) {
+		this.swalcantarillado = swalcantarillado;
 	}
 
 	/*
