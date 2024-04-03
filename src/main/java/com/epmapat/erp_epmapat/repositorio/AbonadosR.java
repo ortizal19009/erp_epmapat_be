@@ -39,7 +39,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	public List<Abonados> findByIdcliente(Long idcliente);
 
 	// Abonados de una Ruta
-	@Query(value = "SELECT * FROM abonados as a JOIN clientes AS c ON a.idcliente_clientes = c.idcliente WHERE a.estado = 1 and a.idruta_rutas=?1 ORDER BY c.nombre", nativeQuery = true)
+	@Query(value = "SELECT * FROM abonados as a JOIN clientes AS c ON a.idcliente_clientes = c.idcliente WHERE (a.estado = 1 or a.estado = 2) and a.idruta_rutas=?1 ORDER BY c.nombre", nativeQuery = true)
 	public List<Abonados> findByIdruta(Long idruta);
 
 	@Query(value = "SELECT * FROM abonados WHERE estado=?1", nativeQuery = true)
