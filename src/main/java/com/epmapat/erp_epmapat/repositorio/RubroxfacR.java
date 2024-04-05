@@ -70,51 +70,73 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<Object[]> findRubroTotalByRubroxfac();
 
 	// Recaudcion diaria - Total por Rubro (Todas)
-	@Query("SELECT r.idrubro, r.descripcion, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf " +
+	@Query("SELECT r.idrubro, r.descripcion, SUM(rf.cantidad * rf.valorunitario) AS total , r.swiva AS iva FROM Rubroxfac rf " +
 			"INNER JOIN rf.idrubro_rubros r " +
 			"INNER JOIN rf.idfactura_facturas f " +
 			"WHERE f.fechacobro = :fechacobro  GROUP BY r.idrubro, r.descripcion")
 	List<Object[]> findRubroTotalByRubroxfacAndFechacobro(@Param("fechacobro") LocalDate fechacobro);
 
 	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
-	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf "
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total , r.swiva AS iva FROM Rubroxfac rf "
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) "
 			+
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro")
-	List<Object[]> totalRubrosAnterior(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
+	List<Object[]> totalRubrosAnteriorRangos(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
 
 	// Recaudcion diaria - Total por Rubro Año actual (Desde Facturas)
-	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total " +
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total , r.swiva AS iva " +
 			"FROM Rubroxfac rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) "
 			+
 			"GROUP BY r.descripcion, r.idrubro " +
 			"ORDER BY r.idrubro")
-	List<Object[]> totalRubrosActual(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
+	List<Object[]> totalRubrosActualRangos(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
+
 	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
-	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf "
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total , r.swiva AS iva FROM Rubroxfac rf "
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL)"
 			+
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro")
 	List<Object[]> totalRubrosAnteriorByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
 
 	// Recaudcion diaria - Total por Rubro Año actual (Desde Facturas)
-	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total " +
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total , r.swiva AS iva " +
 			"FROM Rubroxfac rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL)"
 			+
 			"GROUP BY r.descripcion, r.idrubro " +
 			"ORDER BY r.idrubro")
 	List<Object[]> totalRubrosActualByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
+
+	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total , r.swiva AS iva FROM Rubroxfac rf "
+			+
+			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
+			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
+			"WHERE date(f.fechacobro) = ?1 AND f.feccrea <= ?2 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL)"
+			+
+			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro")
+	List<Object[]> totalRubrosAnterior(LocalDate fecha, LocalDate hasta);
+
+	// Recaudcion diaria - Total por Rubro Año actual (Desde Facturas)
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total , r.swiva AS iva " +
+			"FROM Rubroxfac rf " +
+			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
+			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
+			"WHERE date(f.fechacobro) = ?1 AND f.feccrea > ?2 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL)"
+			+
+			"GROUP BY r.descripcion, r.idrubro " +
+			"ORDER BY r.idrubro")
+	List<Object[]> totalRubrosActual(LocalDate fecha, LocalDate hasta);
 
 }

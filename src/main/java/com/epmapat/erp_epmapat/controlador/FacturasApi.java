@@ -158,11 +158,11 @@ public class FacturasApi {
 	// }
 
 	// Recaudacion diaria - Facturas cobradas <Facturas>
-	@GetMapping("/cobradastot")
-	public List<Object[]> findByFechacobroTot(
+	@GetMapping("reportes/cobradastotrangos")
+	public List<Object[]> findByFechacobroTotRangos(
 			@Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
 			@Param("h_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h_fecha) {
-		return facServicio.findByFechacobroTot(d_fecha, h_fecha);
+		return facServicio.findByFechacobroTotRangos(d_fecha, h_fecha);
 	}
 
 	// Recaudacion diaria - Facturas cobradas <Facturas>
@@ -175,11 +175,11 @@ public class FacturasApi {
 	}
 
 	// Recaudacion diaria - Facturas cobradas <Facturas>
-	@GetMapping("/totalformacobro")
-	public List<Object[]> totalFechaFormacobro(
+	@GetMapping("reportes/totalformacobrorangos")
+	public List<Object[]> totalFechaFormacobroRangos(
 			@Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
 			@Param("h_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h_fecha) {
-		return facServicio.totalFechaFormacobro(d_fecha, h_fecha);
+		return facServicio.totalFechaFormacobroRangos(d_fecha, h_fecha);
 	}
 
 	@GetMapping("/reportes/totalformacobro")
@@ -189,6 +189,20 @@ public class FacturasApi {
 			@Param("idrecaudador") Long idrecaudador) {
 
 		return facServicio.totalFechaFormacobroByRecaudador(d_fecha, h_fecha, idrecaudador);
+	}
+
+	// Recaudacion diaria - Facturas cobradas <Facturas>
+	@GetMapping("/cobradastot")
+	public List<Object[]> findByFechacobroTot(
+			@Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+		return facServicio.findByFechacobroTot(fecha);
+	}
+
+	// Recaudacion diaria - Facturas cobradas <Facturas>
+	@GetMapping("/totalformacobro")
+	public List<Object[]> totalFechaFormacobro(
+			@Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+		return facServicio.totalFechaFormacobro(fecha);
 	}
 
 	@PostMapping

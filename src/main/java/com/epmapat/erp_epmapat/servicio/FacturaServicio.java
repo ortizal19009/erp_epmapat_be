@@ -90,8 +90,8 @@ public class FacturaServicio {
 	// }
 
 	// Recaudación diaria - Facturas cobradas (Sumando los rubros)
-	public List<Object[]> findByFechacobroTot(LocalDate d_fecha, LocalDate h_fecha) {
-		return dao.findByFechacobroTot(d_fecha, h_fecha);
+	public List<Object[]> findByFechacobroTotRangos(LocalDate d_fecha, LocalDate h_fecha) {
+		return dao.findByFechacobroTotRangos(d_fecha, h_fecha);
 	}
 
 	public List<Object[]> findByFechacobroTotByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador) {
@@ -99,15 +99,23 @@ public class FacturaServicio {
 	}
 
 	// Total diario por Forma de cobro
-	public List<Object[]> totalFechaFormacobro(LocalDate d_fecha, LocalDate h_fecha) {
-		return dao.totalFechaFormacobro(d_fecha, h_fecha);
+	public List<Object[]> totalFechaFormacobroRangos(LocalDate d_fecha, LocalDate h_fecha) {
+		return dao.totalFechaFormacobroRangos(d_fecha, h_fecha);
 	}
-
+	
 	// Total diario por Forma de cobro
 	public List<Object[]> totalFechaFormacobroByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador) {
 		return dao.totalFechaFormacobroByRecaudador(d_fecha, h_fecha, idrecaudador);
 	}
+	
+	public List<Object[]> findByFechacobroTot(LocalDate fecha) {
+		return dao.findByFechacobroTot(fecha);
+	}
 
+	// Total diario por Forma de cobro
+	public List<Object[]> totalFechaFormacobro(LocalDate fecha) {
+		return dao.totalFechaFormacobro(fecha);
+	}
 	@SuppressWarnings("null")
 	public void deleteById(Long id) {
 		dao.deleteById(id);
@@ -133,5 +141,6 @@ public class FacturaServicio {
 	public void setDao(FacturasR dao) {
 		this.dao = dao;
 	}
+
 
 }

@@ -97,23 +97,23 @@ public class RubroxfacApi {
    }
 
    // Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
-   @GetMapping("/totalrubrosanterior")
-   public ResponseEntity<List<Object[]>> totalRubrosAnterior(
+   @GetMapping("/totalrubrosanteriorrangos")
+   public ResponseEntity<List<Object[]>> totalRubrosAnteriorRangos(
          @Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
          @Param("h_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h_fecha,
          @Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
 
-      List<Object[]> resultados = rxfServicio.totalRubrosAnterior(d_fecha, h_fecha, hasta);
+      List<Object[]> resultados = rxfServicio.totalRubrosAnteriorRangos(d_fecha, h_fecha, hasta);
       return ResponseEntity.ok(resultados);
    }
 
    // Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
-   @GetMapping("/totalrubrosactual")
-   public ResponseEntity<List<Object[]>> totalRubrosActual(
+   @GetMapping("/totalrubrosactualrangos")
+   public ResponseEntity<List<Object[]>> totalRubrosActualRangos(
          @Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
          @Param("h_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h_fecha,
          @Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
-      List<Object[]> resultados = rxfServicio.totalRubrosActual(d_fecha, h_fecha, hasta);
+      List<Object[]> resultados = rxfServicio.totalRubrosActualRangos(d_fecha, h_fecha, hasta);
       return ResponseEntity.ok(resultados);
    }
 
@@ -129,7 +129,7 @@ public class RubroxfacApi {
       return ResponseEntity.ok(resultados);
    }
 
-   // Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
+   // Recaudacion diaria - Total por Rubros (Desde Facturas) A.Rangos
    @GetMapping("/reportes/totalrubrosactual")
    public ResponseEntity<List<Object[]>> totalRubrosActualByRecaudador(
          @Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
@@ -138,6 +138,26 @@ public class RubroxfacApi {
          @Param("idrecaudador") Long idrecaudador) {
 
       List<Object[]> resultados = rxfServicio.totalRubrosActualByRecaudador(d_fecha, h_fecha, hasta, idrecaudador);
+      return ResponseEntity.ok(resultados);
+   }
+
+   // Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
+   @GetMapping("/totalrubrosanterior")
+   public ResponseEntity<List<Object[]>> totalRubrosAnterior(
+         @Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+         @Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
+
+      List<Object[]> resultados = rxfServicio.totalRubrosAnterior(fecha, hasta);
+      return ResponseEntity.ok(resultados);
+   }
+
+   // Recaudacion diaria - Total por Rubros (Desde Facturas) A.Rangos
+   @GetMapping("/totalrubrosactual")
+   public ResponseEntity<List<Object[]>> totalRubrosActual(
+         @Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+         @Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
+
+      List<Object[]> resultados = rxfServicio.totalRubrosActual(fecha, hasta);
       return ResponseEntity.ok(resultados);
    }
 

@@ -70,25 +70,40 @@ public class RubroxfacServicio {
 	}
 
 	// Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
-	public List<Object[]> totalRubrosAnterior(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta) {
-		List<Object[]> resultados = dao.totalRubrosAnterior(d_fecha, h_fecha, hasta);
+	public List<Object[]> totalRubrosAnteriorRangos(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta) {
+		List<Object[]> resultados = dao.totalRubrosAnteriorRangos(d_fecha, h_fecha, hasta);
 		return resultados;
 	}
 
 	// Recaudacion diaria - Total por Rubros (Desde Facturas) Año actual
-	public List<Object[]> totalRubrosActual(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta) {
-		List<Object[]> resultados = dao.totalRubrosActual(d_fecha, h_fecha, hasta);
+	public List<Object[]> totalRubrosActualRangos(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta) {
+		List<Object[]> resultados = dao.totalRubrosActualRangos(d_fecha, h_fecha, hasta);
 		return resultados;
 	}
+
 	// Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
-	public List<Object[]> totalRubrosAnteriorByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrecaudador) {
+	public List<Object[]> totalRubrosAnteriorByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta,
+			Long idrecaudador) {
 		List<Object[]> resultados = dao.totalRubrosAnteriorByRecaudador(d_fecha, h_fecha, hasta, idrecaudador);
 		return resultados;
 	}
 
 	// Recaudacion diaria - Total por Rubros (Desde Facturas) Año actual
-	public List<Object[]> totalRubrosActualByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrecaudador) {
+	public List<Object[]> totalRubrosActualByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta,
+			Long idrecaudador) {
 		List<Object[]> resultados = dao.totalRubrosActualByRecaudador(d_fecha, h_fecha, hasta, idrecaudador);
+		return resultados;
+	}
+
+	// Recaudacion diaria - Total por Rubros (Desde Facturas) A.Anterior
+	public List<Object[]> totalRubrosAnterior(LocalDate fecha, LocalDate hasta) {
+		List<Object[]> resultados = dao.totalRubrosAnterior(fecha, hasta);
+		return resultados;
+	}
+
+	// Recaudacion diaria - Total por Rubros (Desde Facturas) Año actual
+	public List<Object[]> totalRubrosActual(LocalDate fecha, LocalDate hasta) {
+		List<Object[]> resultados = dao.totalRubrosActual(fecha, hasta);
 		return resultados;
 	}
 
