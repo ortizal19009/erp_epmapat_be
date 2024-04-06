@@ -135,7 +135,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			@Param("d_fecha") LocalDate h_fecha, @Param("recaudador") Long idrecaudador);
 
 	// Cuenta las Facturas pendientes de un Abonado
-	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=:idabonado and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= :fecha or f.fechaanulacion IS NULL)")
+	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= f.fechacobro or f.fechaanulacion IS NULL)")
 	long countFacturasByAbonadoAndPendientes(@Param("idabonado") Long idabonado);
 
 }
