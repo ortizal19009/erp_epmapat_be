@@ -91,7 +91,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"FROM Rubroxfac rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) "
 			+
 			"GROUP BY r.descripcion, r.idrubro " +
 			"ORDER BY r.idrubro")
@@ -119,7 +119,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<Object[]> totalRubrosActualByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
 
 	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
-	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total , r.swiva AS iva FROM Rubroxfac rf "
+	@Query("SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(rf.cantidad * rf.valorunitario) AS total , r.swiva AS iva  FROM Rubroxfac rf "
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
