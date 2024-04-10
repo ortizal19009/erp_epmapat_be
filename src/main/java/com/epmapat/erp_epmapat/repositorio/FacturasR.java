@@ -84,21 +84,34 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * GLOBALES
 	 */
 	// Recaudacion diaria - Facturas cobradas
-	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f " +
-			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
+	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf " +
+			"JOIN Facturas f ON rf.idfactura_facturas = f.idfactura " +
 			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL)"
 			+
 			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura")
 	List<Object[]> findByFechacobroTot(LocalDate fecha);
+/* 	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f " +
+			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
+			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL)"
+			+
+			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura")
+	List<Object[]> findByFechacobroTot(LocalDate fecha); */
 
 	// Total diario por Forma de cobro
-	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
-			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
+	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM  Rubroxfac rf "
+			+ "JOIN Facturas f ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
 			+ "WHERE f.fechacobro = ?1 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL)"
 			+
 			" GROUP BY fc.descripcion ORDER BY fc.descripcion")
 	List<Object[]> totalFechaFormacobro(@Param("fecha") LocalDate fecha);
+/* 	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
+			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
+			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
+			+ "WHERE f.fechacobro = ?1 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL)"
+			+
+			" GROUP BY fc.descripcion ORDER BY fc.descripcion")
+	List<Object[]> totalFechaFormacobro(@Param("fecha") LocalDate fecha); */
 
 	/*
 	 * POR RANGOS
@@ -137,5 +150,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Cuenta las Facturas pendientes de un Abonado
 	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= f.fechacobro or f.fechaanulacion IS NULL)")
 	long countFacturasByAbonadoAndPendientes(@Param("idabonado") Long idabonado);
+	
+	
+	
 
 }
