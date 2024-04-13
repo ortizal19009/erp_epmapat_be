@@ -1,16 +1,34 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
+
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.SimplePdfExporterConfiguration;
+import net.sf.jasperreports.export.SimplePdfReportConfiguration;
 
 @Service
 public class FacturaServicio {
@@ -102,12 +120,12 @@ public class FacturaServicio {
 	public List<Object[]> totalFechaFormacobroRangos(LocalDate d_fecha, LocalDate h_fecha) {
 		return dao.totalFechaFormacobroRangos(d_fecha, h_fecha);
 	}
-	
+
 	// Total diario por Forma de cobro
 	public List<Object[]> totalFechaFormacobroByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador) {
 		return dao.totalFechaFormacobroByRecaudador(d_fecha, h_fecha, idrecaudador);
 	}
-	
+
 	public List<Object[]> findByFechacobroTot(LocalDate fecha) {
 		return dao.findByFechacobroTot(fecha);
 	}
@@ -116,6 +134,7 @@ public class FacturaServicio {
 	public List<Object[]> totalFechaFormacobro(LocalDate fecha) {
 		return dao.totalFechaFormacobro(fecha);
 	}
+
 	@SuppressWarnings("null")
 	public void deleteById(Long id) {
 		dao.deleteById(id);
@@ -142,5 +161,58 @@ public class FacturaServicio {
 		this.dao = dao;
 	}
 
+	/*
+	 * ===========================
+	 * REPORTES FACTURAS COBRADAS
+	 * ===========================
+	 */
+	public String exportFacturasCobradas(String format, Date v_dfecha, Date v_hfecha, Date c_fecha)
+			throws FileNotFoundException, JRException {
+		// List<Object> factura = dao.findAll();
+		String path = "C://reportes//";
+		File file = ResourceUtils.getFile("classpath:facturasCobradas.jrxml");
+		JasperReport jasper = JasperCompileManager.compileReport(file.getAbsolutePath());
+		// JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(ob);
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("format", format);
+		parameters.put("v_dfecha", v_dfecha);
+		parameters.put("v_hfecha", v_hfecha);
+		parameters.put("c_fecha", c_fecha);
+		JasperPrint jasperPrint = JasperFillManager.fillReport(jasper, parameters);
+		if (format.equalsIgnoreCase("html")) {
+			JasperExportManager.exportReportToHtmlFile(jasperPrint, path + "//factruas_cobradas.html");
+		}
+		if (format.equalsIgnoreCase("pdf")) {
+			JasperExportManager.exportReportToPdfFile(jasperPrint, path + "//facturas_cobradas.pdf");
+		}
+		if (format.equalsIgnoreCase("xmls")) {
+			JRPdfExporter exporter = new JRPdfExporter();
+
+			exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+			exporter.setExporterOutput(
+					new SimpleOutputStreamExporterOutput("employeeReport.pdf"));
+
+			SimplePdfReportConfiguration reportConfig = new SimplePdfReportConfiguration();
+			reportConfig.setSizePageToContent(true);
+			reportConfig.setForceLineBreakPolicy(false);
+
+			SimplePdfExporterConfiguration exportConfig = new SimplePdfExporterConfiguration();
+			exportConfig.setMetadataAuthor("baeldung");
+			exportConfig.setEncrypted(true);
+			exportConfig.setAllowedPermissionsHint("PRINTING");
+
+			exporter.setConfiguration(reportConfig);
+			exporter.setConfiguration(exportConfig);
+
+			exporter.exportReport();
+		}
+		return "path: " + path;
+	}
+
+	/*
+	 * ===========================
+	 * REPORTES FACTURAS RUBROS
+	 * ===========================
+	 */
 
 }

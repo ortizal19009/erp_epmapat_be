@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +25,8 @@ import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.servicio.FacturaServicio;
+
+import net.sf.jasperreports.engine.JRException;
 
 @RestController
 @RequestMapping("/facturas")
@@ -252,6 +255,20 @@ public class FacturasApi {
 		y.setValorbase(x.getValorbase());
 		Facturas updateFacturas = facServicio.save(y);
 		return ResponseEntity.ok(updateFacturas);
+	}
+
+	/*
+	 * ============================
+	 * FACTURAS COBRADAS
+	 * =============================
+	 */
+	@GetMapping("/export/facturascobradas")
+	public String exportFacturasCobradas(@RequestParam("format") String format,
+			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
+			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
+			@RequestParam("c_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_fecha)
+			throws FileNotFoundException, JRException {
+		return facServicio.exportFacturasCobradas(format, v_dfecha, v_hfecha, c_fecha);
 	}
 
 }

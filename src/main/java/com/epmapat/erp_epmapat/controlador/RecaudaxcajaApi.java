@@ -69,5 +69,11 @@ public class RecaudaxcajaApi {
 		
 		return ResponseEntity.ok(update);
 	}
+	@GetMapping("/caja/{idcaja}")
+	public ResponseEntity<Object[]> obtenerConexion(@PathVariable("idcaja") Long idcaja){
+		Recaudaxcaja recxcaja = recaxcajaServicio.findLastConexion(idcaja);
+		return null; 
+		
+	}
 
 }
