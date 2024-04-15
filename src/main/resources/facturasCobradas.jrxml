@@ -6,8 +6,8 @@
 	<subDataset name="TotalFacturas" uuid="25299ff7-7d37-4288-9769-c01de2136ede">
 		<property name="com.jaspersoft.studio.data.sql.tables" value="" />
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat" />
-		<parameter name="v_dfecha" class="java.util.Date" />
-		<parameter name="v_hfecha" class="java.util.Date" />
+		<parameter name="v_dfecha" class="java.time.LocalDate" />
+		<parameter name="v_hfecha" class="java.time.LocalDate" />
 		<queryString language="SQL">
 			<![CDATA[select f.nrofactura, sum(rf.valorunitario * rf.cantidad) as total, f.swiva from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro where f.fechacobro BETWEEN $P{v_dfecha} AND $P{v_hfecha} and (f.estado = 1 or f.estado = 2 ) and f.fechaeliminacion is null and f.fechaanulacion is null group by f.idfactura , f.nrofactura order by f.nrofactura asc]]>
 		</queryString>
@@ -26,8 +26,8 @@
 			<property name="com.jaspersoft.studio.field.tree.path" value="facturas" />
 		</field>
 	</subDataset>
-	<parameter name="v_dfecha" class="java.util.Date" />
-	<parameter name="v_hfecha" class="java.util.Date" />
+	<parameter name="v_dfecha" class="java.time.LocalDate" />
+	<parameter name="v_hfecha" class="java.time.LocalDate" />
 	<queryString language="SQL">
 		<![CDATA[
 		SELECT f.nrofactura,c.nombre,

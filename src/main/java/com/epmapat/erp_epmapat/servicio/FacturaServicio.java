@@ -9,7 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -17,13 +23,7 @@ import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
@@ -35,6 +35,7 @@ public class FacturaServicio {
 
 	@Autowired
 	private FacturasR dao;
+	private DataSource dataSource;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -166,45 +167,32 @@ public class FacturaServicio {
 	 * REPORTES FACTURAS COBRADAS
 	 * ===========================
 	 */
-	public String exportFacturasCobradas(String format, Date v_dfecha, Date v_hfecha, Date c_fecha)
+	@Bean
+	public DataSource dataSource() {
+		return new EmbeddedDatabaseBuilder()
+		  .setType(EmbeddedDatabaseType.HSQL)
+		  .build();
+	}
+	public String exportFacturasCobradas(String format, Date v_dfecha, Date v_hfecha)
 			throws FileNotFoundException, JRException {
-		// List<Object> factura = dao.findAll();
+		//List<Object> factura = dao.findAll();
 		String path = "C://reportes//";
 		File file = ResourceUtils.getFile("classpath:facturasCobradas.jrxml");
 		JasperReport jasper = JasperCompileManager.compileReport(file.getAbsolutePath());
-		// JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(ob);
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		parameters.put("format", format);
-		parameters.put("v_dfecha", v_dfecha);
-		parameters.put("v_hfecha", v_hfecha);
-		parameters.put("c_fecha", c_fecha);
-		JasperPrint jasperPrint = JasperFillManager.fillReport(jasper, parameters);
+		/* JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(factura); */
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("format", format);
+		parameter.put("v_dfecha", v_dfecha);
+		parameter.put("v_hfecha", v_hfecha);
+		//JasperPrint jasperPrint = JasperFillManager.fillReport(jasper, parameter, dataSource.getConnection());
 		if (format.equalsIgnoreCase("html")) {
-			JasperExportManager.exportReportToHtmlFile(jasperPrint, path + "//factruas_cobradas.html");
+			//JasperExportManager.exportReportToHtmlFile(jasperPrint, path + "//factruas_cobradas.html");
 		}
 		if (format.equalsIgnoreCase("pdf")) {
-			JasperExportManager.exportReportToPdfFile(jasperPrint, path + "//facturas_cobradas.pdf");
+			//JasperExportManager.exportReportToPdfFile(jasperPrint, path + "//facturas_cobradas.pdf");
 		}
 		if (format.equalsIgnoreCase("xmls")) {
-			JRPdfExporter exporter = new JRPdfExporter();
 
-			exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-			exporter.setExporterOutput(
-					new SimpleOutputStreamExporterOutput("employeeReport.pdf"));
-
-			SimplePdfReportConfiguration reportConfig = new SimplePdfReportConfiguration();
-			reportConfig.setSizePageToContent(true);
-			reportConfig.setForceLineBreakPolicy(false);
-
-			SimplePdfExporterConfiguration exportConfig = new SimplePdfExporterConfiguration();
-			exportConfig.setMetadataAuthor("baeldung");
-			exportConfig.setEncrypted(true);
-			exportConfig.setAllowedPermissionsHint("PRINTING");
-
-			exporter.setConfiguration(reportConfig);
-			exporter.setConfiguration(exportConfig);
-
-			exporter.exportReport();
 		}
 		return "path: " + path;
 	}

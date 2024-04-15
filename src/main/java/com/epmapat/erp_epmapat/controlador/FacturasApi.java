@@ -265,10 +265,9 @@ public class FacturasApi {
 	@GetMapping("/export/facturascobradas")
 	public String exportFacturasCobradas(@RequestParam("format") String format,
 			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
-			@RequestParam("c_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_fecha)
+			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha)
 			throws FileNotFoundException, JRException {
-		return facServicio.exportFacturasCobradas(format, v_dfecha, v_hfecha, c_fecha);
+		return facServicio.exportFacturasCobradas(format, v_dfecha, v_hfecha);
 	}
 
 }
