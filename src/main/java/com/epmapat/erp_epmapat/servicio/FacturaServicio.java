@@ -167,35 +167,7 @@ public class FacturaServicio {
 	 * REPORTES FACTURAS COBRADAS
 	 * ===========================
 	 */
-	@Bean
-	public DataSource dataSource() {
-		return new EmbeddedDatabaseBuilder()
-		  .setType(EmbeddedDatabaseType.HSQL)
-		  .build();
-	}
-	public String exportFacturasCobradas(String format, Date v_dfecha, Date v_hfecha)
-			throws FileNotFoundException, JRException {
-		//List<Object> factura = dao.findAll();
-		String path = "C://reportes//";
-		File file = ResourceUtils.getFile("classpath:facturasCobradas.jrxml");
-		JasperReport jasper = JasperCompileManager.compileReport(file.getAbsolutePath());
-		/* JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(factura); */
-		Map<String, Object> parameter = new HashMap<String, Object>();
-		parameter.put("format", format);
-		parameter.put("v_dfecha", v_dfecha);
-		parameter.put("v_hfecha", v_hfecha);
-		//JasperPrint jasperPrint = JasperFillManager.fillReport(jasper, parameter, dataSource.getConnection());
-		if (format.equalsIgnoreCase("html")) {
-			//JasperExportManager.exportReportToHtmlFile(jasperPrint, path + "//factruas_cobradas.html");
-		}
-		if (format.equalsIgnoreCase("pdf")) {
-			//JasperExportManager.exportReportToPdfFile(jasperPrint, path + "//facturas_cobradas.pdf");
-		}
-		if (format.equalsIgnoreCase("xmls")) {
-
-		}
-		return "path: " + path;
-	}
+/*  */
 
 	/*
 	 * ===========================

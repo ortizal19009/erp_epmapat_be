@@ -34,62 +34,67 @@ public class NacionalidadApi {
 
     @Autowired
     private NacionalidadServicio nacService;
-    
+
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-	public List<Nacionalidad> getAllNacionalidades(@Param(value = "idused") Long idused, @Param(value = "descripcion") String descripcion) {
-		if(descripcion != null){
-			return nacService.findByDescription(descripcion.toLowerCase());
-			
-		}else if (idused != null){
-			return nacService.used(idused);
-		}
-		else {
-			return nacService.findAll( Sort.by(Sort.Order.asc("descripcion")));
-		}
-	}
+    public List<Nacionalidad> getAllNacionalidades(@Param(value = "idused") Long idused,
+            @Param(value = "descripcion") String descripcion) {
+        if (descripcion != null) {
+            return nacService.findByDescription(descripcion.toLowerCase());
+
+        } else if (idused != null) {
+            return nacService.used(idused);
+        } else {
+            return nacService.findAll(Sort.by(Sort.Order.asc("descripcion")));
+        }
+    }
 
     @PostMapping
     public Nacionalidad saveNacionalidad(@RequestBody Nacionalidad nacionalidadM) {
-    	return nacService.save(nacionalidadM);
+        return nacService.save(nacionalidadM);
     }
 
     @GetMapping("/{idnacionalidad}")
-    public ResponseEntity<Nacionalidad> getByIdNacionalidad(@PathVariable Long idnacionalidad){
-    	Nacionalidad nacionalidadM = nacService.findById(idnacionalidad)
-    			.orElseThrow(()-> new ResourceNotFoundExcepciones(("No existe esa nacionalidad con ese Id: "+ idnacionalidad)) );
-    	return ResponseEntity.ok(nacionalidadM);
+    public ResponseEntity<Nacionalidad> getByIdNacionalidad(@PathVariable Long idnacionalidad) {
+        Nacionalidad nacionalidadM = nacService.findById(idnacionalidad)
+                .orElseThrow(() -> new ResourceNotFoundExcepciones(
+                        ("No existe esa nacionalidad con ese Id: " + idnacionalidad)));
+        return ResponseEntity.ok(nacionalidadM);
     }
 
     @PutMapping(value = "/{idnacionalidad}")
-    public ResponseEntity<Nacionalidad> updateNacionalidad(@PathVariable Long idnacionalidad, @RequestBody Nacionalidad descripcion){
-    	Nacionalidad nacionalidadM = nacService.findById(idnacionalidad)
-    			.orElseThrow(()-> new ResourceNotFoundExcepciones(("No existe esa nacionalidad con ese Id: "+ idnacionalidad)) );
-    	nacionalidadM.setDescripcion(descripcion.getDescripcion());
-    	Nacionalidad updaNacionalidad = nacService.save(nacionalidadM);
-    	return ResponseEntity.ok(updaNacionalidad);
+    public ResponseEntity<Nacionalidad> updateNacionalidad(@PathVariable Long idnacionalidad,
+            @RequestBody Nacionalidad descripcion) {
+        Nacionalidad nacionalidadM = nacService.findById(idnacionalidad)
+                .orElseThrow(() -> new ResourceNotFoundExcepciones(
+                        ("No existe esa nacionalidad con ese Id: " + idnacionalidad)));
+        nacionalidadM.setDescripcion(descripcion.getDescripcion());
+        Nacionalidad updaNacionalidad = nacService.save(nacionalidadM);
+        return ResponseEntity.ok(updaNacionalidad);
     }
 
     // @PutMapping(value = "/{idnacionalidad}")
-    // public ResponseEntity<NacionalidadM> update(@PathVariable Long idnacionalidad, @RequestBody NacionalidadM x) {
-    //     NacionalidadM y = nacService.findById(idnacionalidad)
-    //             .orElseThrow(() -> new ResourceNotFoundExcepciones(
-    //                     ("No existe Nacionalidad Id: " + idnacionalidad)));
-    //     y.setDescripcion(x.getDescripcion());
+    // public ResponseEntity<NacionalidadM> update(@PathVariable Long
+    // idnacionalidad, @RequestBody NacionalidadM x) {
+    // NacionalidadM y = nacService.findById(idnacionalidad)
+    // .orElseThrow(() -> new ResourceNotFoundExcepciones(
+    // ("No existe Nacionalidad Id: " + idnacionalidad)));
+    // y.setDescripcion(x.getDescripcion());
 
-    //     NacionalidadM actualizar = nacService.save(y);
-    //     return ResponseEntity.ok(actualizar);
+    // NacionalidadM actualizar = nacService.save(y);
+    // return ResponseEntity.ok(actualizar);
     // }
 
-    @DeleteMapping(value = "/{idnacionalidad}" )
-    private ResponseEntity<Boolean > deleteNacionalidad(@PathVariable ("idnacionalidad") Long idnacionalidad){
-    	nacService.deleteById(idnacionalidad);
-    	return ResponseEntity.ok(!(nacService.findById(idnacionalidad) != null));
-    	
+    @DeleteMapping(value = "/{idnacionalidad}")
+    private ResponseEntity<Boolean> deleteNacionalidad(@PathVariable("idnacionalidad") Long idnacionalidad) {
+        nacService.deleteById(idnacionalidad);
+        return ResponseEntity.ok(!(nacService.findById(idnacionalidad) != null));
+
     }
+
     @GetMapping("/export/{format}")
     private String exportReport(@PathVariable String format) throws FileNotFoundException, JRException {
-    	return nacService.exportNacionalidades(format);
+        return nacService.exportNacionalidades(format);
     }
-    
+
 }

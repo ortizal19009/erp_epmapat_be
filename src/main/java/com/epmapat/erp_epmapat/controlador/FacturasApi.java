@@ -1,10 +1,15 @@
 package com.epmapat.erp_epmapat.controlador;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,9 +29,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.modelo.Facturas;
+import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
+import com.epmapat.erp_epmapat.reportes.facturas.interfaces.i_ReporteFacturasCobradas_G;
 import com.epmapat.erp_epmapat.servicio.FacturaServicio;
 
 import net.sf.jasperreports.engine.JRException;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/facturas")
@@ -36,6 +45,8 @@ public class FacturasApi {
 
 	@Autowired
 	private FacturaServicio facServicio;
+	@Autowired
+	private i_ReporteFacturasCobradas_G i_reportefacturascobradas_g;
 
 	@GetMapping
 	public List<Facturas> getAll(@Param(value = "desde") Long desde, @Param(value = "hasta") Long hasta,
@@ -258,16 +269,31 @@ public class FacturasApi {
 	}
 
 	/*
-	 * ============================
-	 * FACTURAS COBRADAS
-	 * =============================
+	 * ==============================
+	 * *********REPORTES*************
+	 * ==============================
 	 */
-	@GetMapping("/export/facturascobradas")
-	public String exportFacturasCobradas(@RequestParam("format") String format,
+
+	@GetMapping("/reportes/facturascobradas")
+	public ResponseEntity<Resource> download(
 			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha)
-			throws FileNotFoundException, JRException {
-		return facServicio.exportFacturasCobradas(format, v_dfecha, v_hfecha);
+			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha, @RequestParam("tipo") String tipo)
+			throws JRException, IOException, SQLException {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("v_dfecha", v_dfecha);
+		params.put("v_hfecha", v_hfecha);
+		params.put("tipo", tipo);
+		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
+		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
+		MediaType mediaType = null;
+		if (tipo == "excel") {
+			mediaType = MediaType.APPLICATION_OCTET_STREAM;
+		} else {
+			mediaType = MediaType.APPLICATION_PDF;
+		}
+
+		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
+				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
 	}
 
 }
