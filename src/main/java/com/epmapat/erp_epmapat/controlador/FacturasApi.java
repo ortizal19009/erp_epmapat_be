@@ -302,13 +302,12 @@ public class FacturasApi {
 	public ResponseEntity<Resource> reporteFacturaRubros(
 			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
 			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
-			@RequestParam("c_feccrea") @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_fecrea)
+			@RequestParam("c_feccrea") @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_feccrea)
 			throws JRException, IOException, SQLException {
-		System.out.println(v_dfecha);
-		System.out.println(v_hfecha);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
+		params.put("c_feccrea", c_feccrea);
 		params.put("fileName", "facturasCobradasRubros");
 		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
 		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
