@@ -300,9 +300,9 @@ public class FacturasApi {
 
 	@GetMapping("/reportes/facturasrubros")
 	public ResponseEntity<Resource> reporteFacturaRubros(
-			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate v_dfecha,
-			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate v_hfecha,
-			@RequestParam("c_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate c_fecrea)
+			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
+			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
+			@RequestParam("c_feccrea") @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_fecrea)
 			throws JRException, IOException, SQLException {
 		System.out.println(v_dfecha);
 		System.out.println(v_hfecha);
