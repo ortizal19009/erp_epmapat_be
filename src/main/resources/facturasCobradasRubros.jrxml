@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="facturasCobradasRubros" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="3f44cadc-e743-4f00-9dd4-122b639cfc2b">
-	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.sql.tables">
+		<![CDATA[ZmFjdHVyYXMgLDE1LDE1LDNiMzA0ZmZkLWFlZGUtNDQ4Ny1iODNiLTVhNmRhYjNlNGU5NTtydWJy
+b3hmYWMgLDIwNCw3MjgsYzBmMjhlMjgtYzBmNy00MmY1LTg5MWUtYjgzMTU3MWExZDhiO3J1YnJv
+cyAsMTUsOTYzLDI2YWJlN2RiLTE2MmMtNGQ3Ni1hNGE4LWQ5MTI4YTA4ODIxNzs=]]>
+	</property>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="344"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="651"/>
@@ -63,9 +67,7 @@
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter"/>
 		<parameter name="v_dfechas" class="java.util.Date"/>
-		<parameter name="c_fecreas" class="java.util.Date">
-			<defaultValueExpression><![CDATA[DATE(2023,12,31)]]></defaultValueExpression>
-		</parameter>
+		<parameter name="c_fecreas" class="java.util.Date"/>
 		<parameter name="v_hfechas" class="java.util.Date" nestedType="java.util.Date"/>
 		<queryString language="SQL">
 			<![CDATA[SELECT r.idrubro,
@@ -116,9 +118,7 @@ ORDER BY r.idrubro ASC]]>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter"/>
 		<parameter name="v_dfechas" class="java.util.Date"/>
-		<parameter name="c_feccreas" class="java.util.Date">
-			<defaultValueExpression><![CDATA[DATE(2023,12,31)]]></defaultValueExpression>
-		</parameter>
+		<parameter name="c_feccreas" class="java.util.Date"/>
 		<parameter name="v_hfechas" class="java.util.Date"/>
 		<queryString language="SQL">
 			<![CDATA[SELECT r.idrubro,
@@ -220,9 +220,7 @@ ORDER BY r.idrubro ASC]]>
 	</subDataset>
 	<parameter name="v_dfecha" class="java.util.Date" nestedType="java.util.Date"/>
 	<parameter name="v_hfecha" class="java.util.Date"/>
-	<parameter name="c_fecrea" class="java.util.Date">
-		<defaultValueExpression><![CDATA[DATE(2023,12,31)]]></defaultValueExpression>
-	</parameter>
+	<parameter name="c_feccrea" class="java.util.Date"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT r.idrubro,
 	r.descripcion AS nombre_rubro,
@@ -235,7 +233,7 @@ FROM rubroxfac rf
 	 r.idrubro = rf.idrubro_rubros 
 WHERE 
 	 date(f.fechacobro) BETWEEN $P{v_dfecha} AND $P{v_hfecha} 
-	 AND f.feccrea <= $P{c_fecrea} 
+	 AND f.feccrea <= $P{c_feccrea} 
 	 AND ( 
 	 f.estado = 1 
 	 OR f.estado = 2) 
@@ -297,47 +295,24 @@ ORDER BY r.idrubro DESC]]>
 		<band height="13"/>
 	</pageHeader>
 	<columnHeader>
-		<band height="21"/>
-	</columnHeader>
-	<detail>
 		<band>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
-	</detail>
-	<columnFooter>
-		<band/>
-	</columnFooter>
-	<pageFooter>
-		<band height="13">
-			<textField>
-				<reportElement mode="Opaque" x="20" y="0" width="515" height="13" backcolor="#E6E6E6" uuid="c2d4b887-61c9-4368-a35c-9c0dfb16f3dc"/>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report">
-				<reportElement mode="Opaque" x="535" y="0" width="40" height="13" backcolor="#E6E6E6" uuid="ac6d6b41-af6d-487e-b27a-68971b015223"/>
-				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
-			<textField pattern="EEEEE dd MMMMM yyyy">
-				<reportElement x="20" y="0" width="100" height="13" uuid="fd6fbf78-d1d3-427d-8b6e-58abfee67bcb"/>
-				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
-			</textField>
-		</band>
-	</pageFooter>
-	<summary>
-		<band height="351">
+	</columnHeader>
+	<detail>
+		<band height="153">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<componentElement>
-				<reportElement x="0" y="20" width="550" height="142" uuid="7752e5f7-fa46-4def-b753-b884cf227f49">
+				<reportElement x="0" y="5" width="550" height="142" uuid="7752e5f7-fa46-4def-b753-b884cf227f49">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="PeriodosAnteriores" uuid="4458338b-3fc2-47c9-830a-00afca494de6">
+					<datasetRun subDataset="PeriodosAnteriores" uuid="736d8139-6527-4ecd-a438-67845a440b98">
 						<datasetParameter name="c_fecreas">
-							<datasetParameterExpression><![CDATA[$P{c_fecrea}]]></datasetParameterExpression>
+							<datasetParameterExpression><![CDATA[$P{c_feccrea}]]></datasetParameterExpression>
 						</datasetParameter>
 						<datasetParameter name="v_dfechas">
 							<datasetParameterExpression><![CDATA[$P{v_dfecha}]]></datasetParameterExpression>
@@ -415,11 +390,10 @@ ORDER BY r.idrubro DESC]]>
 					</jr:column>
 				</jr:table>
 			</componentElement>
-			<break type="Column">
-				<reportElement x="0" y="170" width="557" height="1" uuid="62178266-75e7-45de-bb02-c78066c0ce6e"/>
-			</break>
+		</band>
+		<band height="159">
 			<componentElement>
-				<reportElement x="0" y="186" width="550" height="94" uuid="fb3a54a2-b670-4bd0-97d8-d4bce2d6b785">
+				<reportElement x="2" y="10" width="550" height="139" uuid="fb3a54a2-b670-4bd0-97d8-d4bce2d6b785">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
@@ -427,9 +401,9 @@ ORDER BY r.idrubro DESC]]>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="PeriodoActual" uuid="2b1fac7b-bc67-4213-9125-71633ac6a652">
+					<datasetRun subDataset="PeriodoActual" uuid="d7e2e87f-3937-4d30-9dc9-847d41a1bf68">
 						<datasetParameter name="c_feccreas">
-							<datasetParameterExpression><![CDATA[$P{c_fecrea}]]></datasetParameterExpression>
+							<datasetParameterExpression><![CDATA[$P{c_feccrea}]]></datasetParameterExpression>
 						</datasetParameter>
 						<datasetParameter name="v_dfechas">
 							<datasetParameterExpression><![CDATA[$P{v_dfecha}]]></datasetParameterExpression>
@@ -507,11 +481,10 @@ ORDER BY r.idrubro DESC]]>
 					</jr:column>
 				</jr:table>
 			</componentElement>
-			<break>
-				<reportElement x="0" y="300" width="555" height="1" uuid="dfcc6712-82db-4f12-aa9d-ea41d7a93679"/>
-			</break>
+		</band>
+		<band height="53">
 			<componentElement>
-				<reportElement x="260" y="310" width="300" height="32" uuid="a593bd58-4ee7-4650-a9bb-9369385ea318">
+				<reportElement x="250" y="10" width="300" height="32" uuid="a593bd58-4ee7-4650-a9bb-9369385ea318">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
@@ -551,6 +524,31 @@ ORDER BY r.idrubro DESC]]>
 					</jr:column>
 				</jr:table>
 			</componentElement>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="13">
+			<textField>
+				<reportElement mode="Opaque" x="20" y="0" width="515" height="13" backcolor="#E6E6E6" uuid="c2d4b887-61c9-4368-a35c-9c0dfb16f3dc"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement mode="Opaque" x="535" y="0" width="40" height="13" backcolor="#E6E6E6" uuid="ac6d6b41-af6d-487e-b27a-68971b015223"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement x="20" y="0" width="100" height="13" uuid="fd6fbf78-d1d3-427d-8b6e-58abfee67bcb"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
 	</summary>
 </jasperReport>
