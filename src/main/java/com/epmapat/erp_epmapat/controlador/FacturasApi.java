@@ -275,22 +275,51 @@ public class FacturasApi {
 	 */
 
 	@GetMapping("/reportes/facturascobradas")
-	public ResponseEntity<Resource> download(
+	public ResponseEntity<Resource> reporteFacturasCobradas(
 			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha, @RequestParam("tipo") String tipo)
+			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha)
 			throws JRException, IOException, SQLException {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
-		params.put("tipo", tipo);
+		params.put("fileName", "FacturasCobradas");
 		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
 		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
 		MediaType mediaType = null;
-		if (tipo == "excel") {
-			mediaType = MediaType.APPLICATION_OCTET_STREAM;
-		} else {
-			mediaType = MediaType.APPLICATION_PDF;
-		}
+		/*
+		 * if (tipo == "excel") {
+		 * mediaType = MediaType.APPLICATION_OCTET_STREAM;
+		 * } else {
+		 * }
+		 */
+		mediaType = MediaType.APPLICATION_PDF;
+
+		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
+				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
+	}
+
+	@GetMapping("/reportes/facturasrubros")
+	public ResponseEntity<Resource> reporteFacturaRubros(
+			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate v_dfecha,
+			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate v_hfecha,
+			@RequestParam("c_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate c_fecrea)
+			throws JRException, IOException, SQLException {
+		System.out.println(v_dfecha);
+		System.out.println(v_hfecha);
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("v_dfecha", v_dfecha);
+		params.put("v_hfecha", v_hfecha);
+		params.put("fileName", "facturasCobradasRubros");
+		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
+		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
+		MediaType mediaType = null;
+		/*
+		 * if (tipo == "excel") {
+		 * mediaType = MediaType.APPLICATION_OCTET_STREAM;
+		 * } else {
+		 * }
+		 */
+		mediaType = MediaType.APPLICATION_PDF;
 
 		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
 				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);

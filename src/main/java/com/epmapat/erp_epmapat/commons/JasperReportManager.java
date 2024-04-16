@@ -43,15 +43,13 @@ public class JasperReportManager {
 	 * @throws JRException 
 	 * @throws IOException 
 	 */
-	public ByteArrayOutputStream export(String fileName, String tipoReporte, Map<String, Object> params,
+	public ByteArrayOutputStream export(String fileName, Map<String, Object> params,
 			Connection con) throws JRException, IOException {
-
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		ClassPathResource resource = new ClassPathResource(REPORT_FOLDER + File.separator + fileName + JASPER);
-		
 		InputStream inputStream = resource.getInputStream();
 		JasperPrint jasperPrint = JasperFillManager.fillReport(inputStream, params, con);
-		if (tipoReporte.equalsIgnoreCase(tipoReporte.toString())) {
+		/* if (tipoReporte.equalsIgnoreCase(tipoReporte.toString())) {
 			JRXlsxExporter exporter = new JRXlsxExporter();
 			exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
 			exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(stream));
@@ -61,8 +59,8 @@ public class JasperReportManager {
 			exporter.setConfiguration(configuration);
 			exporter.exportReport();
 		} else {
-			JasperExportManager.exportReportToPdfStream(jasperPrint, stream);
-		}
+		} */
+		JasperExportManager.exportReportToPdfStream(jasperPrint, stream);
 
 		return stream;
 	}

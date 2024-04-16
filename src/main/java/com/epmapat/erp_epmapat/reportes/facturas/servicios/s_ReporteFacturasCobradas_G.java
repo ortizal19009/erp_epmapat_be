@@ -37,13 +37,13 @@ public class s_ReporteFacturasCobradas_G implements i_ReporteFacturasCobradas_G 
 	@Override
 	public ReporteModelDTO obtenerFacturasCobradas_G(Map<String, Object> params)
 			throws JRException, IOException, SQLException {
-		String fileName = "facturasCobradas";
+		String fileName = params.get("fileName").toString();
 		ReporteModelDTO dto = new ReporteModelDTO();
-		String extension = params.get("tipo").toString().equalsIgnoreCase("EXCEL") ? ".xlsx"
-				: ".pdf";
-		dto.setFileName(fileName + extension);
+		/* String extension = params.get("tipo").toString().equalsIgnoreCase("EXCEL") ? ".xlsx"
+				: ".pdf"; */
+		dto.setFileName(fileName + ".pdf");
 
-		ByteArrayOutputStream stream = reportManager.export(fileName, params.get("tipo").toString(), params,
+		ByteArrayOutputStream stream = reportManager.export(fileName, params,
 				dataSource.getConnection());
 
 		byte[] bs = stream.toByteArray();
