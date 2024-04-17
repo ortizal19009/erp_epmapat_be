@@ -309,6 +309,7 @@ public class FacturasApi {
 				System.out.println("FACTURAS_RUBROS_COBRADAS"); 
 				System.out.println(v_dfecha); 
 				System.out.println(v_hfecha);
+				System.out.println(c_feccrea);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
