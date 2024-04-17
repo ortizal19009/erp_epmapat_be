@@ -281,7 +281,7 @@ public class FacturasApi {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
-		params.put("fileName", "FacturasCobradas");
+		params.put("fileName", "facturasCobradas");
 
 		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
 		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
@@ -302,7 +302,7 @@ public class FacturasApi {
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
 		params.put("usuariocobro", usuariocobro);
-		params.put("fileName", "FacturasCobradasCaja");
+		params.put("fileName", "facturasCobradasCaja");
 
 		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
 		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
