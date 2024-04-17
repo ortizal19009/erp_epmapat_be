@@ -36,7 +36,6 @@ import net.sf.jasperreports.engine.JRException;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 
-
 @RestController
 @RequestMapping("/facturas")
 @CrossOrigin(origins = "*")
@@ -283,17 +282,31 @@ public class FacturasApi {
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
 		params.put("fileName", "FacturasCobradas");
- 
-		
+
 		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
 		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
 		MediaType mediaType = null;
-		/*
-		 * if (tipo == "excel") {
-		 * mediaType = MediaType.APPLICATION_OCTET_STREAM;
-		 * } else {
-		 * }
-		 */
+		mediaType = MediaType.APPLICATION_PDF;
+
+		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
+				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
+	}
+
+	@GetMapping("/reportes/facturascobradascaja")
+	public ResponseEntity<Resource> reporteFacturasCobradasCaja(
+			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
+			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
+			@RequestParam("usuariocobro")Long usuariocobro)
+			throws JRException, IOException, SQLException {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("v_dfecha", v_dfecha);
+		params.put("v_hfecha", v_hfecha);
+		params.put("usuariocobro", usuariocobro);
+		params.put("fileName", "FacturasCobradasCaja");
+
+		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
+		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
+		MediaType mediaType = null;
 		mediaType = MediaType.APPLICATION_PDF;
 
 		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
@@ -306,10 +319,6 @@ public class FacturasApi {
 			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
 			@RequestParam("c_feccrea") @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_feccrea)
 			throws JRException, IOException, SQLException {
-				System.out.println("FACTURAS_RUBROS_COBRADAS"); 
-				System.out.println(v_dfecha); 
-				System.out.println(v_hfecha);
-				System.out.println(c_feccrea);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
@@ -317,14 +326,44 @@ public class FacturasApi {
 		params.put("fileName", "facturasCobradasRubros");
 		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
 		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
-		MediaType mediaType = MediaType.APPLICATION_PDF;;
+		MediaType mediaType = MediaType.APPLICATION_PDF;
+		;
 		/*
 		 * if (tipo == "excel") {
 		 * mediaType = MediaType.APPLICATION_OCTET_STREAM;
 		 * } else {
 		 * }
 		 */
-		//mediaType = MediaType.APPLICATION_PDF;
+		// mediaType = MediaType.APPLICATION_PDF;
+
+		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
+				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
+	}
+
+	@GetMapping("/reportes/facturasrubroscaja")
+	public ResponseEntity<Resource> reporteFacturaRubrosCaja(
+			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
+			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
+			@RequestParam("c_feccrea") @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_feccrea,
+			@RequestParam("usuariocobro") Long usuariocobro)
+			throws JRException, IOException, SQLException {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("v_dfecha", v_dfecha);
+		params.put("v_hfecha", v_hfecha);
+		params.put("c_feccrea", c_feccrea);
+		params.put("usuariocobro", usuariocobro);
+		params.put("fileName", "facturasCobradasRubrosCaja");
+		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
+		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
+		MediaType mediaType = MediaType.APPLICATION_PDF;
+		;
+		/*
+		 * if (tipo == "excel") {
+		 * mediaType = MediaType.APPLICATION_OCTET_STREAM;
+		 * } else {
+		 * }
+		 */
+		// mediaType = MediaType.APPLICATION_PDF;
 
 		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
 				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
