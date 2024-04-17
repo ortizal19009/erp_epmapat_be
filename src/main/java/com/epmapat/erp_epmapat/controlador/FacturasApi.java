@@ -283,9 +283,7 @@ public class FacturasApi {
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
 		params.put("fileName", "FacturasCobradas");
-		System.out.println("FACTURAS_COBRADAS"); 
-		System.out.println(v_dfecha); 
-		System.out.println(v_hfecha); 
+ 
 		
 		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
 		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
@@ -308,6 +306,9 @@ public class FacturasApi {
 			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
 			@RequestParam("c_feccrea") @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_feccrea)
 			throws JRException, IOException, SQLException {
+				System.out.println("FACTURAS_RUBROS_COBRADAS"); 
+				System.out.println(v_dfecha); 
+				System.out.println(v_hfecha);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
