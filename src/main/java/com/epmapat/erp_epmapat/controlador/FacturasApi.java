@@ -36,7 +36,7 @@ import net.sf.jasperreports.engine.JRException;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 
-import { saveAs } from 'file-saver';
+
 @RestController
 @RequestMapping("/facturas")
 @CrossOrigin(origins = "*")
