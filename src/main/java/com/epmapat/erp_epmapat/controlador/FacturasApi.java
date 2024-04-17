@@ -1,6 +1,5 @@
 package com.epmapat.erp_epmapat.controlador;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -37,6 +36,7 @@ import net.sf.jasperreports.engine.JRException;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 
+import { saveAs } from 'file-saver';
 @RestController
 @RequestMapping("/facturas")
 @CrossOrigin(origins = "*")
@@ -283,6 +283,10 @@ public class FacturasApi {
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
 		params.put("fileName", "FacturasCobradas");
+		System.out.println("FACTURAS_COBRADAS"); 
+		System.out.println(v_dfecha); 
+		System.out.println(v_hfecha); 
+		
 		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
 		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
 		MediaType mediaType = null;
@@ -311,14 +315,14 @@ public class FacturasApi {
 		params.put("fileName", "facturasCobradasRubros");
 		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
 		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
-		MediaType mediaType = null;
+		MediaType mediaType = MediaType.APPLICATION_PDF;;
 		/*
 		 * if (tipo == "excel") {
 		 * mediaType = MediaType.APPLICATION_OCTET_STREAM;
 		 * } else {
 		 * }
 		 */
-		mediaType = MediaType.APPLICATION_PDF;
+		//mediaType = MediaType.APPLICATION_PDF;
 
 		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
 				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
