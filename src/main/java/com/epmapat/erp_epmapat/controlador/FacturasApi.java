@@ -296,7 +296,7 @@ public class FacturasApi {
 	public ResponseEntity<Resource> reporteFacturasCobradasCaja(
 			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
 			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
-			@RequestParam("usuariocobro")Long usuariocobro)
+			@RequestParam("usuariocobro") Long usuariocobro)
 			throws JRException, IOException, SQLException {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
@@ -367,6 +367,19 @@ public class FacturasApi {
 
 		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
 				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
+	}
+
+	// FACTURAS ANULACIÓN
+	@GetMapping("/anulaciones")
+	public ResponseEntity<List<Facturas>> getFacturasAnuladas(@RequestParam("limit") Long limit) {
+		List<Facturas> facturas = facServicio.fingAllFacturasAnuladas(limit);
+		return ResponseEntity.ok(facturas);
+	}
+	// FACTURAS ELIMINACIÓN
+	@GetMapping("/eliminaciones")
+	public ResponseEntity<List<Facturas>> getFacturasEliminadas(@RequestParam("limit") Long limit) {
+		List<Facturas> facturas = facServicio.fingAllFacturasEliminadas(limit);
+		return ResponseEntity.ok(facturas);
 	}
 
 }

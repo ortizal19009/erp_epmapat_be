@@ -1,41 +1,22 @@
 package com.epmapat.erp_epmapat.servicio;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
-
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import net.sf.jasperreports.export.SimplePdfExporterConfiguration;
-import net.sf.jasperreports.export.SimplePdfReportConfiguration;
 
 @Service
 public class FacturaServicio {
 
 	@Autowired
 	private FacturasR dao;
-	private DataSource dataSource;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -162,17 +143,14 @@ public class FacturaServicio {
 		this.dao = dao;
 	}
 
-	/*
-	 * ===========================
-	 * REPORTES FACTURAS COBRADAS
-	 * ===========================
-	 */
-/*  */
+	// FACTURAS ANULACIÓN
+	public List<Facturas> fingAllFacturasAnuladas(Long limit) {
+		return this.dao.fingAllFacturasAnuladas(limit);
+	}
 
-	/*
-	 * ===========================
-	 * REPORTES FACTURAS RUBROS
-	 * ===========================
-	 */
+	// FACTURAS ELIMINACIÓN
+	public List<Facturas> fingAllFacturasEliminadas(Long limit) {
+		return this.dao.fingAllFacturasEliminadas(limit);
+	}
 
 }
