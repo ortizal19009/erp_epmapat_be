@@ -162,8 +162,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = " select * from facturas f where not f.fechaanulacion is null  and  not f.usuarioanulacion  is null order by f.fechaanulacion desc limit ?1", nativeQuery = true)
 	public List<Facturas> fingAllFacturasAnuladas(Long limit);
 
-	@Query(value = "select * from facturas f join clientes c on f.idcliente = c.idcliente where f.pagado = 1 and f.usuarioanulacion is null and f.fechaeliminacion is null and (f.idabonado = ?1 or f.idcliente = ?2) order by f.feccrea desc", nativeQuery = true)
-	public List<Facturas> findAnuladasxdato(Long cuenta, String dato);
+	@Query(value = "select * from facturas f join clientes c on f.idcliente = c.idcliente where f.pagado = 1 and f.usuarioanulacion is null and f.fechaeliminacion is null and f.idcliente = ?1 order by f.feccrea desc", nativeQuery = true)
+	public List<Facturas> findCobradasByCliente(Long idcliente);
 
 	// Listado de facturas eliminadas
 	@Query(value = " select * from facturas f where not f.fechaeliminacion is null  and  not f.usuarioeliminacion  is null order by f.fechaeliminacion desc limit ?1", nativeQuery = true)

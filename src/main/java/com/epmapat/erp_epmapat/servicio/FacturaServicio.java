@@ -130,7 +130,6 @@ public class FacturaServicio {
 		return dao.findByNrofactura(nrofactura);
 	}
 
-	@SuppressWarnings("null")
 	public <S extends Facturas> S save(S entity) {
 		return dao.save(entity);
 	}
@@ -146,6 +145,9 @@ public class FacturaServicio {
 	// FACTURAS ANULACIÓN
 	public List<Facturas> fingAllFacturasAnuladas(Long limit) {
 		return this.dao.fingAllFacturasAnuladas(limit);
+	}
+	public List<Facturas> findCobradasByCliente(Long idcliente) {
+		return this.dao.findCobradasByCliente(idcliente);
 	}
 
 	// FACTURAS ELIMINACIÓN

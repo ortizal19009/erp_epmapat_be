@@ -375,6 +375,13 @@ public class FacturasApi {
 		List<Facturas> facturas = facServicio.fingAllFacturasAnuladas(limit);
 		return ResponseEntity.ok(facturas);
 	}
+
+	@GetMapping("/cobradas/cliente")
+	public ResponseEntity<List<Facturas>> getFacturasAnuladasxac(@RequestParam("idcliente") Long idcliente) {
+		List<Facturas> facturas = facServicio.findCobradasByCliente(idcliente);
+		return ResponseEntity.ok(facturas);
+	}
+
 	// FACTURAS ELIMINACIÓN
 	@GetMapping("/eliminaciones")
 	public ResponseEntity<List<Facturas>> getFacturasEliminadas(@RequestParam("limit") Long limit) {
