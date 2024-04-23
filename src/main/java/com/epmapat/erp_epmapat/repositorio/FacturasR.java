@@ -86,7 +86,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * GLOBALES
 	 */
 	// Recaudacion diaria - Facturas cobradas
-	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf " +
+	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total, f.swiva FROM Rubroxfac rf " +
 			"JOIN Facturas f ON rf.idfactura_facturas = f.idfactura " +
 			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL)"
 			+
@@ -103,7 +103,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 */
 
 	// Total diario por Forma de cobro
-	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM  Rubroxfac rf "
+	@Query("SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM  Rubroxfac rf "
 			+ "JOIN Facturas f ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
 			+ "WHERE f.fechacobro = ?1 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL)"
@@ -132,7 +132,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3  AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) GROUP BY fc.descripcion ORDER BY fc.descripcion")
 	List<Object[]> totalFechaFormacobroRangos(@Param("d_fecha") LocalDate d_fecha, @Param("d_fecha") LocalDate h_fecha);
 
-	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f " +
+	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total, f.swiva  FROM Facturas f " +
 			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
 			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL)"
 			+
@@ -142,14 +142,14 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	/*
 	 * POR RECAUDADOR CON RANGO
 	 */
-	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f " +
+	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total,f.swiva  FROM Facturas f " +
 			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
 			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND  f.fechaanulacion IS NULL "
 			+
 			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.nrofactura")
 	List<Object[]> findByFechacobroTotByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador);
 
-	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
+	@Query("SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
 			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
 			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL) GROUP BY fc.descripcion  ORDER BY fc.descripcion")
