@@ -131,7 +131,7 @@ public class FacturasApi {
 	@GetMapping("/idcliente/{idcliente}")
 	public List<Facturas> getSinCobro(@PathVariable("idcliente") Long idcliente) {
 		return facServicio.findSinCobro(idcliente);
-	}
+	} 
 
 	// IDs de las Planillas sin cobrar de un Abonado
 	@GetMapping("/sincobro")

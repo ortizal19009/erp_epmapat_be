@@ -65,9 +65,10 @@ public class FacturaServicio {
 	}
 
 	// Planillas Sin Cobrar de un Cliente
+
 	public List<Facturas> findSinCobro(Long idcliente) {
 		return dao.findSinCobro(idcliente);
-	}
+	} 
 
 	// Planillas Sin Cobrar de un Abonado (para Multas)
 	public List<Long> findSinCobroAbo(Long idabonado) {

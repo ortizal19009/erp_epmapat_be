@@ -6,12 +6,13 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
-public class  ErpEpmapatApplication extends SpringBootServletInitializer{
-	
+public class ErpEpmapatApplication extends SpringBootServletInitializer {
+
 	public static void main(String[] args) {
 		SpringApplication.run(ErpEpmapatApplication.class, args);
 	}
-		@Override
+
+	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder aplication) {
 		return aplication.sources(ErpEpmapatApplication.class);
 	}
