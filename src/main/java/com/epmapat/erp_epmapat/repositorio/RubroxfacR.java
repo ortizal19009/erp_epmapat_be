@@ -138,5 +138,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"GROUP BY r.descripcion, r.idrubro " +
 			"ORDER BY r.idrubro")
 	List<Object[]> totalRubrosActual(LocalDate fecha, LocalDate hasta);
+	
+	
 
 }
