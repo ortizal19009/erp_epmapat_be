@@ -83,5 +83,8 @@ public class LecturaServicio {
    public BigDecimal totalEmisionXFactura(Long idemision) {
       return dao.totalEmisionXFactura(idemision);
    }
+   public List<Object[]> RubrosEmitidos(Long idemision) {
+      return dao.RubrosEmitidos(idemision);
+   }
 
 }

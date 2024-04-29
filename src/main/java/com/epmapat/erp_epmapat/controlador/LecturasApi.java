@@ -136,5 +136,10 @@ public class LecturasApi {
 	public ResponseEntity<BigDecimal> totalEmisionXFactura(@RequestParam("idemision") Long idemision) {
 		return ResponseEntity.ok(lecServicio.totalEmisionXFactura(idemision));
 	}
+	/* obtener la suma de una emision */
+	@GetMapping("/emision/rubros")
+	public ResponseEntity<List<Object[]>> rubrosEmitidos(@RequestParam("idemision") Long idemision) {
+		return ResponseEntity.ok(lecServicio.RubrosEmitidos(idemision));
+	}
 
 }

@@ -68,7 +68,7 @@ public class FacturaServicio {
 
 	public List<Facturas> findSinCobro(Long idcliente) {
 		return dao.findSinCobro(idcliente);
-	} 
+	}
 
 	// Planillas Sin Cobrar de un Abonado (para Multas)
 	public List<Long> findSinCobroAbo(Long idabonado) {
@@ -84,6 +84,7 @@ public class FacturaServicio {
 	public List<Facturas> findSinCobrarAbo(Long idmodulo, Long idabonado) {
 		return dao.findSinCobrarAbo(idmodulo, idabonado);
 	}
+
 	public List<Facturas> findSinCobrarAboMod(Long idabonado) {
 		return dao.findSinCobrarAboMod(idabonado);
 	}
@@ -150,6 +151,7 @@ public class FacturaServicio {
 	public List<Facturas> fingAllFacturasAnuladas(Long limit) {
 		return this.dao.fingAllFacturasAnuladas(limit);
 	}
+
 	public List<Facturas> findCobradasByCliente(Long idcliente) {
 		return this.dao.findCobradasByCliente(idcliente);
 	}
@@ -157,6 +159,11 @@ public class FacturaServicio {
 	// FACTURAS ELIMINACIÓN
 	public List<Facturas> fingAllFacturasEliminadas(Long limit) {
 		return this.dao.fingAllFacturasEliminadas(limit);
+	}
+
+	/* transferencias cobradas */
+	public List<Object[]> transferenciasCobradas(Date d_fecha, Date h_fecha) {
+		return this.dao.transferenciasCobradas(d_fecha, h_fecha);
 	}
 
 }

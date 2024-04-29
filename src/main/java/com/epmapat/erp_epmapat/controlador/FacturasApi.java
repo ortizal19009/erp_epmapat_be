@@ -131,7 +131,7 @@ public class FacturasApi {
 	@GetMapping("/idcliente/{idcliente}")
 	public List<Facturas> getSinCobro(@PathVariable("idcliente") Long idcliente) {
 		return facServicio.findSinCobro(idcliente);
-	} 
+	}
 
 	// IDs de las Planillas sin cobrar de un Abonado
 	@GetMapping("/sincobro")
@@ -145,6 +145,7 @@ public class FacturasApi {
 			@Param(value = "idabonado") Long idabonado) {
 		return facServicio.findSinCobrarAbo(idmodulo, idabonado);
 	}
+
 	// Planillas sin cobrar de un Abonado
 	@GetMapping("/sincobrarAboMod")
 	public List<Facturas> getSinCobrarAboMod(@Param(value = "idabonado") Long idabonado) {
@@ -392,6 +393,14 @@ public class FacturasApi {
 	public ResponseEntity<List<Facturas>> getFacturasEliminadas(@RequestParam("limit") Long limit) {
 		List<Facturas> facturas = facServicio.fingAllFacturasEliminadas(limit);
 		return ResponseEntity.ok(facturas);
+	}
+
+	/* Transferencias cobradas */
+	@GetMapping("/transferencias")
+	public ResponseEntity<List<Object[]>> transferenciasCobradas(
+			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
+			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha) {
+		return ResponseEntity.ok(facServicio.transferenciasCobradas(v_dfecha, v_hfecha));
 	}
 
 }
