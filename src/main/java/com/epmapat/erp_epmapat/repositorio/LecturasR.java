@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.repositorio;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -54,4 +55,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	// lecturaanterior porque no están cerradas las rutas de la emisión anterior
 	@Query(value = "SELECT lecturaactual FROM lecturas WHERE idabonado_abonados=?1 ORDER BY idlectura DESC LIMIT 1", nativeQuery = true)
 	public Long ultimaLectura(Long idabonado);
+
+	@Query(value = "select sum(f.totaltarifa) from lecturas l join facturas f on l.idfactura = f.idfactura where l.idemision = ?1", nativeQuery = true)
+	public BigDecimal totalEmisionXFactura(Long idemision);
 }

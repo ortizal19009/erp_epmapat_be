@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/lecturas")
@@ -128,4 +130,11 @@ public class LecturasApi {
 		Lecturas actualizar = lecServicio.saveLectura(y);
 		return ResponseEntity.ok(actualizar);
 	}
+
+	/* obtener la suma de una emision */
+	@GetMapping("/emision/totalsuma")
+	public ResponseEntity<BigDecimal> totalEmisionXFactura(@RequestParam("idemision") Long idemision) {
+		return ResponseEntity.ok(lecServicio.totalEmisionXFactura(idemision));
+	}
+
 }

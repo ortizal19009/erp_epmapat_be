@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,12 +67,10 @@ public class LecturaServicio {
       return null;
    }
 
-   @SuppressWarnings("null")
    public Optional<Lecturas> findById(Long id) {
       return dao.findById(id);
    }
 
-   @SuppressWarnings("null")
    public <S extends Lecturas> S saveLectura(S entity) {
       return dao.save(entity);
    }
@@ -79,6 +78,10 @@ public class LecturaServicio {
    // Ultima lectura de un Abonado
    public Long ultimaLectura(Long idabonado) {
       return dao.ultimaLectura(idabonado);
+   }
+
+   public BigDecimal totalEmisionXFactura(Long idemision) {
+      return dao.totalEmisionXFactura(idemision);
    }
 
 }
