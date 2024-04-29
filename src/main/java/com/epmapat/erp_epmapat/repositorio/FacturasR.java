@@ -171,7 +171,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = " select * from facturas f where not f.fechaeliminacion is null  and  not f.usuarioeliminacion  is null order by f.fechaeliminacion desc limit ?1", nativeQuery = true)
 	public List<Facturas> fingAllFacturasEliminadas(Long limit);
 	/* reporte de facturas cobradas por transferencia   */
-	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro where f.formapago = 4 and f.fechacobro between '2024-04-01'and '2024-04-29' and f.pagado = 1 and f.estado = 1 group by f.idfactura ", nativeQuery = true)
+	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 group by f.idfactura order by f.nrofactura asc")
 	public List<Object[]> transferenciasCobradas(Date d_fecha, Date h_fecha); 
 
 }

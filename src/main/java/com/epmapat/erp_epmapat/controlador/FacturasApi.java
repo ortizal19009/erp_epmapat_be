@@ -399,7 +399,7 @@ public class FacturasApi {
 	@GetMapping("/transferencias")
 	public ResponseEntity<List<Object[]>> transferenciasCobradas(
 			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha) {
+			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha) {
 		return ResponseEntity.ok(facServicio.transferenciasCobradas(v_dfecha, v_hfecha));
 	}
 
