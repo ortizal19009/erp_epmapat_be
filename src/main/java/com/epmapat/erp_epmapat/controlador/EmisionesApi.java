@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.servicio.EmisionServicio;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/emisiones")
@@ -31,7 +33,6 @@ public class EmisionesApi {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-
     public List<Emisiones> getAll(@Param(value = "desde") String desde,
             @Param(value = "hasta") String hasta) {
         if (desde != null && hasta != null)
@@ -55,7 +56,7 @@ public class EmisionesApi {
 
     @PostMapping
     public ResponseEntity<Emisiones> save(@RequestBody Emisiones x) {
-    return ResponseEntity.ok(emiServicio.save(x));
+        return ResponseEntity.ok(emiServicio.save(x));
     }
 
     @PutMapping("/{idemision}")
@@ -76,6 +77,12 @@ public class EmisionesApi {
 
         Emisiones actualizar = emiServicio.save(y);
         return ResponseEntity.ok(actualizar);
+    }
+
+    @GetMapping("/findall")
+    public ResponseEntity<List<Emisiones>> getAllEmisiones() {
+        List<Emisiones> emisiones = emiServicio.findAll(Sort.by(Sort.Direction.DESC, "idemision"));
+        return ResponseEntity.ok(emisiones);
     }
 
 }

@@ -50,6 +50,9 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	// Lecturas de una Emisión
 	@Query(value = "SELECT * FROM lecturas WHERE idemision=?1 ", nativeQuery = true)
 	public List<Lecturas> findByIdemision(Long idemision);
+	// Lecturas de una Emisión
+	@Query(value = "SELECT * FROM lecturas WHERE idemision=?1 and idabonado_abonados = ?2", nativeQuery = true)
+	public Lecturas findByIdemisionIdAbonado(Long idemision, Long idabonado);
 
 	// Ultima lectura de un Abonado: debe ser lecturaactual tempoaralmente
 	// lecturaanterior porque no están cerradas las rutas de la emisión anterior

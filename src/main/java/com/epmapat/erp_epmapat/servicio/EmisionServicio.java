@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.Emisiones;
@@ -31,5 +32,8 @@ public class EmisionServicio {
     public Emisiones findFirstByOrderByEmisionDesc() {
 		return dao.findFirstByOrderByEmisionDesc();
 	}
+    public List<Emisiones> findAll(Sort sort){
+        return dao.findAll(sort);
+    }
 
 }

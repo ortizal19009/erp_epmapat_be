@@ -62,6 +62,9 @@ public class LecturaServicio {
    public List<Lecturas> findByIdemision(Long idemision) {
       return dao.findByIdemision(idemision);
    }
+   public Lecturas findByIdemisionIdAbonado(Long idemision, Long idabonado) {
+      return dao.findByIdemisionIdAbonado(idemision, idabonado);
+   }
 
    public Lecturas getById(Long id) {
       return null;

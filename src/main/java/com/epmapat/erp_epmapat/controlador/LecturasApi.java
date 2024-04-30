@@ -92,6 +92,10 @@ public class LecturasApi {
 	public List<Lecturas> getByIdemision(@PathVariable Long idemision) {
 		return lecServicio.findByIdemision(idemision);
 	}
+	@GetMapping("/emision/{idemision}/{idabonado}")
+	public Lecturas findByIdemisionIdAbonado(@PathVariable Long idemision, @PathVariable Long idabonado) {
+		return lecServicio.findByIdemisionIdAbonado(idemision, idabonado);
+	}
 
 	// Ultima lectura de un Abonado
 	@GetMapping("/ultimalectura")
