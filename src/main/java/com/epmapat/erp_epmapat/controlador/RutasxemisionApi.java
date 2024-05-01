@@ -74,5 +74,10 @@ public class RutasxemisionApi {
 		Rutasxemision actualizar = ruxemiServicio.save(y);
 		return ResponseEntity.ok(actualizar);
 	}
+	@GetMapping("/emiruta")
+	public ResponseEntity<Rutasxemision> getByEmisionRuta(@RequestParam("idemision") Long idemision,@RequestParam("idruta") Long idruta){
+		Rutasxemision rutasxemision = ruxemiServicio.findByEmisionRuta(idemision, idruta);
+		return ResponseEntity.ok(rutasxemision);
+	}
 
 }

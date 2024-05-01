@@ -30,5 +30,8 @@ public class RutasxemisionServicio {
     public Long contarPorEstadoYEmision(Long idemision_emisiones) {
         return dao.contarPorEstadoYIdemision( idemision_emisiones );
     }
+    public Rutasxemision findByEmisionRuta(Long idemision, Long idruta){
+        return dao.findByEmisionRuta(idemision, idruta);
+    }
 
 }
