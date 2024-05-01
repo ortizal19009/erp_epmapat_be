@@ -17,4 +17,7 @@ public interface RutasxemisionR extends JpaRepository<Rutasxemision, Long> {
 	@Query(value = "SELECT COUNT(*) FROM rutasxemision r WHERE r.idemision_emisiones=?1 and r.estado = 0", nativeQuery = true)
 	Long contarPorEstadoYIdemision(Long idemision_emisiones);
 
+	@Query(value = "select * from rutasxemision where idemision_emisiones = ?1 and idruta_rutas = ?2", nativeQuery = true)
+	public Rutasxemision findByEmisionRuta(Long idemision, Long idruta); 
+
 }
