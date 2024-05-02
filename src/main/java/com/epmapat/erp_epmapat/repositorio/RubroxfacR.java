@@ -139,6 +139,6 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"ORDER BY r.idrubro")
 	List<Object[]> totalRubrosActual(LocalDate fecha, LocalDate hasta);
 	
-	
+	/* @Query(value = "select sum(valor) from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrurbo where ") */
 
 }
