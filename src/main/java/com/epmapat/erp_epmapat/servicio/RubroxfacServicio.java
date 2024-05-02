@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -108,13 +109,15 @@ public class RubroxfacServicio {
 	}
 
 	// Grabar
-	@SuppressWarnings("null")
 	public <S extends Rubroxfac> S save(S entity) {
 		return dao.save(entity);
 	}
 
-	@SuppressWarnings("null")
 	public Optional<Rubroxfac> findById(Long id) {
 		return dao.findById(id);
+	}
+
+	public List <Object[]> getIva(BigDecimal iva, Long idfactura) {
+		return dao.getIva(iva, idfactura);
 	}
 }

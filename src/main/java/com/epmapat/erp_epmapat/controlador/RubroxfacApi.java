@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -173,6 +174,12 @@ public class RubroxfacApi {
       y.setValorunitario(x.getValorunitario());
       Rubroxfac z = rxfServicio.save(y);
       return ResponseEntity.ok(z);
+   }
+
+   @GetMapping("/iva")
+   public ResponseEntity<List <Object[]>> getIva(@RequestParam("iva") BigDecimal iva,
+         @RequestParam("idfactura") Long idfactura) {
+      return ResponseEntity.ok(rxfServicio.getIva(iva, idfactura));
    }
 
 }
