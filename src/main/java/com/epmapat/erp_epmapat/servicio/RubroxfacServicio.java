@@ -117,7 +117,12 @@ public class RubroxfacServicio {
 		return dao.findById(id);
 	}
 
-	public List <Object[]> getIva(BigDecimal iva, Long idfactura) {
+	public List<Object[]> getIva(BigDecimal iva, Long idfactura) {
 		return dao.getIva(iva, idfactura);
+	}
+
+	/* FACTURACIÓN ELECTRONICA */
+	public List<Object[]> getRubrosByFactura(Long idfactura) {
+		return dao.getRubrosByFactura(idfactura);
 	}
 }
