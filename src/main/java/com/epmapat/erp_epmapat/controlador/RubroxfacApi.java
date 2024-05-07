@@ -183,8 +183,8 @@ public class RubroxfacApi {
    }
 
    /* FACTURACIÓN ELECTRONICA */
-   @GetMapping("/facturacionelectronica")
-   public ResponseEntity<List<Object[]>> getRubrosByFactura(@RequestParam("idfactura") Long idfactura){
+   @GetMapping("/feRubros")
+   public ResponseEntity<List<Rubroxfac>> getRubrosByFactura(@RequestParam("idfactura") Long idfactura){
       return ResponseEntity.ok(rxfServicio.getRubrosByFactura(idfactura));
    }
 

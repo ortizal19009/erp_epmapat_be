@@ -149,7 +149,8 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 
 	/* FACTURACION ELECTRONICA */
 
-	@Query(value = "select rf.idrubroxfac, f.idfactura, r.descripcion, rf.cantidad, rf.valorunitario  from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro where f.idfactura = ?1 and not r.idrubro = 165 and f.pagado = 1", nativeQuery = true)
-	List<Object[]> getRubrosByFactura(Long idfactura);
+	//@Query(value = "select rf from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro where f.idfactura = ?1 and not r.idrubro = 165 and f.pagado = 1", nativeQuery = true)
+	@Query(value = "select * from rubroxfac rf where rf.idfactura_facturas = ?1 and not rf.idrubro_rubros = 165", nativeQuery = true)
+	List<Rubroxfac> getRubrosByFactura(Long idfactura);
 
 }

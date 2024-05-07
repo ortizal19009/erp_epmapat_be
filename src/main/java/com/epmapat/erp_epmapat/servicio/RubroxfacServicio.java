@@ -122,7 +122,7 @@ public class RubroxfacServicio {
 	}
 
 	/* FACTURACIÓN ELECTRONICA */
-	public List<Object[]> getRubrosByFactura(Long idfactura) {
+	public List<Rubroxfac> getRubrosByFactura(Long idfactura) {
 		return dao.getRubrosByFactura(idfactura);
 	}
 }
