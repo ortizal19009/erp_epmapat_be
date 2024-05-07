@@ -17,9 +17,11 @@ import com.epmapat.erp_epmapat.servicio.Fec_factura_detalles_impuestosServicio;
 public class Fec_factura_detalles_impuestosApi {
     @Autowired
     private Fec_factura_detalles_impuestosServicio fecfdetimpService;
-@PostMapping
-public ResponseEntity<Fec_factura_detalles_impuestos> saveFacImpuestos(@RequestBody Fec_factura_detalles_impuestos fecfdetimp ){
-    return ResponseEntity.ok(fecfdetimpService.save(fecfdetimp));
 
-}
+    @PostMapping
+    public ResponseEntity<Fec_factura_detalles_impuestos> saveFacImpuestos(
+            @RequestBody Fec_factura_detalles_impuestos fecfdetimp) {
+        return ResponseEntity.ok(fecfdetimpService.save(fecfdetimp));
+
+    }
 }
