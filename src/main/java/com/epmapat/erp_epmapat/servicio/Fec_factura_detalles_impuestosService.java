@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import com.epmapat.erp_epmapat.modelo.Fec_factura_detalles_impuestos;
 import com.epmapat.erp_epmapat.repositorio.Fec_factura_detalles_impuestosR;
 
+
 @Service
-public class Fec_factura_detalles_impuestosServicio {
+public class Fec_factura_detalles_impuestosService {
     @Autowired
     private Fec_factura_detalles_impuestosR dao;
 
@@ -20,5 +21,4 @@ public class Fec_factura_detalles_impuestosServicio {
     public <S extends Fec_factura_detalles_impuestos> S save(S entity) {
         return dao.save(entity);
     }
-
 }
