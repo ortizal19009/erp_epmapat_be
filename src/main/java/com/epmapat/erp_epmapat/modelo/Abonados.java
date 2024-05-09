@@ -1,11 +1,9 @@
 package com.epmapat.erp_epmapat.modelo;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.*;
 
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 @Entity
 @Table(name = "abonados")
@@ -18,10 +16,10 @@ public class Abonados {
 	private String nromedidor;
 	private Long lecturainicial;
 	private Long estado;
-	@Temporal(TemporalType.DATE)
+	/* @Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fechainstalacion")
-	private Date fechainstalacion;
+	@Column(name = "fechainstalacion") */
+	private LocalDate fechainstalacion;
 	private String marca;
 	private Long secuencia;
 	private String direccionubicacion;
@@ -60,15 +58,15 @@ public class Abonados {
 	 * Set<ServiciosM> servSeleccionados = new HashSet<>();
 	 */
 	private Long usucrea;
-	@Temporal(TemporalType.DATE)
+	/* @Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "feccrea")
-	private Date feccrea;
+	@Column(name = "feccrea") */
+	private LocalDate feccrea;
 	private Long usumodi;
-	@Temporal(TemporalType.DATE)
+	/* @Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fecmodi")
-	private Date fecmodi;
+	@Column(name = "fecmodi") */
+	private LocalDate fecmodi;
 	private Boolean adultomayor;
 	private Boolean municipio;
 	private Boolean swalcantarillado;
@@ -78,12 +76,12 @@ public class Abonados {
 		super();
 	}
 
-	public Abonados(Long idabonado, String nromedidor, Long lecturainicial, Long estado, Date fechainstalacion,
+	public Abonados(Long idabonado, String nromedidor, Long lecturainicial, Long estado, LocalDate fechainstalacion,
 			String marca, Long secuencia, String direccionubicacion, String localizacion, String observacion,
 			String departamento, String piso, Clientes idresponsable, Categorias idcategoria_categorias,
 			Rutas idruta_rutas, Clientes idcliente_clientes, Ubicacionm idubicacion_ubicacion,
 			Tipopago idtipopago_tipopago, Estadom idestadom_estadom, Long medidorprincipal, Long usucrea,
-			Date feccrea, Long usumodi, Date fecmodi, Boolean adultomayor, Boolean municipio, Boolean swalcantarillado,
+			LocalDate feccrea, Long usumodi, LocalDate fecmodi, Boolean adultomayor, Boolean municipio, Boolean swalcantarillado,
 			Long promedio) {
 		super();
 		this.idabonado = idabonado;
@@ -164,11 +162,11 @@ public class Abonados {
 		this.estado = estado;
 	}
 
-	public Date getFechainstalacion() {
+	public LocalDate getFechainstalacion() {
 		return fechainstalacion;
 	}
 
-	public void setFechainstalacion(Date fechainstalacion) {
+	public void setFechainstalacion(LocalDate fechainstalacion) {
 		this.fechainstalacion = fechainstalacion;
 	}
 
@@ -292,11 +290,11 @@ public class Abonados {
 		this.usucrea = usucrea;
 	}
 
-	public Date getFeccrea() {
+	public LocalDate getFeccrea() {
 		return feccrea;
 	}
 
-	public void setFeccrea(Date feccrea) {
+	public void setFeccrea(LocalDate feccrea) {
 		this.feccrea = feccrea;
 	}
 
@@ -308,11 +306,11 @@ public class Abonados {
 		this.usumodi = usumodi;
 	}
 
-	public Date getFecmodi() {
+	public LocalDate getFecmodi() {
 		return fecmodi;
 	}
 
-	public void setFecmodi(Date fecmodi) {
+	public void setFecmodi(LocalDate fecmodi) {
 		this.fecmodi = fecmodi;
 	}
 

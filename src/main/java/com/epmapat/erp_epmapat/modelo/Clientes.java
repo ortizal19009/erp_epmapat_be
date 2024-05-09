@@ -1,11 +1,8 @@
 package com.epmapat.erp_epmapat.modelo;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.*;
-
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 @Entity
 @Table(name ="clientes")
@@ -24,10 +21,10 @@ public class Clientes {
 	private String nombre;
 	private String direccion; 
 	private String telefono;
-	@Temporal(TemporalType.DATE)
+/* 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name ="fechanacimiento")
-	private Date fechanacimiento;
+	@Column(name ="fechanacimiento") */
+	private LocalDate fechanacimiento;
 	private Long discapacitado;
 	private Long porcdiscapacidad;
 	private Long porcexonera;
@@ -37,22 +34,22 @@ public class Clientes {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idnacionalidad_nacionalidad")
 	private Nacionalidad idnacionalidad_nacionalidad;
-	@Temporal(TemporalType.DATE)
+	/* @Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name ="feccrea")
-	private Date feccrea;
+	@Column(name ="feccrea") */
+	private LocalDate feccrea;
 	private Long usumodi;
-	@Temporal(TemporalType.DATE)
+/* 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name ="fecmodi")
-	private Date fecmodi;
+	@Column(name ="fecmodi") */
+	private LocalDate fecmodi;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idpjuridica_personeriajuridica")
 	private PersonJuridica idpjuridica_personeriajuridica;
 
-	public Clientes(Long idcliente, String cedula,Tpidentifica idtpidentifica_tpidentifica, String nombre, String direccion, String telefono, Date fechanacimiento,
+	public Clientes(Long idcliente, String cedula,Tpidentifica idtpidentifica_tpidentifica, String nombre, String direccion, String telefono, LocalDate fechanacimiento,
 			Long discapacitado, Long porcexonera,Long porcdiscapacidad, Long estado, String email, Long usucrea,
-			Nacionalidad idnacionalidad_nacionalidad, Date feccrea, Long usumodi, Date fecmodi,
+			Nacionalidad idnacionalidad_nacionalidad, LocalDate feccrea, Long usumodi, LocalDate fecmodi,
 			PersonJuridica idpjuridica_personeriajuridica) {
 		super();
 		this.idcliente = idcliente;
@@ -109,10 +106,10 @@ public class Clientes {
 	public void setTelefono(String telefono) {
 		this.telefono = telefono;
 	}
-	public Date getFechanacimiento() {
+	public LocalDate getFechanacimiento() {
 		return fechanacimiento;
 	}
-	public void setFechanacimiento(Date fechanacimiento) {
+	public void setFechanacimiento(LocalDate fechanacimiento) {
 		this.fechanacimiento = fechanacimiento;
 	}
 	public Long getDiscapacitado() {
@@ -151,10 +148,10 @@ public class Clientes {
 	public void setIdnacionalidad_nacionalidad(Nacionalidad idnacionalidad_nacionalidad) {
 		this.idnacionalidad_nacionalidad = idnacionalidad_nacionalidad;
 	}
-	public Date getFeccrea() {
+	public LocalDate getFeccrea() {
 		return feccrea;
 	}
-	public void setFeccrea(Date feccrea) {
+	public void setFeccrea(LocalDate feccrea) {
 		this.feccrea = feccrea;
 	}
 	public Long getUsumodi() {
@@ -163,10 +160,10 @@ public class Clientes {
 	public void setUsumodi(Long usumodi) {
 		this.usumodi = usumodi;
 	}
-	public Date getFecmodi() {
+	public LocalDate getFecmodi() {
 		return fecmodi;
 	}
-	public void setFecmodi(Date fecmodi) {
+	public void setFecmodi(LocalDate fecmodi) {
 		this.fecmodi = fecmodi;
 	}
 	public PersonJuridica getIdpjuridica_personeriajuridica() {
@@ -175,7 +172,6 @@ public class Clientes {
 	public void setIdpjuridica_personeriajuridica(PersonJuridica idpjuridica_personeriajuridica) {
 		this.idpjuridica_personeriajuridica = idpjuridica_personeriajuridica;
 	}
-
 	public String getNombre() {
 		return nombre;
 	}
@@ -194,6 +190,4 @@ public class Clientes {
 	public void setIdtpidentifica_tpidentifica(Tpidentifica idtpidentifica_tpidentifica) {
 		this.idtpidentifica_tpidentifica = idtpidentifica_tpidentifica;
 	}
-
-	
 }

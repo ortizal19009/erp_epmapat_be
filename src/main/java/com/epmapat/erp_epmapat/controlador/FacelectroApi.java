@@ -25,24 +25,25 @@ public class FacelectroApi {
 	private FacelectroServicio faceleServicio;
 
 	@GetMapping
-	public List<Facelectro> get(@Param(value = "nrofac") String nrofac, 
-		@Param(value = "idcliente") Long idcliente ) {
+	public List<Facelectro> get(@Param(value = "nrofac") String nrofac,
+			@Param(value = "idcliente") Long idcliente) {
 		if (nrofac != null)
 			return faceleServicio.findByNrofac(nrofac);
-		else{
+		else {
 			if (idcliente != null)
-				return faceleServicio.findByIdcliente( idcliente );
-		 	return null;
+				return faceleServicio.findByIdcliente(idcliente);
+			return null;
 		}
 	}
 
-	//Solo para probar en Postman
+	// Solo para probar en Postman
 	// @GetMapping
 	// public List<Facelectro> get20() {
-	// 	return faceleServicio.find20();
+	// return faceleServicio.find20();
 	// }
 
-	// facelectro.idfacelectro no es clave foranea de ningún Tabla (Se usa solo para probar en Postman )
+	// facelectro.idfacelectro no es clave foranea de ningún Tabla (Se usa solo para
+	// probar en Postman )
 	@GetMapping("/{idfacelectro}")
 	public ResponseEntity<Facelectro> getById(@PathVariable Long idfacelectro) {
 		Facelectro x = faceleServicio.findById(idfacelectro)

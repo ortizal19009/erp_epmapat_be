@@ -49,7 +49,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			@Param("fechaHasta") LocalDate fechaHasta);
 
 	// Planillas por Cliente (sinCobrar)
-	 @Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery = true)
+	 @Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobro(Long idcliente);
 
 	// Planillas por Abonado
