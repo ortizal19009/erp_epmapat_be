@@ -93,7 +93,7 @@ public class LecturasApi {
 		return lecServicio.findByIdemision(idemision);
 	}
 	@GetMapping("/emision/{idemision}/{idabonado}")
-	public Lecturas findByIdemisionIdAbonado(@PathVariable Long idemision, @PathVariable Long idabonado) {
+	public List<Lecturas> findByIdemisionIdAbonado(@PathVariable Long idemision, @PathVariable Long idabonado) {
 		return lecServicio.findByIdemisionIdAbonado(idemision, idabonado);
 	}
 
