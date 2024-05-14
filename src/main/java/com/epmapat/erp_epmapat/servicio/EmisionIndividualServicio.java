@@ -1,5 +1,7 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,10 @@ public class EmisionIndividualServicio {
 
     public <S extends EmisionIndividual> S save(S entity) {
         return dao.save(entity);
+    }
+
+    public List<EmisionIndividual> findByIdEmision(Long idemision) {
+        return dao.findByIdEmision(idemision);
     }
 
 }

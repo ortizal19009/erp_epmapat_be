@@ -49,7 +49,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			@Param("fechaHasta") LocalDate fechaHasta);
 
 	// Planillas por Cliente (sinCobrar)
-	 @Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery = true)
+	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobro(Long idcliente);
 
 	// Planillas por Abonado
@@ -67,6 +67,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Planillas Sin cobrar por modulo y Abonado (para Convenios)
 	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idmodulo=:idmodulo and idabonado=:idabonado and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobrarAbo(Long idmodulo, Long idabonado);
+
 	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and (idmodulo between 3 and 4) and idabonado=:idabonado and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobrarAboMod(Long idabonado);
 
@@ -170,8 +171,15 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Listado de facturas eliminadas
 	@Query(value = " select * from facturas f where not f.fechaeliminacion is null  and  not f.usuarioeliminacion  is null order by f.fechaeliminacion desc limit ?1", nativeQuery = true)
 	public List<Facturas> fingAllFacturasEliminadas(Long limit);
-	/* reporte de facturas cobradas por transferencia   */
+
+	/* reporte de facturas cobradas por transferencia */
 	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 group by f.idfactura order by f.nrofactura asc")
-	public List<Object[]> transferenciasCobradas(Date d_fecha, Date h_fecha); 
+	public List<Object[]> transferenciasCobradas(Date d_fecha, Date h_fecha);
+
+	/* REPORTE DE FACTURAS TRANSFERIDAS PERO NO COBRADAS */
+	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 group by f.idfactura order by f.nrofactura asc")
+	public List<Object[]> transferenciasNoCobradas(Date d_fecha, Date h_fecha);
+
+	/* REPORTE PARA ANULACIONES Y BAJAS */
 
 }

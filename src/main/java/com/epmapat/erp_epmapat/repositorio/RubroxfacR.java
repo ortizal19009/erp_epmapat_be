@@ -153,4 +153,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "select * from rubroxfac rf where rf.idfactura_facturas = ?1 and not rf.idrubro_rubros = 165", nativeQuery = true)
 	List<Rubroxfac> getRubrosByFactura(Long idfactura);
 
+	
+
+
 }

@@ -13,7 +13,8 @@ public class EmisionIndividual {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idemisionindividual;
     private Long idemision;
-    private Long idlectura;
+    private Long idlecturanueva;
+    private Long idlecturaanterior;
 
     public Long getIdemisionindividual() {
         return idemisionindividual;
@@ -31,21 +32,31 @@ public class EmisionIndividual {
         this.idemision = idemision;
     }
 
-    public Long getIdlectura() {
-        return idlectura;
+    public Long getIdlecturanueva() {
+        return idlecturanueva;
     }
 
-    public void setIdlectura(Long idlectura) {
-        this.idlectura = idlectura;
+    public void setIdlecturanueva(Long idlecturanueva) {
+        this.idlecturanueva = idlecturanueva;
     }
 
-    public EmisionIndividual(Long idemisionindividual, Long idemision, Long idlectura) {
-        this.idemisionindividual = idemisionindividual;
-        this.idemision = idemision;
-        this.idlectura = idlectura;
+    public Long getIdlecturaanterior() {
+        return idlecturaanterior;
+    }
+
+    public void setIdlecturaanterior(Long idlecturaanterior) {
+        this.idlecturaanterior = idlecturaanterior;
     }
 
     public EmisionIndividual() {
         super();
     }
+
+    public EmisionIndividual(Long idemisionindividual, Long idemision, Long idlecturanueva, Long idlecturaanterior) {
+        this.idemisionindividual = idemisionindividual;
+        this.idemision = idemision;
+        this.idlecturanueva = idlecturanueva;
+        this.idlecturaanterior = idlecturaanterior;
+    }
+    
 }
