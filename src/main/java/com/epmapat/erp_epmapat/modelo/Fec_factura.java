@@ -27,7 +27,6 @@ public class Fec_factura implements Serializable {
    private String direccioncomprador;
    private String telefonocomprador;
    private String emailcomprador;
-   private String domicilio;
    private String concepto;
    private String referencia;
    private String recaudador;
@@ -168,14 +167,6 @@ public class Fec_factura implements Serializable {
       this.emailcomprador = emailcomprador;
    }
 
-   public String getDomicilio() {
-      return domicilio;
-   }
-
-   public void setDomicilio(String domicilio) {
-      this.domicilio = domicilio;
-   }
-
    public String getConcepto() {
       return concepto;
    }
@@ -199,6 +190,5 @@ public class Fec_factura implements Serializable {
    public void setRecaudador(String recaudador) {
       this.recaudador = recaudador;
    }
-   
 
 }
