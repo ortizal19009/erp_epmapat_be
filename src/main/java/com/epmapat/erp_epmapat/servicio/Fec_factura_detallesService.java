@@ -20,4 +20,8 @@ public class Fec_factura_detallesService {
 	public <S extends Fec_factura_detalles> S save(S entity) {
 		return dao.save(entity);
 	}
+
+	public List<Fec_factura_detalles> findFecDetalleByIdFactura(Long idfactura) {
+		return dao.getFecDetalleByIdFactura(idfactura);
+	}
 }

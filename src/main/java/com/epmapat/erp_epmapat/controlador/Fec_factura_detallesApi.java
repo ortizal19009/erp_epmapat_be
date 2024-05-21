@@ -1,4 +1,5 @@
 package com.epmapat.erp_epmapat.controlador;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,11 @@ public class Fec_factura_detallesApi {
 	@PostMapping
 	public ResponseEntity<Fec_factura_detalles> saveFacturaDetalle(@RequestBody Fec_factura_detalles fecfdetalle) {
 		return ResponseEntity.ok(fecfdetService.save(fecfdetalle));
+	}
+
+	@GetMapping("/factura")
+	public ResponseEntity<List<Fec_factura_detalles>> getFecDetalleByIdFactura(Long idfactura) {
+		return ResponseEntity.ok(fecfdetService.findFecDetalleByIdFactura(idfactura));
 	}
 
 }
