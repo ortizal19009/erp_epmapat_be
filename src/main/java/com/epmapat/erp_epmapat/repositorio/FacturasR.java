@@ -181,5 +181,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Object[]> transferenciasNoCobradas(Date d_fecha, Date h_fecha);
 
 	/* REPORTE PARA ANULACIONES Y BAJAS */
+	
+	/* COBRADAS POR RANGO */
+	//@Query(value = "select * from facturas f where ")
 
 }
