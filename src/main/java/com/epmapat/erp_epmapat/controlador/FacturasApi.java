@@ -403,4 +403,10 @@ public class FacturasApi {
 		return ResponseEntity.ok(facServicio.transferenciasCobradas(v_dfecha, v_hfecha));
 	}
 
+	@GetMapping("/rangofeccobro")
+	public ResponseEntity<List<Facturas>> getFechaCobro(
+			@RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
+			@RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
+		return ResponseEntity.ok(facServicio.findFechaCobro(d, h));
+	}
 }

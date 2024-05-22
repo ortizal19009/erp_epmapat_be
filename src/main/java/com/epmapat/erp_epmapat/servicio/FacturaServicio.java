@@ -166,4 +166,7 @@ public class FacturaServicio {
 		return this.dao.transferenciasCobradas(d_fecha, h_fecha);
 	}
 
+	public List<Facturas> findFechaCobro(LocalDate d, LocalDate h) {
+		return this.dao.findFechaCobro(d, h);
+	}
 }
