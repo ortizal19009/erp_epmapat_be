@@ -18,6 +18,18 @@ public class Fec_facturaService {
       return dao.findAll();
    }
 
+   public List<Fec_factura> findByEstado(String estado, Long limit) {
+      return dao.findByEstado(estado, limit);
+   }
+
+   public List<Fec_factura> findByCuenta(Long referencia) {
+      return dao.findByCuenta(referencia);
+   }
+
+   public List<Fec_factura> findByNombreCliente(String cliente) {
+      return dao.findByNombreCliente(cliente);
+   }
+
    public <S extends Fec_factura> S save(S entity) {
       return dao.save(entity);
    }

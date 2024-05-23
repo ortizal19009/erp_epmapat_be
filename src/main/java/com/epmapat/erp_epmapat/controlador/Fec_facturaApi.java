@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,7 +16,6 @@ import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.servicio.Fec_facturaService;
 
 import org.springframework.http.HttpStatus;
-
 
 @RestController
 @RequestMapping("/fec_factura")
@@ -29,6 +29,21 @@ public class Fec_facturaApi {
    @GetMapping
    public List<Fec_factura> getAll() {
       return fecfacServicio.findAll();
+   }
+
+   @GetMapping("/estado")
+   public List<Fec_factura> getByEstado(@RequestParam("estado") String estado, @RequestParam("limit") Long limit) {
+      return fecfacServicio.findByEstado(estado, limit);
+   }
+
+   @GetMapping("/referencia")
+   public List<Fec_factura> getByCuenta(@RequestParam("referencia") Long referencia) {
+      return fecfacServicio.findByCuenta(referencia);
+   }
+
+   @GetMapping("/cliente")
+   public List<Fec_factura> getByNombreCliente(@RequestParam("cliente") String cliente) {
+      return fecfacServicio.findByNombreCliente(cliente);
    }
 
    @PostMapping
