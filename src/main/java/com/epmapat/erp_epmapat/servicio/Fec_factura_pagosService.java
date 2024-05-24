@@ -19,4 +19,8 @@ public class Fec_factura_pagosService {
     public <S extends Fec_factura_pagos> S save(S entity) {
         return dao.save(entity);
     }
+    public List<Fec_factura_pagos> findByIdFactura(Long idfactura){
+        return dao.getByIdfactura(idfactura);
+    
+    }
 }

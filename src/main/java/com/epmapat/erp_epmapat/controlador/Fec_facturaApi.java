@@ -37,7 +37,7 @@ public class Fec_facturaApi {
    }
 
    @GetMapping("/referencia")
-   public List<Fec_factura> getByCuenta(@RequestParam("referencia") Long referencia) {
+   public List<Fec_factura> getByCuenta(@RequestParam("referencia") String referencia) {
       return fecfacServicio.findByCuenta(referencia);
    }
 

@@ -1,4 +1,5 @@
 package com.epmapat.erp_epmapat.controlador;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +21,14 @@ public class Fec_factura_pagosApi {
 
         return ResponseEntity.ok(fecfpagosService.save(fecfpagos));
     }
+
     @GetMapping("/pagos")
     public ResponseEntity<List<Fec_factura_pagos>> findAll() {
         return ResponseEntity.ok(fecfpagosService.findAll());
+    }
+
+    @GetMapping("/factura")
+    public ResponseEntity<List<Fec_factura_pagos>> getByIdfactura(@RequestParam("idfactura") Long idfactura) {
+        return ResponseEntity.ok(fecfpagosService.findByIdFactura(idfactura));
     }
 }

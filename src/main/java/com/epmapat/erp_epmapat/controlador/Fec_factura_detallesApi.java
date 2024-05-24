@@ -27,7 +27,7 @@ public class Fec_factura_detallesApi {
 	}
 
 	@GetMapping("/factura")
-	public ResponseEntity<List<Fec_factura_detalles>> getFecDetalleByIdFactura(Long idfactura) {
+	public ResponseEntity<List<Fec_factura_detalles>> getFecDetalleByIdFactura(@RequestParam("idfactura") Long idfactura) {
 		return ResponseEntity.ok(fecfdetService.findFecDetalleByIdFactura(idfactura));
 	}
 

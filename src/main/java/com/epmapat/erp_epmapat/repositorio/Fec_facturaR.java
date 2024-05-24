@@ -12,9 +12,9 @@ public interface Fec_facturaR extends JpaRepository<Fec_factura, Long> {
     public List<Fec_factura> findByEstado(String estado, Long limit);
 
     @Query(value = "SELECT * FROM fec_factura where referencia = ?1 order by idfactura asc ", nativeQuery = true)
-    public List<Fec_factura> findByCuenta(Long referencia);
+    public List<Fec_factura> findByCuenta(String referencia);
 
-    @Query(value = "SELECT * FROM fec_factura where razonsocialcomprador = ?1 order by idfactura asc ", nativeQuery = true)
+    @Query(value = "SELECT * FROM fec_factura where LOWER(razonsocialcomprador) like %?1% order by idfactura asc ", nativeQuery = true)
     public List<Fec_factura> findByNombreCliente(String cliente);
 
 }

@@ -22,7 +22,7 @@ public class Fec_facturaService {
       return dao.findByEstado(estado, limit);
    }
 
-   public List<Fec_factura> findByCuenta(Long referencia) {
+   public List<Fec_factura> findByCuenta(String referencia) {
       return dao.findByCuenta(referencia);
    }
 
