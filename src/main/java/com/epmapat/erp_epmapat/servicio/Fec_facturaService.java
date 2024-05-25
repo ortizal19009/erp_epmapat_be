@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.servicio;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,9 @@ public class Fec_facturaService {
 
    public <S extends Fec_factura> S save(S entity) {
       return dao.save(entity);
+   }
+   public Optional<Fec_factura> findById(Long id){
+      return dao.findById(id);
    }
 
 }
