@@ -61,7 +61,26 @@ public class Fec_facturaApi {
          @RequestBody Fec_factura fecfactura) {
       Fec_factura factura = fecfacServicio.findById(idfactura)
             .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
-            
-      return null;
+      factura.setClaveacceso(fecfactura.getClaveacceso());
+      factura.setSecuencial(fecfactura.getSecuencial());
+      factura.setXmlautorizado(fecfactura.getXmlautorizado());
+      factura.setErrores(fecfactura.getErrores());
+      factura.setEstado(fecfactura.getEstado());
+      factura.setEstablecimiento(fecfactura.getEstablecimiento());
+      factura.setPuntoemision(fecfactura.getPuntoemision());
+      factura.setDireccionestablecimiento(fecfactura.getDireccionestablecimiento());
+      factura.setFechaemision(fecfactura.getFechaemision());
+      factura.setTipoidentificacioncomprador(fecfactura.getTipoidentificacioncomprador());
+      factura.setGuiaremision(fecfactura.getGuiaremision());
+      factura.setRazonsocialcomprador(fecfactura.getRazonsocialcomprador());
+      factura.setIdentificacioncomprador(fecfactura.getIdentificacioncomprador());
+      factura.setDireccioncomprador(fecfactura.getDireccioncomprador());
+      factura.setTelefonocomprador(fecfactura.getTelefonocomprador());
+      factura.setEmailcomprador(fecfactura.getEmailcomprador());
+      factura.setConcepto(fecfactura.getConcepto());
+      factura.setReferencia(fecfactura.getReferencia());
+      factura.setRecaudador(fecfactura.getRecaudador());
+      Fec_factura upfecfactura = fecfacServicio.save(factura);
+      return ResponseEntity.ok(upfecfactura);
    }
 }
