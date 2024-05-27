@@ -56,7 +56,7 @@ public class Fec_facturaApi {
       return fecfacServicio.save(x);
    }
 
-   @PutMapping("/{idfactura}")
+   @PutMapping("/{idfecfactura}")
    public ResponseEntity<Fec_factura> updateFecFactura(@PathVariable Long idfactura,
          @RequestBody Fec_factura fecfactura) {
       Fec_factura factura = fecfacServicio.findById(idfactura)

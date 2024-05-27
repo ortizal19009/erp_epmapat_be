@@ -68,7 +68,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idmodulo=:idmodulo and idabonado=:idabonado and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobrarAbo(Long idmodulo, Long idabonado);
 
-	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and (idmodulo between 3 and 4) and idabonado=:idabonado and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
+	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and (idmodulo = 3 or idmodulo = 4) and idabonado=:idabonado and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobrarAboMod(Long idabonado);
 
 	// Recaudacion diaria - Facturas cobradas <Facturas>
