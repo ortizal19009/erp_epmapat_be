@@ -56,8 +56,8 @@ public class Fec_facturaApi {
       return fecfacServicio.save(x);
    }
 
-   @PutMapping("/{idfecfactura}")
-   public ResponseEntity<Fec_factura> updateFecFactura(@PathVariable Long idfactura,
+   @PutMapping
+   public ResponseEntity<Fec_factura> updateFecFactura(@RequestParam("idfactura") Long idfactura,
          @RequestBody Fec_factura fecfactura) {
       Fec_factura factura = fecfacServicio.findById(idfactura)
             .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
