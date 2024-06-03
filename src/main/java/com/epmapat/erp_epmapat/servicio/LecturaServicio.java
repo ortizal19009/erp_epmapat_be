@@ -89,5 +89,7 @@ public class LecturaServicio {
    public List<Object[]> RubrosEmitidos(Long idemision) {
       return dao.RubrosEmitidos(idemision);
    }
-
+public List <Object[]> R_EmisionFinal(Long idemision){
+   return dao.R_EmisionFinal(idemision);
+}
 }
