@@ -20,39 +20,39 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.TramitesM;
-import com.epmapat.erp_epmapat.servicio.TramitesS;
+import com.epmapat.erp_epmapat.modelo.CtramitesM;
+import com.epmapat.erp_epmapat.servicio.CtramitesS;
 
 @RestController
-@RequestMapping("/tramites")
+@RequestMapping("/ctramites")
 @CrossOrigin("*")
 
-public class TramitesC {
+public class CtramitesC {
 
 	@Autowired
-	private TramitesS tramitesS;
+	private CtramitesS tramitesS;
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
-	public List<TramitesM> getAllTramites() {
+	public List<CtramitesM> getAllTramites() {
 		return tramitesS.findAll();
 	}
 
 	@GetMapping("/tptramite/{idtptramite}")
 	@ResponseStatus(HttpStatus.OK)
-	public List<TramitesM> getByTpTramite(@PathVariable("idtptramite") Long idtptramite) {
+	public List<CtramitesM> getByTpTramite(@PathVariable("idtptramite") Long idtptramite) {
 		return tramitesS.findByTpTramite(idtptramite);
 	}
 
 	@GetMapping("/descripcion/{descripcion}")
 	@ResponseStatus(HttpStatus.OK)
-	public List<TramitesM> getByDescripcion(@PathVariable("descripcion") String descripcion) {
+	public List<CtramitesM> getByDescripcion(@PathVariable("descripcion") String descripcion) {
 		return tramitesS.findByDescripcion(descripcion.toLowerCase());
 	}
 
 	@GetMapping("/feccrea/{feccrea}")
 	@ResponseStatus(HttpStatus.OK)
-	public List<TramitesM> getByFeccrea(@PathVariable("feccrea") String feccrea) {
+	public List<CtramitesM> getByFeccrea(@PathVariable("feccrea") String feccrea) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Date fechaConvertida = null;
 		try {
@@ -66,26 +66,26 @@ public class TramitesC {
 	// Trámites por Cliente
 	@GetMapping("/idcliente/{idcliente}")
 	@ResponseStatus(HttpStatus.OK)
-	public List<TramitesM> getByIdcliente(@PathVariable("idcliente") Long idcliente) {
+	public List<CtramitesM> getByIdcliente(@PathVariable("idcliente") Long idcliente) {
 		return tramitesS.findByIdcliente(idcliente);
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public TramitesM saveTramites(@RequestBody TramitesM tramitesM) {
+	public CtramitesM saveTramites(@RequestBody CtramitesM tramitesM) {
 		return tramitesS.save(tramitesM);
 	}
 
 	@GetMapping("/{idtramite}")
-	public ResponseEntity<TramitesM> getByIdTramite(@PathVariable Long idtramite) {
-		TramitesM tramitesM = tramitesS.findById(idtramite)
+	public ResponseEntity<CtramitesM> getByIdTramite(@PathVariable Long idtramite) {
+		CtramitesM tramitesM = tramitesS.findById(idtramite)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe este tamite con este Id"));
 		return ResponseEntity.ok(tramitesM);
 	}
 
 	@PutMapping("/{idtramite}")
-	public ResponseEntity<TramitesM> updateTramite(@PathVariable Long idtramite, @RequestBody TramitesM tramitesm) {
-		TramitesM tramitesM = tramitesS.findById(idtramite)
+	public ResponseEntity<CtramitesM> updateTramite(@PathVariable Long idtramite, @RequestBody CtramitesM tramitesm) {
+		CtramitesM tramitesM = tramitesS.findById(idtramite)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe este tamite con este Id"));
 		tramitesM.setEstado(tramitesm.getEstado());
 		tramitesM.setTotal(tramitesm.getTotal());
@@ -98,7 +98,7 @@ public class TramitesC {
 		tramitesM.setFeccrea(tramitesm.getFeccrea());
 		tramitesM.setUsumodi(tramitesm.getUsumodi());
 		tramitesM.setFecmodi(tramitesm.getFecmodi());
-		TramitesM updateTramite = tramitesS.save(tramitesM);
+		CtramitesM updateTramite = tramitesS.save(tramitesM);
 		return ResponseEntity.ok(updateTramite);
 	}
 

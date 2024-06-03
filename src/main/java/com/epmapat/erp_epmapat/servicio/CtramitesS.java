@@ -13,52 +13,52 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
 import org.springframework.stereotype.Service;
 
-import com.epmapat.erp_epmapat.modelo.TramitesM;
-import com.epmapat.erp_epmapat.repositorio.TramitesR;
+import com.epmapat.erp_epmapat.modelo.CtramitesM;
+import com.epmapat.erp_epmapat.repositorio.CtramitesR;
 
 @Service
-public class TramitesS implements TramitesR{
+public class CtramitesS implements CtramitesR{
 	
 	@Autowired
-	private TramitesR tramitesR;
+	private CtramitesR tramitesR;
 
 	@Override
-	public List<TramitesM> findAll() {
+	public List<CtramitesM> findAll() {
 		return tramitesR.findAll();
 	}
 
 	@Override
-	public List<TramitesM> findByTpTramite(Long idTpTramite) {
+	public List<CtramitesM> findByTpTramite(Long idTpTramite) {
 		return tramitesR.findByTpTramite(idTpTramite);
 	}
 
 	@Override
-	public List<TramitesM> findByDescripcion(String descripcion) {
+	public List<CtramitesM> findByDescripcion(String descripcion) {
 		return tramitesR.findByDescripcion(descripcion);
 	}
 
 	@Override
-	public List<TramitesM> findByfeccrea(Date feccrea) {
+	public List<CtramitesM> findByfeccrea(Date feccrea) {
 		return tramitesR.findByfeccrea(feccrea);
 	}
 
 	@Override
-	public List<TramitesM> findAll(Sort sort) {
+	public List<CtramitesM> findAll(Sort sort) {
 		return tramitesR.findAll(sort);
 	}
 	//Trámites por Cliente
 	@Override
-	public List<TramitesM> findByIdcliente(Long idcliente) {
+	public List<CtramitesM> findByIdcliente(Long idcliente) {
 		return tramitesR.findByIdcliente(idcliente);
 	}
 
 	@Override
-	public List<TramitesM> findAllById(Iterable<Long> ids) {
+	public List<CtramitesM> findAllById(Iterable<Long> ids) {
 		return null;
 	}
 
 	@Override
-	public <S extends TramitesM> List<S> saveAll(Iterable<S> entities) {
+	public <S extends CtramitesM> List<S> saveAll(Iterable<S> entities) {
 		return null;
 	}
 
@@ -67,17 +67,17 @@ public class TramitesS implements TramitesR{
 	}
 
 	@Override
-	public <S extends TramitesM> S saveAndFlush(S entity) {
+	public <S extends CtramitesM> S saveAndFlush(S entity) {
 		return null;
 	}
 
 	@Override
-	public <S extends TramitesM> List<S> saveAllAndFlush(Iterable<S> entities) {
+	public <S extends CtramitesM> List<S> saveAllAndFlush(Iterable<S> entities) {
 		return null;
 	}
 
 	@Override
-	public void deleteAllInBatch(Iterable<TramitesM> entities) {
+	public void deleteAllInBatch(Iterable<CtramitesM> entities) {
 	}
 
 	@Override
@@ -89,42 +89,42 @@ public class TramitesS implements TramitesR{
 	}
 
 	@Override
-	public TramitesM getOne(Long id) {
+	public CtramitesM getOne(Long id) {
 		return null;
 	}
 
 	@Override
-	public TramitesM getById(Long id) {
+	public CtramitesM getById(Long id) {
 		return null;
 	}
 
 	@Override
-	public TramitesM getReferenceById(Long id) {
+	public CtramitesM getReferenceById(Long id) {
 		return null;
 	}
 
 	@Override
-	public <S extends TramitesM> List<S> findAll(Example<S> example) {
+	public <S extends CtramitesM> List<S> findAll(Example<S> example) {
 		return null;
 	}
 
 	@Override
-	public <S extends TramitesM> List<S> findAll(Example<S> example, Sort sort) {
+	public <S extends CtramitesM> List<S> findAll(Example<S> example, Sort sort) {
 		return null;
 	}
 
 	@Override
-	public Page<TramitesM> findAll(Pageable pageable) {
+	public Page<CtramitesM> findAll(Pageable pageable) {
 		return null;
 	}
 
 	@Override
-	public <S extends TramitesM> S save(S entity) {
+	public <S extends CtramitesM> S save(S entity) {
 		return tramitesR.save(entity);
 	}
 
 	@Override
-	public Optional<TramitesM> findById(Long id) {
+	public Optional<CtramitesM> findById(Long id) {
 		return tramitesR.findById(id);
 	}
 
@@ -144,7 +144,7 @@ public class TramitesS implements TramitesR{
 	}
 
 	@Override
-	public void delete(TramitesM entity) {
+	public void delete(CtramitesM entity) {
 	}
 
 	@Override
@@ -152,7 +152,7 @@ public class TramitesS implements TramitesR{
 	}
 
 	@Override
-	public void deleteAll(Iterable<? extends TramitesM> entities) {
+	public void deleteAll(Iterable<? extends CtramitesM> entities) {
 	}
 
 	@Override
@@ -160,27 +160,27 @@ public class TramitesS implements TramitesR{
 	}
 
 	@Override
-	public <S extends TramitesM> Optional<S> findOne(Example<S> example) {
+	public <S extends CtramitesM> Optional<S> findOne(Example<S> example) {
 		return Optional.empty();
 	}
 
 	@Override
-	public <S extends TramitesM> Page<S> findAll(Example<S> example, Pageable pageable) {
+	public <S extends CtramitesM> Page<S> findAll(Example<S> example, Pageable pageable) {
 		return null;
 	}
 
 	@Override
-	public <S extends TramitesM> long count(Example<S> example) {
+	public <S extends CtramitesM> long count(Example<S> example) {
 		return 0;
 	}
 
 	@Override
-	public <S extends TramitesM> boolean exists(Example<S> example) {
+	public <S extends CtramitesM> boolean exists(Example<S> example) {
 		return false;
 	}
 
 	@Override
-	public <S extends TramitesM, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
+	public <S extends CtramitesM, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
 		return null;
 	}
 	

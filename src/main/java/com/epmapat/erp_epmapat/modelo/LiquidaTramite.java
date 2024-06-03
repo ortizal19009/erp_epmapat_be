@@ -26,7 +26,7 @@ public class LiquidaTramite {
 	private String observacion;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idtramite_tramites")
-	private TramitesM idtramite_tramites;
+	private CtramitesM idtramite_tramites;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idfactura_facturas")
 	private Facturas idfactura_facturas;
@@ -40,7 +40,7 @@ public class LiquidaTramite {
 		
 	}
 	public LiquidaTramite(Long idliquidatrami, Long cuota, Float valor, Long usuarioeliminacion, Date fechaeliminacion,
-			String razoneliminacion, Long estado, String observacion, TramitesM idtramite_tramites,
+			String razoneliminacion, Long estado, String observacion, CtramitesM idtramite_tramites,
 			Facturas idfactura_facturas, Long usucrea, Date feccrea) {
 		super();
 		this.idliquidatrami = idliquidatrami;
@@ -104,10 +104,10 @@ public class LiquidaTramite {
 	public void setObservacion(String observacion) {
 		this.observacion = observacion;
 	}
-	public TramitesM getIdtramite_tramites() {
+	public CtramitesM getIdtramite_tramites() {
 		return idtramite_tramites;
 	}
-	public void setIdtramite_tramites(TramitesM idtramite_tramites) {
+	public void setIdtramite_tramites(CtramitesM idtramite_tramites) {
 		this.idtramite_tramites = idtramite_tramites;
 	}
 	public Facturas getIdfactura_facturas() {

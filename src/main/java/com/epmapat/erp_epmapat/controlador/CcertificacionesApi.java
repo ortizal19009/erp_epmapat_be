@@ -18,20 +18,20 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.Certificaciones;
-import com.epmapat.erp_epmapat.servicio.CertificacionServicio;
+import com.epmapat.erp_epmapat.modelo.Ccertificaciones;
+import com.epmapat.erp_epmapat.servicio.CcertificacionServicio;
 
 @RestController
-@RequestMapping("/certificaciones")
+@RequestMapping("/ccertificaciones")
 @CrossOrigin(origins = "*")
 
-public class CertificacionesApi {
+public class CcertificacionesApi {
 
 	@Autowired
-	private CertificacionServicio certiServicio;
+	private CcertificacionServicio certiServicio;
 
 	@GetMapping
-	public List<Certificaciones> getCertificaciones(@Param(value = "desde") Long desde,
+	public List<Ccertificaciones> getCertificaciones(@Param(value = "desde") Long desde,
 			@Param(value = "hasta") Long hasta, @Param(value = "cliente") String cliente) {
 		if (desde != null && hasta != null) {
 			return certiServicio.findDesdeHasta(desde, hasta);
@@ -42,28 +42,28 @@ public class CertificacionesApi {
 	}
 
 	@GetMapping("/ultima")
-	public Certificaciones ultima() {
+	public Ccertificaciones ultima() {
 		return certiServicio.ultima();
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Certificaciones saveCertificaciones(@RequestBody Certificaciones x) {
+	public Ccertificaciones saveCertificaciones(@RequestBody Ccertificaciones x) {
 		return certiServicio.save(x);
 	}
 
 	@GetMapping("/{idcertificacion}")
-	public ResponseEntity<Certificaciones> getByIdCertificaciones(@PathVariable Long idcertificacion) {
-		Certificaciones x = certiServicio.findById(idcertificacion)
+	public ResponseEntity<Ccertificaciones> getByIdCertificaciones(@PathVariable Long idcertificacion) {
+		Ccertificaciones x = certiServicio.findById(idcertificacion)
 				.orElseThrow(
 						() -> new ResourceNotFoundExcepciones("No existe ese Certificado con ese id: " + idcertificacion));
 		return ResponseEntity.ok(x);
 	}
 
 	@PutMapping(value = "/{idcertificacion}")
-	public ResponseEntity<Certificaciones> updateCertificaciones(@PathVariable Long idcertificacion,
-			@RequestBody Certificaciones certificacionesm) {
-		Certificaciones certificacionesM = certiServicio.findById(idcertificacion)
+	public ResponseEntity<Ccertificaciones> updateCertificaciones(@PathVariable Long idcertificacion,
+			@RequestBody Ccertificaciones certificacionesm) {
+		Ccertificaciones certificacionesM = certiServicio.findById(idcertificacion)
 				.orElseThrow(
 						() -> new ResourceNotFoundExcepciones("No existe ese Certificado con ese id: " + idcertificacion));
 		certificacionesM.setNumero(certificacionesm.getNumero());
@@ -74,7 +74,7 @@ public class CertificacionesApi {
 		certificacionesM.setUsucrea(certificacionesm.getUsucrea());
 		certificacionesM.setFeccrea(certificacionesm.getFeccrea());
 		certificacionesM.setFecmodi(certificacionesm.getFecmodi());
-		Certificaciones updateCertificaciones = certiServicio.save(certificacionesM);
+		Ccertificaciones updateCertificaciones = certiServicio.save(certificacionesM);
 		return ResponseEntity.ok(updateCertificaciones);
 	}
 

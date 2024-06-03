@@ -8,9 +8,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 @Entity
-@Table(name="tramites")
+@Table(name="ctramites")
 
-public class TramitesM {
+public class CtramitesM {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,11 +40,11 @@ public class TramitesM {
 	@Column(name = "fecmodi")
 	private Date fecmodi;
 
-	public TramitesM() {
+	public CtramitesM() {
 		super();
 	}
 
-	public TramitesM(Long idtramite, Long estado, Float total, String descripcion, Long cuotas, Date validohasta,
+	public CtramitesM(Long idtramite, Long estado, Float total, String descripcion, Long cuotas, Date validohasta,
 			TpTramiteM idtptramite_tptramite, Clientes idcliente_clientes, Long usucrea, Date feccrea, Long usumodi,
 			Date fecmodi) {
 		super();
