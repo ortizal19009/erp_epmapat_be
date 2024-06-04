@@ -145,5 +145,10 @@ public class LecturasApi {
 	public ResponseEntity<List<Object[]>> rubrosEmitidos(@RequestParam("idemision") Long idemision) {
 		return ResponseEntity.ok(lecServicio.RubrosEmitidos(idemision));
 	}
+	@GetMapping("/reportes/emisionfinal")
+	public ResponseEntity<List<Object[]>> R_EmisionFinal(@RequestParam ("idemision") Long idemision ){
+		return ResponseEntity.ok(lecServicio.R_EmisionFinal(idemision));
+
+	}
 
 }
