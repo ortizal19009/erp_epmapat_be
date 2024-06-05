@@ -150,5 +150,10 @@ public class LecturasApi {
 		return ResponseEntity.ok(lecServicio.R_EmisionFinal(idemision));
 
 	}
+	@GetMapping("/reportes/emisionactual")
+	public ResponseEntity<List<Object[]>> R_EmisionActual(@RequestParam ("idemision") Long idemision ){
+		return ResponseEntity.ok(lecServicio.R_EmisionActual(idemision));
+
+	}
 
 }

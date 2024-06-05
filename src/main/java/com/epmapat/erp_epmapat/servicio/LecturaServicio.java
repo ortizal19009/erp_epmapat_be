@@ -62,6 +62,7 @@ public class LecturaServicio {
    public List<Lecturas> findByIdemision(Long idemision) {
       return dao.findByIdemision(idemision);
    }
+
    public List<Lecturas> findByIdemisionIdAbonado(Long idemision, Long idabonado) {
       return dao.findByIdemisionIdAbonado(idemision, idabonado);
    }
@@ -86,10 +87,16 @@ public class LecturaServicio {
    public BigDecimal totalEmisionXFactura(Long idemision) {
       return dao.totalEmisionXFactura(idemision);
    }
+
    public List<Object[]> RubrosEmitidos(Long idemision) {
       return dao.RubrosEmitidos(idemision);
    }
-public List <Object[]> R_EmisionFinal(Long idemision){
-   return dao.R_EmisionFinal(idemision);
-}
+
+   public List<Object[]> R_EmisionFinal(Long idemision) {
+      return dao.R_EmisionFinal(idemision);
+   }
+
+   public List<Object[]> R_EmisionActual(Long idemision) {
+      return dao.R_EmisionActual(idemision);
+   }
 }
