@@ -99,4 +99,8 @@ public class LecturaServicio {
    public List<Object[]> R_EmisionActual(Long idemision) {
       return dao.R_EmisionActual(idemision);
    }
+   /* OBTENER LISTADOD DE FACTURAS DE CONSUMO DE AGUA POR RUTAS, DEUDORES */
+   public List<Lecturas> findDeudoresByRuta(Long idrutas){
+      return dao.findDeudoresByRuta(idrutas);
+   }
 }

@@ -92,6 +92,7 @@ public class LecturasApi {
 	public List<Lecturas> getByIdemision(@PathVariable Long idemision) {
 		return lecServicio.findByIdemision(idemision);
 	}
+
 	@GetMapping("/emision/{idemision}/{idabonado}")
 	public List<Lecturas> findByIdemisionIdAbonado(@PathVariable Long idemision, @PathVariable Long idabonado) {
 		return lecServicio.findByIdemisionIdAbonado(idemision, idabonado);
@@ -140,20 +141,26 @@ public class LecturasApi {
 	public ResponseEntity<BigDecimal> totalEmisionXFactura(@RequestParam("idemision") Long idemision) {
 		return ResponseEntity.ok(lecServicio.totalEmisionXFactura(idemision));
 	}
+
 	/* obtener la suma de una emision */
 	@GetMapping("/emision/rubros")
 	public ResponseEntity<List<Object[]>> rubrosEmitidos(@RequestParam("idemision") Long idemision) {
 		return ResponseEntity.ok(lecServicio.RubrosEmitidos(idemision));
 	}
+
 	@GetMapping("/reportes/emisionfinal")
-	public ResponseEntity<List<Object[]>> R_EmisionFinal(@RequestParam ("idemision") Long idemision ){
+	public ResponseEntity<List<Object[]>> R_EmisionFinal(@RequestParam("idemision") Long idemision) {
 		return ResponseEntity.ok(lecServicio.R_EmisionFinal(idemision));
 
 	}
-	@GetMapping("/reportes/emisionactual")
-	public ResponseEntity<List<Object[]>> R_EmisionActual(@RequestParam ("idemision") Long idemision ){
-		return ResponseEntity.ok(lecServicio.R_EmisionActual(idemision));
 
+	@GetMapping("/reportes/emisionactual")
+	public ResponseEntity<List<Object[]>> R_EmisionActual(@RequestParam("idemision") Long idemision) {
+		return ResponseEntity.ok(lecServicio.R_EmisionActual(idemision));
 	}
 
+	@GetMapping("/reportes/deudasxruta")
+	public ResponseEntity<List<Lecturas>> findDeudoresByRuta(@RequestParam("idruta") Long idruta) {
+		return ResponseEntity.ok(lecServicio.findDeudoresByRuta(idruta));
+	}
 }

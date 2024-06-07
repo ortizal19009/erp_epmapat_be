@@ -68,7 +68,12 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 
 	@Query(value = "select r.idrubro, r.descripcion, sum(rf.cantidad * rf.valorunitario) from lecturas l join facturas f on l.idfactura = f.idfactura join rubroxfac rf on f.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro where not f.fechaeliminacion is null and not f.usuarioeliminacion is null and  l.idemision = ?1 group by r.idrubro", nativeQuery = true)
 	public List<Object[]> R_EmisionFinal(Long idemision);
-	@Query(value = "select r.idrubro, r.descripcion, sum(rf.cantidad * rf.valorunitario) from lecturas l join facturas f on l.idfactura = f.idfactura join rubroxfac rf on f.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro where f.fechaeliminacion  is null and f.usuarioeliminacion is null and  l.idemision = ?1 group by r.idrubro;" , nativeQuery = true)
+
+	@Query(value = "select r.idrubro, r.descripcion, sum(rf.cantidad * rf.valorunitario) from lecturas l join facturas f on l.idfactura = f.idfactura join rubroxfac rf on f.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro where f.fechaeliminacion  is null and f.usuarioeliminacion is null and  l.idemision = ?1 group by r.idrubro;", nativeQuery = true)
 	public List<Object[]> R_EmisionActual(Long idemision);
+
+	/* REPORTE DEUDORES */
+	@Query(value = "select * from lecturas l join facturas f on l.idfactura = f.idfactura join rutasxemision re on l.idrutaxemision_rutasxemision = re.idrutaxemision join rutas r on re.idruta_rutas = r.idruta  where f.pagado = 0 and f.fechaeliminacion is null and r.idruta = ?1 and f.estadoconvenio = 0", nativeQuery = true)
+	public List<Lecturas> findDeudoresByRuta(Long ruta);
 
 }
