@@ -11,14 +11,14 @@ public class Documentos {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long iddocumento;
+	private Long intdoc;
 	private String nomdoc;
 	private Long tipdoc;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idtabla4")
 	private Tabla4 idtabla4;
-
+	private String tipocomprobante; 
 	private Long usucrea;
 
 	@Column(name = "feccrea")
@@ -29,12 +29,12 @@ public class Documentos {
 	@Column(name = "fecmodi")
 	private ZonedDateTime fecmodi;
 
-	public Long getIddocumento() {
-		return iddocumento;
+	public Long getIntdoc() {
+		return intdoc;
 	}
 
-	public void setIddocumento(Long iddocumento) {
-		this.iddocumento = iddocumento;
+	public void setIntdoc(Long intdoc) {
+		this.intdoc = intdoc;
 	}
 
 	public String getNomdoc() {
@@ -92,5 +92,14 @@ public class Documentos {
 	public void setFecmodi(ZonedDateTime fecmodi) {
 		this.fecmodi = fecmodi;
 	}
+
+	public String getTipocomprobante() {
+		return tipocomprobante;
+	}
+
+	public void setTipocomprobante(String tipocomprobante) {
+		this.tipocomprobante = tipocomprobante;
+	}
+	
 
 }

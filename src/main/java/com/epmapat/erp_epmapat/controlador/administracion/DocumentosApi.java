@@ -41,12 +41,12 @@ public class DocumentosApi {
         Documentos documento = docuServicio.findById(iddocumento)
                 .orElseThrow(() -> new ResourceNotFoundExcepciones(
                         ("No existe el Documento con Id: " + iddocumento)));
-        return ResponseEntity.ok( documento );
+        return ResponseEntity.ok(documento);
     }
 
     @PostMapping
     public ResponseEntity<Documentos> save(@RequestBody Documentos x) {
-        return ResponseEntity.ok(docuServicio.save( x ));
+        return ResponseEntity.ok(docuServicio.save(x));
     }
 
     @PutMapping("/{iddocumento}")
@@ -57,6 +57,7 @@ public class DocumentosApi {
         y.setNomdoc(x.getNomdoc());
         y.setTipdoc(x.getTipdoc());
         y.setIdtabla4(x.getIdtabla4());
+        y.setTipocomprobante(x.getTipocomprobante());
         y.setUsucrea(x.getUsucrea());
         y.setFeccrea(x.getFeccrea());
         y.setUsumodi(x.getUsumodi());
