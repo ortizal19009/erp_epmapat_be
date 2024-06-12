@@ -13,4 +13,6 @@ public interface Fec_factura_detalles_impuestosR extends JpaRepository<Fec_factu
 
     @Query(value = "delete from fec_factura_detalles_impuestos where idfacturadetalleimpuestos = ?1", nativeQuery = true)
     public void deleteByIdDetalle(Long idimpuesto);
+    @Query(value = "select * from fec_factura_detalles_impuestos where idfacturadetalleimpuestos = ?1", nativeQuery = true)
+    public Fec_factura_detalles_impuestos findBy_id(Long idimpuesto);
 }

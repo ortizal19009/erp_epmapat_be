@@ -18,7 +18,7 @@ public class Fec_factura_detalles_impuestosService {
         return dao.findAll();
     }
 
-    public <S extends Fec_factura_detalles_impuestos> S save(S entity) {
+    public <S extends Fec_factura_detalles_impuestos> S _save(S entity) {
         return dao.save(entity);
     }
 
@@ -29,7 +29,7 @@ public class Fec_factura_detalles_impuestosService {
     public void deleteById(Long idimpuesto) {
         dao.deleteById(idimpuesto);
     }
-    public Optional<Fec_factura_detalles_impuestos> findById(Long idimpuesto){
-    return dao.findById(idimpuesto);
+    public Fec_factura_detalles_impuestos findById(Long idimpuesto){
+    return dao.findBy_id(idimpuesto);
     }
 }

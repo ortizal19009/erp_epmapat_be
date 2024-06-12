@@ -1,7 +1,6 @@
 package com.epmapat.erp_epmapat.controlador;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,23 +17,27 @@ public class Fec_factura_detalles_impuestosApi {
 	@Autowired
 	private Fec_factura_detalles_impuestosService fecfdetimpService;
 
-	@PutMapping
+	@PostMapping
 	public ResponseEntity<Fec_factura_detalles_impuestos> saveFacImpuestos(
-			@RequestBody Fec_factura_detalles_impuestos fecfdetimp) {
-		Long id = fecfdetimp.getIdfacturadetalleimpuestos();
-		Fec_factura_detalles_impuestos fecimpuestos = fecfdetimpService.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe ese abonado con ese Id: " + id));
-		if (fecimpuestos != null) {
-			fecimpuestos.setIdfacturadetalleimpuestos(fecfdetimp.getIdfacturadetalleimpuestos());
-			fecimpuestos.setIdfacturadetalle(fecfdetimp.getIdfacturadetalle());
-			fecimpuestos.setCodigoporcentaje(fecfdetimp.getCodigoporcentaje());
-			fecimpuestos.setCodigoimpuesto(fecfdetimp.getCodigoimpuesto());
-			fecimpuestos.setBaseimponible(fecfdetimp.getBaseimponible());
-			Fec_factura_detalles_impuestos upd = fecfdetimpService.save(fecimpuestos);
-			return ResponseEntity.ok(upd);
-		}
-		return ResponseEntity.ok(fecfdetimpService.save(fecfdetimp));
+	        @RequestBody Fec_factura_detalles_impuestos fecfdetimp) {
 
+	    Fec_factura_detalles_impuestos existingEntity = fecfdetimpService.findById(fecfdetimp.getIdfacturadetalleimpuestos());
+
+	    if (existingEntity != null) {
+	        existingEntity.setIdfacturadetalle(fecfdetimp.getIdfacturadetalle());
+	        existingEntity.setCodigoporcentaje(fecfdetimp.getCodigoporcentaje());
+	        existingEntity.setCodigoimpuesto(fecfdetimp.getCodigoimpuesto());
+	        existingEntity.setBaseimponible(fecfdetimp.getBaseimponible());
+	        fecfdetimp = fecfdetimpService._save(existingEntity); // Assuming save is renamed
+	    } else {
+	        fecfdetimp = fecfdetimpService._save(fecfdetimp); // Assuming save is renamed
+	    }
+
+	    return ResponseEntity.ok(fecfdetimp);
+	}
+	@GetMapping
+	public ResponseEntity<List<Fec_factura_detalles_impuestos>> getAll() {
+		return ResponseEntity.ok(fecfdetimpService.findAll());
 	}
 
 	@GetMapping("/factura_detalle")
