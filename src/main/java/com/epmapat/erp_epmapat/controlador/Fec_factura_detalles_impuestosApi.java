@@ -24,7 +24,6 @@ public class Fec_factura_detalles_impuestosApi {
 		Long id = fecfdetimp.getIdfacturadetalleimpuestos();
 		Fec_factura_detalles_impuestos fecimpuestos = fecfdetimpService.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe ese abonado con ese Id: " + id));
-		System.out.println(fecimpuestos);
 		if (fecimpuestos != null) {
 			fecimpuestos.setIdfacturadetalleimpuestos(fecfdetimp.getIdfacturadetalleimpuestos());
 			fecimpuestos.setIdfacturadetalle(fecfdetimp.getIdfacturadetalle());
