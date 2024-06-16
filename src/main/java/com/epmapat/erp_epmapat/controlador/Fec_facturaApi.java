@@ -57,10 +57,8 @@ public class Fec_facturaApi {
       Optional<Fec_factura> fecfactura = fecfacServicio.findById(x.getIdfactura());
       if (fecfactura.isPresent()) {
          if ("A".equals(fecfactura.get().getEstado()) || "O".equals(fecfactura.get().getEstado())) {
-            System.out.println("Estado es A u O");
             x = fecfacServicio.save(fecfactura.get());
          } else {
-            System.out.println("Estado es otro");
             x = fecfacServicio.save(x);
          }
          return ResponseEntity.ok(x);
