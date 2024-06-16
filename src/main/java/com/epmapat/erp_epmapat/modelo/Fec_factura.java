@@ -191,4 +191,9 @@ public class Fec_factura implements Serializable {
       this.recaudador = recaudador;
    }
 
+public Fec_factura orElseThrow(Object object) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
+}
+
 }

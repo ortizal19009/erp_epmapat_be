@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.controlador;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -52,8 +53,20 @@ public class Fec_facturaApi {
 
    @PostMapping
    @ResponseStatus(HttpStatus.CREATED)
-   public Fec_factura saveFec_factura(@RequestBody Fec_factura x) {
-      return fecfacServicio.save(x);
+   public ResponseEntity<Fec_factura> saveFec_factura(@RequestBody Fec_factura x) {
+      Optional<Fec_factura> fecfactura = fecfacServicio.findById(x.getIdfactura());
+      if (fecfactura.isPresent()) {
+         if ("A".equals(fecfactura.get().getEstado()) || "O".equals(fecfactura.get().getEstado())) {
+            System.out.println("Estado es A u O");
+            x = fecfacServicio.save(fecfactura.get());
+         } else {
+            System.out.println("Estado es otro");
+            x = fecfacServicio.save(x);
+         }
+         return ResponseEntity.ok(x);
+      } else {
+         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+      }
    }
 
    @PutMapping
