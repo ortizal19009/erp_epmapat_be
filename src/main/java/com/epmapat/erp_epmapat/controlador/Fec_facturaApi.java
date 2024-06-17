@@ -63,7 +63,8 @@ public class Fec_facturaApi {
          }
          return ResponseEntity.ok(x);
       } else {
-         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+         // return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+         return ResponseEntity.ok(fecfacServicio.save(x));
       }
    }
 

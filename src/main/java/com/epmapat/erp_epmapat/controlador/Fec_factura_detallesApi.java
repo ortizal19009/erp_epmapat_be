@@ -23,11 +23,13 @@ public class Fec_factura_detallesApi {
 
 	@PostMapping
 	public ResponseEntity<Fec_factura_detalles> saveFacturaDetalle(@RequestBody Fec_factura_detalles fecfdetalle) {
+		System.out.println(fecfdetalle.getIdfactura());
 		return ResponseEntity.ok(fecfdetService.save(fecfdetalle));
 	}
 
 	@GetMapping("/factura")
-	public ResponseEntity<List<Fec_factura_detalles>> getFecDetalleByIdFactura(@RequestParam("idfactura") Long idfactura) {
+	public ResponseEntity<List<Fec_factura_detalles>> getFecDetalleByIdFactura(
+			@RequestParam("idfactura") Long idfactura) {
 		return ResponseEntity.ok(fecfdetService.findFecDetalleByIdFactura(idfactura));
 	}
 
