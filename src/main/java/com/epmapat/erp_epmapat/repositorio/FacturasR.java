@@ -89,7 +89,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Recaudacion diaria - Facturas cobradas
 	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total, f.swiva FROM Rubroxfac rf " +
 			"JOIN Facturas f ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL) and not rf.idrubro_rubros = 165"
+			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165"
 			+
 			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura")
 	List<Object[]> findByFechacobroTot(LocalDate fecha);
@@ -107,7 +107,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query("SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM  Rubroxfac rf "
 			+ "JOIN Facturas f ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
-			+ "WHERE f.fechacobro = ?1 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL) and not rf.idrubro_rubros = 165"
+			+ "WHERE f.fechacobro = ?1 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165"
 			+
 			" GROUP BY fc.descripcion ORDER BY fc.descripcion")
 	List<Object[]> totalFechaFormacobro(@Param("fecha") LocalDate fecha);
@@ -130,12 +130,12 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
 			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
-			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3  AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) and not rf.idrubro_rubros = 165 GROUP BY fc.descripcion ORDER BY fc.descripcion")
+			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3  AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 GROUP BY fc.descripcion ORDER BY fc.descripcion")
 	List<Object[]> totalFechaFormacobroRangos(@Param("d_fecha") LocalDate d_fecha, @Param("d_fecha") LocalDate h_fecha);
 
 	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total, f.swiva  FROM Facturas f " +
 			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) and not rf.idrubro_rubros = 165"
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165"
 			+
 			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.nrofactura")
 	List<Object[]> findByFechacobroTotRangos(LocalDate d_fecha, LocalDate h_fecha);
@@ -145,7 +145,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 */
 	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total,f.swiva  FROM Facturas f " +
 			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND  f.fechaanulacion IS NULL and not rf.idrubro_rubros = 165"
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165"
 			+
 			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.nrofactura")
 	List<Object[]> findByFechacobroTotByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador);
@@ -153,12 +153,12 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query("SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
 			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
-			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL) and not rf.idrubro_rubros = 165  GROUP BY fc.descripcion  ORDER BY fc.descripcion")
+			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165  GROUP BY fc.descripcion  ORDER BY fc.descripcion")
 	List<Object[]> totalFechaFormacobroByRecaudador(@Param("d_fecha") LocalDate d_fecha,
 			@Param("d_fecha") LocalDate h_fecha, @Param("recaudador") Long idrecaudador);
 
 	// Cuenta las Facturas pendientes de un Abonado
-	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= f.fechacobro or f.fechaanulacion IS NULL)")
+	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL")
 	long countFacturasByAbonadoAndPendientes(@Param("idabonado") Long idabonado);
 
 	// Listado de facturas anuladas
