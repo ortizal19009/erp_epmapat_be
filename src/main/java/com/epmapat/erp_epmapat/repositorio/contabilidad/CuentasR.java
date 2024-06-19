@@ -7,16 +7,16 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.epmapat.erp_epmapat.modelo.contabilidad.Cuentas;
 
-public interface CuentasR extends JpaRepository<Cuentas, Long>{
+public interface CuentasR extends JpaRepository<Cuentas, Long> {
 
-   // Lista de Cuentas por Codigo y/o Nombre
-   @Query(value = "SELECT * FROM cuentas where codcue like ?1% and LOWER(nomcue) like %?2% order by codcue", nativeQuery = true)
-   List<Cuentas> findByCodigoyNombre( String codcue, String nomcue );
+    // Lista de Cuentas por Codigo y/o Nombre
+    @Query(value = "SELECT * FROM cuentas where codcue like ?1% and LOWER(nomcue) like %?2% order by codcue", nativeQuery = true)
+    List<Cuentas> findByCodigoyNombre(String codcue, String nomcue);
 
-	@Query(value= "SELECT * FROM cuentas WHERE codcue LIKE %?1% ", nativeQuery= true)
-	public List<Cuentas> findBancos(String codcue);
+    @Query(value = "SELECT * FROM cuentas WHERE codcue LIKE %?1% ", nativeQuery = true)
+    public List<Cuentas> findBancos(String codcue);
 
-	@Query(value = "SELECT * FROM cuentas order by codcue", nativeQuery = true)
+    @Query(value = "SELECT * FROM cuentas order by codcue", nativeQuery = true)
     List<Cuentas> findAll();
 
     @Query(value = "SELECT * FROM cuentas where codcue like ?1% order by codcue", nativeQuery = true)
@@ -33,8 +33,8 @@ public interface CuentasR extends JpaRepository<Cuentas, Long>{
 
     @Query(value = "SELECT * FROM cuentas where asodebe = ?1 order by codcue", nativeQuery = true)
     List<Cuentas> findByAsodebe(String asodebe);
-	
-    //Cuentas por tiptran
+
+    // Cuentas por tiptran
     @Query(value = "SELECT * FROM cuentas where tiptran = ?1 and codcue like ?2% and movcue order by codcue", nativeQuery = true)
     List<Cuentas> findByTiptran(Integer tiptran, String codcue);
 
