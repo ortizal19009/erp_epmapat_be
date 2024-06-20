@@ -152,6 +152,10 @@ public class FacturasApi {
 	public List<Facturas> getSinCobrarAboMod(@Param(value = "idabonado") Long idabonado) {
 		return facServicio.findSinCobrarAboMod(idabonado);
 	}
+	@GetMapping("/sincobrarAboMod/count")
+	public Long getCountSinCobrarAbo(@Param(value = "idabonado") Long idabonado) {
+		return facServicio.countSinCobrarAbo(idabonado);
+	}
 
 	// Cuenta las Planillas pendientes de un Abonado
 	@GetMapping("/pendientesabonado")

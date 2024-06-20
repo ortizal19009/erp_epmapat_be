@@ -88,6 +88,9 @@ public class FacturaServicio {
 	public List<Facturas> findSinCobrarAboMod(Long idabonado) {
 		return dao.findSinCobrarAboMod(idabonado);
 	}
+	public Long countSinCobrarAbo(Long idabonado) {
+		return dao.countSinCobrarAbo(idabonado);
+	}
 
 	// Recaudación diaria - Facturas cobrasdas <Facturas>
 	// public List<Facturas> findByFechacobro(LocalDate fecha) {
