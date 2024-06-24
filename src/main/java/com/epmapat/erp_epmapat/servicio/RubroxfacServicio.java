@@ -27,6 +27,9 @@ public class RubroxfacServicio {
 	public Double findRubroxfac(Long idfactura) {
 		return dao.findSuma(idfactura);
 	}
+	public Double getSumaRubros(Long idfactura) {
+		return dao.sumaRubros(idfactura);
+	}
 
 	public List<RubroxfacI> getByFechaCobro(Date d, Date h) {
 		return dao.getByFechaCobro(d, h);

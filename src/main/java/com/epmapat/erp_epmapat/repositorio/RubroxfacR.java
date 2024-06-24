@@ -29,6 +29,10 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "select sum(valorunitario)  from rubroxfac r where idfactura_facturas = ?1", nativeQuery = true)
 	Double findSuma(Long idfactura);
 
+	/* Obtener suma de rubros x factura */
+	@Query(value = "select sum(valorunitario) from rubroxfac rf join rubros r on rf.idrubro_rubros = r.idrubro where idfactura_facturas = ?1", nativeQuery = true)
+	Double sumaRubros(Long idfactura);
+
 	/*
 	 * @Query(value =
 	 * "select * from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where f.fechacobro = ?1 group by rf.idrubro_rubros"
@@ -149,11 +153,11 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 
 	/* FACTURACION ELECTRONICA */
 
-	//@Query(value = "select rf from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro where f.idfactura = ?1 and not r.idrubro = 165 and f.pagado = 1", nativeQuery = true)
+	// @Query(value = "select rf from rubroxfac rf join facturas f on
+	// rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros =
+	// r.idrubro where f.idfactura = ?1 and not r.idrubro = 165 and f.pagado = 1",
+	// nativeQuery = true)
 	@Query(value = "select * from rubroxfac rf where rf.idfactura_facturas = ?1 and not rf.idrubro_rubros = 165 order by idrubro_rubros asc", nativeQuery = true)
 	List<Rubroxfac> getRubrosByFactura(Long idfactura);
-
-	
-
 
 }

@@ -39,6 +39,12 @@ public class RubroxfacApi {
       return rxfServicio.findRubroxfac(idfactura);
    }
 
+   @GetMapping("/sumarubros")
+   public Double getSumaRubros(@RequestParam("idfactura") Long idfactura) {
+   System.out.println(idfactura);
+      return rxfServicio.getSumaRubros(idfactura);
+   }
+
    @GetMapping("/reportes/fechaCobro")
    public List<RubroxfacI> getByFechaCobro(@RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
          @RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
@@ -177,14 +183,14 @@ public class RubroxfacApi {
    }
 
    @GetMapping("/iva")
-   public ResponseEntity<List <Object[]>> getIva(@RequestParam("iva") BigDecimal iva,
+   public ResponseEntity<List<Object[]>> getIva(@RequestParam("iva") BigDecimal iva,
          @RequestParam("idfactura") Long idfactura) {
       return ResponseEntity.ok(rxfServicio.getIva(iva, idfactura));
    }
 
    /* FACTURACIÓN ELECTRONICA */
    @GetMapping("/feRubros")
-   public ResponseEntity<List<Rubroxfac>> getRubrosByFactura(@RequestParam("idfactura") Long idfactura){
+   public ResponseEntity<List<Rubroxfac>> getRubrosByFactura(@RequestParam("idfactura") Long idfactura) {
       return ResponseEntity.ok(rxfServicio.getRubrosByFactura(idfactura));
    }
 
