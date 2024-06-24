@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 
@@ -51,6 +52,10 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Planillas por Cliente (sinCobrar)
 	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobro(Long idcliente);
+	
+	//Planillas sin cobrar por cliente valor a pagar calculado por la suma de los rubros 
+	@Query(value = "select f.idfactura, f.idmodulo, sum(rf.valorunitario) as total, f.idcliente, f.idabonado , f.feccrea from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and not rf.idrubro_rubros = 165 group by f.idfactura ORDER BY f.idabonado, f.idfactura",nativeQuery = true)
+	public List<FacSinCobrar> findFacSincobro(Long idcliente);
 
 	// Planillas por Abonado
 	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY nrofactura", nativeQuery = true)

@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
@@ -69,12 +70,15 @@ public class FacturaServicio {
 	public List<Facturas> findSinCobro(Long idcliente) {
 		return dao.findSinCobro(idcliente);
 	}
+	public List<FacSinCobrar> findFacSincobro(Long idcliente){
+		return dao.findFacSincobro(idcliente);
+	}
 
 	// Planillas Sin Cobrar de un Abonado (para Multas)
 	public List<Long> findSinCobroAbo(Long idabonado) {
 		return dao.findSinCobroAbo(idabonado);
 	}
-
+	
 	// Cuenta las Planillas Pendientes de un Abonado
 	public long getCantidadFacturasByAbonadoAndPendientes(Long idabonado) {
 		return dao.countFacturasByAbonadoAndPendientes(idabonado);

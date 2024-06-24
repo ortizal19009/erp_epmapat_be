@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
@@ -133,7 +134,10 @@ public class FacturasApi {
 		return facServicio.findSinCobro(idcliente);
 	}
 	/* sincobro v-2.0 */
-
+	@GetMapping("facSincobrar")
+	public List<FacSinCobrar> findFacSincobro(@RequestParam ("idcliente") Long idcliente){
+		return facServicio.findFacSincobro(idcliente);
+	}
 	// IDs de las Planillas sin cobrar de un Abonado
 	@GetMapping("/sincobro")
 	public List<Long> getSinCobroAbo(@Param(value = "idabonado") Long idabonado) {
