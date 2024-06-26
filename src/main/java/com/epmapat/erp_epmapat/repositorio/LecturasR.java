@@ -57,7 +57,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 
 	// Ultima lectura de un Abonado: debe ser lecturaactual tempoaralmente
 	// lecturaanterior porque no están cerradas las rutas de la emisión anterior
-	@Query(value = "SELECT lecturaactual FROM lecturas WHERE idabonado_abonados=?1 ORDER BY idlectura DESC LIMIT 1", nativeQuery = true)
+	@Query(value = "SELECT lecturaactual FROM lecturas WHERE idabonado_abonados=?1 ORDER BY idemision DESC LIMIT 1", nativeQuery = true)
 	public Long ultimaLectura(Long idabonado);
 
 	@Query(value = "select sum(f.totaltarifa) from lecturas l join facturas f on l.idfactura = f.idfactura where l.idemision = ?1", nativeQuery = true)

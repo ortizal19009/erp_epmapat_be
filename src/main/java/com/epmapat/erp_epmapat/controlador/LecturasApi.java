@@ -38,6 +38,7 @@ public class LecturasApi {
 	@GetMapping
 	public List<Lecturas> getByIdemision(@Param(value = "idemision") Long idrutaxemision,
 			@Param(value = "idabonado") Long idabonado) {
+				System.out.println("Hola mundo");
 		if (idrutaxemision != null) {
 			return lecServicio.findByIdrutaxemision(idrutaxemision);
 		} else {
