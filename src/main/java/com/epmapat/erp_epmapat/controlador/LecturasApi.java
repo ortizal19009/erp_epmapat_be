@@ -38,7 +38,6 @@ public class LecturasApi {
 	@GetMapping
 	public List<Lecturas> getByIdemision(@Param(value = "idemision") Long idrutaxemision,
 			@Param(value = "idabonado") Long idabonado) {
-				System.out.println("Hola mundo");
 		if (idrutaxemision != null) {
 			return lecServicio.findByIdrutaxemision(idrutaxemision);
 		} else {
@@ -103,6 +102,12 @@ public class LecturasApi {
 	@GetMapping("/ultimalectura")
 	public Long getUltimaLectura(@Param(value = "idabonado") Long idabonado) {
 		return lecServicio.ultimaLectura(idabonado);
+	}
+
+	@GetMapping("/ultimalecturaByemision")
+	public Long ultimaLecturaByIdemision(@Param(value = "idabonado") Long idabonado,
+			@Param("idemision") Long idemision) {
+		return lecServicio.ultimaLecturaByIdemision(idabonado, idemision);
 	}
 
 	@PostMapping

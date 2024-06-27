@@ -83,6 +83,9 @@ public class LecturaServicio {
    public Long ultimaLectura(Long idabonado) {
       return dao.ultimaLectura(idabonado);
    }
+   public Long ultimaLecturaByIdemision(Long idabonado, Long idemision) {
+      return dao.ultimaLecturaByIdemision(idabonado, idemision);
+   }
 
    public BigDecimal totalEmisionXFactura(Long idemision) {
       return dao.totalEmisionXFactura(idemision);
