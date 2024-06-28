@@ -72,13 +72,11 @@ public class ClientesApi {
 	public ResponseEntity<Clientes> saveClientes(@RequestBody Clientes clienteM) {
 		boolean resp = validadorDeCedula(clienteM.getCedula());
 		if (resp == true) {
-			System.out.println("Cedula correcta, los datos han sido registrados correctamente");
 			return ResponseEntity.ok(cliServicio.save(clienteM));
 		} else {
 			if (clienteM.getCedula().length() <= 13) {
 				return ResponseEntity.ok(cliServicio.save(clienteM));
 			} else {
-				System.out.println("Numero de Cedula ERRONEO " + clienteM.getCedula());
 				return ResponseEntity.notFound().build();
 			}
 		}
@@ -149,12 +147,10 @@ public class ClientesApi {
 		} catch (NumberFormatException nfe) {
 			cedulaCorrecta = false;
 		} catch (Exception err) {
-			System.out.println("Una excepcion ocurrio en el proceso de validadcion");
 			cedulaCorrecta = false;
 		}
 
 		if (!cedulaCorrecta) {
-			System.out.println("La Cedula ingresada es Incorrecta");
 		}
 		return cedulaCorrecta;
 	}

@@ -23,7 +23,6 @@ public class Fec_factura_detallesApi {
 
 	@PostMapping
 	public ResponseEntity<Fec_factura_detalles> saveFacturaDetalle(@RequestBody Fec_factura_detalles fecfdetalle) {
-		System.out.println(fecfdetalle.getIdfactura());
 		return ResponseEntity.ok(fecfdetService.save(fecfdetalle));
 	}
 

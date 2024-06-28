@@ -60,7 +60,6 @@ public class CtramitesC {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		System.out.print(feccrea);
 		return tramitesS.findByfeccrea(fechaConvertida);
 	}
 	// Trámites por Cliente
