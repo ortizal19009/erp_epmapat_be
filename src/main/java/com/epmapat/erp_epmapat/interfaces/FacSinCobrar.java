@@ -16,4 +16,6 @@ public interface FacSinCobrar {
 
 	Date getFeccrea();
 
+	Long getFormaPago();
+
 }

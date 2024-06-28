@@ -54,7 +54,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Facturas> findSinCobro(Long idcliente);
 	
 	//Planillas sin cobrar por cliente valor a pagar calculado por la suma de los rubros 
-	@Query(value = "select f.idfactura, f.idmodulo, sum(rf.valorunitario) as total, f.idcliente, f.idabonado , f.feccrea from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and not rf.idrubro_rubros = 165 group by f.idfactura ORDER BY f.idabonado, f.idfactura",nativeQuery = true)
+	@Query(value = "select f.idfactura, f.idmodulo, sum(rf.valorunitario) as total, f.idcliente, f.idabonado , f.feccrea, f.formapago from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and not rf.idrubro_rubros = 165 group by f.idfactura ORDER BY f.idabonado, f.idfactura",nativeQuery = true)
 	public List<FacSinCobrar> findFacSincobro(Long idcliente);
 
 	// Planillas por Abonado
