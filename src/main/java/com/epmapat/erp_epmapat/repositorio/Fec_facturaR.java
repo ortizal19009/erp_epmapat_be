@@ -17,4 +17,7 @@ public interface Fec_facturaR extends JpaRepository<Fec_factura, Long> {
     @Query(value = "SELECT * FROM fec_factura where LOWER(razonsocialcomprador) like %?1% order by idfactura asc ", nativeQuery = true)
     public List<Fec_factura> findByNombreCliente(String cliente);
 
+    @Query(value = "SELECT * FROM fec_factura where idfactura = ?1 ", nativeQuery = true)
+    public List<Fec_factura> findByNroFactura(Long idfactura);
+
 }

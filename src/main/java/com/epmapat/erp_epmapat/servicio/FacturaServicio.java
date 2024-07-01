@@ -54,6 +54,10 @@ public class FacturaServicio {
 		return dao.findByIdabonado(idabonado);
 	}
 
+	public List<Facturas> findByIdabonadoLimit(Long idabonado, Long limit){
+		return dao.findByIdabonadoLimit(idabonado, limit); 
+	}
+
 	// Una Planilla (como lista)
 	public List<Facturas> buscarPlanilla(Long idfactura) {
 		return dao.findByIdfactura(idfactura);
@@ -70,7 +74,8 @@ public class FacturaServicio {
 	public List<Facturas> findSinCobro(Long idcliente) {
 		return dao.findSinCobro(idcliente);
 	}
-	public List<FacSinCobrar> findFacSincobro(Long idcliente){
+
+	public List<FacSinCobrar> findFacSincobro(Long idcliente) {
 		return dao.findFacSincobro(idcliente);
 	}
 
@@ -78,7 +83,7 @@ public class FacturaServicio {
 	public List<Long> findSinCobroAbo(Long idabonado) {
 		return dao.findSinCobroAbo(idabonado);
 	}
-	
+
 	// Cuenta las Planillas Pendientes de un Abonado
 	public long getCantidadFacturasByAbonadoAndPendientes(Long idabonado) {
 		return dao.countFacturasByAbonadoAndPendientes(idabonado);
@@ -92,6 +97,7 @@ public class FacturaServicio {
 	public List<Facturas> findSinCobrarAboMod(Long idabonado) {
 		return dao.findSinCobrarAboMod(idabonado);
 	}
+
 	public Long countSinCobrarAbo(Long idabonado) {
 		return dao.countSinCobrarAbo(idabonado);
 	}

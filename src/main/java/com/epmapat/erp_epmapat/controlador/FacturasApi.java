@@ -97,6 +97,12 @@ public class FacturasApi {
 		return facServicio.findByIdabonado(idabonado);
 	}
 
+	@GetMapping("/abonado/{idabonado}/{limit}")
+	public List<Facturas> getByIdabonadoLimit(@PathVariable("idabonado") long idabonado,
+			@PathVariable("limit") Long limit) {
+		return facServicio.findByIdabonadoLimit(idabonado, limit);
+	}
+
 	// Una Planilla (como lista)
 	@GetMapping("/planilla")
 	public ResponseEntity<List<Facturas>> buscarPlanilla(@Param(value = "idfactura") Long idfactura) {
@@ -133,11 +139,13 @@ public class FacturasApi {
 	public List<Facturas> getSinCobro(@PathVariable("idcliente") Long idcliente) {
 		return facServicio.findSinCobro(idcliente);
 	}
+
 	/* sincobro v-2.0 */
 	@GetMapping("facSincobrar")
-	public List<FacSinCobrar> findFacSincobro(@RequestParam ("idcliente") Long idcliente){
+	public List<FacSinCobrar> findFacSincobro(@RequestParam("idcliente") Long idcliente) {
 		return facServicio.findFacSincobro(idcliente);
 	}
+
 	// IDs de las Planillas sin cobrar de un Abonado
 	@GetMapping("/sincobro")
 	public List<Long> getSinCobroAbo(@Param(value = "idabonado") Long idabonado) {
@@ -156,6 +164,7 @@ public class FacturasApi {
 	public List<Facturas> getSinCobrarAboMod(@Param(value = "idabonado") Long idabonado) {
 		return facServicio.findSinCobrarAboMod(idabonado);
 	}
+
 	@GetMapping("/sincobrarAboMod/count")
 	public Long getCountSinCobrarAbo(@Param(value = "idabonado") Long idabonado) {
 		return facServicio.countSinCobrarAbo(idabonado);
