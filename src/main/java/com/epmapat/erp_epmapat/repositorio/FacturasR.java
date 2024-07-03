@@ -40,7 +40,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY idfactura DESC LIMIT 15", nativeQuery = true)
 	public List<Facturas> findByIdabonado(Long idabonado);
 
-	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
+	@Query(value = "SELECT * FROM facturas f WHERE f.idabonado=?1 and f.fechaeliminacion is null ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
 	public List<Facturas> findByIdabonadoLimit(Long idabonado, Long limit);
 
 	// Una Planilla (como lista para mostrar en la misma forma que por Abonado)
@@ -58,7 +58,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	// Planillas sin cobrar por cliente valor a pagar calculado por la suma de los
 	// rubros
-	@Query(value = "select f.idfactura, f.idmodulo, sum(rf.valorunitario) as total, f.idcliente, f.idabonado , f.feccrea, f.formapago from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and not rf.idrubro_rubros = 165 group by f.idfactura ORDER BY f.idabonado, f.idfactura", nativeQuery = true)
+	@Query(value = "select f.idfactura, f.idmodulo, sum(rf.valorunitario) as total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and not rf.idrubro_rubros = 165 group by f.idfactura ORDER BY f.idabonado, f.idfactura", nativeQuery = true)
 	public List<FacSinCobrar> findFacSincobro(Long idcliente);
 
 	// Planillas por Abonado

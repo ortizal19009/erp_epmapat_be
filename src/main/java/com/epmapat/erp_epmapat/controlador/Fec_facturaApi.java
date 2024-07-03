@@ -49,6 +49,10 @@ public class Fec_facturaApi {
    public List<Fec_factura> getByNombreCliente(@RequestParam("cliente") String cliente) {
       return fecfacServicio.findByNombreCliente(cliente);
    }
+   @GetMapping("/factura")
+   public ResponseEntity<Optional<Fec_factura>> getByIdFactura(@RequestParam("idfactura") Long idfactura){
+      return ResponseEntity.ok(fecfacServicio.findById(idfactura)); 
+   }
 
    @PostMapping
    @ResponseStatus(HttpStatus.CREATED)
