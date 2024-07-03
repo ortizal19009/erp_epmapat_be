@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.controlador;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,5 +169,11 @@ public class LecturasApi {
 	@GetMapping("/reportes/deudasxruta")
 	public ResponseEntity<List<Lecturas>> findDeudoresByRuta(@RequestParam("idruta") Long idruta) {
 		return ResponseEntity.ok(lecServicio.findDeudoresByRuta(idruta));
+	}
+
+	@GetMapping("/fecEmision")
+	public ResponseEntity<Date> findDateByIdfactura(@RequestParam("idfactura") Long idfactura) {
+		return ResponseEntity.ok(lecServicio.findDateByIdfactura(idfactura));
+
 	}
 }

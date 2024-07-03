@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,6 +84,7 @@ public class LecturaServicio {
    public Long ultimaLectura(Long idabonado) {
       return dao.ultimaLectura(idabonado);
    }
+
    public Long ultimaLecturaByIdemision(Long idabonado, Long idemision) {
       return dao.ultimaLecturaByIdemision(idabonado, idemision);
    }
@@ -102,8 +104,14 @@ public class LecturaServicio {
    public List<Object[]> R_EmisionActual(Long idemision) {
       return dao.R_EmisionActual(idemision);
    }
+
    /* OBTENER LISTADOD DE FACTURAS DE CONSUMO DE AGUA POR RUTAS, DEUDORES */
-   public List<Lecturas> findDeudoresByRuta(Long idrutas){
+   public List<Lecturas> findDeudoresByRuta(Long idrutas) {
       return dao.findDeudoresByRuta(idrutas);
+   }
+
+   /* buscar la fecha de una emision por el id de una factura */
+   public Date findDateByIdfactura(Long idfactura) {
+      return dao.findDateByIdfactura(idfactura);
    }
 }
