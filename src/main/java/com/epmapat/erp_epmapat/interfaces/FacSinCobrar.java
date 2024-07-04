@@ -19,5 +19,6 @@ public interface FacSinCobrar {
 	Long getFormaPago();
 
 	Long getEstado();
+	Long getPagado();
 
 }
