@@ -400,6 +400,14 @@ public class FacturasApi {
 		return ResponseEntity.ok(facturas);
 	}
 
+	@GetMapping("/anulaciones/fechas")
+	public ResponseEntity<List<Facturas>> getFacturasByFecAnulaciones(
+			@RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
+			@RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+		List<Facturas> facturas = facServicio.findByFecAnulacion(d, h);
+		return ResponseEntity.ok(facturas);
+	}
+
 	@GetMapping("/cobradas/cliente")
 	public ResponseEntity<List<Facturas>> getFacturasAnuladasxac(@RequestParam("idcliente") Long idcliente) {
 		List<Facturas> facturas = facServicio.findCobradasByCliente(idcliente);
@@ -410,6 +418,14 @@ public class FacturasApi {
 	@GetMapping("/eliminaciones")
 	public ResponseEntity<List<Facturas>> getFacturasEliminadas(@RequestParam("limit") Long limit) {
 		List<Facturas> facturas = facServicio.fingAllFacturasEliminadas(limit);
+		return ResponseEntity.ok(facturas);
+	}
+
+	@GetMapping("/eliminaciones/fechas")
+	public ResponseEntity<List<Facturas>> getFacturasByFecEliminacion(
+			@RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
+			@RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+		List<Facturas> facturas = facServicio.findByFecEliminacion(d, h);
 		return ResponseEntity.ok(facturas);
 	}
 

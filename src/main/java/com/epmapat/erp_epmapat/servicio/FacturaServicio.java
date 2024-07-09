@@ -54,8 +54,8 @@ public class FacturaServicio {
 		return dao.findByIdabonado(idabonado);
 	}
 
-	public List<Facturas> findByIdabonadoLimit(Long idabonado, Long limit){
-		return dao.findByIdabonadoLimit(idabonado, limit); 
+	public List<Facturas> findByIdabonadoLimit(Long idabonado, Long limit) {
+		return dao.findByIdabonadoLimit(idabonado, limit);
 	}
 
 	// Una Planilla (como lista)
@@ -172,6 +172,13 @@ public class FacturaServicio {
 	// FACTURAS ELIMINACIÓN
 	public List<Facturas> fingAllFacturasEliminadas(Long limit) {
 		return this.dao.fingAllFacturasEliminadas(limit);
+	}
+
+	public List<Facturas> findByFecEliminacion(Date d, Date h) {
+		return this.dao.findByFecEliminacion(d, h);
+	}
+	public List<Facturas> findByFecAnulacion(Date d, Date h) {
+		return this.dao.findByFecAnulacion(d, h);
 	}
 
 	/* transferencias cobradas */
