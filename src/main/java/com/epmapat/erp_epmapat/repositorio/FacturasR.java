@@ -40,7 +40,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY idfactura DESC LIMIT 15", nativeQuery = true)
 	public List<Facturas> findByIdabonado(Long idabonado);
 
-	@Query(value = "SELECT * FROM facturas f WHERE f.idabonado=?1 and f.fechaeliminacion is null ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
+	@Query(value = "SELECT * FROM facturas f WHERE f.idabonado=?1 and f.fechaeliminacion is null and f.totaltarifa > 0 and f.valorbase > 0 ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
 	public List<Facturas> findByIdabonadoLimit(Long idabonado, Long limit);
 
 	// Una Planilla (como lista para mostrar en la misma forma que por Abonado)
@@ -58,7 +58,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	// Planillas sin cobrar por cliente valor a pagar calculado por la suma de los
 	// rubros
-	@Query(value = "select f.idfactura, f.idmodulo, sum(rf.valorunitario) as total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and not rf.idrubro_rubros = 165 group by f.idfactura ORDER BY f.idabonado, f.idfactura", nativeQuery = true)
+	@Query(value = "select f.idfactura, f.idmodulo, sum(rf.valorunitario * rf.cantidad) as total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165 group by f.idfactura ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
 	public List<FacSinCobrar> findFacSincobro(Long idcliente);
 
 	// Planillas por Abonado
@@ -100,7 +100,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Recaudacion diaria - Facturas cobradas
 	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total, f.swiva FROM Rubroxfac rf " +
 			"JOIN Facturas f ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165"
+			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 "
 			+
 			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura")
 	List<Object[]> findByFechacobroTot(LocalDate fecha);
@@ -175,6 +175,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Listado de facturas anuladas
 	@Query(value = " select * from facturas f where not f.fechaanulacion is null  and  not f.usuarioanulacion  is null order by f.fechaanulacion desc limit ?1", nativeQuery = true)
 	public List<Facturas> fingAllFacturasAnuladas(Long limit);
+
 	@Query(value = "select * from facturas f where f.fechaanulacion between ?1 and ?2", nativeQuery = true)
 	public List<Facturas> findByFecAnulacion(Date d, Date h);
 

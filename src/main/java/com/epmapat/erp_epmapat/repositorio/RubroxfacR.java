@@ -79,7 +79,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			+
 			"INNER JOIN rf.idrubro_rubros r " +
 			"INNER JOIN rf.idfactura_facturas f " +
-			"WHERE f.fechacobro = :fechacobro  GROUP BY r.idrubro, r.descripcion")
+			"WHERE f.fechacobro = :fechacobro and not r.idrubro = 165 GROUP BY r.idrubro, r.descripcion")
 	List<Object[]> findRubroTotalByRubroxfacAndFechacobro(@Param("fechacobro") LocalDate fechacobro);
 
 	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
