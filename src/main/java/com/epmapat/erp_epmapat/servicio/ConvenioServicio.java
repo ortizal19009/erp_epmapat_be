@@ -64,4 +64,7 @@ public class ConvenioServicio {
         dao.deleteById(id);
     }
 
+    public List<Convenios> findByReferencia(Long referencia){
+        return dao.findByReferencia(referencia);
+    }
 }

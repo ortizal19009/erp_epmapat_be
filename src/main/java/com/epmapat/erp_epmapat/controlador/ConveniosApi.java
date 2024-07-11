@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.data.repository.query.Param;
@@ -92,6 +93,12 @@ public class ConveniosApi {
    private ResponseEntity<Boolean> delete(@PathVariable("idconvenio") Long idconvenio) {
       convServicio.deleteById(idconvenio);
       return ResponseEntity.ok(!(convServicio.findById(idconvenio) != null));
+   }
+
+   @GetMapping("/referencia")
+   private ResponseEntity<List<Convenios>> getByReferencia(@RequestParam("referencia") Long referencia) {
+      List<Convenios> convenios = convServicio.findByReferencia(referencia);
+      return ResponseEntity.ok(convenios);
    }
 
 }
