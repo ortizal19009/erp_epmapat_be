@@ -190,7 +190,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Facturas> findByFecEliminacion(Date d, Date h);
 
 	/* reporte de facturas cobradas por transferencia */
-	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 group by f.idfactura order by f.nrofactura asc")
+	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 and not rf.idrubro_rubros = 165 group by f.idfactura order by f.nrofactura asc")
 	public List<Object[]> transferenciasCobradas(Date d_fecha, Date h_fecha);
 
 	/* REPORTE DE FACTURAS TRANSFERIDAS PERO NO COBRADAS */
