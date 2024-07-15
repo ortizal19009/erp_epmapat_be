@@ -26,9 +26,19 @@ public class EmisionIndividualApi {
     public ResponseEntity<EmisionIndividual> postMethodName(@RequestBody EmisionIndividual emiIndi) {
         return ResponseEntity.ok(sei.save(emiIndi));
     }
+
     @GetMapping("/idemision")
-    public ResponseEntity<List<EmisionIndividual>> getByIdEmision(@RequestParam("idemision") Long idemision){
+    public ResponseEntity<List<EmisionIndividual>> getByIdEmision(@RequestParam("idemision") Long idemision) {
         return ResponseEntity.ok(sei.findByIdEmision(idemision));
+    }
+
+    @GetMapping("/nuevas")
+    public ResponseEntity<List<Object[]>> getLecturasNuevas(@RequestParam("idemision") Long idemision) {
+        return ResponseEntity.ok(sei.findLecturasNuevas(idemision));
+    }
+    @GetMapping("/anteriores")
+    public ResponseEntity<List<Object[]>> getLecturasAnteriores(@RequestParam("idemision") Long idemision) {
+        return ResponseEntity.ok(sei.findLecturasAnteriores(idemision));
     }
 
 }

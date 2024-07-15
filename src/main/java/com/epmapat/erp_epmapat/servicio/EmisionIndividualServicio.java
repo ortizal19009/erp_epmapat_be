@@ -21,4 +21,12 @@ public class EmisionIndividualServicio {
         return dao.findByIdEmision(idemision);
     }
 
+    public List<Object[]> findLecturasNuevas(Long idemision) {
+        return dao.findLecturasNuevas(idemision);
+    }
+
+    public List<Object[]> findLecturasAnteriores(Long idemision) {
+        return dao.findLecturasAnteriores(idemision);
+    }
+
 }
