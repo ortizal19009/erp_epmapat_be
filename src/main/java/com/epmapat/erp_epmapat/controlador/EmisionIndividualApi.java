@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.interfaces.IemiIndividual;
 import com.epmapat.erp_epmapat.modelo.EmisionIndividual;
 import com.epmapat.erp_epmapat.servicio.EmisionIndividualServicio;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,11 +34,11 @@ public class EmisionIndividualApi {
     }
 
     @GetMapping("/nuevas")
-    public ResponseEntity<List<Object[]>> getLecturasNuevas(@RequestParam("idemision") Long idemision) {
+    public ResponseEntity<List<IemiIndividual>> getLecturasNuevas(@RequestParam("idemision") Long idemision) {
         return ResponseEntity.ok(sei.findLecturasNuevas(idemision));
     }
     @GetMapping("/anteriores")
-    public ResponseEntity<List<Object[]>> getLecturasAnteriores(@RequestParam("idemision") Long idemision) {
+    public ResponseEntity<List<IemiIndividual>> getLecturasAnteriores(@RequestParam("idemision") Long idemision) {
         return ResponseEntity.ok(sei.findLecturasAnteriores(idemision));
     }
 
