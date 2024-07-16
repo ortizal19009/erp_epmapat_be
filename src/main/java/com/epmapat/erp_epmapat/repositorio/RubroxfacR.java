@@ -38,7 +38,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	 * "select * from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where f.fechacobro = ?1 group by rf.idrubro_rubros"
 	 * , nativeQuery = true)
 	 */
-	@Query(value = "select rf.idrubro_rubros , sum(rf.valorunitario) from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where f.fechacobro = ?1 group by rf.idrubro_rubros ", nativeQuery = true)
+	@Query(value = "select rf.idrubro_rubros , sum(rf.valorunitario * rf.cantidad) from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where f.fechacobro = ?1 group by rf.idrubro_rubros ", nativeQuery = true)
 	List<RubroxfacI> getByFechaCobro(Date d, Date h);
 
 	@Query(value = "SELECT * FROM rubroxfac rf JOIN facturas f ON rf.idfactura_facturas = f.idfactura WHERE f.fechacobro between ?1 and ?2", nativeQuery = true)
@@ -159,5 +159,6 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	// nativeQuery = true)
 	@Query(value = "select * from rubroxfac rf where rf.idfactura_facturas = ?1 and not rf.idrubro_rubros = 165 order by idrubro_rubros asc", nativeQuery = true)
 	List<Rubroxfac> getRubrosByFactura(Long idfactura);
+
 
 }
