@@ -40,7 +40,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY idfactura DESC LIMIT 15", nativeQuery = true)
 	public List<Facturas> findByIdabonado(Long idabonado);
 
-	@Query(value = "SELECT * FROM facturas f WHERE f.idabonado=?1 and f.fechaeliminacion is null and f.totaltarifa > 0 and f.valorbase > 0 ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
+	@Query(value = "SELECT * FROM facturas f WHERE f.idabonado=?1 and f.fechaeliminacion is null ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
 	public List<Facturas> findByIdabonadoLimit(Long idabonado, Long limit);
 
 	// Una Planilla (como lista para mostrar en la misma forma que por Abonado)

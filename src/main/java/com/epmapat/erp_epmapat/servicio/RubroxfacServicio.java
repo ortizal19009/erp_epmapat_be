@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
+import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
 
@@ -127,5 +128,8 @@ public class RubroxfacServicio {
 	/* FACTURACIÓN ELECTRONICA */
 	public List<Rubroxfac> getRubrosByFactura(Long idfactura) {
 		return dao.getRubrosByFactura(idfactura);
+	}
+	public List<RubroxfacIReport> getRubrosByCliente(Long idcliente){
+		return dao.getRubrosByCliente(idcliente);
 	}
 }

@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
+import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 
 public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
@@ -160,5 +161,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "select * from rubroxfac rf where rf.idfactura_facturas = ?1 and not rf.idrubro_rubros = 165 order by idrubro_rubros asc", nativeQuery = true)
 	List<Rubroxfac> getRubrosByFactura(Long idfactura);
 
+	@Query(value = "select rf.idrubro_rubros, r.descripcion, sum(rf.valorunitario * rf.cantidad) as total from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro where f.totaltarifa > 0 and f.idcliente = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165 group by rf.idrubro_rubros, r.descripcion", nativeQuery = true)
+	List<RubroxfacIReport> getRubrosByCliente(Long idcliente);
 
 }

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
+import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.servicio.RubroxfacServicio;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -193,4 +194,9 @@ public class RubroxfacApi {
       return ResponseEntity.ok(rxfServicio.getRubrosByFactura(idfactura));
    }
 
+   /* TOTALES DE RUBROS DE FACTURAS SIN COBRAR */
+   @GetMapping("/reportes/rsincobro")
+   public ResponseEntity<List<RubroxfacIReport>> getRubrosByCliente(@RequestParam("idcliente") Long idcliente) {
+      return ResponseEntity.ok(rxfServicio.getRubrosByCliente(idcliente));
+   }
 }
