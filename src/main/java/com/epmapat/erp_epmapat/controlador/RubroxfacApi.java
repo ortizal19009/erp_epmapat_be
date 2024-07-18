@@ -196,7 +196,7 @@ public class RubroxfacApi {
 
    /* TOTALES DE RUBROS DE FACTURAS SIN COBRAR */
    @GetMapping("/reportes/rsincobro")
-   public ResponseEntity<List<RubroxfacIReport>> getRubrosByCliente(@RequestParam("idcliente") Long idcliente) {
-      return ResponseEntity.ok(rxfServicio.getRubrosByCliente(idcliente));
+   public ResponseEntity<List<RubroxfacIReport>> getRubrosByAbonado(@RequestParam("idabonado") Long idabonado) {
+      return ResponseEntity.ok(rxfServicio.getRubrosByAbonado(idabonado));
    }
 }

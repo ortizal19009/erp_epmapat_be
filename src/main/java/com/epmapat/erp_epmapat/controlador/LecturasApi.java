@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -175,5 +176,10 @@ public class LecturasApi {
 	public ResponseEntity<Date> findDateByIdfactura(@RequestParam("idfactura") Long idfactura) {
 		return ResponseEntity.ok(lecServicio.findDateByIdfactura(idfactura));
 
+	}
+
+	@GetMapping("/fecemision")
+	public ResponseEntity<List<FecEmision>> findEmisionByIdfactura(@RequestParam("idfactura") Long idfactura) {
+		return ResponseEntity.ok(lecServicio.getEmisionByIdfactura(idfactura));
 	}
 }

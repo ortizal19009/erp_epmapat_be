@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
 
@@ -113,5 +114,9 @@ public class LecturaServicio {
    /* buscar la fecha de una emision por el id de una factura */
    public Date findDateByIdfactura(Long idfactura) {
       return dao.findDateByIdfactura(idfactura);
+   }
+
+   public List<FecEmision> getEmisionByIdfactura(Long idfactura) {
+      return dao.getEmisionByIdfactura(idfactura);
    }
 }

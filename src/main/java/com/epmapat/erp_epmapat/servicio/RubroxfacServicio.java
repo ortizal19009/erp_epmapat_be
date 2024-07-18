@@ -129,7 +129,7 @@ public class RubroxfacServicio {
 	public List<Rubroxfac> getRubrosByFactura(Long idfactura) {
 		return dao.getRubrosByFactura(idfactura);
 	}
-	public List<RubroxfacIReport> getRubrosByCliente(Long idcliente){
-		return dao.getRubrosByCliente(idcliente);
+	public List<RubroxfacIReport> getRubrosByAbonado(Long idabonado){
+		return dao.getRubrosByAbonado(idabonado);
 	}
 }

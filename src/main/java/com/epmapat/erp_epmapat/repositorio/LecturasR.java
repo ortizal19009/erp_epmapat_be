@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 
 public interface LecturasR extends JpaRepository<Lecturas, Long> {
@@ -79,7 +80,11 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	/* REPORTE DEUDORES */
 	@Query(value = "select * from lecturas l join facturas f on l.idfactura = f.idfactura join rutasxemision re on l.idrutaxemision_rutasxemision = re.idrutaxemision join rutas r on re.idruta_rutas = r.idruta  where f.pagado = 0 and f.fechaeliminacion is null and r.idruta = ?1 and f.estadoconvenio = 0", nativeQuery = true)
 	public List<Lecturas> findDeudoresByRuta(Long ruta);
-/* encontrar fecha de emision para recaudacion */
-@Query(value = "select e.feccrea from lecturas l join emisiones e on l.idemision = e.idemision where idfactura = ?1", nativeQuery = true)
-public Date findDateByIdfactura(Long idfactura);
+
+	/* encontrar fecha de emision para recaudacion */
+	@Query(value = "select e.feccrea from lecturas l join emisiones e on l.idemision = e.idemision where idfactura = ?1", nativeQuery = true)
+	public Date findDateByIdfactura(Long idfactura);
+	
+	@Query(value = "select e.emision, e.feccrea from lecturas l join emisiones e on l.idemision = e.idemision where l.idfactura =  ?1", nativeQuery = true)
+	public List<FecEmision> getEmisionByIdfactura(Long idfactura); 
 }
