@@ -98,7 +98,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * GLOBALES
 	 */
 	// Recaudacion diaria - Facturas cobradas
-	@Query("SELECT f, round( SUM(rf.cantidad * rf.valorunitario) , 2)AS total, f.swiva FROM Rubroxfac rf " +
+	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario)AS total, f.swiva FROM Rubroxfac rf " +
 			"JOIN Facturas f ON rf.idfactura_facturas = f.idfactura " +
 			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 "
 			+
