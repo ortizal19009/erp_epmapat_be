@@ -71,6 +71,7 @@ public class Facturas implements Serializable {
 	private Long idabonado;
 	private BigDecimal interescobrado;
 	private BigDecimal swiva;
+	private Boolean swcondonar; 
 
 	public BigDecimal getInterescobrado() {
 		return interescobrado;
@@ -83,51 +84,6 @@ public class Facturas implements Serializable {
 	public Facturas() {
 		super();
 	}
-
-	// public Facturas(Long idfactura, Modulos idmodulo, Clientes idcliente, String
-	// nrofactura, Long porcexoneracion,
-	// String razonexonera, BigDecimal totaltarifa, Integer pagado, Long
-	// usuariocobro, Date fechacobro, Long estado,
-	// Long usuarioanulacion, Date fechaanulacion, String razonanulacion, Long
-	// usuarioeliminacion,
-	// Date fechaeliminacion, String razoneliminacion, Long conveniopago, Date
-	// fechaconvenio, Long estadoconvenio,
-	// Long formapago, String refeformapago, String horacobro, Long
-	// usuariotransferencia, Date fechatransferencia,
-	// Long usucrea, ZonedDateTime feccrea, Long usumodi, Date fecmodi, BigDecimal
-	// valorbase, Long idabonado) {
-	// this.idfactura = idfactura;
-	// this.idmodulo = idmodulo;
-	// this.idcliente = idcliente;
-	// this.nrofactura = nrofactura;
-	// this.porcexoneracion = porcexoneracion;
-	// this.razonexonera = razonexonera;
-	// this.totaltarifa = totaltarifa;
-	// this.pagado = pagado;
-	// this.usuariocobro = usuariocobro;
-	// this.fechacobro = fechacobro;
-	// this.estado = estado;
-	// this.usuarioanulacion = usuarioanulacion;
-	// this.fechaanulacion = fechaanulacion;
-	// this.razonanulacion = razonanulacion;
-	// this.usuarioeliminacion = usuarioeliminacion;
-	// this.fechaeliminacion = fechaeliminacion;
-	// this.razoneliminacion = razoneliminacion;
-	// this.conveniopago = conveniopago;
-	// this.fechaconvenio = fechaconvenio;
-	// this.estadoconvenio = estadoconvenio;
-	// this.formapago = formapago;
-	// this.refeformapago = refeformapago;
-	// this.horacobro = horacobro;
-	// this.usuariotransferencia = usuariotransferencia;
-	// this.fechatransferencia = fechatransferencia;
-	// this.usucrea = usucrea;
-	// this.feccrea = feccrea;
-	// this.usumodi = usumodi;
-	// this.fecmodi = fecmodi;
-	// this.valorbase = valorbase;
-	// this.idabonado = idabonado;
-	// }
 
 	public Long getIdfactura() {
 		return idfactura;
@@ -384,5 +340,14 @@ public class Facturas implements Serializable {
 	public void setSwiva(BigDecimal swiva) {
 		this.swiva = swiva;
 	}
+
+	public Boolean getSwcondonar() {
+		return swcondonar;
+	}
+
+	public void setSwcondonar(Boolean swcondonar) {
+		this.swcondonar = swcondonar;
+	}
+	
 
 }
