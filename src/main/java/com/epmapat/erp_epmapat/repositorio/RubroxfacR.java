@@ -164,4 +164,8 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "select rf.idrubro_rubros, r.descripcion, sum(rf.valorunitario * rf.cantidad) as total from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro where f.idabonado > 0 and (f.idmodulo = 3 or f.idmodulo = 4 )and f.totaltarifa > 0 and f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165 group by rf.idrubro_rubros, r.descripcion", nativeQuery = true)
 	List<RubroxfacIReport> getRubrosByAbonado(Long idabonado);
 
+	/* FIND MULTAS BY ID FACUTA */
+	@Query(value ="select * from rubroxfac where idfactura_facturas = ?1 and idrubro_rubros = 6", nativeQuery = true)
+	List<Rubroxfac> getMultaByIdFactura(Long idfactura);
+
 }

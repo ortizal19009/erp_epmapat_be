@@ -28,6 +28,7 @@ public class RubroxfacServicio {
 	public Double findRubroxfac(Long idfactura) {
 		return dao.findSuma(idfactura);
 	}
+
 	public Double getSumaRubros(Long idfactura) {
 		return dao.sumaRubros(idfactura);
 	}
@@ -129,7 +130,13 @@ public class RubroxfacServicio {
 	public List<Rubroxfac> getRubrosByFactura(Long idfactura) {
 		return dao.getRubrosByFactura(idfactura);
 	}
-	public List<RubroxfacIReport> getRubrosByAbonado(Long idabonado){
+
+	public List<RubroxfacIReport> getRubrosByAbonado(Long idabonado) {
 		return dao.getRubrosByAbonado(idabonado);
+	}
+
+	/* CONSULTAR MULTAS POR FACTURA */
+	public List<Rubroxfac> getMultaByIdFactura(Long idfactura) {
+		return dao.getMultaByIdFactura(idfactura);
 	}
 }
