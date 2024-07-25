@@ -444,4 +444,18 @@ public class FacturasApi {
 			@RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
 		return ResponseEntity.ok(facServicio.findFechaCobro(d, h));
 	}
+
+	// Cartera de un cliente a una fecha (Facturas)
+	@GetMapping("/carteraCliente")
+	public List<Facturas> carteraCliente(@Param("idcliente") Long idcliente,
+			@Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
+		return facServicio.carteraCliente(idcliente, hasta);
+	}
+
+	// Cartera de un cliente a una fecha (Total, ya suma 1 a los del módulo 3 )
+	@GetMapping("/totCarteraCliente")
+	public Double totCarteraCliente(@Param("idcliente") Long idcliente,
+			@Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
+		return facServicio.totCarteraCliente(idcliente, hasta);
+	}
 }

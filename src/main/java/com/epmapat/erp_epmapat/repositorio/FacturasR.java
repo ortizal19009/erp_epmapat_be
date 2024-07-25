@@ -61,6 +61,21 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "select f.idfactura, f.idmodulo, sum(rf.valorunitario * rf.cantidad) as total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165 AND (f.swcondonar = FALSE OR rf.idrubro_rubros <> 6) group by f.idfactura ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
 	public List<FacSinCobrar> findFacSincobro(Long idcliente);
 
+	// Cartera a una fecha
+	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0  and (( (estado = 1 or estado = 2) and ( fechacobro>?1 or fechacobro is null)) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery = true)
+	public List<Facturas> cartera(LocalDate hasta);
+
+	// Cartera de un cliente a una fecha (Facturas)
+	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and feccrea<=?2 and (( (estado = 1 or estado = 2) and ( fechacobro>?2 or fechacobro is null)) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery = true)
+	public List<Facturas> carteraCliente(Long idcliente, LocalDate hasta);
+
+	// Cartera por cliente a una fecha (Total, ya suma 1 a los del módulo 3)
+	// @Query(value = "SELECT SUM(CASE WHEN f.idmodulo.id = 3 THEN f.totaltarifa + 1
+	// ELSE f.totaltarifa END) AS totalGeneral FROM facturas f JOIN f.clientes c
+	// WHERE c.idcliente = :idcliente")
+	@Query(value = "SELECT SUM(CASE WHEN idmodulo = 3 THEN totaltarifa + 1 ELSE totaltarifa END) AS totalGeneral FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and feccrea<=?2 and (( (estado = 1 or estado = 2) and ( fechacobro>?2 or fechacobro is null)) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null", nativeQuery = true)
+	Double totCarteraCliente(@Param("idcliente") Long idcliente, LocalDate hasta);
+
 	// Planillas por Abonado
 	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY nrofactura", nativeQuery = true)
 	public List<Facturas> findByIdFactura(Long idabonado);
@@ -100,7 +115,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Recaudacion diaria - Facturas cobradas
 	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario)AS total, f.swiva FROM Rubroxfac rf " +
 			"JOIN Facturas f ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 "
+			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 AND (f.swcondonar = FALSE OR rf.idrubro_rubros <> 6) "
 			+
 			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura")
 	List<Object[]> findByFechacobroTot(LocalDate fecha);
@@ -118,7 +133,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query("SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM  Rubroxfac rf "
 			+ "JOIN Facturas f ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
-			+ "WHERE f.fechacobro = ?1 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165"
+			+ "WHERE f.fechacobro = ?1 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 AND (f.swcondonar = FALSE OR rf.idrubro_rubros <> 6)"
 			+
 			" GROUP BY fc.descripcion ORDER BY fc.descripcion")
 	List<Object[]> totalFechaFormacobro(@Param("fecha") LocalDate fecha);
@@ -141,12 +156,12 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
 			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
-			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3  AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 GROUP BY fc.descripcion ORDER BY fc.descripcion")
+			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3  AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 AND (f.swcondonar = FALSE OR rf.idrubro_rubros <> 6) GROUP BY fc.descripcion ORDER BY fc.descripcion")
 	List<Object[]> totalFechaFormacobroRangos(@Param("d_fecha") LocalDate d_fecha, @Param("d_fecha") LocalDate h_fecha);
 
 	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total, f.swiva  FROM Facturas f " +
 			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165"
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 AND (f.swcondonar = FALSE OR rf.idrubro_rubros <> 6)"
 			+
 			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.nrofactura")
 	List<Object[]> findByFechacobroTotRangos(LocalDate d_fecha, LocalDate h_fecha);
@@ -156,7 +171,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 */
 	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total,f.swiva  FROM Facturas f " +
 			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165"
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 AND (f.swcondonar = FALSE OR rf.idrubro_rubros <> 6)"
 			+
 			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.nrofactura")
 	List<Object[]> findByFechacobroTotByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador);
@@ -164,7 +179,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query("SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
 			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
-			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165  GROUP BY fc.descripcion  ORDER BY fc.descripcion")
+			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 AND (f.swcondonar = FALSE OR rf.idrubro_rubros <> 6)  GROUP BY fc.descripcion  ORDER BY fc.descripcion")
 	List<Object[]> totalFechaFormacobroByRecaudador(@Param("d_fecha") LocalDate d_fecha,
 			@Param("d_fecha") LocalDate h_fecha, @Param("recaudador") Long idrecaudador);
 
@@ -190,7 +205,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Facturas> findByFecEliminacion(Date d, Date h);
 
 	/* reporte de facturas cobradas por transferencia */
-	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 and not rf.idrubro_rubros = 165 group by f.idfactura order by f.nrofactura asc")
+	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 and not rf.idrubro_rubros = 165 AND (f.swcondonar = FALSE OR rf.idrubro_rubros <> 6) group by f.idfactura order by f.nrofactura asc")
 	public List<Object[]> transferenciasCobradas(Date d_fecha, Date h_fecha);
 
 	/* REPORTE DE FACTURAS TRANSFERIDAS PERO NO COBRADAS */

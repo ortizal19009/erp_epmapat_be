@@ -177,6 +177,7 @@ public class FacturaServicio {
 	public List<Facturas> findByFecEliminacion(Date d, Date h) {
 		return this.dao.findByFecEliminacion(d, h);
 	}
+
 	public List<Facturas> findByFecAnulacion(Date d, Date h) {
 		return this.dao.findByFecAnulacion(d, h);
 	}
@@ -189,4 +190,20 @@ public class FacturaServicio {
 	public List<Facturas> findFechaCobro(LocalDate d, LocalDate h) {
 		return this.dao.findFechaCobro(d, h);
 	}
+
+	// Cartera a una fecha
+	public List<Facturas> cartera(LocalDate hasta) {
+		return dao.cartera(hasta);
+	}
+
+	// Cartera de un cliente a una fecha (Facturas)
+	public List<Facturas> carteraCliente(Long idcliente, LocalDate hasta) {
+		return dao.carteraCliente(idcliente, hasta);
+	}
+
+	// Cartera de un cliente a una fecha (Total, ya suma 1 a los del módulo 3)
+	public Double totCarteraCliente(Long idcliente, LocalDate hasta) {
+		return dao.totCarteraCliente(idcliente, hasta);
+	}
+
 }
