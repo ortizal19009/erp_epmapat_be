@@ -58,7 +58,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	// Planillas sin cobrar por cliente valor a pagar calculado por la suma de los
 	// rubros
-	@Query(value = "select f.idfactura, f.idmodulo, sum(rf.valorunitario * rf.cantidad) as total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165  group by f.idfactura ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
+	@Query(value = "select f.idfactura, f.idmodulo, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165  group by f.idfactura ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
 	public List<FacSinCobrar> findFacSincobro(Long idcliente);
 
 	// Cartera a una fecha
@@ -113,9 +113,10 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * GLOBALES
 	 */
 	// Recaudacion diaria - Facturas cobradas
+	
 	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario)AS total, f.swiva FROM Rubroxfac rf " +
 			"JOIN Facturas f ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165  "
+			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165  and (not rf.idrubro_rubros = 6 and not f.swcondonar = true)"
 			+
 			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura")
 	List<Object[]> findByFechacobroTot(LocalDate fecha);
