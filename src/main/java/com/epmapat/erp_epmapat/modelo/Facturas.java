@@ -84,7 +84,7 @@ public class Facturas implements Serializable {
 	public Facturas() {
 		super();
 	}
-
+	
 	public Long getIdfactura() {
 		return idfactura;
 	}

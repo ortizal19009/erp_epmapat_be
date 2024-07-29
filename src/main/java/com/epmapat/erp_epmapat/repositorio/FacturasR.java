@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
+import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 
 // @Repository
@@ -49,8 +50,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Planillas por Abonado y Fecha
 	@Query("SELECT f FROM Facturas f WHERE f.idabonado = :idabonado AND f.feccrea BETWEEN :fechaDesde AND :fechaHasta AND totaltarifa > 0 order by feccrea desc")
 	List<Facturas> findByAbonadoAndFechaCreacionRange(@Param("idabonado") Long idabonado,
-			@Param("fechaDesde") LocalDate fechaDesde,
-			@Param("fechaHasta") LocalDate fechaHasta);
+			@Param("fechaDesde") LocalDate fechaDesde, @Param("fechaHasta") LocalDate fechaHasta);
 
 	// Planillas por Cliente (sinCobrar)
 	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery = true)
@@ -104,8 +104,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// public List<Facturas> findByFechacobro(LocalDate fecha);
 	// Recaudacion diaria - Facturas cobradas
 	/*
-	 * =========================================
-	 * QUERIS PARA RETPORTES
+	 * ========================================= QUERIS PARA RETPORTES
 	 * ===========================================
 	 */
 
@@ -113,68 +112,80 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * GLOBALES
 	 */
 	// Recaudacion diaria - Facturas cobradas
-	
-	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario)AS total, f.swiva FROM Rubroxfac rf " +
-			"JOIN Facturas f ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165  and (not rf.idrubro_rubros = 6 and not f.swcondonar = true)"
-			+
-			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura")
-	List<Object[]> findByFechacobroTot(LocalDate fecha);
+
+	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario)AS total, f.swiva FROM Rubroxfac rf "
+			+ "JOIN Facturas f ON rf.idfactura_facturas = f.idfactura "
+			+ "WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165  "
+			+ "GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura")
+	List<Object[]> _findByFechacobroTot(LocalDate fecha);
+
+	@Query(value = "SELECT f.idfactura AS idfactura, "
+			+ "SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , f.swiva as iva "
+			+ "FROM rubroxfac rf " + "JOIN facturas f ON rf.idfactura_facturas = f.idfactura "
+			+ "WHERE date(f.fechacobro) = ?1 " + "AND (f.estado = 1 OR f.estado = 2) "
+			+ "AND f.fechaeliminacion IS NULL " + "AND rf.idrubro_rubros != 165 " + "GROUP BY f.idfactura ",
+
+			nativeQuery = true)
+	List<RepFacGlobal> findByFechacobroTot(LocalDate fecha);
+
+	/*
+	 * @Query(value =
+	 * "SELECT f as facturas, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END )AS total FROM rubroxfac rf JOIN facturas f ON rf.idfactura_facturas = f.idfactura WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura"
+	 * , nativeQuery = true)
+	 */
+
 	/*
 	 * @Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
-	 * +
-	 * "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
+	 * + "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
 	 * "WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL)"
-	 * +
-	 * "GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura")
-	 * List<Object[]> findByFechacobroTot(LocalDate fecha);
+	 * + "GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura") List<Object[]>
+	 * findByFechacobroTot(LocalDate fecha);
 	 */
 
 	// Total diario por Forma de cobro
-	@Query("SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM  Rubroxfac rf "
+	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total FROM Rubroxfac rf "
 			+ "JOIN Facturas f ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
 			+ "WHERE f.fechacobro = ?1 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 "
-			+
-			" GROUP BY fc.descripcion ORDER BY fc.descripcion")
+			+ " GROUP BY fc.descripcion ORDER BY fc.descripcion", nativeQuery = true)
 	List<Object[]> totalFechaFormacobro(@Param("fecha") LocalDate fecha);
 	/*
 	 * @Query(value =
 	 * "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
-	 * + "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
-	 * + "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
-	 * +
+	 * + "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
+	 * "JOIN Formacobro fc ON fc.idformacobro = f.formapago " +
 	 * "WHERE f.fechacobro = ?1 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL)"
-	 * +
-	 * " GROUP BY fc.descripcion ORDER BY fc.descripcion")
-	 * List<Object[]> totalFechaFormacobro(@Param("fecha") LocalDate fecha);
+	 * + " GROUP BY fc.descripcion ORDER BY fc.descripcion") List<Object[]>
+	 * totalFechaFormacobro(@Param("fecha") LocalDate fecha);
 	 */
 
 	/*
 	 * POR RANGOS
 	 */
 	// Total diario por Forma de cobro
-	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
+	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total FROM Facturas f "
 			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
-			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3  AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165  GROUP BY fc.descripcion ORDER BY fc.descripcion")
+			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3  AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165  GROUP BY fc.descripcion ORDER BY fc.descripcion", nativeQuery = true )
 	List<Object[]> totalFechaFormacobroRangos(@Param("d_fecha") LocalDate d_fecha, @Param("d_fecha") LocalDate h_fecha);
-
-	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total, f.swiva  FROM Facturas f " +
-			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 "
-			+
-			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.nrofactura")
-	List<Object[]> findByFechacobroTotRangos(LocalDate d_fecha, LocalDate h_fecha);
+	
+	
+	
+	@Query(value = "SELECT f.idfactura AS idfactura, "
+			+ "SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , f.swiva as iva "
+			+ "FROM rubroxfac rf " + "JOIN facturas f ON rf.idfactura_facturas = f.idfactura "
+			+ "WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2)" + "AND (f.estado = 1 OR f.estado = 2) "
+			+ "AND f.fechaeliminacion IS NULL " + "AND rf.idrubro_rubros != 165 " + "GROUP BY f.idfactura ",
+			nativeQuery = true)
+	List<RepFacGlobal> findByFechacobroTotRangos(LocalDate d_fecha, LocalDate h_fecha);
 
 	/*
 	 * POR RECAUDADOR CON RANGO
 	 */
-	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total,f.swiva  FROM Facturas f " +
-			"JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 "
-			+
-			"GROUP BY f.idfactura, f.nrofactura  ORDER BY f.nrofactura")
+	@Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total,f.swiva  FROM Facturas f "
+			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura "
+			+ "WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 "
+			+ "GROUP BY f.idfactura, f.nrofactura  ORDER BY f.nrofactura")
 	List<Object[]> findByFechacobroTotByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador);
 
 	@Query("SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "

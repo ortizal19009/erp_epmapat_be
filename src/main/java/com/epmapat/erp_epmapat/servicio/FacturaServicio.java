@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
+import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 
@@ -108,7 +109,7 @@ public class FacturaServicio {
 	// }
 
 	// Recaudación diaria - Facturas cobradas (Sumando los rubros)
-	public List<Object[]> findByFechacobroTotRangos(LocalDate d_fecha, LocalDate h_fecha) {
+	public List<RepFacGlobal> findByFechacobroTotRangos(LocalDate d_fecha, LocalDate h_fecha) {
 		return dao.findByFechacobroTotRangos(d_fecha, h_fecha);
 	}
 
@@ -126,7 +127,7 @@ public class FacturaServicio {
 		return dao.totalFechaFormacobroByRecaudador(d_fecha, h_fecha, idrecaudador);
 	}
 
-	public List<Object[]> findByFechacobroTot(LocalDate fecha) {
+	public List<RepFacGlobal> findByFechacobroTot(LocalDate fecha) {
 		return dao.findByFechacobroTot(fecha);
 	}
 

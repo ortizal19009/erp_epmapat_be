@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
+import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
 import com.epmapat.erp_epmapat.reportes.facturas.interfaces.i_ReporteFacturasCobradas_G;
@@ -196,7 +197,7 @@ public class FacturasApi {
 
 	// Recaudacion diaria - Facturas cobradas <Facturas>
 	@GetMapping("reportes/cobradastotrangos")
-	public List<Object[]> findByFechacobroTotRangos(
+	public List<RepFacGlobal> findByFechacobroTotRangos(
 			@Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
 			@Param("h_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h_fecha) {
 		return facServicio.findByFechacobroTotRangos(d_fecha, h_fecha);
@@ -230,7 +231,7 @@ public class FacturasApi {
 
 	// Recaudacion diaria - Facturas cobradas <Facturas>
 	@GetMapping("/cobradastot")
-	public List<Object[]> findByFechacobroTot(
+	public List<RepFacGlobal> findByFechacobroTot(
 			@Param("fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
 		return facServicio.findByFechacobroTot(fecha);
 	}
