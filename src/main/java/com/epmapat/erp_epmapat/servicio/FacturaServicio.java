@@ -113,7 +113,7 @@ public class FacturaServicio {
 		return dao.findByFechacobroTotRangos(d_fecha, h_fecha);
 	}
 
-	public List<Object[]> findByFechacobroTotByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador) {
+	public List<RepFacGlobal> findByFechacobroTotByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador) {
 		return dao.findByFechacobroTotByRecaudador(d_fecha, h_fecha, idrecaudador);
 	}
 

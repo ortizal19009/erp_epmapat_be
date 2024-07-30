@@ -205,7 +205,7 @@ public class FacturasApi {
 
 	// Recaudacion diaria - Facturas cobradas <Facturas>
 	@GetMapping("/reportes/cobradastot")
-	public List<Object[]> findByFechacobroTotByRecaudador(
+	public List<RepFacGlobal> findByFechacobroTotByRecaudador(
 			@Param("d_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d_fecha,
 			@Param("h_fecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h_fecha,
 			@Param("idrecaudador") Long idrecaudador) {
