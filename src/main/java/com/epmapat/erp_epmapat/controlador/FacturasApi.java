@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
+import com.epmapat.erp_epmapat.interfaces.RepFacEliminadas;
 import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
@@ -63,15 +64,15 @@ public class FacturasApi {
 	}
 
 	@GetMapping("/validador/{codrecaudador}")
-	public ResponseEntity<Facturas> validarUltimaFactura(@PathVariable("codrecaudador") String codrecaudador) {
+	public ResponseEntity<Facturas> validarUltimaFactura(@PathVariable String codrecaudador) {
 		Facturas factura = facServicio.validarUltimafactura(codrecaudador);
 		return ResponseEntity.ok(factura);
 	}
 
 	@GetMapping("/reportes/individual")
-	public ResponseEntity<List<Facturas>> getByUsucobro(@RequestParam("idusuario") Long idusuario,
-			@RequestParam("dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dfecha,
-			@RequestParam("hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hfecha) {
+	public ResponseEntity<List<Facturas>> getByUsucobro(@RequestParam Long idusuario,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date dfecha,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date hfecha) {
 		List<Facturas> facturas = facServicio.findByUsucobro(idusuario, dfecha, hfecha);
 		if (!facturas.isEmpty()) {
 
@@ -83,7 +84,7 @@ public class FacturasApi {
 
 	@GetMapping("/reportes/fechacobro")
 	public ResponseEntity<List<FacturasI>> getByFechacobro(
-			@RequestParam("fechacobro") @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechacobro) {
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechacobro) {
 		List<FacturasI> facturas = facServicio.findByFechacobro(fechacobro);
 		if (!facturas.isEmpty()) {
 
@@ -94,13 +95,13 @@ public class FacturasApi {
 	}
 
 	@GetMapping("/idabonado/{idabonado}")
-	public List<Facturas> getByIdabonado(@PathVariable("idabonado") Long idabonado) {
+	public List<Facturas> getByIdabonado(@PathVariable Long idabonado) {
 		return facServicio.findByIdabonado(idabonado);
 	}
 
 	@GetMapping("/abonado/{idabonado}/{limit}")
-	public List<Facturas> getByIdabonadoLimit(@PathVariable("idabonado") long idabonado,
-			@PathVariable("limit") Long limit) {
+	public List<Facturas> getByIdabonadoLimit(@PathVariable long idabonado,
+			@PathVariable Long limit) {
 		return facServicio.findByIdabonadoLimit(idabonado, limit);
 	}
 
@@ -130,20 +131,19 @@ public class FacturasApi {
 	@GetMapping("/{idfactura}")
 	public ResponseEntity<Facturas> getById(@PathVariable Long idfactura) {
 		Facturas x = facServicio.findById(idfactura)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones(
-						("No existe la Factura  Id: " + idfactura)));
+				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe la Factura  Id: " + idfactura)));
 		return ResponseEntity.ok(x);
 	}
 
 	// Planillas sin cobro de un Cliente
 	@GetMapping("/idcliente/{idcliente}")
-	public List<Facturas> getSinCobro(@PathVariable("idcliente") Long idcliente) {
+	public List<Facturas> getSinCobro(@PathVariable Long idcliente) {
 		return facServicio.findSinCobro(idcliente);
 	}
 
 	/* sincobro v-2.0 */
 	@GetMapping("facSincobrar")
-	public List<FacSinCobrar> findFacSincobro(@RequestParam("idcliente") Long idcliente) {
+	public List<FacSinCobrar> findFacSincobro(@RequestParam Long idcliente) {
 		return facServicio.findFacSincobro(idcliente);
 	}
 
@@ -178,7 +178,7 @@ public class FacturasApi {
 	}
 
 	@GetMapping("/f_abonado/{idabonado}")
-	public List<Facturas> getFacturaByAbonado(@PathVariable("idabonado") Long idabonado) {
+	public List<Facturas> getFacturaByAbonado(@PathVariable Long idabonado) {
 		return facServicio.findByIdFactura(idabonado);
 	}
 
@@ -294,15 +294,14 @@ public class FacturasApi {
 	}
 
 	/*
-	 * ==============================
-	 * *********REPORTES*************
+	 * ============================== *********REPORTES*************
 	 * ==============================
 	 */
 
 	@GetMapping("/reportes/facturascobradas")
 	public ResponseEntity<Resource> reporteFacturasCobradas(
-			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha)
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha)
 			throws JRException, IOException, SQLException {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
@@ -320,10 +319,9 @@ public class FacturasApi {
 
 	@GetMapping("/reportes/facturascobradascaja")
 	public ResponseEntity<Resource> reporteFacturasCobradasCaja(
-			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
-			@RequestParam("usuariocobro") Long usuariocobro)
-			throws JRException, IOException, SQLException {
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
+			@RequestParam Long usuariocobro) throws JRException, IOException, SQLException {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
@@ -341,9 +339,9 @@ public class FacturasApi {
 
 	@GetMapping("/reportes/facturasrubros")
 	public ResponseEntity<Resource> reporteFacturaRubros(
-			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
-			@RequestParam("c_feccrea") @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_feccrea)
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_feccrea)
 			throws JRException, IOException, SQLException {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
@@ -355,10 +353,8 @@ public class FacturasApi {
 		MediaType mediaType = MediaType.APPLICATION_PDF;
 		;
 		/*
-		 * if (tipo == "excel") {
-		 * mediaType = MediaType.APPLICATION_OCTET_STREAM;
-		 * } else {
-		 * }
+		 * if (tipo == "excel") { mediaType = MediaType.APPLICATION_OCTET_STREAM; } else
+		 * { }
 		 */
 		// mediaType = MediaType.APPLICATION_PDF;
 
@@ -368,11 +364,10 @@ public class FacturasApi {
 
 	@GetMapping("/reportes/facturasrubroscaja")
 	public ResponseEntity<Resource> reporteFacturaRubrosCaja(
-			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
-			@RequestParam("c_feccrea") @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_feccrea,
-			@RequestParam("usuariocobro") Long usuariocobro)
-			throws JRException, IOException, SQLException {
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_feccrea,
+			@RequestParam Long usuariocobro) throws JRException, IOException, SQLException {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("v_dfecha", v_dfecha);
 		params.put("v_hfecha", v_hfecha);
@@ -384,10 +379,8 @@ public class FacturasApi {
 		MediaType mediaType = MediaType.APPLICATION_PDF;
 		;
 		/*
-		 * if (tipo == "excel") {
-		 * mediaType = MediaType.APPLICATION_OCTET_STREAM;
-		 * } else {
-		 * }
+		 * if (tipo == "excel") { mediaType = MediaType.APPLICATION_OCTET_STREAM; } else
+		 * { }
 		 */
 		// mediaType = MediaType.APPLICATION_PDF;
 
@@ -397,36 +390,36 @@ public class FacturasApi {
 
 	// FACTURAS ANULACIÓN
 	@GetMapping("/anulaciones")
-	public ResponseEntity<List<Facturas>> getFacturasAnuladas(@RequestParam("limit") Long limit) {
+	public ResponseEntity<List<Facturas>> getFacturasAnuladas(@RequestParam Long limit) {
 		List<Facturas> facturas = facServicio.fingAllFacturasAnuladas(limit);
 		return ResponseEntity.ok(facturas);
 	}
 
 	@GetMapping("/anulaciones/fechas")
 	public ResponseEntity<List<Facturas>> getFacturasByFecAnulaciones(
-			@RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
-			@RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
 		List<Facturas> facturas = facServicio.findByFecAnulacion(d, h);
 		return ResponseEntity.ok(facturas);
 	}
 
 	@GetMapping("/cobradas/cliente")
-	public ResponseEntity<List<Facturas>> getFacturasAnuladasxac(@RequestParam("idcliente") Long idcliente) {
+	public ResponseEntity<List<Facturas>> getFacturasAnuladasxac(@RequestParam Long idcliente) {
 		List<Facturas> facturas = facServicio.findCobradasByCliente(idcliente);
 		return ResponseEntity.ok(facturas);
 	}
 
 	// FACTURAS ELIMINACIÓN
 	@GetMapping("/eliminaciones")
-	public ResponseEntity<List<Facturas>> getFacturasEliminadas(@RequestParam("limit") Long limit) {
+	public ResponseEntity<List<Facturas>> getFacturasEliminadas(@RequestParam Long limit) {
 		List<Facturas> facturas = facServicio.fingAllFacturasEliminadas(limit);
 		return ResponseEntity.ok(facturas);
 	}
 
 	@GetMapping("/eliminaciones/fechas")
 	public ResponseEntity<List<Facturas>> getFacturasByFecEliminacion(
-			@RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
-			@RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
 		List<Facturas> facturas = facServicio.findByFecEliminacion(d, h);
 		return ResponseEntity.ok(facturas);
 	}
@@ -434,15 +427,15 @@ public class FacturasApi {
 	/* Transferencias cobradas */
 	@GetMapping("/transferencias")
 	public ResponseEntity<List<Object[]>> transferenciasCobradas(
-			@RequestParam("v_dfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam("v_hfecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha) {
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha) {
 		return ResponseEntity.ok(facServicio.transferenciasCobradas(v_dfecha, v_hfecha));
 	}
 
 	@GetMapping("/rangofeccobro")
 	public ResponseEntity<List<Facturas>> getFechaCobro(
-			@RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
-			@RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
 		return ResponseEntity.ok(facServicio.findFechaCobro(d, h));
 	}
 
@@ -458,5 +451,12 @@ public class FacturasApi {
 	public Double totCarteraCliente(@Param("idcliente") Long idcliente,
 			@Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
 		return facServicio.totCarteraCliente(idcliente, hasta);
+	}
+
+	/* REPORTE DE FACTURAS ELIMINADAS POR RANGO DE FECHA */
+	@GetMapping("/reportes/facturasEliminadas")
+	public ResponseEntity<List<RepFacEliminadas>> getEliminadasXfecha(@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd")  LocalDate d,
+			 @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam LocalDate h) {
+		return ResponseEntity.ok(facServicio.findEliminadasXfecha(d, h));
 	}
 }

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
+import com.epmapat.erp_epmapat.interfaces.RepFacEliminadas;
 import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 
@@ -229,5 +230,9 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	/* COBRADAS POR RANGO */
 	@Query(value = "select * from facturas f where f.fechacobro between ?1 and ?2 and f.pagado = 1 and f.fechaeliminacion is null", nativeQuery = true)
 	public List<Facturas> findFechaCobro(LocalDate d, LocalDate h);
+	
+	/*REPORTE DE FACTURAS ELIMINADAS  POR RANGO DE FECHA*/
+	@Query(value = "select f.idfactura as idfactura ,u.nomusu as nomusu, f.razoneliminacion as razoneliminacion, m.descripcion as modulo ,sum(rf.valorunitario * rf.cantidad) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join modulos m on f.idmodulo = m.idmodulo join usuarios u on f.usuarioeliminacion = u.idusuario where f.fechaeliminacion between ?1 and ?2 group by f.idfactura, m.idmodulo, u.idusuario ", nativeQuery = true)
+	public List<RepFacEliminadas> findEliminadasXfecha(LocalDate d, LocalDate h);
 
 }

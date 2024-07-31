@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
+import com.epmapat.erp_epmapat.interfaces.RepFacEliminadas;
 import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
@@ -205,6 +206,11 @@ public class FacturaServicio {
 	// Cartera de un cliente a una fecha (Total, ya suma 1 a los del módulo 3)
 	public Double totCarteraCliente(Long idcliente, LocalDate hasta) {
 		return dao.totCarteraCliente(idcliente, hasta);
+	}
+
+	/* REPORTE DE FACTURAS ELIMINADAS POR RANGO DE FECHA */
+	public List<RepFacEliminadas> findEliminadasXfecha(LocalDate d, LocalDate h) {
+		return dao.findEliminadasXfecha(d, h);
 	}
 
 }
