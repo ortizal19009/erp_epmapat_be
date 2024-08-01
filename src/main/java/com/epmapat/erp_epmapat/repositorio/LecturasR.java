@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
+import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 
 public interface LecturasR extends JpaRepository<Lecturas, Long> {
@@ -87,4 +88,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	
 	@Query(value = "select e.emision, e.feccrea from lecturas l join emisiones e on l.idemision = e.idemision where l.idfactura =  ?1", nativeQuery = true)
 	public List<FecEmision> getEmisionByIdfactura(Long idfactura); 
+	
+	@Query(value = "SELECT * FROM emisiones e join lecturas l on e.idemision = l.idemision join facturas f on l.idfactura = f.idfactura where not f.fechaeliminacion is null and l.idemision = ?1 order by f.idabonado", nativeQuery = true)
+	List<Lecturas> findByIdEmisiones(Long idemision); 
 }
