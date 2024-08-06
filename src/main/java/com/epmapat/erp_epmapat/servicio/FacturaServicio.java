@@ -212,5 +212,9 @@ public class FacturaServicio {
 	public List<RepFacEliminadas> findEliminadasXfecha(LocalDate d, LocalDate h) {
 		return dao.findEliminadasXfecha(d, h);
 	}
+	/* REPORTE DE FACTURAS ANULADAS POR RANGO DE FECHA */
+	public List<RepFacEliminadas> findAnuladasXfecha(LocalDate d, LocalDate h) {
+		return dao.findAnuladasXfecha(d, h);
+	}
 
 }

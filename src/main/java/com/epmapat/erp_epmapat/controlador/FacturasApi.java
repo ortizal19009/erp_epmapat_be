@@ -459,4 +459,10 @@ public class FacturasApi {
 			 @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam LocalDate h) {
 		return ResponseEntity.ok(facServicio.findEliminadasXfecha(d, h));
 	}
+	/* REPORTE DE FACTURAS anuladas POR RANGO DE FECHA */
+	@GetMapping("/reportes/facturasanuladas")
+	public ResponseEntity<List<RepFacEliminadas>> findAnuladasXfecha(@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd")  LocalDate d,
+			 @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam LocalDate h) {
+		return ResponseEntity.ok(facServicio.findAnuladasXfecha(d, h));
+	}
 }
