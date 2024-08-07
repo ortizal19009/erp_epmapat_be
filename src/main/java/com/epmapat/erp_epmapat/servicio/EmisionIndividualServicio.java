@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRI;
 import com.epmapat.erp_epmapat.interfaces.IemiIndividual;
 import com.epmapat.erp_epmapat.modelo.EmisionIndividual;
 import com.epmapat.erp_epmapat.repositorio.EmisionIndividualR;
@@ -28,6 +29,10 @@ public class EmisionIndividualServicio {
 
     public List<IemiIndividual> findLecturasAnteriores(Long idemision) {
         return dao.findLecturasAnteriores(idemision);
+    }
+
+    public List<EmisionIndividualRI> getLecReport(Integer idemision) {
+        return dao.getLecReport(idemision);
     }
 
 }
