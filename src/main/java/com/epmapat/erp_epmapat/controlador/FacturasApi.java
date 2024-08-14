@@ -138,6 +138,7 @@ public class FacturasApi {
 	// Planillas sin cobro de un Cliente
 	@GetMapping("/idcliente/{idcliente}")
 	public List<Facturas> getSinCobro(@PathVariable Long idcliente) {
+		System.out.println("Hola mundo");
 		return facServicio.findSinCobro(idcliente);
 	}
 
