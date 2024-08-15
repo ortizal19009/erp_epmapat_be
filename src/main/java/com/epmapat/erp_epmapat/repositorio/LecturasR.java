@@ -3,12 +3,14 @@ package com.epmapat.erp_epmapat.repositorio;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.scheduling.annotation.Async;
 
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
-import com.epmapat.erp_epmapat.modelo.Emisiones;
+import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 
 public interface LecturasR extends JpaRepository<Lecturas, Long> {
@@ -85,10 +87,46 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	/* encontrar fecha de emision para recaudacion */
 	@Query(value = "select e.feccrea from lecturas l join emisiones e on l.idemision = e.idemision where idfactura = ?1", nativeQuery = true)
 	public Date findDateByIdfactura(Long idfactura);
-	
+
 	@Query(value = "select e.emision, e.feccrea from lecturas l join emisiones e on l.idemision = e.idemision where l.idfactura =  ?1", nativeQuery = true)
-	public List<FecEmision> getEmisionByIdfactura(Long idfactura); 
-	
+	public List<FecEmision> getEmisionByIdfactura(Long idfactura);
+
 	@Query(value = "SELECT * FROM emisiones e join lecturas l on e.idemision = l.idemision join facturas f on l.idfactura = f.idfactura where not f.fechaeliminacion is null and l.idemision = ?1 order by f.idabonado", nativeQuery = true)
-	List<Lecturas> findByIdEmisiones(Long idemision); 
+	List<Lecturas> findByIdEmisiones(Long idemision);
+
+	/* REPORTES DE LOS RUBROS DE LA EMISION INICIAL */
+	@Async
+	@Query(value = " WITH max_fechaemision AS ( "
+			+ " SELECT l.fechaemision "
+			+ " FROM lecturas l "
+			+ " WHERE l.idemision = 223 "
+			+ " GROUP BY l.fechaemision "
+			+ " ORDER BY COUNT(*) desc "
+			+ " LIMIT 1) "
+			+ "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total "
+			+ "FROM lecturas l join rubroxfac rf on l.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro "
+			+ "WHERE l.idemision = 223 and not rf.idrubro_rubros = 5 "
+			+ "AND l.fechaemision = (SELECT fechaemision FROM max_fechaemision) "
+			+ "group by rf.idrubro_rubros , r.descripcion ; ", nativeQuery = true)
+	CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision);
+
+	/* 
+	 * 
+	 * --REPORTE DE LOS RUBROS nuevos 
+
+select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) 
+from emisionindividual ei 
+join lecturas l on ei.idlecturanueva = l.idlectura 
+join rubroxfac rf on l.idfactura = rf.idfactura_facturas
+join rubros r on rf.idrubro_rubros  = r.idrubro 
+where ei.idemision = 225 and not rf.idrubro_rubros = 5
+group by rf.idrubro_rubros , r.descripcion 
+
+--REPORTE DE LOS RUBROS ELIMINADOS 
+
+select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) from lecturas l join rubroxfac rf on l.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro join facturas f on l.idfactura = f.idfactura where l.idemision = 223 and not rf.idrubro_rubros = 5 and not f.fechaeliminacion is null  group by rf.idrubro_rubros , r.descripcion 
+
+	 */
+
+
 }

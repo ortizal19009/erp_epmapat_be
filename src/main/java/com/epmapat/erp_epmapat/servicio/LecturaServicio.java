@@ -4,11 +4,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
+import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
 
@@ -122,5 +124,8 @@ public class LecturaServicio {
 
 	public List<Lecturas> findByIdEmisiones(Long idemision) {
 		return dao.findByIdEmisiones(idemision);
+	}
+	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision){
+		return dao.getAllRubrosEmisionInicial(idemision);
 	}
 }

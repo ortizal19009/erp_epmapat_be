@@ -3,6 +3,7 @@ package com.epmapat.erp_epmapat.controlador;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
-import com.epmapat.erp_epmapat.modelo.Emisiones;
+import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -183,8 +184,14 @@ public class LecturasApi {
 	public ResponseEntity<List<FecEmision>> findEmisionByIdfactura(@RequestParam("idfactura") Long idfactura) {
 		return ResponseEntity.ok(lecServicio.getEmisionByIdfactura(idfactura));
 	}
+
 	@GetMapping("/emision")
 	public ResponseEntity<List<Lecturas>> getByIdEmisiones(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.findByIdEmisiones(idemision));
+	}
+
+	@GetMapping("/reportes/rubros/inicial")
+	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(@RequestParam Long idemision) {
+		return lecServicio.getAllRubrosEmisionInicial(idemision);
 	}
 }
