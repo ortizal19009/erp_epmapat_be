@@ -44,7 +44,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         + "join facturas fa on la.idfactura = fa.idfactura "
                         + "join rubroxfac rfa on rfa.idfactura_facturas = la.idfactura "
                         + "join emisiones ea on ea.idemision = la.idemision "
-                        + "where ei.idemision = ?1 "
+                        + "where ei.idemision = ?1 and not rfa.idrubro_rubros = 5 "
                         + "group by rfa.idfactura_facturas, fa.idabonado, la.idfactura, ea.emision  "
                         + "order by fa.idabonado asc;", nativeQuery = true)
         public List<EmisionIndividualRia> emisionIndividualAnterior(Integer idemision);
@@ -55,7 +55,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         + "join facturas fn on ln.idfactura = fn.idfactura "
                         + "join rubroxfac rfn on rfn.idfactura_facturas = ln.idfactura "
                         + "join emisiones en on en.idemision = ln.idemision "
-                        + "where ei.idemision = ?1 and fn.fechaeliminacion is null "
+                        + "where ei.idemision = ?1 and fn.fechaeliminacion is null and not rfn.idrubro_rubros = 5 "
                         + "group by fn.idabonado, ln.idfactura, en.emision ,rfn.idfactura_facturas "
                         + "order by fn.idabonado asc;", nativeQuery = true)
         public List<EmisionIndividualRin> emisionIndividualNueva(Integer idemision);

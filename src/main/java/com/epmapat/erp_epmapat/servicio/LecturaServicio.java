@@ -128,4 +128,13 @@ public class LecturaServicio {
 	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision){
 		return dao.getAllRubrosEmisionInicial(idemision);
 	}
+	public CompletableFuture<List<RubroxfacIReport>> getAllNewLecturas(Long idemision){
+		return dao.getAllNewLecturas(idemision);
+	}
+	public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(Long idemision){
+		return dao.getAllDeleteLecturas(idemision);
+	}
+	public CompletableFuture<List<RubroxfacIReport>> getAllActual(Long idemision){
+		return dao.getAllActual(idemision);
+	}
 }

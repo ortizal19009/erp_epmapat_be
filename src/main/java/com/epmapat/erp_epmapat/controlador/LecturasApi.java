@@ -194,4 +194,16 @@ public class LecturasApi {
 	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(@RequestParam Long idemision) {
 		return lecServicio.getAllRubrosEmisionInicial(idemision);
 	}
+	@GetMapping("/reportes/rubros/nuevos")
+	public CompletableFuture<List<RubroxfacIReport>> getAllNewLecturas(@RequestParam Long idemision) {
+		return lecServicio.getAllNewLecturas(idemision);
+	}
+	@GetMapping("/reportes/rubros/eliminados")
+	public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(@RequestParam Long idemision) {
+		return lecServicio.getAllDeleteLecturas(idemision);
+	}
+	@GetMapping("/reportes/rubros/actual")
+	public CompletableFuture<List<RubroxfacIReport>> getAllActual(@RequestParam Long idemision) {
+		return lecServicio.getAllActual(idemision);
+	}
 }
