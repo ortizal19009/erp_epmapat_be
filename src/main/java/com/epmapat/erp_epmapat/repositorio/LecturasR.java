@@ -99,13 +99,13 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	@Query(value = " WITH max_fechaemision AS ( "
 			+ " SELECT l.fechaemision "
 			+ " FROM lecturas l "
-			+ " WHERE l.idemision = 223 "
+			+ " WHERE l.idemision = ?1 "
 			+ " GROUP BY l.fechaemision "
 			+ " ORDER BY COUNT(*) desc "
 			+ " LIMIT 1) "
 			+ "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total "
 			+ "FROM lecturas l join rubroxfac rf on l.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro "
-			+ "WHERE l.idemision = 223 and not rf.idrubro_rubros = 5 "
+			+ "WHERE l.idemision = ?1 and not rf.idrubro_rubros = 5 "
 			+ "AND l.fechaemision = (SELECT fechaemision FROM max_fechaemision) "
 			+ "group by rf.idrubro_rubros , r.descripcion ; ", nativeQuery = true)
 	CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision);
