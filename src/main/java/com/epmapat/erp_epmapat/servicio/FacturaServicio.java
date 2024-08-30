@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadas;
@@ -216,5 +217,9 @@ public class FacturaServicio {
 	public List<RepFacEliminadas> findAnuladasXfecha(LocalDate d, LocalDate h) {
 		return dao.findAnuladasXfecha(d, h);
 	}
-
+	
+	public List<FacIntereses> getForIntereses(Long idfactura) {
+		return dao.getForIntereses(idfactura);
+	}
 }
+

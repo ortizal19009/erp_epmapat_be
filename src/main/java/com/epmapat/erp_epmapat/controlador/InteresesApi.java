@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
@@ -75,6 +76,11 @@ public class InteresesApi {
 	public ResponseEntity<Boolean> deleteInteres(@PathVariable("idinteres") Long idinteres) {
 		inteServicio.deleteById(idinteres);
 		return ResponseEntity.ok(!(inteServicio.findById(idinteres) != null));
+	}
+	@GetMapping("/calcular")
+	public ResponseEntity<Object> calcularIntereses(@RequestParam Long idfactura){
+		System.out.println(idfactura);
+		return ResponseEntity.ok(inteServicio.facturaid(idfactura)); 
 	}
 
 }

@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
@@ -125,16 +126,24 @@ public class LecturaServicio {
 	public List<Lecturas> findByIdEmisiones(Long idemision) {
 		return dao.findByIdEmisiones(idemision);
 	}
-	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision){
+
+	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision) {
 		return dao.getAllRubrosEmisionInicial(idemision);
 	}
-	public CompletableFuture<List<RubroxfacIReport>> getAllNewLecturas(Long idemision){
+
+	public CompletableFuture<List<RubroxfacIReport>> getAllNewLecturas(Long idemision) {
 		return dao.getAllNewLecturas(idemision);
 	}
-	public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(Long idemision){
+
+	public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(Long idemision) {
 		return dao.getAllDeleteLecturas(idemision);
 	}
-	public CompletableFuture<List<RubroxfacIReport>> getAllActual(Long idemision){
+
+	public CompletableFuture<List<RubroxfacIReport>> getAllActual(Long idemision) {
 		return dao.getAllActual(idemision);
+	}
+
+	public List<FacIntereses> getForIntereses(Long idfactura) {
+		return dao.getForIntereses(idfactura);
 	}
 }
