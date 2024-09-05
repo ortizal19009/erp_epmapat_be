@@ -5,7 +5,7 @@ import java.util.Date;
 
 public interface FacIntereses {
 	Long getIdFactura();
-	BigDecimal getSuma();
-	Date getFeccrea();
+	Float getSuma();
+	String getFeccrea();
 
 }
