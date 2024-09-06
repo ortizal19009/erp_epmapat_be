@@ -110,30 +110,20 @@ public class InteresServicio {
 		}
 		// Variable para almacenar el interés total de todas las facturas
 		final double[] totalInteres = { 0.0 };
-
 		// Uso de Java Streams para mapear la lista
 		factura.stream().forEach(_factura -> {
 			// Convertir la fecha de creación a LocalDate
 			LocalDate fecInicio = LocalDate.parse(_factura.getFeccrea());
 			LocalDate fecFinal = LocalDate.now();
-			System.out.println(fecInicio);
-			System.out.println(fecFinal);
-
 			int anioI = fecInicio.getYear();
 			int anioF = fecFinal.getYear();
-
-			// Lista para almacenar todos los porcentajes de intereses
 			List<Float> todosPorcentajes = new ArrayList<>();
-
 			if (anioI < anioF) {
 				int mesI = fecInicio.getMonthValue();
 				while (anioI <= anioF) {
-					System.out.println("Buscando ...");
 					if (anioI < anioF) {
-						System.out.println("Anio es menor");
 						List<Float> porcentaje = dao.porcentajes(anioI, mesI, 12);
 						todosPorcentajes.addAll(porcentaje); // Añadir los porcentajes a la lista total
-						System.out.println(porcentaje);
 					} else if (anioI == anioF) {
 						List<Float> porcentaje = new ArrayList<>(); // Inicializa la lista
 						if (fecInicio.getMonthValue() == (fecFinal.getMonthValue() - 1)) {
@@ -141,8 +131,7 @@ public class InteresServicio {
 						} else {
 							porcentaje = dao.porcentajes(anioF, 1, fecFinal.getMonthValue() - 2);
 							todosPorcentajes.addAll(porcentaje);
-						} // Añadir los porcentajes a la lista total
-						System.out.println(porcentaje);
+						} 
 					}
 					mesI = 1;
 					anioI++;
@@ -157,20 +146,13 @@ public class InteresServicio {
 							fecFinal.getMonthValue() - 2);
 					todosPorcentajes.addAll(porcentaje);
 				}
-				System.out.println("Porcentaje: " + porcentaje);
 			}
-
-			// Calcular el interés total para esta factura
 			todosPorcentajes.forEach(interes -> {
-				System.out.println(interes);
 				double interesCalculado = (interes * (_factura.getSuma() + totalInteres[0])) / 100;
 				totalInteres[0] += interesCalculado; // Sumar al interés total
 			});
 		});
-
-		// Retornar el interés total
 		return totalInteres[0];
-
 	}
 
 }

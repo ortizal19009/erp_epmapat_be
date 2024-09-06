@@ -79,7 +79,6 @@ public class InteresesApi {
 	}
 	@GetMapping("/calcular")
 	public ResponseEntity<Object> calcularIntereses(@RequestParam Long idfactura){
-		System.out.println(idfactura);
 		return ResponseEntity.ok(inteServicio.facturaid(idfactura)); 
 	}
 
