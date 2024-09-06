@@ -63,49 +63,30 @@ public class InteresServicio {
 		if (factura.isEmpty()) {
 			return s_factura.getForIntereses(idfactura);
 		} else {
-			// Variable para almacenar el interés total de todas las facturas
 			final double[] totalInteres = { 0.0 };
-			double[] intereses;
-
-			// Uso de Java Streams para mapear la lista
 			factura.stream().forEach(_factura -> {
-				// Convertir la fecha de creación a LocalDate
 				LocalDate fecInicio = LocalDate.parse(_factura.getFeccrea());
 				LocalDate fecFinal = LocalDate.now();
-				System.out.println(fecInicio);
-				System.out.println(fecFinal);
-
 				int anioI = fecInicio.getYear();
 				int anioF = fecFinal.getYear();
+				List<Float> porcentaje;
 				if (anioI < anioF) {
 					int mesI = fecInicio.getMonthValue();
 					while (anioI <= anioF) {
-						
-						System.out.println("Buscando ...");
 						if (anioI < anioF) {
-							System.out.println("Anio es menor");
-						
-						 List<Float> porcentaje = dao.porcentajes( anioI,
-								 mesI, 12 );
-						 System.out.println(porcentaje);
-							 
+							porcentaje = dao.porcentajes(anioI,
+									mesI, 12);
 						} else if (anioI == anioF) {
-							System.out.println("Anio es igual");
-							List<Float> porcentaje = dao.porcentajes( anioF,1,
+							porcentaje = dao.porcentajes(anioF, 1,
 									fecFinal.getMonthValue());
-								 System.out.println(porcentaje);
 						}
-						mesI = 1; 
+						mesI = 1;
 						anioI++;
-					}				
+					}
 
-				}
-				else {
-					System.out.println("voy a buscar solo el rango del año actual");
-					List<Float> porcentaje = dao.porcentajes( fecFinal.getYear(),
-							fecInicio.getMonthValue(), fecFinal.getMonthValue() );
-						 System.out.println(porcentaje);
-					
+				} else {
+					porcentaje = dao.porcentajes(fecFinal.getYear(),
+							fecInicio.getMonthValue(), fecFinal.getMonthValue());
 				}
 				// Obtener la lista de intereses aplicables
 
@@ -122,67 +103,66 @@ public class InteresServicio {
 		}
 	}
 
-	
 	public Object facturaid(Long idfactura) {
-	    List<FacIntereses> factura = s_lectura.getForIntereses(idfactura);
+		List<FacIntereses> factura = s_lectura.getForIntereses(idfactura);
 
-	    if (factura.isEmpty()) {
-	        return s_factura.getForIntereses(idfactura);
-	    } else {
-	        // Variable para almacenar el interés total de todas las facturas
-	        final double[] totalInteres = {0.0};
+		if (factura.isEmpty()) {
+			return s_factura.getForIntereses(idfactura);
+		} else {
+			// Variable para almacenar el interés total de todas las facturas
+			final double[] totalInteres = { 0.0 };
 
-	        // Uso de Java Streams para mapear la lista
-	        factura.stream().forEach(_factura -> {
-	            // Convertir la fecha de creación a LocalDate
-	            LocalDate fecInicio = LocalDate.parse(_factura.getFeccrea());
-	            LocalDate fecFinal = LocalDate.now();
-	            System.out.println(fecInicio);
-	            System.out.println(fecFinal);
+			// Uso de Java Streams para mapear la lista
+			factura.stream().forEach(_factura -> {
+				// Convertir la fecha de creación a LocalDate
+				LocalDate fecInicio = LocalDate.parse(_factura.getFeccrea());
+				LocalDate fecFinal = LocalDate.now();
+				System.out.println(fecInicio);
+				System.out.println(fecFinal);
 
-	            int anioI = fecInicio.getYear();
-	            int anioF = fecFinal.getYear();
+				int anioI = fecInicio.getYear();
+				int anioF = fecFinal.getYear();
 
-	            // Lista para almacenar todos los porcentajes de intereses
-	            List<Float> todosPorcentajes = new ArrayList<>();
+				// Lista para almacenar todos los porcentajes de intereses
+				List<Float> todosPorcentajes = new ArrayList<>();
 
-	            if (anioI < anioF) {
-	                int mesI = fecInicio.getMonthValue();
-	                while (anioI <= anioF) {
-	                    System.out.println("Buscando ...");
-	                    if (anioI < anioF) {
-	                        System.out.println("Anio es menor");
-	                        List<Float> porcentaje = dao.porcentajes(anioI, mesI, 12);
-	                        todosPorcentajes.addAll(porcentaje); // Añadir los porcentajes a la lista total
-	                        System.out.println(porcentaje);
-	                    } else if (anioI == anioF) {
-	                        System.out.println("Anio es igual");
-	                        List<Float> porcentaje = dao.porcentajes(anioF, 1, fecFinal.getMonthValue()-1);
-	                        todosPorcentajes.addAll(porcentaje); // Añadir los porcentajes a la lista total
-	                        System.out.println(porcentaje);
-	                    }
-	                    mesI = 1;
-	                    anioI++;
-	                }
-	            } else {
-	                System.out.println("voy a buscar solo el rango del año actual");
-	                List<Float> porcentaje = dao.porcentajes(fecFinal.getYear(), fecInicio.getMonthValue(), fecFinal.getMonthValue()-1);
-	                todosPorcentajes.addAll(porcentaje); // Añadir los porcentajes a la lista total
-	                System.out.println(porcentaje);
-	            }
+				if (anioI < anioF) {
+					int mesI = fecInicio.getMonthValue();
+					while (anioI <= anioF) {
+						System.out.println("Buscando ...");
+						if (anioI < anioF) {
+							System.out.println("Anio es menor");
+							List<Float> porcentaje = dao.porcentajes(anioI, mesI, 12);
+							todosPorcentajes.addAll(porcentaje); // Añadir los porcentajes a la lista total
+							System.out.println(porcentaje);
+						} else if (anioI == anioF) {
+							System.out.println("Anio es igual");
+							List<Float> porcentaje = dao.porcentajes(anioF, 1, fecFinal.getMonthValue() - 1);
+							todosPorcentajes.addAll(porcentaje); // Añadir los porcentajes a la lista total
+							System.out.println(porcentaje);
+						}
+						mesI = 1;
+						anioI++;
+					}
+				} else {
+					System.out.println("voy a buscar solo el rango del año actual");
+					List<Float> porcentaje = dao.porcentajes(fecFinal.getYear(), fecInicio.getMonthValue(),
+							fecFinal.getMonthValue() - 1);
+					todosPorcentajes.addAll(porcentaje); // Añadir los porcentajes a la lista total
+					System.out.println(porcentaje);
+				}
 
-	            // Calcular el interés total para esta factura
-	            todosPorcentajes.forEach(interes -> {
-	                System.out.println(interes);
-	                double interesCalculado = (interes * (_factura.getSuma() + totalInteres[0])) / 100;
-	                totalInteres[0] += interesCalculado; // Sumar al interés total
-	            });
-	        });
+				// Calcular el interés total para esta factura
+				todosPorcentajes.forEach(interes -> {
+					System.out.println(interes);
+					double interesCalculado = (interes * (_factura.getSuma() + totalInteres[0])) / 100;
+					totalInteres[0] += interesCalculado; // Sumar al interés total
+				});
+			});
 
-	        // Retornar el interés total
-	        return totalInteres[0];
-	    }
+			// Retornar el interés total
+			return totalInteres[0];
+		}
 	}
 
-	
 }
