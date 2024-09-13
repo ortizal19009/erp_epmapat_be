@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
+import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 
@@ -142,8 +143,11 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			+ "where l.idemision = ?1 and f.fechaeliminacion is null and not rf.idrubro_rubros = 5 "
 			+ "group by rf.idrubro_rubros , r.descripcion ", nativeQuery = true)
 	public CompletableFuture<List<RubroxfacIReport>> getAllActual(Long idemision);
-	
+
 	@Query(value = "select rf.idfactura_facturas as idfactura, sum(rf.cantidad * rf.valorunitario) as suma, e.feccrea from lecturas l join rubroxfac rf on l.idfactura = rf.idfactura_facturas join emisiones e on l.idemision = e.idemision where l.idfactura = ?1 and not (rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5) group by rf.idfactura_facturas, e.feccrea", nativeQuery = true)
 	public List<FacIntereses> getForIntereses(Long idfactura);
+
+	@Query(value = "select cl.nombre, a.idabonado as cuenta, sum(rf.cantidad * rf.valorunitario) as valEmitido, c.descripcion as categoria, l.lecturaactual - l.lecturaanterior as m3 from lecturas l join clientes cl on l.idresponsable = cl.idcliente join abonados a on l.idabonado_abonados = a.idabonado join rubroxfac rf on rf.idfactura_facturas = l.idfactura join categorias c on l.idcategoria = c.idcategoria where idemision = ?1 and not rf.idrubro_rubros = 6 and l.observaciones is null group by a.idabonado, c.descripcion, cl.idcliente, l.lecturaanterior, l.lecturaactual order by a.idabonado asc", nativeQuery = true)
+	public List<RepEmisionEmi> getReporteValEmitidosxEmision(Long idemision);
 
 }

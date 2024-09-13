@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
+import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
@@ -145,5 +146,9 @@ public class LecturaServicio {
 
 	public List<FacIntereses> getForIntereses(Long idfactura) {
 		return dao.getForIntereses(idfactura);
+	}
+
+	public List<RepEmisionEmi> getReporteValEmitidosxEmision(Long idemision) {
+		return dao.getReporteValEmitidosxEmision(idemision);
 	}
 }

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
+import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
@@ -194,16 +195,24 @@ public class LecturasApi {
 	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(@RequestParam Long idemision) {
 		return lecServicio.getAllRubrosEmisionInicial(idemision);
 	}
+
 	@GetMapping("/reportes/rubros/nuevos")
 	public CompletableFuture<List<RubroxfacIReport>> getAllNewLecturas(@RequestParam Long idemision) {
 		return lecServicio.getAllNewLecturas(idemision);
 	}
+
 	@GetMapping("/reportes/rubros/eliminados")
 	public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(@RequestParam Long idemision) {
 		return lecServicio.getAllDeleteLecturas(idemision);
 	}
+
 	@GetMapping("/reportes/rubros/actual")
 	public CompletableFuture<List<RubroxfacIReport>> getAllActual(@RequestParam Long idemision) {
 		return lecServicio.getAllActual(idemision);
+	}
+
+	@GetMapping("/reportes/valoresEmitidos")
+	public ResponseEntity<List<RepEmisionEmi>> findReporteValEmitidosxEmision(@RequestParam Long idemision) {
+		return ResponseEntity.ok(lecServicio.getReporteValEmitidosxEmision(idemision));
 	}
 }
