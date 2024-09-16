@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.UsuarioI;
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 import com.epmapat.erp_epmapat.repositorio.administracion.UsuariosR;
 
@@ -36,6 +37,10 @@ public class UsuarioServicio {
 
    public <S extends Usuarios> S save(S entity) {
       return dao.save(entity);
+   }
+
+   public UsuarioI findDatosById(Long idusuario){
+      return dao.findDatosById(idusuario);
    }
 
 }

@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.UsuarioI;
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 import com.epmapat.erp_epmapat.servicio.administracion.UsuarioServicio;
 
@@ -80,5 +82,11 @@ public class UsuariosApi {
 
       Usuarios actualizar = usuServicio.save(y);
       return ResponseEntity.ok(actualizar);
+   }
+
+   @GetMapping("one")
+   public ResponseEntity<UsuarioI> findDatosById(@RequestParam Long idusuario) {
+      UsuarioI usuario = usuServicio.findDatosById(idusuario);
+      return ResponseEntity.ok(usuario);
    }
 }
