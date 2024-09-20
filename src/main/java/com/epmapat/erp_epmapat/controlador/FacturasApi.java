@@ -143,7 +143,7 @@ public class FacturasApi {
 	}
 
 	/* sincobro v-2.0 */
-	@GetMapping("facSincobrar")
+	@GetMapping("/facSincobrar")
 	public List<FacSinCobrar> findFacSincobro(@RequestParam Long idcliente) {
 		return facServicio.findFacSincobro(idcliente);
 	}
