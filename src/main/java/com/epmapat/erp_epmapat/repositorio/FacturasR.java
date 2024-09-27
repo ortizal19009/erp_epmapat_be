@@ -198,7 +198,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			@Param("d_fecha") LocalDate h_fecha, @Param("recaudador") Long idrecaudador);
 
 	// Cuenta las Facturas pendientes de un Abonado
-	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL")
+	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL and fechaconvenio is null")
 	long countFacturasByAbonadoAndPendientes(@Param("idabonado") Long idabonado);
 
 	// Listado de facturas anuladas
@@ -239,7 +239,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "select f.idfactura as idfactura ,u.nomusu as nomusu, f.razonanulacion  as razoneliminacion, m.descripcion as modulo ,sum(rf.valorunitario * rf.cantidad) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join modulos m on f.idmodulo = m.idmodulo join usuarios u on f.usuarioanulacion = u.idusuario where f.fechaanulacion between ?1 and ?2 group by f.idfactura, m.idmodulo, u.idusuario ", nativeQuery = true)
 	public List<RepFacEliminadas> findAnuladasXfecha(LocalDate d, LocalDate h);
 	
-	@Query(value = "select rf.idfactura_facturas as idfactura, sum(rf.cantidad * rf.valorunitario) as suma,f.feccrea from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas  where f.idfactura = ?1 and not ( rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5) group by rf.idfactura_facturas , f.feccrea ", nativeQuery = true)
+    @Query(value = "select rf.idfactura_facturas as idfactura, sum(rf.cantidad * rf.valorunitario) as suma,f.feccrea from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas  where f.idfactura = ?1 and not ( rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5) group by rf.idfactura_facturas , f.feccrea ", nativeQuery = true)
 	public List<FacIntereses> getForIntereses(Long idfactura);
 
 }
