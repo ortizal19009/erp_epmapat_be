@@ -242,4 +242,21 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
     @Query(value = "select rf.idfactura_facturas as idfactura, sum(rf.cantidad * rf.valorunitario) as suma,f.feccrea from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas  where f.idfactura = ?1 and not ( rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5) group by rf.idfactura_facturas , f.feccrea ", nativeQuery = true)
 	public List<FacIntereses> getForIntereses(Long idfactura);
 
+	/* 
+	 * 
+	 * 
+	 * 
+	 * SELECT r.fechacobro, f.idfactura, sum(rf.cantidad * rf.valorunitario)
+FROM facxrecauda fr 
+JOIN facturas f ON fr.idfactura = f.idfactura 
+JOIN recaudacion r ON fr.idrecaudacion = r.idrecaudacion 
+join rubroxfac rf on fr.idfactura = rf.idfactura_facturas 
+WHERE f.usuariocobro = 22 
+AND f.fechacobro = '2024-09-30' 
+AND CAST(r.fechacobro AS TIME) between'07:30:00' and '11:00:00'
+group by f.idfactura, r.fechacobro ;
+	 * 
+	 * 
+	 */
+
 }
