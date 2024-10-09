@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
+import com.epmapat.erp_epmapat.interfaces.FacTransferencias;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadas;
 import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
@@ -81,6 +82,10 @@ public class FacturaServicio {
 	public List<FacSinCobrar> findFacSincobro(Long idcliente) {
 		return dao.findFacSincobro(idcliente);
 	}
+	public List<FacSinCobrar> findFacSincobroByCuetna(Long cuenta) {
+		return dao.findFacSincobroByCuetna(cuenta);
+	}
+
 
 	// Planillas Sin Cobrar de un Abonado (para Multas)
 	public List<Long> findSinCobroAbo(Long idabonado) {
@@ -220,6 +225,16 @@ public class FacturaServicio {
 	
 	public List<FacIntereses> getForIntereses(Long idfactura) {
 		return dao.getForIntereses(idfactura);
+	}
+	//REPORTES DE FACTURAS TRANSFERENCIAS
+	public List<FacTransferencias> getFacAllTransferidas(LocalDate d, LocalDate h){
+		return dao.getFacAllTransferidas(d, h);
+	}
+	public List<FacTransferencias> getFacPagadasTransferidas(LocalDate d, LocalDate h){
+		return dao.getFacPagadasTransferidas(d, h);
+	}
+	public List<FacTransferencias> getFacNoPagadasTransferidas(LocalDate d, LocalDate h){
+		return dao.getFacNoPagadasTransferidas(d, h);
 	}
 }
 

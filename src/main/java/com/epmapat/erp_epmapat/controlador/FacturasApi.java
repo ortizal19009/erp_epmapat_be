@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
+import com.epmapat.erp_epmapat.interfaces.FacTransferencias;
 import com.epmapat.erp_epmapat.interfaces.FacturasI;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadas;
 import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
@@ -146,6 +147,11 @@ public class FacturasApi {
 	@GetMapping("/facSincobrar")
 	public List<FacSinCobrar> findFacSincobro(@RequestParam Long idcliente) {
 		return facServicio.findFacSincobro(idcliente);
+	}
+
+	@GetMapping("/facSincobrar/cuenta")
+	public List<FacSinCobrar> findFacSincobroByCuetna(@RequestParam Long cuenta) {
+		return facServicio.findFacSincobroByCuetna(cuenta);
 	}
 
 	// IDs de las Planillas sin cobrar de un Abonado
@@ -456,14 +462,33 @@ public class FacturasApi {
 
 	/* REPORTE DE FACTURAS ELIMINADAS POR RANGO DE FECHA */
 	@GetMapping("/reportes/facturasEliminadas")
-	public ResponseEntity<List<RepFacEliminadas>> getEliminadasXfecha(@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd")  LocalDate d,
-			 @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam LocalDate h) {
+	public ResponseEntity<List<RepFacEliminadas>> getEliminadasXfecha(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam LocalDate h) {
 		return ResponseEntity.ok(facServicio.findEliminadasXfecha(d, h));
 	}
+
 	/* REPORTE DE FACTURAS anuladas POR RANGO DE FECHA */
 	@GetMapping("/reportes/facturasanuladas")
-	public ResponseEntity<List<RepFacEliminadas>> findAnuladasXfecha(@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd")  LocalDate d,
-			 @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam LocalDate h) {
+	public ResponseEntity<List<RepFacEliminadas>> findAnuladasXfecha(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam LocalDate h) {
 		return ResponseEntity.ok(facServicio.findAnuladasXfecha(d, h));
+	}
+
+	/*
+	 * REPORTE DE FACTURAS TRANSFERENCIAS
+	 */
+	@GetMapping("/reportes/alltransferencias")
+	public ResponseEntity<List<FacTransferencias>> getFacAllTransferidas(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")  LocalDate d, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h){
+		return ResponseEntity.ok(facServicio.getFacAllTransferidas(d, h));
+	}
+	@GetMapping("/reportes/pagadastransferencias")
+	public ResponseEntity<List<FacTransferencias>> getFacPagadasTransferidas(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")  LocalDate d, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h){
+		return ResponseEntity.ok(facServicio.getFacPagadasTransferidas(d, h));
+	}
+	@GetMapping("/reportes/nopagadastransferencias")
+	public ResponseEntity<List<FacTransferencias>> getFacNoPagadasTransferidas(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")  LocalDate d, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h){
+		return ResponseEntity.ok(facServicio.getFacNoPagadasTransferidas(d, h));
 	}
 }
