@@ -118,13 +118,14 @@ public class InteresServicio {
 			int anioI = fecInicio.getYear();
 			int anioF = fecFinal.getYear();
 			List<Float> todosPorcentajes = new ArrayList<>();
+			System.out.println(_factura.getIdFactura()+" -- "+anioF + " -- " + anioI);
 			if (anioI < anioF) {
 				int mesI = fecInicio.getMonthValue();
 				while (anioI <= anioF) {
 					if (anioI < anioF) {
 						List<Float> porcentaje = dao.porcentajes(anioI, mesI, 12);
 						todosPorcentajes.addAll(porcentaje); // Añadir los porcentajes a la lista total
-					} else if (anioI == anioF) {
+					} else if (anioI == anioF ) {
 						List<Float> porcentaje = new ArrayList<>(); // Inicializa la lista
 						if (fecInicio.getMonthValue() == (fecFinal.getMonthValue() - 1)) {
 							porcentaje.add(0.00f);
@@ -136,7 +137,10 @@ public class InteresServicio {
 					mesI = 1;
 					anioI++;
 				}
+			} else if(anioF < anioI){
+				System.out.println("Imprimiendo segundo if de: "+ _factura.getIdFactura());
 			} else {
+				System.out.println("Imprimiendo el else de: "+ _factura.getIdFactura());
 				List<Float> porcentaje = new ArrayList<>(); // Inicializa la lista
 				if (fecInicio.getMonthValue() == (fecFinal.getMonthValue() - 1)) {
 					porcentaje.add(0.00f);
