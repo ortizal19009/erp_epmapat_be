@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
@@ -214,5 +215,10 @@ public class LecturasApi {
 	@GetMapping("/reportes/valoresEmitidos")
 	public ResponseEntity<List<RepEmisionEmi>> findReporteValEmitidosxEmision(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.getReporteValEmitidosxEmision(idemision));
+	}
+
+	@GetMapping("/reportes/consumoxcategoria")
+	public ResponseEntity<List<ConsumoxCat_int>> getConsumoxCategoria(@RequestParam Long idemision){
+		return ResponseEntity.ok(lecServicio.getConsumoxCategoria(idemision));
 	}
 }

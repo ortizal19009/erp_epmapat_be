@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.scheduling.annotation.Async;
 
+import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
@@ -149,5 +150,15 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 
 	@Query(value = "select cl.nombre, a.idabonado as cuenta, sum(rf.cantidad * rf.valorunitario) as valEmitido, c.descripcion as categoria, l.lecturaactual - l.lecturaanterior as m3 from lecturas l join clientes cl on l.idresponsable = cl.idcliente join abonados a on l.idabonado_abonados = a.idabonado join rubroxfac rf on rf.idfactura_facturas = l.idfactura join categorias c on l.idcategoria = c.idcategoria where idemision = ?1 and not rf.idrubro_rubros = 6 and l.observaciones is null group by a.idabonado, c.descripcion, cl.idcliente, l.lecturaanterior, l.lecturaactual order by a.idabonado asc", nativeQuery = true)
 	public List<RepEmisionEmi> getReporteValEmitidosxEmision(Long idemision);
+
+	//REPORTE DE EMISIONES X CATEGORIA
+	@Query(value = "select l.idcategoria,c.descripcion, count(l.idabonado_abonados) as cuentas, sum(l.lecturaactual-l.lecturaanterior) as m3, sum(f.totaltarifa) as total "
++ "from lecturas l "
++ "join abonados a on l.idabonado_abonados = a.idabonado "
++ "join categorias c on l.idcategoria = c.idcategoria "
++ "join facturas f on l.idfactura = f.idfactura "
++ "where l.idemision = ?1 and l.observaciones is null "
++ "group by l.idcategoria, c.descripcion ", nativeQuery = true)
+public List<ConsumoxCat_int> getConsumoxCategoria(Long idemision);
 
 }

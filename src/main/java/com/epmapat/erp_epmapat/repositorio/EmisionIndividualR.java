@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.repositorio;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRI;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRia;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRin;
 import com.epmapat.erp_epmapat.interfaces.IemiIndividual;
+import com.epmapat.erp_epmapat.interfaces.R_refacturacion_int;
 import com.epmapat.erp_epmapat.modelo.EmisionIndividual;
 
 public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Long> {
@@ -59,4 +61,29 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         + "group by fn.idabonado, ln.idfactura, en.emision ,rfn.idfactura_facturas "
                         + "order by fn.idabonado asc;", nativeQuery = true)
         public List<EmisionIndividualRin> emisionIndividualNueva(Integer idemision);
+
+        /* REPORTE REFACTURACION X EMISION */
+        @Query(value = "select ln.idabonado_abonados as cuenta, c.nombre ,  ln.idfactura as nuevaplanilla, fn.totaltarifa as valornuevo,  la.idfactura as anteriorplanilla, fa.totaltarifa as valoranterior, la.observaciones "
+                        + " from emisionindividual e "
+                        + " join lecturas ln on e.idlecturanueva = ln.idlectura"
+                        + " join abonados a on ln.idabonado_abonados = a.idabonado "
+                        + " join clientes c on a.idresponsable = c.idcliente "
+                        + " join facturas fn on ln.idfactura = fn.idfactura "
+                        + " join lecturas la on e.idlecturaanterior = la.idlectura "
+                        + " join facturas fa on la.idfactura = fa.idfactura "
+                        + " where e.idemision = ?1 "
+                        + " order by ln.idabonado_abonados asc", nativeQuery = true)
+        public List<R_refacturacion_int> getRefacturacionxEmision(Long idemision);
+
+        @Query(value = "select ln.idabonado_abonados as cuenta, c.nombre ,  ln.idfactura as nuevaplanilla, fn.totaltarifa as valornuevo,  la.idfactura as anteriorplanilla, fa.totaltarifa as valoranterior, la.observaciones "
+                        + " from emisionindividual e "
+                        + " join lecturas ln on e.idlecturanueva = ln.idlectura"
+                        + " join abonados a on ln.idabonado_abonados = a.idabonado "
+                        + " join clientes c on a.idresponsable = c.idcliente "
+                        + " join facturas fn on ln.idfactura = fn.idfactura "
+                        + " join lecturas la on e.idlecturaanterior = la.idlectura "
+                        + " join facturas fa on la.idfactura = fa.idfactura "
+                        + " where fa.fechaeliminacion between ?1 and ?2 "
+                        + " order by ln.idabonado_abonados asc", nativeQuery = true)
+        public List<R_refacturacion_int> getRefacturacionxFecha(Date d, Date h);
 }

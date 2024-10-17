@@ -1,8 +1,10 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRI;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRia;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRin;
 import com.epmapat.erp_epmapat.interfaces.IemiIndividual;
+import com.epmapat.erp_epmapat.interfaces.R_refacturacion_int;
 import com.epmapat.erp_epmapat.modelo.EmisionIndividual;
 import com.epmapat.erp_epmapat.servicio.EmisionIndividualServicio;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,13 +52,28 @@ public class EmisionIndividualApi {
     public ResponseEntity<List<EmisionIndividualRI>> findLecReport(@RequestParam("idemision") Integer idemision) {
         return ResponseEntity.ok(sei.getLecReport(idemision));
     }
+
     @GetMapping("/reportes/anteriores")
-    public ResponseEntity<List<EmisionIndividualRia>> emisionIndividualAnterior(@RequestParam("idemision") Integer idemision) {
+    public ResponseEntity<List<EmisionIndividualRia>> emisionIndividualAnterior(
+            @RequestParam("idemision") Integer idemision) {
         return ResponseEntity.ok(sei.emisionIndividualAnterior(idemision));
     }
+
     @GetMapping("/reportes/nuevas")
-    public ResponseEntity<List<EmisionIndividualRin>> emisionIndividualNueva(@RequestParam("idemision") Integer idemision) {
+    public ResponseEntity<List<EmisionIndividualRin>> emisionIndividualNueva(
+            @RequestParam("idemision") Integer idemision) {
         return ResponseEntity.ok(sei.emisionIndividualNueva(idemision));
     }
 
+    @GetMapping("/reportes/xemision")
+    public ResponseEntity<List<R_refacturacion_int>> getRefacturacionxEmision(@RequestParam Long idemision) {
+        return ResponseEntity.ok(sei.getRefacturacionxEmision(idemision));
+    }
+
+    @GetMapping("/reportes/xfecha")
+    public ResponseEntity<List<R_refacturacion_int>> getRefacturacionxFecha(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+        return ResponseEntity.ok(sei.getRefacturacionxFecha(d, h));
+    }
 }

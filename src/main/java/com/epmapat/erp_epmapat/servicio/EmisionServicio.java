@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.R_refacturacion_int;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.repositorio.EmisionesR;
 
@@ -40,5 +41,7 @@ public class EmisionServicio {
 	public List<Emisiones> findByIdEmisiones(Long idemision) {
 		return dao.findByIdEmisiones(idemision);
 	}
+
+
 
 }
