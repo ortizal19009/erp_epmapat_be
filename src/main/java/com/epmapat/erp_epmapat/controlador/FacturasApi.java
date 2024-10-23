@@ -480,15 +480,26 @@ public class FacturasApi {
 	 * REPORTE DE FACTURAS TRANSFERENCIAS
 	 */
 	@GetMapping("/reportes/alltransferencias")
-	public ResponseEntity<List<FacTransferencias>> getFacAllTransferidas(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")  LocalDate d, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h){
+	public ResponseEntity<List<FacTransferencias>> getFacAllTransferidas(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
 		return ResponseEntity.ok(facServicio.getFacAllTransferidas(d, h));
 	}
+
 	@GetMapping("/reportes/pagadastransferencias")
-	public ResponseEntity<List<FacTransferencias>> getFacPagadasTransferidas(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")  LocalDate d, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h){
+	public ResponseEntity<List<FacTransferencias>> getFacPagadasTransferidas(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
 		return ResponseEntity.ok(facServicio.getFacPagadasTransferidas(d, h));
 	}
+
 	@GetMapping("/reportes/nopagadastransferencias")
-	public ResponseEntity<List<FacTransferencias>> getFacNoPagadasTransferidas(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd")  LocalDate d, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h){
+	public ResponseEntity<List<FacTransferencias>> getFacNoPagadasTransferidas(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
 		return ResponseEntity.ok(facServicio.getFacNoPagadasTransferidas(d, h));
 	}
+
+	/* MICROSERVICIO DE RECAUDACION */
+
 }

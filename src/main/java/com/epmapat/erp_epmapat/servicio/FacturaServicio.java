@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
@@ -22,6 +23,8 @@ public class FacturaServicio {
 
 	@Autowired
 	private FacturasR dao;
+	@Autowired
+	private RestTemplate restTemplate;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -82,10 +85,10 @@ public class FacturaServicio {
 	public List<FacSinCobrar> findFacSincobro(Long idcliente) {
 		return dao.findFacSincobro(idcliente);
 	}
+
 	public List<FacSinCobrar> findFacSincobroByCuetna(Long cuenta) {
 		return dao.findFacSincobroByCuetna(cuenta);
 	}
-
 
 	// Planillas Sin Cobrar de un Abonado (para Multas)
 	public List<Long> findSinCobroAbo(Long idabonado) {
@@ -218,23 +221,29 @@ public class FacturaServicio {
 	public List<RepFacEliminadas> findEliminadasXfecha(LocalDate d, LocalDate h) {
 		return dao.findEliminadasXfecha(d, h);
 	}
+
 	/* REPORTE DE FACTURAS ANULADAS POR RANGO DE FECHA */
 	public List<RepFacEliminadas> findAnuladasXfecha(LocalDate d, LocalDate h) {
 		return dao.findAnuladasXfecha(d, h);
 	}
-	
+
 	public List<FacIntereses> getForIntereses(Long idfactura) {
 		return dao.getForIntereses(idfactura);
 	}
-	//REPORTES DE FACTURAS TRANSFERENCIAS
-	public List<FacTransferencias> getFacAllTransferidas(LocalDate d, LocalDate h){
+
+	// REPORTES DE FACTURAS TRANSFERENCIAS
+	public List<FacTransferencias> getFacAllTransferidas(LocalDate d, LocalDate h) {
 		return dao.getFacAllTransferidas(d, h);
 	}
-	public List<FacTransferencias> getFacPagadasTransferidas(LocalDate d, LocalDate h){
+
+	public List<FacTransferencias> getFacPagadasTransferidas(LocalDate d, LocalDate h) {
 		return dao.getFacPagadasTransferidas(d, h);
 	}
-	public List<FacTransferencias> getFacNoPagadasTransferidas(LocalDate d, LocalDate h){
+
+	public List<FacTransferencias> getFacNoPagadasTransferidas(LocalDate d, LocalDate h) {
 		return dao.getFacNoPagadasTransferidas(d, h);
 	}
-}
 
+
+
+}
