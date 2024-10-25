@@ -6,10 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.modelo.microserviceRecaudacion.FacturaRequest;
 import com.epmapat.erp_epmapat.servicio.microservicio_recaudacion.RecaudacionMicroservice;
 
 @RestController
@@ -27,5 +31,12 @@ public class MicroservicioRecaudacionApi {
     @GetMapping("/sincobro/cliente")
     public ResponseEntity<List<Object>> getSincobroByCliente(@RequestParam Long idcliente) {
         return ResponseEntity.ok(sRecaudacionMicroservice.sinCobrarByCliente(idcliente));
+    }
+
+    @PutMapping("/cobrar")
+    public ResponseEntity<?> cobrarFacturas(@RequestBody FacturaRequest factura) {
+        System.out.println("Recibido el objeto factura: " + factura);
+        Object response = sRecaudacionMicroservice.cobrar(factura);
+        return ResponseEntity.ok(response);
     }
 }
