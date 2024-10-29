@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -30,10 +32,25 @@ public class RecaudacionMicroservice {
 
 	private final String URL_FACTURA = "http://localhost:8081/facturas/cobrar";
 
-	public <T> T cobrar(T obj) {
-		HttpEntity<T> requestEntity = new HttpEntity<>(obj);
-		ResponseEntity<T> response = (ResponseEntity<T>) restTemplate.exchange(URL_FACTURA, HttpMethod.PUT,
-				requestEntity, Object.class);
-		return response.getBody();
-	}
+	public Object cobrar(Object obj) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Object> requestEntity = new HttpEntity<>(obj,headers);
+
+            ResponseEntity<Object> responseEntity = restTemplate.exchange(
+                    URL_FACTURA,
+                    HttpMethod.PUT,
+                    requestEntity,
+                    Object.class
+            );
+
+            return responseEntity.getBody();
+        } catch (RestClientException e) {
+            // Handle specific exceptions and log errors
+            System.out.printf("Error while making PUT request to {}", URL_FACTURA, e);
+            throw new RuntimeException("Error collecting payment: " + e.getMessage());
+        }
+    }
 }
