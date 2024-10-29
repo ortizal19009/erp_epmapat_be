@@ -16,21 +16,29 @@ import org.springframework.web.client.RestTemplate;
 public class RecaudacionMicroservice {
 	@Autowired
 	private RestTemplate restTemplate;
-
+	private final String URL_FACTURA = "http://localhost:8081/facturas/";
+	private final String URL_CAJA = "http://localhost:8081/cajas/";
 	/* RECAUDACION MICROSERVICE */
 	public List<Object> sinCobrarByCuenta(Long cuenta) {
 		List<Object> facturas = restTemplate
-				.getForObject("http://localhost:8081/facturas/sincobro/cuenta?cuenta=" + cuenta, List.class);
+				.getForObject(URL_FACTURA+"sincobro/cuenta?cuenta=" + cuenta, List.class);
 		return facturas;
 	}
 
 	public List<Object> sinCobrarByCliente(Long idcliente) {
 		List<Object> facturas = restTemplate
-				.getForObject("http://localhost:8081/facturas/sincobro/cliente?idcliente=" + idcliente, List.class);
+				.getForObject(URL_FACTURA+"sincobro/cliente?idcliente=" + idcliente, List.class);
 		return facturas;
 	}
+    public Object testConnection(Long idusuario) {
+		@SuppressWarnings("unchecked")
+        Object facturas = restTemplate
+				.getForObject(URL_CAJA+"test_connection?user=" + idusuario, List.class);
+		return facturas;
+	}
+	
 
-	private final String URL_FACTURA = "http://localhost:8081/facturas/cobrar";
+
 
 	public Object cobrar(Object obj) {
         try {
@@ -40,7 +48,7 @@ public class RecaudacionMicroservice {
             HttpEntity<Object> requestEntity = new HttpEntity<>(obj,headers);
 
             ResponseEntity<Object> responseEntity = restTemplate.exchange(
-                    URL_FACTURA,
+                    URL_FACTURA+"cobrar",
                     HttpMethod.PUT,
                     requestEntity,
                     Object.class

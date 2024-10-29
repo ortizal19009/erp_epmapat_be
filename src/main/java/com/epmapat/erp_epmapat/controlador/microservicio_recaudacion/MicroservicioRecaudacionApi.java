@@ -39,4 +39,9 @@ public class MicroservicioRecaudacionApi {
         Object response = sRecaudacionMicroservice.cobrar(factura);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/testconnection")
+    public ResponseEntity<Object> testConection(@RequestParam Long user) {
+        return ResponseEntity.ok(sRecaudacionMicroservice.testConnection(user));
+    }
 }
