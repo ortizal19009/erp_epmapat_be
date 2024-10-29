@@ -40,8 +40,12 @@ public class MicroservicioRecaudacionApi {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/testconnection")
+    @GetMapping("/test_connection")
     public ResponseEntity<Object> testConection(@RequestParam Long user) {
         return ResponseEntity.ok(sRecaudacionMicroservice.testConnection(user));
+    }
+    @PostMapping("/login")
+    public ResponseEntity<Object> loginCajas(@RequestParam String username, @RequestParam String password){
+        return ResponseEntity.ok(sRecaudacionMicroservice.sinInCaja(username, password));
     }
 }
