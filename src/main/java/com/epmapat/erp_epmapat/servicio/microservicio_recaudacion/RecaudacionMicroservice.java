@@ -44,7 +44,7 @@ public class RecaudacionMicroservice {
 
 	public Object sinInCaja(String username, String password) {
 		Object singIn = restTemplate.exchange(URL_CAJA + "singin?username=" + username + "&password=" + password,
-				HttpMethod.POST, null, Object.class);
+				HttpMethod.GET, null, Object.class);
 		return singIn;
 	}
 
