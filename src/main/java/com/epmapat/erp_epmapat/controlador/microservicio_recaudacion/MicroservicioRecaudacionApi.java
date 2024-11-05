@@ -2,6 +2,8 @@ package com.epmapat.erp_epmapat.controlador.microservicio_recaudacion;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -44,8 +46,12 @@ public class MicroservicioRecaudacionApi {
     public ResponseEntity<Object> testConection(@RequestParam Long user) {
         return ResponseEntity.ok(sRecaudacionMicroservice.testConnection(user));
     }
-    @PostMapping("/login")
+    @GetMapping("/login")
     public ResponseEntity<Object> loginCajas(@RequestParam String username, @RequestParam String password){
         return ResponseEntity.ok(sRecaudacionMicroservice.sinInCaja(username, password));
+    }
+    @PutMapping("/logout")
+    public ResponseEntity<Object> logOutcajaResponseEntity(@RequestParam String username){
+        return ResponseEntity.ok(sRecaudacionMicroservice.sinOutCaja(username));
     }
 }

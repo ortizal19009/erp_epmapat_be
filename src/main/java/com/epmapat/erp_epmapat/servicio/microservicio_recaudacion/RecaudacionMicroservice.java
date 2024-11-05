@@ -47,20 +47,22 @@ public class RecaudacionMicroservice {
 				HttpMethod.GET, null, Object.class);
 		return singIn;
 	}
-
+	public Object sinOutCaja(String username) {
+		System.out.println(username);
+		Object singIn = restTemplate.exchange(URL_CAJA + "singout?username=" + username ,
+				HttpMethod.PUT, null, Object.class);
+		return singIn;
+	}
 	public Object cobrar(Object obj) {
 		try {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
-
 			HttpEntity<Object> requestEntity = new HttpEntity<>(obj, headers);
-
 			ResponseEntity<Object> responseEntity = restTemplate.exchange(
 					URL_FACTURA + "cobrar",
 					HttpMethod.PUT,
 					requestEntity,
 					Object.class);
-
 			return responseEntity.getBody();
 		} catch (RestClientException e) {
 			// Handle specific exceptions and log errors
