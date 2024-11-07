@@ -24,7 +24,7 @@ public class FacturaServicio {
 	@Autowired
 	private FacturasR dao;
 	@Autowired
-	private RestTemplate restTemplate;
+	private LecturaServicio s_lecturas;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -160,6 +160,11 @@ public class FacturaServicio {
 	}
 
 	public <S extends Facturas> S save(S entity) {
+		return dao.save(entity);
+	}
+	
+	public <S extends Facturas> S saveForNewEmision(S entity) {
+
 		return dao.save(entity);
 	}
 

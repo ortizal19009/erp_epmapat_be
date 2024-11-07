@@ -28,9 +28,10 @@ public class Rutas {
 	@DateTimeFormat(iso=ISO.DATE)
 	@Column(name ="fecmodi")
 	private Date fecmodi;
+	private Boolean estado; 
 
 	public Rutas(Long idruta, String descripcion, Long orden, String codigo,
-			Long usucrea, Date feccrea, Long usumodi, Date fecmodi) {
+			Long usucrea, Date feccrea, Long usumodi, Date fecmodi, Boolean estado) {
 		super();
 		this.idruta = idruta;
 		this.descripcion = descripcion;
@@ -40,6 +41,7 @@ public class Rutas {
 		this.feccrea = feccrea;
 		this.usumodi = usumodi;
 		this.fecmodi = fecmodi;
+		this.estado = estado; 
 	}
 	
 	public Rutas() {
@@ -93,6 +95,14 @@ public class Rutas {
 	}
 	public void setCodigo(String codigo) {
 		this.codigo = codigo;
+	}
+
+	public Boolean getEstado() {
+		return estado;
+	}
+
+	public void setEstado(Boolean estado) {
+		this.estado = estado;
 	}
 	
 }

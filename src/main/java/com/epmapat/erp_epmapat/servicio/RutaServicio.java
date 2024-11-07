@@ -30,6 +30,11 @@ public class RutaServicio implements RutasR {
 		return dao.findAll(sort);
 	}
 
+	public List<Rutas> findAllActive() {
+		return dao.findAllActive();
+	}
+
+
 	// @Override
 	// public List<Rutas> OrderByOrdenAsc() {
 	// return dao.findAll();

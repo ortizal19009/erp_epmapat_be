@@ -33,7 +33,7 @@ public class RutasApi {
 
     @GetMapping
     public List<Rutas> getAll() {
-        return rutServicio.findAll(Sort.by(Sort.Order.asc("orden")));
+        return rutServicio.findAllActive();
     }
 
 	@GetMapping("/valCodigo")
