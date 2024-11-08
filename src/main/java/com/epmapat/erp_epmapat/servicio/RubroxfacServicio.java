@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.CarteraVencidaRubros_int;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
@@ -139,4 +140,10 @@ public class RubroxfacServicio {
 	public List<Rubroxfac> getMultaByIdFactura(Long idfactura) {
 		return dao.getMultaByIdFactura(idfactura);
 	}
+
+	/* REPORTE DE CARTERA VENCIDA POR RUBROS */
+	public List<CarteraVencidaRubros_int> getCarteraVencidaxRubros(Date fechacobro) {
+		return dao.getCarteraVencidaxRubros(fechacobro);
+	}
+
 }

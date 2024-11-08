@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.CarteraVencidaRubros_int;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
@@ -199,10 +200,14 @@ public class RubroxfacApi {
    public ResponseEntity<List<RubroxfacIReport>> getRubrosByAbonado(@RequestParam("idabonado") Long idabonado) {
       return ResponseEntity.ok(rxfServicio.getRubrosByAbonado(idabonado));
    }
-
    /* OBTENER MULTA POR FACTURA */
    @GetMapping("/multas")
    public ResponseEntity<List<Rubroxfac>> findMultaByIdFactura(@RequestParam("idfactura") Long idfactura) {
       return ResponseEntity.ok(rxfServicio.getMultaByIdFactura(idfactura));
+   }
+   	/* REPORTE DE CARTERA VENCIDA POR RUBROS */
+   @GetMapping("/reportes/carteravencida")
+   public ResponseEntity<List<CarteraVencidaRubros_int>> getCarteraVencidaxRubros(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechacobro){
+      return ResponseEntity.ok(rxfServicio.getCarteraVencidaxRubros(fechacobro));
    }
 }
