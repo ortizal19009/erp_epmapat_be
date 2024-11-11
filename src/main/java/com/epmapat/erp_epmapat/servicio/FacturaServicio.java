@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.epmapat.erp_epmapat.interfaces.CarteraVencidaFacturas;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacTransferencias;
@@ -162,7 +163,7 @@ public class FacturaServicio {
 	public <S extends Facturas> S save(S entity) {
 		return dao.save(entity);
 	}
-	
+
 	public <S extends Facturas> S saveForNewEmision(S entity) {
 
 		return dao.save(entity);
@@ -248,7 +249,10 @@ public class FacturaServicio {
 	public List<FacTransferencias> getFacNoPagadasTransferidas(LocalDate d, LocalDate h) {
 		return dao.getFacNoPagadasTransferidas(d, h);
 	}
+	/* CARTERA VENCIDA POR FACTURAS */
 
-
+	public List<CarteraVencidaFacturas> getCVByFacturas(LocalDate fecha) {
+		return dao.getCVByFacturas(fecha);
+	}
 
 }

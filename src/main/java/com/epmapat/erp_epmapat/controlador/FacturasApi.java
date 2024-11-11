@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import com.epmapat.erp_epmapat.interfaces.CarteraVencidaFacturas;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
@@ -139,7 +140,6 @@ public class FacturasApi {
 	// Planillas sin cobro de un Cliente
 	@GetMapping("/idcliente/{idcliente}")
 	public List<Facturas> getSinCobro(@PathVariable Long idcliente) {
-		System.out.println("Hola mundo");
 		return facServicio.findSinCobro(idcliente);
 	}
 
@@ -500,6 +500,11 @@ public class FacturasApi {
 		return ResponseEntity.ok(facServicio.getFacNoPagadasTransferidas(d, h));
 	}
 
-	/* MICROSERVICIO DE RECAUDACION */
+	/* CARTERA VENCIDA POR FACUTAS */
+	@GetMapping("/reportes/cartera_vencida")
+	public ResponseEntity<List<CarteraVencidaFacturas>> findCVByFacturas(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+		return ResponseEntity.ok(facServicio.getCVByFacturas(fecha));
+	}
 
 }
