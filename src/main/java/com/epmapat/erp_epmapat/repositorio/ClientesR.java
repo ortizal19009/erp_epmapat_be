@@ -45,4 +45,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 	@Query("SELECT new map(c.idcliente as idcliente, c.nombre as nombre) FROM Clientes c order by idcliente")
 	List<Map<String, Object>> findAllClientsFields();
 
+	@Query(value = "select count(*) from clientes", nativeQuery= true)
+	Long totalClientes();
+
 }

@@ -61,5 +61,8 @@ public class ClienteServicio {
 	public List<Clientes> used(Long id) {
 		return dao.used(id);
 	}
+	public Long totalclientes(){
+		return dao.totalClientes();
+	}
 
 }

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -24,14 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import com.epmapat.erp_epmapat.interfaces.CarteraVencidaFacturas;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
-import com.epmapat.erp_epmapat.interfaces.FacTransferencias;
-import com.epmapat.erp_epmapat.interfaces.FacturasI;
-import com.epmapat.erp_epmapat.interfaces.RepFacEliminadas;
-import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
 import com.epmapat.erp_epmapat.reportes.facturas.interfaces.i_ReporteFacturasCobradas_G;
@@ -501,10 +496,16 @@ public class FacturasApi {
 	}
 
 	/* CARTERA VENCIDA POR FACUTAS */
-	@GetMapping("/reportes/cartera_vencida")
+	@GetMapping("/reportes/CV_consumo")
 	public ResponseEntity<List<CarteraVencidaFacturas>> findCVByFacturas(
 			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
-		return ResponseEntity.ok(facServicio.getCVByFacturas(fecha));
+		return ResponseEntity.ok(facServicio.getCVByFacturasConsumo(fecha));
+	}
+
+	@GetMapping("/reportes/CV_noconsumo")
+	public ResponseEntity<List<CVFacturasNoConsumo>> getCVByFacturasNoConsumo(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+		return ResponseEntity.ok(facServicio.getCVByFacturasNoConsumo(fecha));
 	}
 
 }

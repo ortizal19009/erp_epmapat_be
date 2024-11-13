@@ -65,7 +65,7 @@ public class ClientesApi {
 
 	@GetMapping("/campos")
 	public List<Map<String, Object>> obtenerTodosLosCampos() {
-		 return cliServicio.obtenerCampos();
+		return cliServicio.obtenerCampos();
 	}
 
 	@PostMapping
@@ -109,6 +109,11 @@ public class ClientesApi {
 	public ResponseEntity<Object> deleteCliente(@PathVariable("idcliente") Long idcliente) {
 		cliServicio.deleteById(idcliente);
 		return ResponseEntity.ok(Boolean.TRUE);
+	}
+
+	@GetMapping("/total")
+	public ResponseEntity<Long> getTotalClientes() {
+		return ResponseEntity.ok(cliServicio.totalclientes());
 	}
 
 	public boolean validadorDeCedula(String cedula) {

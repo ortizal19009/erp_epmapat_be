@@ -5,17 +5,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.epmapat.erp_epmapat.interfaces.CarteraVencidaFacturas;
-import com.epmapat.erp_epmapat.interfaces.FacIntereses;
-import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
-import com.epmapat.erp_epmapat.interfaces.FacTransferencias;
-import com.epmapat.erp_epmapat.interfaces.FacturasI;
-import com.epmapat.erp_epmapat.interfaces.RepFacEliminadas;
-import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 
@@ -251,8 +245,12 @@ public class FacturaServicio {
 	}
 	/* CARTERA VENCIDA POR FACTURAS */
 
-	public List<CarteraVencidaFacturas> getCVByFacturas(LocalDate fecha) {
-		return dao.getCVByFacturas(fecha);
+	public List<CarteraVencidaFacturas> getCVByFacturasConsumo(LocalDate fecha) {
+		return dao.getCVByFacturasConsumo(fecha);
+	}
+
+	public List<CVFacturasNoConsumo> getCVByFacturasNoConsumo(LocalDate fecha) {
+		return dao.getCVByFacturasNoConsumo(fecha);
 	}
 
 }

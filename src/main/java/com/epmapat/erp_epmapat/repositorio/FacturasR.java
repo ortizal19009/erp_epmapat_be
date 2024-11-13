@@ -4,17 +4,11 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
+import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.epmapat.erp_epmapat.interfaces.CarteraVencidaFacturas;
-import com.epmapat.erp_epmapat.interfaces.FacIntereses;
-import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
-import com.epmapat.erp_epmapat.interfaces.FacTransferencias;
-import com.epmapat.erp_epmapat.interfaces.FacturasI;
-import com.epmapat.erp_epmapat.interfaces.RepFacEliminadas;
-import com.epmapat.erp_epmapat.interfaces.RepFacGlobal;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 
 // @Repository
@@ -80,7 +74,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// @Query(value = "SELECT SUM(CASE WHEN f.idmodulo.id = 3 THEN f.totaltarifa + 1
 	// ELSE f.totaltarifa END) AS totalGeneral FROM facturas f JOIN f.clientes c
 	// WHERE c.idcliente = :idcliente")
-	@Query(value = "SELECT SUM(CASE WHEN idmodulo = 3 THEN totaltarifa + 1 ELSE totaltarifa END) AS totalGeneral FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and feccrea<=?2 and (( (estado = 1 or estado = 2) and ( fechacobro>?2 or fechacobro is null)) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null", nativeQuery = true)
+	//@Query(value = "SELECT SUM(CASE WHEN idmodulo = 3 THEN totaltarifa + 1 ELSE totaltarifa END) AS totalGeneral FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and feccrea<=?2 and (( (estado = 1 or estado = 2) and ( fechacobro>?2 or fechacobro is null)) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null", nativeQuery = true)
+	@Query(value = "SELECT SUM(rf.cantidad * rf.valorunitario) AS totalGeneral FROM facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas join rubros r on r.idrubro = rf.idrubro_rubros WHERE f.totaltarifa > 0 and f.idcliente = ?1 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro> ?2 or f.fechacobro is null)) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and not r.idrubro = 165 and not r.idrubro = 5", nativeQuery = true)
 	Double totCarteraCliente(@Param("idcliente") Long idcliente, LocalDate hasta);
 
 	// Planillas por Abonado
@@ -278,25 +273,51 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 "    e.emision ," +
 "    l.lecturaactual - l.lecturaanterior as m3" +
 " FROM" +
-"    rubroxfac rf" +
+" rubroxfac rf" +
 " JOIN facturas f ON rf.idfactura_facturas = f.idfactura" +
 " JOIN rubros r ON rf.idrubro_rubros = r.idrubro" +
 " JOIN clientes c ON f.idcliente = c.idcliente" +
 " JOIN modulos m ON f.idmodulo = m.idmodulo" +
-" LEFT JOIN lecturas l ON f.idfactura = l.idfactura " +
-" left join emisiones e on l.idemision = e.idemision " +
+" JOIN lecturas l ON f.idfactura = l.idfactura " +
+" join emisiones e on l.idemision = e.idemision " +
 " WHERE" +
 "    f.totaltarifa > 0" +
-"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL))" +
-"    OR f.estado = 3" +
+"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)" +
 "    AND f.fechaconvenio IS NULL" +
 "    AND f.fechaeliminacion IS NULL" +
 "    AND NOT r.idrubro = 165" +
+"    AND NOT r.idrubro = 5" + //
 " GROUP BY" +
 "     rf.idfactura_facturas, c.nombre, m.descripcion, l.idlectura, l.idabonado_abonados , e.emision" +
 " ORDER BY" +
 " c.nombre ASC;", nativeQuery = true)
-public List<CarteraVencidaFacturas> getCVByFacturas(LocalDate fecha);
+public List<CarteraVencidaFacturas> getCVByFacturasConsumo(LocalDate fecha);
+
+@Query (value = "SELECT" + //
+		"    rf.idfactura_facturas as factura," + //
+		"    c.nombre," + //
+		"    m.descripcion as modulo," + //
+		"    SUM(rf.cantidad * rf.valorunitario) AS total, " + //
+		"    f.idabonado as cuenta " + //
+		" FROM" + //
+		"    rubroxfac rf" + //
+		" JOIN facturas f ON rf.idfactura_facturas = f.idfactura" + //
+		" JOIN rubros r ON rf.idrubro_rubros = r.idrubro" + //
+		" JOIN clientes c ON f.idcliente = c.idcliente" + //
+		" JOIN modulos m ON f.idmodulo = m.idmodulo" + //
+		" WHERE" + //
+		"    f.totaltarifa > 0" + //
+		"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)" +
+		"    and not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 )" + //
+		"    AND f.fechaconvenio IS NULL" + //
+		"    AND f.fechaeliminacion IS NULL" + //
+		"    AND NOT r.idrubro = 165" + //
+		"    AND NOT r.idrubro = 5" + //
+		" GROUP BY" + //
+		"     rf.idfactura_facturas, c.nombre, m.descripcion, f.idabonado  " + //
+		" ORDER BY" + //
+		" c.nombre ASC;", nativeQuery = true)
+public List<CVFacturasNoConsumo> getCVByFacturasNoConsumo(LocalDate fecha);
 
 	/* 
 	 * 
