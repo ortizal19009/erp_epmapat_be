@@ -285,8 +285,6 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 "    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)" +
 "    AND f.fechaconvenio IS NULL" +
 "    AND f.fechaeliminacion IS NULL" +
-"    AND NOT r.idrubro = 165" +
-"    AND NOT r.idrubro = 5" + //
 " GROUP BY" +
 "     rf.idfactura_facturas, c.nombre, m.descripcion, l.idlectura, l.idabonado_abonados , e.emision" +
 " ORDER BY" +
@@ -311,8 +309,6 @@ public List<CarteraVencidaFacturas> getCVByFacturasConsumo(LocalDate fecha);
 		"    and not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 )" + //
 		"    AND f.fechaconvenio IS NULL" + //
 		"    AND f.fechaeliminacion IS NULL" + //
-		"    AND NOT r.idrubro = 165" + //
-		"    AND NOT r.idrubro = 5" + //
 		" GROUP BY" + //
 		"     rf.idfactura_facturas, c.nombre, m.descripcion, f.idabonado  " + //
 		" ORDER BY" + //
