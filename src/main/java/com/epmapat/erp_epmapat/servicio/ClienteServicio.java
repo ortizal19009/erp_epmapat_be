@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.CVClientes;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 import com.epmapat.erp_epmapat.repositorio.ClientesR;
 
@@ -16,7 +18,7 @@ public class ClienteServicio {
 	@Autowired
 	private ClientesR dao;
 
-	//Campos: id y nombre
+	// Campos: id y nombre
 	public List<Map<String, Object>> obtenerCampos() {
 		return dao.findAllClientsFields();
 	}
@@ -53,7 +55,7 @@ public class ClienteServicio {
 	public Optional<Clientes> findById(Long id) {
 		return dao.findById(id);
 	}
-	 
+
 	public void deleteById(Long id) {
 		dao.deleteByIdQ(id);
 	}
@@ -61,8 +63,13 @@ public class ClienteServicio {
 	public List<Clientes> used(Long id) {
 		return dao.used(id);
 	}
-	public Long totalclientes(){
+
+	public Long totalclientes() {
 		return dao.totalClientes();
+	}
+
+	public List<CVClientes> getCVByCliente(LocalDate fecha) {
+		return dao.getCVByCliente(fecha);
 	}
 
 }

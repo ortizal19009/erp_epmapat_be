@@ -1,16 +1,18 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-
+import com.epmapat.erp_epmapat.interfaces.CVClientes;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 import com.epmapat.erp_epmapat.servicio.ClienteServicio;
 
@@ -158,5 +160,11 @@ public class ClientesApi {
 		if (!cedulaCorrecta) {
 		}
 		return cedulaCorrecta;
+	}
+
+	@GetMapping("/reportes/carteravencida")
+	ResponseEntity<List<CVClientes>> getCVByCliente(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+		return ResponseEntity.ok(cliServicio.getCVByCliente(fecha));
 	}
 }
