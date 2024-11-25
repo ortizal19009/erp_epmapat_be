@@ -8,4 +8,5 @@ public interface RubroxfacIReport {
     String getDescripcion();
 
     BigDecimal getTotal();
+    Long getAbonados();
 }
