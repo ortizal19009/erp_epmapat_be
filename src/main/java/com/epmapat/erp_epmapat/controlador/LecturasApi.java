@@ -196,6 +196,10 @@ public class LecturasApi {
 	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(@RequestParam Long idemision) {
 		return lecServicio.getAllRubrosEmisionInicial(idemision);
 	}
+	@GetMapping("/reportes/rubros/inicial/cm3")
+	public CompletableFuture<List<RubroxfacIReport>> getCuentaM3AllEmiInicial(@RequestParam Long idemision) {
+		return lecServicio.getCuentaM3AllEmiInicial(idemision);
+	}
 
 	@GetMapping("/reportes/rubros/nuevos")
 	public CompletableFuture<List<RubroxfacIReport>> getAllNewLecturas(@RequestParam Long idemision) {

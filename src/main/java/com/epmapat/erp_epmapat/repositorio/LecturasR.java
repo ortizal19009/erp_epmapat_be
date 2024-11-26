@@ -113,6 +113,20 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			+ "AND l.fechaemision = (SELECT fechaemision FROM max_fechaemision) "
 			+ "group by rf.idrubro_rubros , r.descripcion ; ", nativeQuery = true)
 	CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision);
+	@Async
+	@Query(value="WITH max_fechaemision AS ( " +
+				"  SELECT l.fechaemision " +
+				"  FROM lecturas l " +
+				"  WHERE l.idemision = ?1" +
+				"  GROUP BY l.fechaemision " +
+				"  ORDER BY COUNT(*) desc " +
+				"  LIMIT 1) " +
+				" select  count(a.idabonado) as abonados, sum(l.lecturaactual - l.lecturaanterior) as m3" +
+				" FROM lecturas l " +
+				" join abonados a on l.idabonado_abonados = a.idabonado " +
+				" WHERE l.idemision = ?1 " +
+				" AND l.fechaemision = (SELECT fechaemision FROM max_fechaemision) ", nativeQuery = true)
+	CompletableFuture<List<RubroxfacIReport>> getCuentaM3AllEmiInicial(Long idemision);
 
 	/*--REPORTE DE LOS RUBROS nuevos */
 	@Async

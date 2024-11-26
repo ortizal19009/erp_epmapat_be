@@ -132,6 +132,9 @@ public class LecturaServicio {
 	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision) {
 		return dao.getAllRubrosEmisionInicial(idemision);
 	}
+	public CompletableFuture<List<RubroxfacIReport>> getCuentaM3AllEmiInicial(Long idemision) {
+		return dao.getCuentaM3AllEmiInicial(idemision);
+	}
 
 	public CompletableFuture<List<RubroxfacIReport>> getAllNewLecturas(Long idemision) {
 		return dao.getAllNewLecturas(idemision);
