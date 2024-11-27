@@ -2,13 +2,10 @@ package com.epmapat.erp_epmapat.controlador.microservicio_recaudacion;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,4 +51,14 @@ public class MicroservicioRecaudacionApi {
     public ResponseEntity<Object> logOutcajaResponseEntity(@RequestParam String username){
         return ResponseEntity.ok(sRecaudacionMicroservice.sinOutCaja(username));
     }
+    @GetMapping("/interes")
+    public ResponseEntity<Object> getInteresFac(@RequestParam Long idfactura) {
+        return ResponseEntity.ok(sRecaudacionMicroservice.getInteresFac(idfactura));
+    }
+    @GetMapping("/impuestos")
+    public ResponseEntity<Object> getImpuestosFac(@RequestParam Long idfactura) {
+        return ResponseEntity.ok(sRecaudacionMicroservice.getImpuestosFac(idfactura));
+    }
+    
+    
 }
