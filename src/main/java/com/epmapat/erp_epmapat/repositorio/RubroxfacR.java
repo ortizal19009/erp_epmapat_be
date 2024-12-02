@@ -35,6 +35,9 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "select sum(valorunitario) from rubroxfac rf join rubros r on rf.idrubro_rubros = r.idrubro where idfactura_facturas = ?1", nativeQuery = true)
 	Double sumaRubros(Long idfactura);
 
+	@Query(value = " select * from rubroxfac rf where rf.idfactura_facturas = ?1 and rf.idrubro_rubros = ?2", nativeQuery = true)
+	Rubroxfac getOneFxR(Long idfactura, Long idrubro);
+
 	/*
 	 * @Query(value =
 	 * "select * from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where f.fechacobro = ?1 group by rf.idrubro_rubros"
@@ -117,7 +120,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<Object[]> totalRubrosAnteriorByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
 
 	// Recaudcion diaria - Total por Rubro Año actual (Desde Facturas)
-	@Query( value  = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , r.swiva AS iva "
+	@Query(value = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , r.swiva AS iva "
 			+
 			"FROM Rubroxfac rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
@@ -166,13 +169,15 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<RubroxfacIReport> getRubrosByAbonado(Long idabonado);
 
 	/* FIND MULTAS BY ID FACUTA */
-	@Query(value ="select * from rubroxfac where idfactura_facturas = ?1 and idrubro_rubros = 6", nativeQuery = true)
+	@Query(value = "select * from rubroxfac where idfactura_facturas = ?1 and idrubro_rubros = 6", nativeQuery = true)
 	List<Rubroxfac> getMultaByIdFactura(Long idfactura);
 
 	/* REPORTE DE CARTERA VENCIDA POR RUBROS */
-@Query(value =	"select r.idrubro as codigo, r.descripcion, count(f.idfactura) facturas, sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro"+
-" where f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?1 or f.fechacobro is null)) or f.estado = 3 )"+
-" and f.fechaconvenio is null and f.fechaeliminacion is null group by rf.idrubro_rubros, r.descripcion, r.idrubro ", nativeQuery = true)
-List<CarteraVencidaRubros_int> getCarteraVencidaxRubros(Date fechacobro); 
+	@Query(value = "select r.idrubro as codigo, r.descripcion, count(f.idfactura) facturas, sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro"
+			+
+			" where f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?1 or f.fechacobro is null)) or f.estado = 3 )"
+			+
+			" and f.fechaconvenio is null and f.fechaeliminacion is null group by rf.idrubro_rubros, r.descripcion, r.idrubro ", nativeQuery = true)
+	List<CarteraVencidaRubros_int> getCarteraVencidaxRubros(Date fechacobro);
 
 }

@@ -57,9 +57,11 @@ public class RutasxemisionApi {
 
 	@PutMapping("/{idrutaxemision}")
 	public ResponseEntity<Rutasxemision> update(@PathVariable Long idrutaxemision, @RequestBody Rutasxemision x) {
+		System.out.println("Actualizando ruta x emision " + x.getEstado());
 		Rutasxemision y = ruxemiServicio.findById(idrutaxemision)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones(
 						("No existe Rutaxemision con Id: " + idrutaxemision)));
+		System.out.println(y.getEstado() + " " + y.getIdrutaxemision());
 		y.setEstado(x.getEstado());
 		y.setUsuariocierre(x.getUsuariocierre());
 		y.setFechacierre(x.getFechacierre());
@@ -74,8 +76,10 @@ public class RutasxemisionApi {
 		Rutasxemision actualizar = ruxemiServicio.save(y);
 		return ResponseEntity.ok(actualizar);
 	}
+
 	@GetMapping("/emiruta")
-	public ResponseEntity<Rutasxemision> getByEmisionRuta(@RequestParam("idemision") Long idemision,@RequestParam("idruta") Long idruta){
+	public ResponseEntity<Rutasxemision> getByEmisionRuta(@RequestParam("idemision") Long idemision,
+			@RequestParam("idruta") Long idruta) {
 		Rutasxemision rutasxemision = ruxemiServicio.findByEmisionRuta(idemision, idruta);
 		return ResponseEntity.ok(rutasxemision);
 	}

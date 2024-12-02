@@ -130,7 +130,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 
 	/*--REPORTE DE LOS RUBROS nuevos */
 	@Async
-	@Query(value = "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total "
+	@Query(value = "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total, count(l.idabonado_abonados) as abonados "
 			+ "from emisionindividual ei "
 			+ "join lecturas l on ei.idlecturanueva = l.idlectura  "
 			+ "join rubroxfac rf on l.idfactura = rf.idfactura_facturas "
@@ -143,7 +143,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	/*
 	 * --REPORTE DE LOS RUBROS ELIMINADOS
 	 */
-	@Query(value = "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total "
+	@Query(value = "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total , count(l.idabonado_abonados) as abonados "
 			+ "from emisionindividual ei "
 			+ "join lecturas l on ei.idlecturaanterior = l.idlectura "
 			+ "join rubroxfac rf on l.idfactura = rf.idfactura_facturas "
@@ -152,7 +152,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			+ "group by rf.idrubro_rubros , r.descripcion ", nativeQuery = true)
 	public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(Long idemision);
 
-	@Query(value = "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total "
+	@Query(value = "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total , count(l.idabonado_abonados) as abonados "
 			+ "from lecturas l join rubroxfac rf on l.idfactura = rf.idfactura_facturas "
 			+ "join facturas f on rf.idfactura_facturas = f.idfactura "
 			+ "join rubros r on rf.idrubro_rubros  = r.idrubro "

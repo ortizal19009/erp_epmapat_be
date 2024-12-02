@@ -115,8 +115,20 @@ public class RubroxfacServicio {
 	}
 
 	// Grabar
+	@SuppressWarnings("unchecked")
 	public <S extends Rubroxfac> S save(S entity) {
-		return dao.save(entity);
+		Rubroxfac rxf = dao.getOneFxR(entity.getIdfactura_facturas().getIdfactura(),
+				entity.getIdrubro_rubros().getIdrubro());
+		if (rxf == null) {
+			return dao.save(entity);
+		} else {
+			if(rxf.getIdrubro_rubros().getIdrubro() == 5 ){
+				if(rxf.getValorunitario()!= entity.getValorunitario()){
+				}
+			}
+			return (S) rxf;
+		}
+
 	}
 
 	public Optional<Rubroxfac> findById(Long id) {

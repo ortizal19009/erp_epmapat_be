@@ -23,15 +23,8 @@ public class RutasxemisionServicio {
         return dao.findById(idemision);
     }
 
-    @SuppressWarnings("unchecked")
     public <S extends Rutasxemision> S save(S entity) {
-        Rutasxemision rxe = dao.findByEmisionRuta(entity.getIdemision_emisiones().getIdemision(), entity.getIdruta_rutas().getIdruta());
-        if(rxe == null){
             return dao.save(entity);
-        }
-        else{
-            return (S)rxe;
-        }
         
     }
 
