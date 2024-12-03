@@ -124,9 +124,6 @@ public class RubroxfacServicio {
 
 		Long idFactura = entity.getIdfactura_facturas().getIdfactura();
 		Long idRubro = entity.getIdrubro_rubros().getIdrubro();
-
-		System.out.println("Consultando: " + idFactura + " - " + idRubro);
-
 		// Buscar rubros existentes para la factura y rubro específicos
 		List<Rubroxfac> rxfList = dao.getOneFxR(idFactura, idRubro);
 
@@ -154,7 +151,6 @@ public class RubroxfacServicio {
 						&& !existente.getValorunitario().equals(entity.getValorunitario())) {
 					existente.setValorunitario(existente.getValorunitario().add(entity.getValorunitario()));
 					dao.save(existente);
-
 				}
 			}
 			return (S) existente;
