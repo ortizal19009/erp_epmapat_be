@@ -126,12 +126,10 @@ public class RubroxfacServicio {
 			if (rxf.getIdrubro_rubros().getIdrubro() == 5) {
 				if (rxf.getValorunitario() != entity.getValorunitario()) {
 					rxf.setValorunitario(rxf.getValorunitario().add(entity.getValorunitario()));
-					System.out.println("sumando interes");
 					dao.save(rxf);
 				}
 			}
 			if (rxf.getIdrubro_rubros().getIdrubro() == 165) {
-				System.out.println("REEMPLAZANDO IVA");
 				rxf.setValorunitario(entity.getValorunitario());
 				dao.save(rxf);
 			}
