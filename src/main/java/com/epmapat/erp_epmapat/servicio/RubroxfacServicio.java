@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.CarteraVencidaRubros_int;
@@ -117,23 +118,47 @@ public class RubroxfacServicio {
 	// Grabar
 	@SuppressWarnings("unchecked")
 	public <S extends Rubroxfac> S save(S entity) {
-		Rubroxfac rxf = dao.getOneFxR(entity.getIdfactura_facturas().getIdfactura(),
-				entity.getIdrubro_rubros().getIdrubro());
-		if (rxf == null) {
+		if (entity == null || entity.getIdfactura_facturas() == null || entity.getIdrubro_rubros() == null) {
+			throw new IllegalArgumentException("La entidad o sus dependencias no pueden ser nulas.");
+		}
+
+		Long idFactura = entity.getIdfactura_facturas().getIdfactura();
+		Long idRubro = entity.getIdrubro_rubros().getIdrubro();
+
+		System.out.println("Consultando: " + idFactura + " - " + idRubro);
+
+		// Buscar rubros existentes para la factura y rubro específicos
+		List<Rubroxfac> rxfList = dao.getOneFxR(idFactura, idRubro);
+
+		if (rxfList.isEmpty()) {
+			if (entity.getValorunitario() == null) {
+				entity.setValorunitario(BigDecimal.ZERO);
+			}
+
 			return dao.save(entity);
 		} else {
+			// Eliminar duplicados, manteniendo solo el primero
+			rxfList.stream().skip(1).forEach(duplicado -> {
+				try {
+					dao.deleteById(duplicado.getIdrubroxfac());
+				} catch (ObjectOptimisticLockingFailureException e) {
+					System.out.println("El registro ya fue eliminado o no existe: " + duplicado.getIdrubroxfac());
+				}
+			});
 
-			if (rxf.getIdrubro_rubros().getIdrubro() == 5) {
-				if (rxf.getValorunitario() != entity.getValorunitario()) {
-					rxf.setValorunitario(rxf.getValorunitario().add(entity.getValorunitario()));
-					dao.save(rxf);
+			Rubroxfac existente = rxfList.get(0);
+			System.out.println(existente.getIdrubro_rubros().getIdrubro());
+			// Actualización lógica según el caso
+			if (idRubro == 5) {
+				if (existente.getValorunitario() != null
+						&& !existente.getValorunitario().equals(entity.getValorunitario())) {
+					existente.setValorunitario(existente.getValorunitario().add(entity.getValorunitario()));
+					dao.save(existente);
+
 				}
 			}
-			if (rxf.getIdrubro_rubros().getIdrubro() == 165) {
-				rxf.setValorunitario(entity.getValorunitario());
-				dao.save(rxf);
-			}
-			return (S) rxf;
+			return (S) existente;
+
 		}
 	}
 

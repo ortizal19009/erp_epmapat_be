@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -35,8 +36,12 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "select sum(valorunitario) from rubroxfac rf join rubros r on rf.idrubro_rubros = r.idrubro where idfactura_facturas = ?1", nativeQuery = true)
 	Double sumaRubros(Long idfactura);
 
+	/* @Modifying
+	@Query("DELETE FROM Rubroxfac r WHERE r.idrubroxfac = :idrubroxfac")
+	void deleteRubroDuplicado(@Param("idrubroxfac") Long idrubroxfac); */
+
 	@Query(value = " select * from rubroxfac rf where rf.idfactura_facturas = ?1 and rf.idrubro_rubros = ?2", nativeQuery = true)
-	Rubroxfac getOneFxR(Long idfactura, Long idrubro);
+	List<Rubroxfac> getOneFxR(Long idfactura, Long idrubro);
 
 	/*
 	 * @Query(value =
