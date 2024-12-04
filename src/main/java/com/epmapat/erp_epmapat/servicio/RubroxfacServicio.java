@@ -129,6 +129,7 @@ public class RubroxfacServicio {
 
 		if (rxfList.isEmpty()) {
 			if (entity.getValorunitario() == null) {
+			System.out.println("RECIBIENDO UN VALOR ZERO : " + entity.getIdfactura_facturas());
 				entity.setValorunitario(BigDecimal.ZERO);
 			}
 
@@ -136,24 +137,26 @@ public class RubroxfacServicio {
 		} else {
 			// Eliminar duplicados, manteniendo solo el primero
 			rxfList.stream().skip(1).forEach(duplicado -> {
-				try {
+				if (dao.existsById(duplicado.getIdrubroxfac())) {
 					dao.deleteById(duplicado.getIdrubroxfac());
-				} catch (ObjectOptimisticLockingFailureException e) {
+				} else {
 					System.out.println("El registro ya fue eliminado o no existe: " + duplicado.getIdrubroxfac());
 				}
 			});
 
 			Rubroxfac existente = rxfList.get(0);
-			System.out.println(existente.getIdrubro_rubros().getIdrubro());
 			// Actualización lógica según el caso
 			if (idRubro == 5) {
 				if (existente.getValorunitario() != null
 						&& !existente.getValorunitario().equals(entity.getValorunitario())) {
 					existente.setValorunitario(existente.getValorunitario().add(entity.getValorunitario()));
-					dao.save(existente);
+					
 				}
 			}
-			return (S) existente;
+			System.out.println("ACTUALIZANDO");
+			System.out.println(existente.getIdfactura_facturas().getIdfactura());
+			System.out.println(existente.getIdfactura_facturas().getIdabonado());
+			return (S) dao.save(existente);
 
 		}
 	}

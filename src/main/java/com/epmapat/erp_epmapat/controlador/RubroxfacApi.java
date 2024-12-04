@@ -200,14 +200,17 @@ public class RubroxfacApi {
    public ResponseEntity<List<RubroxfacIReport>> getRubrosByAbonado(@RequestParam("idabonado") Long idabonado) {
       return ResponseEntity.ok(rxfServicio.getRubrosByAbonado(idabonado));
    }
+
    /* OBTENER MULTA POR FACTURA */
    @GetMapping("/multas")
    public ResponseEntity<List<Rubroxfac>> findMultaByIdFactura(@RequestParam("idfactura") Long idfactura) {
       return ResponseEntity.ok(rxfServicio.getMultaByIdFactura(idfactura));
    }
-   	/* REPORTE DE CARTERA VENCIDA POR RUBROS */
+
+   /* REPORTE DE CARTERA VENCIDA POR RUBROS */
    @GetMapping("/reportes/carteravencida")
-   public ResponseEntity<List<CarteraVencidaRubros_int>> getCarteraVencidaxRubros(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechacobro){
+   public ResponseEntity<List<CarteraVencidaRubros_int>> getCarteraVencidaxRubros(
+         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechacobro) {
       return ResponseEntity.ok(rxfServicio.getCarteraVencidaxRubros(fechacobro));
    }
 }
