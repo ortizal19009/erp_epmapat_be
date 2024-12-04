@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.CarteraVencidaRubros_int;
@@ -116,23 +117,17 @@ public class RubroxfacServicio {
 	}
 
 	// Grabar
-	@SuppressWarnings("unchecked")
+	@Async
 	public <S extends Rubroxfac> S save(S entity) {
-		if (entity == null || entity.getIdfactura_facturas() == null || entity.getIdrubro_rubros() == null) {
-			throw new IllegalArgumentException("La entidad o sus dependencias no pueden ser nulas.");
-		}
-
 		Long idFactura = entity.getIdfactura_facturas().getIdfactura();
 		Long idRubro = entity.getIdrubro_rubros().getIdrubro();
 		// Buscar rubros existentes para la factura y rubro específicos
 		List<Rubroxfac> rxfList = dao.getOneFxR(idFactura, idRubro);
-
-		if (rxfList.isEmpty()) {
+	
+		if (rxfList.isEmpty() || rxfList.size() == 0 || rxfList == null) {
 			if (entity.getValorunitario() == null) {
-			System.out.println("RECIBIENDO UN VALOR ZERO : " + entity.getIdfactura_facturas());
-				entity.setValorunitario(BigDecimal.ZERO);
+				entity.setValorunitario(new BigDecimal(0));
 			}
-
 			return dao.save(entity);
 		} else {
 			// Eliminar duplicados, manteniendo solo el primero
@@ -150,12 +145,19 @@ public class RubroxfacServicio {
 				if (existente.getValorunitario() != null
 						&& !existente.getValorunitario().equals(entity.getValorunitario())) {
 					existente.setValorunitario(existente.getValorunitario().add(entity.getValorunitario()));
-					
+
 				}
+			} else {
+				if (entity.getValorunitario() == null) {
+
+					entity.setValorunitario(new BigDecimal(0));
+				}
+				if (existente.getValorunitario() == null) {
+					existente.setValorunitario(new BigDecimal(0));
+				}
+
+				existente.setValorunitario(entity.getValorunitario());
 			}
-			System.out.println("ACTUALIZANDO");
-			System.out.println(existente.getIdfactura_facturas().getIdfactura());
-			System.out.println(existente.getIdfactura_facturas().getIdabonado());
 			return (S) dao.save(existente);
 
 		}
