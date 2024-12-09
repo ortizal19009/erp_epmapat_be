@@ -63,7 +63,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
         public List<EmisionIndividualRin> emisionIndividualNueva(Integer idemision);
 
         /* REPORTE REFACTURACION X EMISION */
-        @Query(value = "select ln.idabonado_abonados as cuenta, c.nombre ,  ln.idfactura as nuevaplanilla, fn.totaltarifa as valornuevo,  la.idfactura as anteriorplanilla, fa.totaltarifa as valoranterior, la.observaciones "
+        @Query(value = "select ln.idabonado_abonados as cuenta, c.nombre, fa.fechaeliminacion as fecelimina ,  ln.idfactura as nuevaplanilla, fn.totaltarifa as valornuevo,  la.idfactura as anteriorplanilla, fa.totaltarifa as valoranterior, la.observaciones "
                         + " from emisionindividual e "
                         + " join lecturas ln on e.idlecturanueva = ln.idlectura"
                         + " join abonados a on ln.idabonado_abonados = a.idabonado "
@@ -75,7 +75,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         + " order by ln.idabonado_abonados asc", nativeQuery = true)
         public List<R_refacturacion_int> getRefacturacionxEmision(Long idemision);
 
-        @Query(value = "select ln.idabonado_abonados as cuenta, c.nombre ,  ln.idfactura as nuevaplanilla, fn.totaltarifa as valornuevo,  la.idfactura as anteriorplanilla, fa.totaltarifa as valoranterior, la.observaciones "
+        @Query(value = "select ln.idabonado_abonados as cuenta, c.nombre ,  fa.fechaeliminacion as fecelimina , ln.idfactura as nuevaplanilla, fn.totaltarifa as valornuevo,  la.idfactura as anteriorplanilla, fa.totaltarifa as valoranterior, la.observaciones "
                         + " from emisionindividual e "
                         + " join lecturas ln on e.idlecturanueva = ln.idlectura"
                         + " join abonados a on ln.idabonado_abonados = a.idabonado "

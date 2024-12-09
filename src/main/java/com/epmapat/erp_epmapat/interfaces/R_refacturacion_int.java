@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.interfaces;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 public interface R_refacturacion_int {
     Long getCuenta();
@@ -10,4 +11,5 @@ public interface R_refacturacion_int {
     Long getAnteriorplanilla();
     BigDecimal  getValoranterior();
     String getObservaciones();
+    Date getFecelimina();
 }

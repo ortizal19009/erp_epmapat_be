@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
+import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
@@ -196,6 +197,7 @@ public class LecturasApi {
 	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(@RequestParam Long idemision) {
 		return lecServicio.getAllRubrosEmisionInicial(idemision);
 	}
+
 	@GetMapping("/reportes/rubros/inicial/cm3")
 	public CompletableFuture<List<RubroxfacIReport>> getCuentaM3AllEmiInicial(@RequestParam Long idemision) {
 		return lecServicio.getCuentaM3AllEmiInicial(idemision);
@@ -222,7 +224,12 @@ public class LecturasApi {
 	}
 
 	@GetMapping("/reportes/consumoxcategoria")
-	public ResponseEntity<List<ConsumoxCat_int>> getConsumoxCategoria(@RequestParam Long idemision){
+	public ResponseEntity<List<ConsumoxCat_int>> getConsumoxCategoria(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.getConsumoxCategoria(idemision));
+	}
+
+	@GetMapping("/reportes/rubrozero")
+	public ResponseEntity<List<CountRubrosByEmision>> getCuentaRubrosByEmision(@RequestParam Long idemision) {
+		return ResponseEntity.ok(lecServicio.getCuentaRubrosByEmision(idemision));
 	}
 }

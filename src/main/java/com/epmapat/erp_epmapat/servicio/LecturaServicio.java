@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
+import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
@@ -159,4 +160,9 @@ public class LecturaServicio {
 	public List<ConsumoxCat_int> getConsumoxCategoria(Long idemision){
 		return dao.getConsumoxCategoria(idemision);
 	}
+
+	public List<CountRubrosByEmision>getCuentaRubrosByEmision(long idemision ){
+		return dao.getCuentaRubrosByEmision(idemision);
+	}
+
 }
