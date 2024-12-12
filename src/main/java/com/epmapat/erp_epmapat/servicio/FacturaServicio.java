@@ -8,8 +8,6 @@ import java.util.Optional;
 import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 
@@ -18,9 +16,6 @@ public class FacturaServicio {
 
 	@Autowired
 	private FacturasR dao;
-	@Autowired
-	private LecturaServicio s_lecturas;
-
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
 	}

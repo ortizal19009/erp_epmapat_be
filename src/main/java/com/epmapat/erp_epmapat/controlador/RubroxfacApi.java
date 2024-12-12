@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.annotation.RequestScope;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.CarteraVencidaRubros_int;
@@ -212,5 +214,9 @@ public class RubroxfacApi {
    public ResponseEntity<List<CarteraVencidaRubros_int>> getCarteraVencidaxRubros(
          @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechacobro) {
       return ResponseEntity.ok(rxfServicio.getCarteraVencidaxRubros(fechacobro));
+   }
+   @GetMapping("/res")
+   public ResponseEntity<BigDecimal> getTotalInteres(@RequestParam Long idfactura){
+      return ResponseEntity.ok(rxfServicio.getTotalInteres(idfactura));
    }
 }

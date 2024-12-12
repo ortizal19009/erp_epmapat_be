@@ -123,7 +123,7 @@ public class RubroxfacServicio {
 		Long idRubro = entity.getIdrubro_rubros().getIdrubro();
 		// Buscar rubros existentes para la factura y rubro específicos
 		List<Rubroxfac> rxfList = dao.getOneFxR(idFactura, idRubro);
-	
+
 		if (rxfList.isEmpty() || rxfList.size() == 0 || rxfList == null) {
 			if (entity.getValorunitario() == null) {
 				entity.setValorunitario(new BigDecimal(0));
@@ -161,6 +161,10 @@ public class RubroxfacServicio {
 			return (S) dao.save(existente);
 
 		}
+	}
+
+	public BigDecimal getTotalInteres(Long idfactura) {
+		return dao.getTotalInteres(idfactura);
 	}
 
 	public Optional<Rubroxfac> findById(Long id) {

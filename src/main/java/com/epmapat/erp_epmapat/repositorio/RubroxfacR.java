@@ -185,4 +185,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			" and f.fechaconvenio is null and f.fechaeliminacion is null group by rf.idrubro_rubros, r.descripcion, r.idrubro ", nativeQuery = true)
 	List<CarteraVencidaRubros_int> getCarteraVencidaxRubros(Date fechacobro);
 
+	@Query(value = "SELECT sum(rf.cantidad * rf.valorunitario) as interes FROM rubroxfac rf where rf.idfactura_facturas = ?1 and rf.idrubro_rubros = 5", nativeQuery = true)
+	BigDecimal getTotalInteres(Long idfactura);
+
 }

@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.controlador;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Date;
@@ -31,6 +32,7 @@ import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
 import com.epmapat.erp_epmapat.reportes.facturas.interfaces.i_ReporteFacturasCobradas_G;
 import com.epmapat.erp_epmapat.servicio.FacturaServicio;
+import com.epmapat.erp_epmapat.servicio.RubroxfacServicio;
 
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.core.io.InputStreamResource;
@@ -44,6 +46,8 @@ public class FacturasApi {
 
 	@Autowired
 	private FacturaServicio facServicio;
+	@Autowired
+	private RubroxfacServicio rxfServicio;
 	@Autowired
 	private i_ReporteFacturasCobradas_G i_reportefacturascobradas_g;
 
@@ -254,7 +258,14 @@ public class FacturasApi {
 	@PutMapping("/{idfactura}")
 	public ResponseEntity<Facturas> updateFacturas(@PathVariable long idfactura, @RequestBody Facturas x) {
 		Facturas y = facServicio.findById(idfactura)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
+		.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
+		BigDecimal interes = rxfServicio.getTotalInteres(idfactura);
+		if (interes == null) {
+			y.setInterescobrado(x.getInterescobrado());
+		} else {
+			y.setInterescobrado(interes.add(x.getInterescobrado()));
+		}
+
 		y.setConveniopago(x.getConveniopago());
 		y.setEstado(x.getEstado());
 		y.setEstadoconvenio(x.getEstadoconvenio());
@@ -280,7 +291,6 @@ public class FacturasApi {
 		y.setUsuariocobro(x.getUsuariocobro());
 		y.setUsuarioeliminacion(x.getUsuarioeliminacion());
 		y.setUsuariotransferencia(x.getUsuariotransferencia());
-		y.setInterescobrado(x.getInterescobrado());
 		y.setUsucrea(x.getUsucrea());
 		y.setFeccrea(x.getFeccrea());
 		y.setSwiva(x.getSwiva());
