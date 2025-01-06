@@ -117,26 +117,32 @@ public class InteresServicio {
 			LocalDate fecFinal = LocalDate.now();
 			int anioI = fecInicio.getYear();
 			int anioF = fecFinal.getYear();
+			int mesF = fecFinal.getMonthValue();
 			List<Float> todosPorcentajes = new ArrayList<>();
 			if (anioI < anioF) {
 				int mesI = fecInicio.getMonthValue();
-				while (anioI <= anioF) {
-					if (anioI < anioF) {
-						List<Float> porcentaje = dao.porcentajes(anioI, mesI, 12);
-						todosPorcentajes.addAll(porcentaje); // Añadir los porcentajes a la lista total
-					} else if (anioI == anioF ) {
-						List<Float> porcentaje = new ArrayList<>(); // Inicializa la lista
-						if (fecInicio.getMonthValue() == (fecFinal.getMonthValue() - 1)) {
-							porcentaje.add(0.00f);
-						} else {
-							porcentaje = dao.porcentajes(anioF, 1, fecFinal.getMonthValue() - 2);
-							todosPorcentajes.addAll(porcentaje);
-						} 
+				if (mesI == 12 && mesF == 1 && anioI + 1 == anioF) {
+					System.out.println("");
+				} else {
+					while (anioI <= anioF) {
+						if (anioI < anioF) {
+							List<Float> porcentaje = dao.porcentajes(anioI, mesI, 12);
+							todosPorcentajes.addAll(porcentaje); // Añadir los porcentajes a la lista total
+						} else if (anioI == anioF) {
+							List<Float> porcentaje = new ArrayList<>(); // Inicializa la lista
+							if (fecInicio.getMonthValue() == (fecFinal.getMonthValue() - 1)) {
+								porcentaje.add(0.00f);
+							} else {
+								porcentaje = dao.porcentajes(anioF, 1, fecFinal.getMonthValue() - 2);
+								todosPorcentajes.addAll(porcentaje);
+							}
+						}
+						mesI = 1;
+						anioI++;
 					}
-					mesI = 1;
-					anioI++;
 				}
-			} else if(anioF < anioI){
+
+			} else if (anioF < anioI) {
 			} else {
 				List<Float> porcentaje = new ArrayList<>(); // Inicializa la lista
 				if (fecInicio.getMonthValue() == (fecFinal.getMonthValue() - 1)) {
