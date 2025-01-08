@@ -14,7 +14,7 @@ public class CtramitesM {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long idtramite;
+	private Long idctramite;
 	private Long estado;
 	private Float total;
 	private String descripcion;
@@ -48,7 +48,7 @@ public class CtramitesM {
 			TpTramiteM idtptramite_tptramite, Clientes idcliente_clientes, Long usucrea, Date feccrea, Long usumodi,
 			Date fecmodi) {
 		super();
-		this.idtramite = idtramite;
+		this.idctramite = idtramite;
 		this.estado = estado;
 		this.total = total;
 		this.descripcion = descripcion;
@@ -63,10 +63,10 @@ public class CtramitesM {
 	}
 	
 	public Long getIdtramite() {
-		return idtramite;
+		return idctramite;
 	}
 	public void setIdtramite(Long idtramite) {
-		this.idtramite = idtramite;
+		this.idctramite = idtramite;
 	}
 	public Long getEstado() {
 		return estado;

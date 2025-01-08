@@ -14,7 +14,7 @@ public class Ccertificaciones {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long idcertificacion;
+	private Long idccertificacion;
 	private Long numero;
 	private Long anio;
 	private String referenciadocumento;
@@ -42,11 +42,11 @@ public class Ccertificaciones {
 		super();
 	}
 	
-	public Ccertificaciones(Long idcertificacion, Long numero, Long anio, String referenciadocumento,
+	public Ccertificaciones(Long idccertificacion, Long numero, Long anio, String referenciadocumento,
 			TpCertifica idtpcertifica_tpcertifica, Facturas idfactura_facturas, Clientes idcliente_clientes, Long usucrea, Date feccrea,
 			Long usumodi, Date fecmodi) {
 		super();
-		this.idcertificacion = idcertificacion;
+		this.idccertificacion = idccertificacion;
 		this.numero = numero;
 		this.anio = anio;
 		this.referenciadocumento = referenciadocumento;
@@ -59,10 +59,10 @@ public class Ccertificaciones {
 	}
 
 	public Long getIdcertificacion() {
-		return idcertificacion;
+		return idccertificacion;
 	}
 	public void setIdcertificacion(Long idcertificacion) {
-		this.idcertificacion = idcertificacion;
+		this.idccertificacion = idcertificacion;
 	}
 	public Long getNumero() {
 		return numero;

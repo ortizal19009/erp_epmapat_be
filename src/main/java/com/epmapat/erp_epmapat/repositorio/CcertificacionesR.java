@@ -19,6 +19,6 @@ public interface CcertificacionesR extends JpaRepository<Ccertificaciones, Long>
    public List<Ccertificaciones> findByCliente(String cliente);
 
    // Ultima Certificación
-   Ccertificaciones findFirstByOrderByIdcertificacionDesc();
+   Ccertificaciones findFirstByOrderByIdccertificacionDesc();
 
 }
