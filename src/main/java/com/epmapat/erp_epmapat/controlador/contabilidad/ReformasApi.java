@@ -34,11 +34,6 @@ public class ReformasApi {
       return refoServicio.buscaByNumfec(desde, hasta);
    }
 
-   // @GetMapping("/last")
-   // public List<Reformas> getLastReforma() {
-   // return refoServicio.buscarUltimaReforma();
-   // }
-
    @GetMapping("/ultima")
    public Reformas getUltima() {
       return refoServicio.findFirstByOrderByNumeroDesc();
@@ -73,7 +68,7 @@ public class ReformasApi {
       y.setValor(x.getValor());
       y.setConcepto(x.getConcepto());
       y.setNumdoc(x.getNumdoc());
-      y.setIddocumento(x.getIddocumento());
+      y.setIntdoc(x.getIntdoc());
       y.setUsucrea(x.getUsucrea());
       y.setFeccrea(x.getFeccrea());
       y.setUsumodi(x.getUsumodi());

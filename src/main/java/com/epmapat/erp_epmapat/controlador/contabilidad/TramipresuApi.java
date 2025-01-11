@@ -29,13 +29,26 @@ public class TramipresuApi {
    private TramipresuServicio tramiServicio;
 
    @GetMapping
-   public ResponseEntity<List<Tramipresu>> findAllTramites() {
-      return ResponseEntity.ok(tramiServicio.findAll());
+   public List<Tramipresu> getAllLista(@Param(value = "desdeNum") Long desdeNum,
+         @Param(value = "hastaNum") Long hastaNum,
+         @Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
+         @Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
+      if (desdeNum != null) {
+         return tramiServicio.findDesdeHasta(desdeNum, hastaNum, desdeFecha, hastaFecha);
+      } else
+         // return certiServicio.findAll();
+         return null;
    }
 
    @GetMapping("/max")
    public ResponseEntity<Tramipresu> getMax() {
       return ResponseEntity.ok(tramiServicio.findFirstByOrderByNumeroDesc());
+   }
+
+   //Validar número
+   @GetMapping("/numero")
+   public boolean valNumero( @Param(value = "numero") Long numero ) {
+      return tramiServicio.valNumero( numero );
    }
 
    @PostMapping
@@ -46,19 +59,6 @@ public class TramipresuApi {
    @GetMapping("/idtrami")
    public ResponseEntity<Optional<Tramipresu>> findById(@RequestParam("idtrami") Long idtrami) {
       return ResponseEntity.ok(tramiServicio.findById(idtrami));
-   }
-
-   @GetMapping("/dh")
-   public List<Tramipresu> getAllLista(@Param(value = "desdeNum") Long desdeNum,
-         @Param(value = "hastaNum") Long hastaNum,
-         @Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
-         @Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
-
-      if (desdeNum != null) {
-         return tramiServicio.findDesdeHasta(desdeNum, hastaNum, desdeFecha, hastaFecha);
-      } else
-         // return certiServicio.findAll();
-         return null;
    }
 
 }

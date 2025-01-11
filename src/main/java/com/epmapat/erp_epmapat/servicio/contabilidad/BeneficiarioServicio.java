@@ -2,209 +2,100 @@ package com.epmapat.erp_epmapat.servicio.contabilidad;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.contabilidad.Beneficiarios;
+import com.epmapat.erp_epmapat.modelo.contabilidad.Gruposbene;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.BeneficiariosR;
+import com.epmapat.erp_epmapat.repositorio.contabilidad.GruposbeneR;
 
 @Service
-public class BeneficiarioServicio implements BeneficiariosR {
+public class BeneficiarioServicio {
 
    @Autowired
-   private BeneficiariosR beneficiariosR;
+   private BeneficiariosR dao;
+   @Autowired
+   private GruposbeneR dao1;
 
-   @Override
-   public List<Beneficiarios> findAll() {
-      return beneficiariosR.findAll();
+   // Lista de beneficiarios por nombre, codigo y (ruc o ci)
+   public List<Beneficiarios> findBeneficiarios(String nomben, String codben, String rucben, String ciben) {
+      return dao.findBeneficiarios(nomben, codben, rucben, ciben);
    }
 
-   @Override
-   public List<Beneficiarios> findByName(String name) {
-      return beneficiariosR.findByName(name);
+   public List<Beneficiarios> findByNomben(String nomben) {
+      return dao.findByNomben(nomben);
    }
 
-   @Override
-   public List<Beneficiarios> findByGrupoBene(String name, Long idgrupo) {
-      return beneficiariosR.findByGrupoBene(name, idgrupo);
+   //Busca por nombre y grupo
+   public List<Beneficiarios> findByNombenGru(String nomben, Long idgrupo) {
+      return dao.findByNombenGru(nomben, idgrupo);
    }
 
-   @Override
-   public List<Beneficiarios> findAll(Sort sort) {
-      return null;
+   // Último código de Beneficiario (por grupo)
+   public Beneficiarios findUltCodigo(Long idgrupo) {
+      return dao.findUltCodigo(idgrupo);
    }
 
-   @Override
-   public List<Beneficiarios> findAllById(Iterable<Long> ids) {
-      return null;
+   // Valida el Nombre del Beneficiario
+   public boolean valNomben(String nomben) {
+      return dao.valNomben(nomben);
    }
 
-   @Override
-   public <S extends Beneficiarios> List<S> saveAll(Iterable<S> entities) {
-      return null;
+   // Siguiente código de Beneficiario (por grupo)
+   public String siguienteCodigo(Long idgrupo) {
+      Beneficiarios ultimoBene = dao.findUltCodigo(idgrupo);
+      if (ultimoBene != null) {
+         String ultimoCodigo = ultimoBene.getCodben();
+         String prefijo = ultimoCodigo.substring(0, 2); // Obtiene "P-"
+         String parteNumerica = ultimoCodigo.substring(2); // Obtiene "0151"
+         int numeroEntero = Integer.parseInt(parteNumerica); // Convierte "0151" a 151
+         int siguienteNumero = numeroEntero + 1; // Obtiene 152
+         String siguienteParteNumerica = String.format("%04d", siguienteNumero); // Obtiene "0152"
+         String siguienteCodigo = prefijo + siguienteParteNumerica; // Obtiene "P-0152"
+         return siguienteCodigo;
+      } else {
+         Gruposbene grupo = dao1.findByIdgrupo(idgrupo);
+         if (grupo != null) {
+            String codgru = grupo.getCodgru();
+            return codgru + "-0001";
+         } else {
+            return "-0001";
+         }
+      }
    }
 
-   @Override
-   public void flush() {
-      
-
+   // Validar Código de Beneficiario
+   public boolean valCodben(String codben) {
+      return dao.valCodben(codben);
    }
 
-   @Override
-   public <S extends Beneficiarios> S saveAndFlush(S entity) {
-      return null;
+   // Valida el RUC del Beneficiario
+   public boolean valRucben(String rucben) {
+      return dao.valRucben(rucben);
    }
 
-   @Override
-   public <S extends Beneficiarios> List<S> saveAllAndFlush(Iterable<S> entities) {
-      
-      return null;
+   // Valida la CI del Beneficiario
+   public boolean valCiben(String ciben) {
+      return dao.valCiben(ciben);
    }
 
-   @Override
-   public void deleteAllInBatch(Iterable<Beneficiarios> entities) {
-      
-
+   // Cuenta por Idifinan (Instituciones financieras)
+   public Long countByIdifinan(Long idifinan) {
+      return dao.countByIdifinan(idifinan);
    }
 
-   @Override
-   public void deleteAllByIdInBatch(Iterable<Long> ids) {
-      
-
-   }
-
-   @Override
-   public void deleteAllInBatch() {
-      
-
-   }
-
-   @Override
-   public Beneficiarios getOne(Long id) {
-      
-      return null;
-   }
-
-   @Override
-   public Beneficiarios getById(Long id) {
-      
-      return null;
-   }
-
-   @Override
-   public Beneficiarios getReferenceById(Long id) {
-      
-      return null;
-   }
-
-   @Override
-   public <S extends Beneficiarios> List<S> findAll(Example<S> example) {
-      
-      return null;
-   }
-
-   @Override
-   public <S extends Beneficiarios> List<S> findAll(Example<S> example, Sort sort) {
-      
-      return null;
-   }
-
-   @Override
-   public Page<Beneficiarios> findAll(Pageable pageable) {
-      
-      return null;
-   }
-
-   @Override
    public <S extends Beneficiarios> S save(S entity) {
-      
-      return null;
+      return dao.save(entity);
    }
 
-   @Override
    public Optional<Beneficiarios> findById(Long id) {
-      
-      return beneficiariosR.findById(id);
+      return dao.findById(id);
    }
 
-   @Override
-   public boolean existsById(Long id) {
-      
-      return false;
-   }
-
-   @Override
-   public long count() {
-      
-      return 0;
-   }
-
-   @Override
    public void deleteById(Long id) {
-      
-
-   }
-
-   @Override
-   public void delete(Beneficiarios entity) {
-      
-
-   }
-
-   @Override
-   public void deleteAllById(Iterable<? extends Long> ids) {
-      
-
-   }
-
-   @Override
-   public void deleteAll(Iterable<? extends Beneficiarios> entities) {
-      
-
-   }
-
-   @Override
-   public void deleteAll() {
-      
-
-   }
-
-   @Override
-   public <S extends Beneficiarios> Optional<S> findOne(Example<S> example) {
-      
-      return Optional.empty();
-   }
-
-   @Override
-   public <S extends Beneficiarios> Page<S> findAll(Example<S> example, Pageable pageable) {
-      
-      return null;
-   }
-
-   @Override
-   public <S extends Beneficiarios> long count(Example<S> example) {
-      
-      return 0;
-   }
-
-   @Override
-   public <S extends Beneficiarios> boolean exists(Example<S> example) {
-      
-      return false;
-   }
-
-   @Override
-   public <S extends Beneficiarios, R> R findBy(Example<S> example,
-         Function<FetchableFluentQuery<S>, R> queryFunction) {
-      
-      return null;
+      dao.deleteById(id);
    }
 
 }

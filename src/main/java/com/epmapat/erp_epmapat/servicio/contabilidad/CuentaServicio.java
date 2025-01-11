@@ -33,6 +33,37 @@ public class CuentaServicio {
       return dao.findByCodcue(codcue);
    }
 
+   // Busca el nombre de una cuenta por codcue
+   public Object[] getNomCueByCodcue(String codcue) {
+      return dao.findNomCueByCodcue(codcue);
+   }
+
+   // Busca una cuenta por codcue
+   public Cuentas findCuentasByCodcue(String codcue) {
+      return dao.findCuentaByCodcue(codcue);
+   }
+
+   // Valida codcue
+   public boolean valCodcue(String codcue) {
+      return dao.valCodcue( codcue );
+   }
+
+   // Valida el Nombre de la Cuenta
+   public boolean valNomcue(String nomcue) {
+      return dao.valNomcue(nomcue);
+   }
+
+   // Verifica si tiene Desagregación
+   public boolean valDesagrega(String codcue, Integer nivcue) {
+      return dao.valDesagrega(codcue, nivcue);
+      // return dao.existsByCodcueLikeAndNivcueGreaterThan(codcue, nivcue);
+   }
+
+   // Bancos
+   public List<Cuentas> findBancos() {
+      return dao.findBancos();
+   }
+
    public List<Cuentas> findByGrucue(String grucue) {
       return dao.findByGrucue(grucue);
    }
@@ -45,9 +76,9 @@ public class CuentaServicio {
       return dao.findByAsodebe(asodebe);
    }
 
-   // Cuentas por Tiptran para el DataList
-   public List<Cuentas> findByTiptran(Integer tiptran, String codcue ) {
-      return dao.findByTiptran(tiptran, codcue );
+   // Cuentas por Tiptran para los DataList
+   public List<Cuentas> findByTiptran(Integer tiptran, String codcue) {
+      return dao.findByTiptran(tiptran, codcue);
    }
 
    public <S extends Cuentas> S save(S entity) {
@@ -57,10 +88,6 @@ public class CuentaServicio {
    public List<Cuentas> findAll(Sort sort) {
       return dao.findAll(sort);
    }
-
-   // public Page<Cuentas> findAll(Pageable pageable) {
-   // return dao.findAll(pageable);
-   // }
 
    public Optional<Cuentas> findById(Long id) {
       return dao.findById(id);
@@ -76,6 +103,11 @@ public class CuentaServicio {
 
    public void delete(Cuentas entity) {
       dao.delete(entity);
+   }
+
+   // Cuentas de costos
+   public List<Cuentas> findCuecostos() {
+      return dao.findCuecostos();
    }
 
 }

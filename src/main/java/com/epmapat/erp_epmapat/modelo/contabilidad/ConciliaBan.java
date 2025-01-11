@@ -10,7 +10,7 @@ public class ConciliaBan {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idconcilia; 
-	private Long mes; 
+	private Integer mes; 
 	private BigDecimal libinicial; 
 	private BigDecimal libdebitos; 
 	private BigDecimal libcreditos; 
@@ -28,43 +28,45 @@ public class ConciliaBan {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idcuenta")
 	private Cuentas idcuenta;
-	public ConciliaBan() {
-		super();
+
+	// public ConciliaBan() {
+	// 	super();
+	// }
 	
-	}
-	public ConciliaBan(Long idconcilia, Long mes, BigDecimal libinicial, BigDecimal libdebitos, BigDecimal libcreditos,
-			BigDecimal libdepositos, BigDecimal libcheques, BigDecimal liberrores, BigDecimal baninicial,
-			BigDecimal bancreditos, BigDecimal bandebitos, BigDecimal bancheaa, BigDecimal bannc, BigDecimal bannd,
-			BigDecimal banerrores, String observa, Cuentas idcuenta) {
-		super();
-		this.idconcilia = idconcilia;
-		this.mes = mes;
-		this.libinicial = libinicial;
-		this.libdebitos = libdebitos;
-		this.libcreditos = libcreditos;
-		this.libdepositos = libdepositos;
-		this.libcheques = libcheques;
-		this.liberrores = liberrores;
-		this.baninicial = baninicial;
-		this.bancreditos = bancreditos;
-		this.bandebitos = bandebitos;
-		this.bancheaa = bancheaa;
-		this.bannc = bannc;
-		this.bannd = bannd;
-		this.banerrores = banerrores;
-		this.observa = observa;
-		this.idcuenta = idcuenta;
-	}
+	// public ConciliaBan(Long idconcilia, Long mes, BigDecimal libinicial, BigDecimal libdebitos, BigDecimal libcreditos,
+	// 		BigDecimal libdepositos, BigDecimal libcheques, BigDecimal liberrores, BigDecimal baninicial,
+	// 		BigDecimal bancreditos, BigDecimal bandebitos, BigDecimal bancheaa, BigDecimal bannc, BigDecimal bannd,
+	// 		BigDecimal banerrores, String observa, Cuentas idcuenta) {
+	// 	super();
+	// 	this.idconcilia = idconcilia;
+	// 	this.mes = mes;
+	// 	this.libinicial = libinicial;
+	// 	this.libdebitos = libdebitos;
+	// 	this.libcreditos = libcreditos;
+	// 	this.libdepositos = libdepositos;
+	// 	this.libcheques = libcheques;
+	// 	this.liberrores = liberrores;
+	// 	this.baninicial = baninicial;
+	// 	this.bancreditos = bancreditos;
+	// 	this.bandebitos = bandebitos;
+	// 	this.bancheaa = bancheaa;
+	// 	this.bannc = bannc;
+	// 	this.bannd = bannd;
+	// 	this.banerrores = banerrores;
+	// 	this.observa = observa;
+	// 	this.idcuenta = idcuenta;
+	// }
+
 	public Long getIdconcilia() {
 		return idconcilia;
 	}
 	public void setIdconcilia(Long idconcilia) {
 		this.idconcilia = idconcilia;
 	}
-	public Long getMes() {
+	public Integer getMes() {
 		return mes;
 	}
-	public void setMes(Long mes) {
+	public void setMes(Integer mes) {
 		this.mes = mes;
 	}
 	public BigDecimal getLibinicial() {

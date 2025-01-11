@@ -16,12 +16,13 @@ public class TramipresuServicio {
    @Autowired
    private TramipresuR dao;
 
-   public List<Tramipresu> findAll() {
-      return dao.findAll();
-   }
-
    public Tramipresu findFirstByOrderByNumeroDesc() {
       return dao.findFirstByOrderByNumeroDesc();
+   }
+
+   //Validar número de Trámite
+   public boolean valNumero(Long numero) {
+      return dao.valNumero(numero);
    }
 
    public <S extends Tramipresu> S save(S entity) {
@@ -33,7 +34,7 @@ public class TramipresuServicio {
    }
 
    public List<Tramipresu> findDesdeHasta(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
-		return dao.findDesdeHasta(desdeNum, hastaNum, desdeFecha, hastaFecha);
-	}
-   
+      return dao.findDesdeHasta(desdeNum, hastaNum, desdeFecha, hastaFecha);
+   }
+
 }

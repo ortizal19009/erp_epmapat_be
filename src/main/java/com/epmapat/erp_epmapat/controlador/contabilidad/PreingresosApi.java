@@ -26,13 +26,13 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.PresupueServicio;
 public class PreingresosApi {
 
    @Autowired
-   PresupueServicio preingServicio;
+   PresupueServicio presuServicio;
 
    @GetMapping
    public List<Presupue> getAllLista(@Param(value = "codpar") String codpar,
          @Param(value = "nompar") String nompar) {
       if (codpar != null) {
-         return preingServicio.buscaByCodigoI(codpar);
+         return presuServicio.buscaByCodigoI(codpar);
       }
       if (nompar != null) {
          // return preingServicio.buscaByNombreI(nompar.toLowerCase());
@@ -44,33 +44,39 @@ public class PreingresosApi {
    // Busca por Código o Nombre
    @GetMapping("/codigoNombre")
    public List<Presupue> getCodigoNombre(@Param(value = "codigoNombre") String codigoNombre) {
-      return preingServicio.findCodigoNombre(codigoNombre);
+      return presuServicio.findCodigoNombre(codigoNombre);
    }
 
    @GetMapping("/paringreso")
    public List<Presupue> getParingresos(@Param(value = "codpar") String codpar,
          @Param(value = "nompar") String nompar) {
-      return preingServicio.findAllIng(codpar, nompar);
+      return presuServicio.findAllIng(codpar, nompar);
    }
 
-   @GetMapping("/{idpresupue}")
-   public ResponseEntity<Presupue> getByIdNovedad(@PathVariable Long idpresupue) {
-      Presupue x = preingServicio.findById(idpresupue)
+   // Busca Partidas de Ingresos (Para cálculos con todas las partidas)
+   @GetMapping("/partidas")
+   public List<Presupue> buscaPartidas(@Param(value = "tippar") Integer tippar) {
+      return presuServicio.buscaPartidas(tippar);
+   }
+
+   @GetMapping("/{intpre}")
+   public ResponseEntity<Presupue> getByIdNovedad(@PathVariable Long intpre) {
+      Presupue x = presuServicio.findById(intpre)
             .orElseThrow(() -> new ResourceNotFoundExcepciones(
-                  ("No existe Partida con Idpresupue: " + idpresupue)));
+                  ("No existe Partida con Intpre: " + intpre)));
       return ResponseEntity.ok(x);
    }
 
    @PostMapping
    public Presupue updateOrSave(@RequestBody Presupue x) {
-      return preingServicio.save(x);
+      return presuServicio.save(x);
    }
 
-   @PutMapping("/{idpresupue}")
-   public ResponseEntity<Presupue> update(@PathVariable Long idpresupue, @RequestBody Presupue x) {
-      Presupue y = preingServicio.findById(idpresupue)
+   @PutMapping("/{intpre}")
+   public ResponseEntity<Presupue> update(@PathVariable Long intpre, @RequestBody Presupue x) {
+      Presupue y = presuServicio.findById(intpre)
             .orElseThrow(() -> new ResourceNotFoundExcepciones(
-                  ("No existe Idpresupue: " + idpresupue)));
+                  ("No existe Intpre: " + intpre)));
       y.setTippar(x.getTippar());
       y.setCodpar(x.getCodpar());
       y.setCodigo(x.getCodigo());
@@ -81,9 +87,9 @@ public class PreingresosApi {
       y.setTotmisos(x.getTotmisos());
       y.setTotdeven(x.getTotdeven());
       y.setFuncion(x.getFuncion());
-      y.setIdestrfunc(x.getIdestrfunc());
+      // y.setIdestrfunc(x.getIdestrfunc());
+      // y.setIntcla(x.getIntcla());
       y.setCodacti(x.getCodacti());
-      y.setIntcla(x.getIntcla());
       y.setCodpart(x.getCodpart());
       y.setSwpluri(x.getSwpluri());
       y.setUsucrea(x.getUsucrea());
@@ -91,13 +97,14 @@ public class PreingresosApi {
       y.setUsumodi(x.getUsumodi());
       y.setFecmodi(x.getFecmodi());
 
-      Presupue actualizar = preingServicio.save(y);
+      Presupue actualizar = presuServicio.save(y);
       return ResponseEntity.ok(actualizar);
    }
 
-   @DeleteMapping("/{idpresupue}")
-   private ResponseEntity<Boolean> deletePresupue(@PathVariable("idpresupue") Long idpresupue) {
-      preingServicio.deleteById(idpresupue);
-      return ResponseEntity.ok(!(preingServicio.findById(idpresupue) != null));
+   @DeleteMapping("/{intpre}")
+   private ResponseEntity<Boolean> deletePresupue(@PathVariable("intpre") Long intpre) {
+      presuServicio.deleteById(intpre);
+      return ResponseEntity.ok(!(presuServicio.findById(intpre) != null));
    }
+
 }

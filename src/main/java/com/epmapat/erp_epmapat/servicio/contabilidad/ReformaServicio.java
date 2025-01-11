@@ -18,10 +18,6 @@ public class ReformaServicio {
    @Autowired
    ReformasR dao;
 
-   // public List<Reformas> findAll() {
-   // return dao.findAll();
-   // }
-
    public List<Reformas> buscaByNumfec(Long desde, Long hasta) {
       return dao.buscaByNumfec(desde, hasta);
    }

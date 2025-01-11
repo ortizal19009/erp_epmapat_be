@@ -55,8 +55,4 @@ public class EstrfuncServicio {
       dao.delete(entity);
    }
 
-   // public Page<Estrfunc> findAll(Pageable pageable) {
-   // return dao.findAll(pageable);
-   // }
-
 }

@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.modelo.contabilidad;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import javax.persistence.Column;
@@ -15,33 +16,33 @@ import javax.persistence.Table;
 import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
 
 @Entity
-@Table(name = "tramipresu")
+@Table(name = "tramites")
 public class Tramipresu {
 
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long idtrami;
    private Long numero;
-   @Column(name = "fecha")
-   private ZonedDateTime fecha;
+   // @Column(name = "fecha")
+   private LocalDate fecha;
    private String numdoc;
-   @Column(name = "fecdoc")
-   private ZonedDateTime fecdoc;
+   // @Column(name = "fecdoc")
+   private LocalDate fecdoc;
    private Long totmiso;
-   private String descripcion;
+   private String descri;
    private Long usucrea;
    @Column(name = "feccrea")
    private ZonedDateTime feccrea;
    private Long usumodi;
    @Column(name = "fecmodi")
    private ZonedDateTime fecmodi;
-   private Boolean swreinte;
+   private Integer swreinte;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idbene")
    private Beneficiarios idbene;
    @ManyToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name = "iddocumento")
-   private Documentos iddocumento;
+   @JoinColumn(name = "intdoc")
+   private Documentos intdoc;
    public Long getIdtrami() {
       return idtrami;
    }
@@ -54,10 +55,10 @@ public class Tramipresu {
    public void setNumero(Long numero) {
       this.numero = numero;
    }
-   public ZonedDateTime getFecha() {
+   public LocalDate getFecha() {
       return fecha;
    }
-   public void setFecha(ZonedDateTime fecha) {
+   public void setFecha(LocalDate fecha) {
       this.fecha = fecha;
    }
    public String getNumdoc() {
@@ -66,10 +67,10 @@ public class Tramipresu {
    public void setNumdoc(String numdoc) {
       this.numdoc = numdoc;
    }
-   public ZonedDateTime getFecdoc() {
+   public LocalDate getFecdoc() {
       return fecdoc;
    }
-   public void setFecdoc(ZonedDateTime fecdoc) {
+   public void setFecdoc(LocalDate fecdoc) {
       this.fecdoc = fecdoc;
    }
    public Long getTotmiso() {
@@ -78,11 +79,11 @@ public class Tramipresu {
    public void setTotmiso(Long totmiso) {
       this.totmiso = totmiso;
    }
-   public String getDescripcion() {
-      return descripcion;
+   public String getDescri() {
+      return descri;
    }
-   public void setDescripcion(String descripcion) {
-      this.descripcion = descripcion;
+   public void setDescri(String descri) {
+      this.descri = descri;
    }
    public Long getUsucrea() {
       return usucrea;
@@ -108,10 +109,10 @@ public class Tramipresu {
    public void setFecmodi(ZonedDateTime fecmodi) {
       this.fecmodi = fecmodi;
    }
-   public Boolean getSwreinte() {
+   public Integer getSwreinte() {
       return swreinte;
    }
-   public void setSwreinte(Boolean swreinte) {
+   public void setSwreinte(Integer swreinte) {
       this.swreinte = swreinte;
    }
    public Beneficiarios getIdbene() {
@@ -120,12 +121,11 @@ public class Tramipresu {
    public void setIdbene(Beneficiarios idbene) {
       this.idbene = idbene;
    }
-   public Documentos getIddocumento() {
-      return iddocumento;
+   public Documentos getIntdoc() {
+      return intdoc;
    }
-   public void setIddocumento(Documentos iddocumento) {
-      this.iddocumento = iddocumento;
+   public void setIntdoc(Documentos intdoc) {
+      this.intdoc = intdoc;
    }
-
    
 }

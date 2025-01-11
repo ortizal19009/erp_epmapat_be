@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.modelo.contabilidad;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.*;
@@ -10,7 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
 
 @Entity
-@Table(name = "certipresu")
+@Table(name = "certificaciones")
 
 public class Certipresu {
 	
@@ -23,7 +24,7 @@ public class Certipresu {
 	@DateTimeFormat(iso = ISO.DATE)
 	@Column(name = "fecha")
 	private Date fecha;
-	private Double valor;
+	private BigDecimal valor;
 	private String descripcion;
 	private String numdoc;
 	private Long usucrea;
@@ -41,38 +42,18 @@ public class Certipresu {
 	@JoinColumn(name = "idbene")
 	private Beneficiarios idbene;
 
-		@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idbeneres")
 	private Beneficiarios idbeneres;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "iddocumento")
-	private Documentos iddocumento;
-
-	// private Long iddocumento;
+	@JoinColumn(name = "intdoc")
+	private Documentos intdoc;
 
 	public Certipresu() {
 		super();
 	}
 
-	public Certipresu(Long idcerti, Integer tipo, Long numero, Date fecha, Double valor, String descripcion, String numdoc,
-			Long usucrea, Date feccrea, Long usumodi, Date fecmodi, Beneficiarios idbene, Beneficiarios idbeneres, Documentos iddocumento) {
-		super();
-		this.idcerti = idcerti;
-		this.tipo = tipo;
-		this.numero = numero;
-		this.fecha = fecha;
-		this.valor = valor;
-		this.descripcion = descripcion;
-		this.numdoc = numdoc;
-		this.usucrea = usucrea;
-		this.feccrea = feccrea;
-		this.usumodi = usumodi;
-		this.fecmodi = fecmodi;
-		this.idbene = idbene;
-		this.idbeneres = idbeneres;
-		this.iddocumento = iddocumento;
-	}
 	public Long getIdcerti() {
 		return idcerti;
 	}
@@ -97,10 +78,10 @@ public class Certipresu {
 	public void setFecha(Date fecha) {
 		this.fecha = fecha;
 	}
-	public Double getValor() {
+	public BigDecimal getValor() {
 		return valor;
 	}
-	public void setValor(Double valor) {
+	public void setValor(BigDecimal valor) {
 		this.valor = valor;
 	}
 	public String getDescripcion() {
@@ -151,11 +132,11 @@ public class Certipresu {
 	public void setIdbeneres(Beneficiarios idbeneres) {
 		this.idbeneres = idbeneres;
 	}
-	public Documentos getIddocumento() {
-		return iddocumento;
+	public Documentos getIntdoc() {
+		return intdoc;
 	}
-	public void setIddocumento(Documentos iddocumento) {
-		this.iddocumento = iddocumento;
+	public void setIntdoc(Documentos intdoc) {
+		this.intdoc = intdoc;
 	}
 	
 }

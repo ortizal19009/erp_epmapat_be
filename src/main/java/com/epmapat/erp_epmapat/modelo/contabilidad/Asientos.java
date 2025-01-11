@@ -1,13 +1,9 @@
 package com.epmapat.erp_epmapat.modelo.contabilidad;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.*;
-
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
 
@@ -18,10 +14,7 @@ public class Asientos {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idasiento;
 	private Long asiento;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fecha")
-	private Date fecha;
+	private LocalDate fecha;
 	private Integer tipasi;
 	private Integer tipcom;
 	private Long compro;
@@ -31,63 +24,30 @@ public class Asientos {
 	private String glosa;
 	private String numdoc;
 	private String numdocban;
-	private Boolean cerrado;
-	private Boolean swretencion;
+	private Integer cerrado;
+	private Integer swretencion;
 	private Long totalspi;
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "iddocumento")
-	private Documentos iddocumento;
+	@JoinColumn(name = "intdoc")
+	private Documentos intdoc;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idbene")
 	private Beneficiarios idbene;
 	private Long idcueban;
 	private Long usucrea;
 
-	@Column(name = "feccrea")
-	private ZonedDateTime feccrea;
+	private LocalDate feccrea;
 
 	// @Temporal(TemporalType.DATE)
 	// @DateTimeFormat(iso = ISO.DATE)
 	// @Column(name = "feccrea")
 	// private Date feccrea;
 	private Long usumodi;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fecmodi")
-	private Date fecmodi;
+	private LocalDate fecmodi;
 
 	public Asientos() {
 		super();
-	
-	}
-
-	public Asientos(Long idasiento, Long asiento, Date fecha, Integer tipasi, Integer tipcom, Long compro, Long numcue,
-			BigDecimal totdeb, BigDecimal totcre, String glosa, String numdoc, String numdocban, Boolean cerrado,
-			Boolean swretencion, Long totalspi, Documentos iddocumento, Beneficiarios idbene, Long idcueban,
-			Long usucrea, ZonedDateTime feccrea, Long usumodi, Date fecmodi) {
-		super();
-		this.idasiento = idasiento;
-		this.asiento = asiento;
-		this.fecha = fecha;
-		this.tipasi = tipasi;
-		this.tipcom = tipcom;
-		this.compro = compro;
-		this.numcue = numcue;
-		this.totdeb = totdeb;
-		this.totcre = totcre;
-		this.glosa = glosa;
-		this.numdoc = numdoc;
-		this.numdocban = numdocban;
-		this.cerrado = cerrado;
-		this.swretencion = swretencion;
-		this.totalspi = totalspi;
-		this.iddocumento = iddocumento;
-		this.idbene = idbene;
-		this.idcueban = idcueban;
-		this.usucrea = usucrea;
-		this.feccrea = feccrea;
-		this.usumodi = usumodi;
-		this.fecmodi = fecmodi;
+		// TODO Auto-generated constructor stub
 	}
 
 	public Long getIdasiento() {
@@ -106,11 +66,11 @@ public class Asientos {
 		this.asiento = asiento;
 	}
 
-	public Date getFecha() {
+	public LocalDate getFecha() {
 		return fecha;
 	}
 
-	public void setFecha(Date fecha) {
+	public void setFecha(LocalDate fecha) {
 		this.fecha = fecha;
 	}
 
@@ -186,19 +146,19 @@ public class Asientos {
 		this.numdocban = numdocban;
 	}
 
-	public Boolean getCerrado() {
+	public Integer getCerrado() {
 		return cerrado;
 	}
 
-	public void setCerrado(Boolean cerrado) {
+	public void setCerrado(Integer cerrado) {
 		this.cerrado = cerrado;
 	}
 
-	public Boolean getSwretencion() {
+	public Integer getSwretencion() {
 		return swretencion;
 	}
 
-	public void setSwretencion(Boolean swretencion) {
+	public void setSwretencion(Integer swretencion) {
 		this.swretencion = swretencion;
 	}
 
@@ -210,12 +170,12 @@ public class Asientos {
 		this.totalspi = totalspi;
 	}
 
-	public Documentos getIddocumento() {
-		return iddocumento;
+	public Documentos getIntdoc() {
+		return intdoc;
 	}
 
-	public void setIddocumento(Documentos iddocumento) {
-		this.iddocumento = iddocumento;
+	public void setIntdoc(Documentos intdoc) {
+		this.intdoc = intdoc;
 	}
 
 	public Beneficiarios getIdbene() {
@@ -242,11 +202,11 @@ public class Asientos {
 		this.usucrea = usucrea;
 	}
 
-	public ZonedDateTime getFeccrea() {
+	public LocalDate getFeccrea() {
 		return feccrea;
 	}
 
-	public void setFeccrea(ZonedDateTime feccrea) {
+	public void setFeccrea(LocalDate feccrea) {
 		this.feccrea = feccrea;
 	}
 
@@ -258,11 +218,11 @@ public class Asientos {
 		this.usumodi = usumodi;
 	}
 
-	public Date getFecmodi() {
+	public LocalDate getFecmodi() {
 		return fecmodi;
 	}
 
-	public void setFecmodi(Date fecmodi) {
+	public void setFecmodi(LocalDate fecmodi) {
 		this.fecmodi = fecmodi;
 	}
 

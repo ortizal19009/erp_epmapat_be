@@ -1,214 +1,118 @@
 package com.epmapat.erp_epmapat.servicio.contabilidad;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.epmapat.erp_epmapat.modelo.contabilidad.Transaci;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.TransaciR;
 
 @Service
-public class TransaciServicio implements TransaciR {
+public class TransaciServicio {
 
 	@Autowired
 	private TransaciR dao;
 
-	@Override
-	public List<Transaci> findAll() {
-		return dao.findAll();
-	}
-
-	//Cuenta tiene Transacciones
-	@Override
+	// Cuenta tiene Transacciones
 	public boolean tieneTransaci(String codcue) {
 		return dao.tieneTransaci(codcue);
 	}
 
-	//Asiento tiene Transacciones
-	@Override
+	// Asiento tiene Transacciones
 	public boolean existsByIdasiento(Long idasiento) {
-		return dao.existsByIdasiento( idasiento );
+		return dao.existsByIdasiento(idasiento);
 	}
 
-	@Override
-	public List<Transaci> findAll(Sort sort) {
-		
-		return null;
+	// Bancos
+	public List<Transaci> findMovibank(Long idcuenta, Integer mes) {
+		return dao.findMovibank(idcuenta, mes);
 	}
 
-	@Override
-	public List<Transaci> findAllById(Iterable<Long> ids) {
-		
-		return null;
+	// Transacciones de un Asiento
+	public List<Transaci> findTransaci(Long idasiento) {
+		return dao.findTransaci(idasiento);
 	}
 
-	@Override
-	public <S extends Transaci> List<S> saveAll(Iterable<S> entities) {
-		
-		return null;
+	// Mayor de una Cuenta
+	public List<Transaci> findByCodcue(String codcue, Date desde, Date hasta) {
+		return dao.findByCodcue(codcue, desde, hasta);
 	}
 
-	@Override
-	public void flush() {
-		
-
+	// Suma débitos o créditos de una cuenta
+	public BigDecimal sumValor(String codcue, Integer debcre, Date desde, Date hasta) {
+		return dao.sumValor(codcue, debcre, desde, hasta);
 	}
 
-	@Override
-	public <S extends Transaci> S saveAndFlush(S entity) {
-		
-		return null;
+	// Saldo anterior cuenta deudora
+	public BigDecimal saldo(String codcue, Date hasta) {
+		List<Transaci> transacciones = dao.findByCodcueHasta(codcue, hasta);
+		BigDecimal saldo = BigDecimal.ZERO;
+		for (Transaci transaccion : transacciones) {
+			BigDecimal valor = transaccion.getValor();
+			String cuenta1 = transaccion.getCodcue().substring(0, 1);
+			String cuenta2 = transaccion.getCodcue().substring(0, 2);
+			// System.out.println("cuenta: " + cuenta1);
+			if (cuenta1.equals("1") || cuenta2.equals("63") || cuenta2.equals("91")) {
+				if (transaccion.getDebcre() == 1)
+					saldo = saldo.add(valor);
+				else
+					saldo = saldo.subtract(valor);
+			} else {
+				if (transaccion.getDebcre() == 1)
+					saldo = saldo.subtract(valor);
+				else
+					saldo = saldo.add(valor);
+			}
+		}
+		return saldo;
 	}
 
-	@Override
-	public <S extends Transaci> List<S> saveAllAndFlush(Iterable<S> entities) {
-		
-		return null;
+	//Busca Transacciones por número y fechas de los Asientos
+	public List<Transaci> tranAsientos(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
+		return dao.tranAsientos(desdeNum, hastaNum, desdeFecha, hastaFecha);
 	}
 
-	@Override
-	public void deleteAllInBatch(Iterable<Transaci> entities) {
-		
-
-	}
-
-	@Override
-	public void deleteAllByIdInBatch(Iterable<Long> ids) {
-		
-
-	}
-
-	@Override
-	public void deleteAllInBatch() {
-		
-
-	}
-
-	@Override
-	public Transaci getOne(Long id) {
-		
-		return null;
-	}
-
-	@Override
-	public Transaci getById(Long id) {
-		
-		return null;
-	}
-
-	@Override
-	public Transaci getReferenceById(Long id) {
-		
-		return null;
-	}
-
-	@Override
-	public <S extends Transaci> List<S> findAll(Example<S> example) {
-		
-		return null;
-	}
-
-	@Override
-	public <S extends Transaci> List<S> findAll(Example<S> example, Sort sort) {
-		
-		return null;
-	}
-
-	@Override
-	public Page<Transaci> findAll(Pageable pageable) {
-		
-		return null;
-	}
-
-	@Override
 	public <S extends Transaci> S save(S entity) {
 		return dao.save(entity);
 	}
 
-	@Override
 	public Optional<Transaci> findById(Long id) {
-		
 		return dao.findById(id);
 	}
 
-	@Override
-	public boolean existsById(Long id) {
-		
-		return false;
-	}
-
-	@Override
-	public long count() {
-		
-		return 0;
-	}
-
-	@Override
 	public void deleteById(Long id) {
 		dao.deleteById(id);
 	}
 
-	@Override
-	public void delete(Transaci entity) {
-
+	// Balance de comprobación
+	public List<Map<String, Object>> obtenerBalance(Date desdeFecha, Date hastaFecha) {
+		return dao.obtenerBalance(desdeFecha, hastaFecha);
 	}
 
-	@Override
-	public void deleteAllById(Iterable<? extends Long> ids) {
-
+	// Estado de situación
+	public List<Map<String, Object>> obtenerEstados(Long intgrupo, Date desdeFecha, Date hastaFecha) {
+		return dao.obtenerEstados(intgrupo, desdeFecha, hastaFecha);
 	}
 
-	@Override
-	public void deleteAll(Iterable<? extends Transaci> entities) {
-
+	// Flujo del efectivo
+	public Double totalFlujo(String codcue, Date desdeFecha, Date hastaFecha, Long debcre) {
+		Double tflujo = dao.totalFlujo(codcue, desdeFecha, hastaFecha, debcre);
+		return tflujo;
 	}
 
-	@Override
-	public void deleteAll() {
-
-	}
-
-	@Override
-	public <S extends Transaci> Optional<S> findOne(Example<S> example) {
-		return Optional.empty();
-	}
-
-	@Override
-	public <S extends Transaci> Page<S> findAll(Example<S> example, Pageable pageable) {
-		return null;
-	}
-
-	@Override
-	public <S extends Transaci> long count(Example<S> example) {
-		return 0;
-	}
-
-	@Override
-	public <S extends Transaci> boolean exists(Example<S> example) {
-		return false;
-	}
-
-	@Override
-	public <S extends Transaci, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
-		return null;
-	}
-
-	@Override
-	public List<Transaci> findControlBancos(Long idcuenta, Long mes) {
-		return dao.findControlBancos(idcuenta, mes);
-	}
-
-	@Override
-	public List<Transaci> findTransaci(Long idasiento) {
-		return dao.findTransaci(idasiento);
+	@GetMapping("/tipasi")
+	// public ResponseEntity<List<Transaci>> getByTipAsi(@RequestParam("tipasi") Long tipasi) {
+	// 	return ResponseEntity.ok(dao.findByTipAsi(tipasi));
+	// }
+	public List<Transaci> getByTipAsi(@RequestParam("tipasi") Long tipasi) {
+		return dao.findByTipAsi(tipasi);
 	}
 
 }

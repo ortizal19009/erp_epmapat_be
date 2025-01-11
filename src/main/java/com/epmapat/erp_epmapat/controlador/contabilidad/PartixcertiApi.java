@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.controlador.contabilidad;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,12 @@ public class PartixcertiApi {
 	public List<Partixcerti> getByIdCerti(@PathVariable Long idcerti){
 		return parxcerServicio.findByIdcerti(idcerti);
 	}
+
+	@GetMapping("/{idparxcer}")
+	public Optional<Partixcerti> findById(@PathVariable Long idparxcer ) {
+		return parxcerServicio.findById( idparxcer );
+	}
+
 	@PostMapping
 	public Partixcerti savePartiCerti(@RequestBody Partixcerti partixcerti) {
 		return parxcerServicio.save(partixcerti);
@@ -46,8 +53,8 @@ public class PartixcertiApi {
 		partixcerti.setFeccrea(partixcertim.getFeccrea());
 		partixcerti.setUsumodi(partixcertim.getUsumodi());
 		partixcerti.setFecmodi(partixcertim.getFecmodi());
-		partixcerti.setIdejecucion(partixcertim.getIdejecucion());
-		partixcerti.setIdpresupue(partixcertim.getIdpresupue());
+		partixcerti.setInteje(partixcertim.getInteje());
+		partixcerti.setIntpre(partixcertim.getIntpre());
 		partixcerti.setIdcerti(partixcertim.getIdcerti());
 		partixcerti.setIdparxcer_(partixcertim.getIdparxcer_());
 		Partixcerti updateParxCer = parxcerServicio.save(partixcerti);

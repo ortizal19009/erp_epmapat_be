@@ -51,8 +51,7 @@ public class CuentasApi {
 						if (asodebe != null) {
 							return cueServicio.findByAsodebe(asodebe);
 						} else
-							// return cueServicio.findAll();
-							return null;
+							return cueServicio.findAll();
 					}
 				}
 			}
@@ -69,15 +68,55 @@ public class CuentasApi {
 			return null;
 	}
 
-	// @GetMapping("/bancos")
-	// public ResponseEntity<List<Cuentas>> getBancos() {
-	// return ResponseEntity.ok(cueServicio.findBancos("111"));
-	// }
+	@GetMapping("/bancos")
+	public ResponseEntity<List<Cuentas>> getBancos() {
+		return ResponseEntity.ok(cueServicio.findBancos());
+	}
 
 	// Cuentas por Tiptran para los DataList de Cuentas
 	@GetMapping("/porTiptran")
-	public List<Cuentas> getByTiptran(@Param(value = "tiptran") Integer tiptran, @Param(value = "codcue") String codcue ) {
-		return cueServicio.findByTiptran(tiptran, codcue );
+	public List<Cuentas> getByTiptran(@Param(value = "tiptran") Integer tiptran,
+			@Param(value = "codcue") String codcue) {
+		return cueServicio.findByTiptran(tiptran, codcue+'%');
+	}
+
+	@GetMapping("/nombre/{codcue}")
+	public Object[] getNombre(@PathVariable("codcue") String codcue) {
+		return cueServicio.getNomCueByCodcue(codcue);
+	}
+
+	// Valida codcue
+	@GetMapping("/valcodcue")
+	public ResponseEntity<Boolean> valCodcue(@Param(value = "codcue") String codcue) {
+		boolean rtn = cueServicio.valCodcue(codcue);
+		return ResponseEntity.ok(rtn);
+	}
+
+	// Valida el nombre de la Cuenta
+	@GetMapping("/valnomcue")
+	public ResponseEntity<Boolean> valNomcue(@Param(value = "nomcue") String nomcue) {
+		boolean rtn = cueServicio.valNomcue(nomcue.toLowerCase());
+		return ResponseEntity.ok(rtn);
+	}
+
+	// Verifica si tiene Desagregación
+	@GetMapping("/desagrega")
+	public ResponseEntity<Boolean> valDesagrega(@Param(value = "codcue") String codcue,
+			@Param(value = "nivcue") Integer nivcue) {
+		boolean rtn = cueServicio.valDesagrega(codcue, nivcue);
+		return ResponseEntity.ok(rtn);
+	}
+
+	// Busca una cuenta por codcue
+	@GetMapping("/detalle")
+	public Cuentas getDetalle(@Param(value = "codcue") String codcue) {
+		return cueServicio.findCuentasByCodcue(codcue);
+	}
+
+	// Cuentas de costos
+	@GetMapping("/cuecostos")
+	public List<Cuentas> findCuecostos() {
+		return cueServicio.findCuecostos();
 	}
 
 	@GetMapping("/{idcuenta}")
@@ -89,8 +128,8 @@ public class CuentasApi {
 	}
 
 	@PostMapping
-	public ResponseEntity<Cuentas> save(@RequestBody Cuentas documento) {
-		return ResponseEntity.ok(cueServicio.save(documento));
+	public ResponseEntity<Cuentas> save(@RequestBody Cuentas x) {
+		return ResponseEntity.ok(cueServicio.save(x));
 	}
 
 	@PutMapping("/{idcuenta}")
@@ -101,7 +140,7 @@ public class CuentasApi {
 		y.setCodcue(x.getCodcue());
 		y.setNomcue(x.getNomcue());
 		y.setGrucue(x.getGrucue());
-		y.setIdnivel(x.getIdnivel());
+		// y.setIdnivel(x.getIdnivel());
 		y.setMovcue(x.getMovcue());
 		y.setAsodebe(x.getAsodebe());
 		y.setAsohaber(x.getAsohaber());

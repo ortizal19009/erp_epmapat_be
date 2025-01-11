@@ -1,7 +1,7 @@
 package com.epmapat.erp_epmapat.modelo.contabilidad;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import javax.persistence.*;
 
@@ -12,30 +12,35 @@ import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
 public class Transaci {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long idtransa;
-	private Long orden;
+	private Long inttra;
+	private Integer orden;
 	private String codcue;
 	private BigDecimal valor;
-	private Long debcre;
+	private Integer debcre;
 	private String descri;
 	private String numdoc;
 	private Integer tiptran;
 	private Long totbene;
-	private Boolean swconcili;
-	private Long mesconcili;
+	private Integer swconcili;
+	private Integer mesconcili;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idasiento")
 	private Asientos idasiento;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idcuenta")
 	private Cuentas idcuenta;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idbene")
 	private Beneficiarios idbene;
+
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "iddocumento")
-	private Documentos iddocumento;
-	private Long idpresupue;
+	@JoinColumn(name = "intdoc")
+	private Documentos intdoc;
+
+	private Long intpre;
 	private String codpartr;
 	private String codcueiog;
 	private BigDecimal debeiog;
@@ -43,64 +48,32 @@ public class Transaci {
 	private Long asierefe;
 
 	private Long usucrea;
-	@Column(name = "feccrea")
-	private ZonedDateTime feccrea;
+	//@Column(name = "feccrea")
+	private LocalDate feccrea;
 
 	private Long usumodi;
-	@Column(name = "fecmodi")
-	private ZonedDateTime fecmodi;
+	// @Column(name = "fecmodi")
+	private LocalDate fecmodi;
 
+	
 	public Transaci() {
 		super();
-	
+		// TODO Auto-generated constructor stub
 	}
 
-	public Transaci(Long idtransa, Long orden, String codcue, BigDecimal valor, Long debcre, String descri,
-			String numdoc, Integer tiptran, Long totbene, Boolean swconcili, Long mesconcili, Asientos idasiento,
-			Cuentas idcuenta, Beneficiarios idbene, Documentos iddocumento, Long idpresupue, String codpartr,
-			String codcueiog, BigDecimal debeiog, BigDecimal haberiog, Long asierefe, Long usucrea, ZonedDateTime feccrea,
-			Long usumodi, ZonedDateTime fecmodi) {
-		super();
-		this.idtransa = idtransa;
-		this.orden = orden;
-		this.codcue = codcue;
-		this.valor = valor;
-		this.debcre = debcre;
-		this.descri = descri;
-		this.numdoc = numdoc;
-		this.tiptran = tiptran;
-		this.totbene = totbene;
-		this.swconcili = swconcili;
-		this.mesconcili = mesconcili;
-		this.idasiento = idasiento;
-		this.idcuenta = idcuenta;
-		this.idbene = idbene;
-		this.iddocumento = iddocumento;
-		this.idpresupue = idpresupue;
-		this.codpartr = codpartr;
-		this.codcueiog = codcueiog;
-		this.debeiog = debeiog;
-		this.haberiog = haberiog;
-		this.asierefe = asierefe;
-		this.usucrea = usucrea;
-		this.feccrea = feccrea;
-		this.usumodi = usumodi;
-		this.fecmodi = fecmodi;
+	public Long getInttra() {
+		return inttra;
 	}
 
-	public Long getIdtransa() {
-		return idtransa;
+	public void setInttra(Long inttra) {
+		this.inttra = inttra;
 	}
 
-	public void setIdtransa(Long idtransa) {
-		this.idtransa = idtransa;
-	}
-
-	public Long getOrden() {
+	public Integer getOrden() {
 		return orden;
 	}
 
-	public void setOrden(Long orden) {
+	public void setOrden(Integer orden) {
 		this.orden = orden;
 	}
 
@@ -120,11 +93,11 @@ public class Transaci {
 		this.valor = valor;
 	}
 
-	public Long getDebcre() {
+	public Integer getDebcre() {
 		return debcre;
 	}
 
-	public void setDebcre(Long debcre) {
+	public void setDebcre(Integer debcre) {
 		this.debcre = debcre;
 	}
 
@@ -160,19 +133,19 @@ public class Transaci {
 		this.totbene = totbene;
 	}
 
-	public Boolean getSwconcili() {
+	public Integer getSwconcili() {
 		return swconcili;
 	}
 
-	public void setSwconcili(Boolean swconcili) {
+	public void setSwconcili(Integer swconcili) {
 		this.swconcili = swconcili;
 	}
 
-	public Long getMesconcili() {
+	public Integer getMesconcili() {
 		return mesconcili;
 	}
 
-	public void setMesconcili(Long mesconcili) {
+	public void setMesconcili(Integer mesconcili) {
 		this.mesconcili = mesconcili;
 	}
 
@@ -200,20 +173,20 @@ public class Transaci {
 		this.idbene = idbene;
 	}
 
-	public Documentos getIddocumento() {
-		return iddocumento;
+	public Documentos getIntdoc() {
+		return intdoc;
 	}
 
-	public void setIddocumento(Documentos iddocumento) {
-		this.iddocumento = iddocumento;
+	public void setIntdoc(Documentos intdoc) {
+		this.intdoc = intdoc;
 	}
 
-	public Long getIdpresupue() {
-		return idpresupue;
+	public Long getIntpre() {
+		return intpre;
 	}
 
-	public void setIdpresupue(Long idpresupue) {
-		this.idpresupue = idpresupue;
+	public void setIntpre(Long intpre) {
+		this.intpre = intpre;
 	}
 
 	public String getCodpartr() {
@@ -264,11 +237,11 @@ public class Transaci {
 		this.usucrea = usucrea;
 	}
 
-	public ZonedDateTime getFeccrea() {
+	public LocalDate getFeccrea() {
 		return feccrea;
 	}
 
-	public void setFeccrea(ZonedDateTime feccrea) {
+	public void setFeccrea(LocalDate feccrea) {
 		this.feccrea = feccrea;
 	}
 
@@ -280,11 +253,11 @@ public class Transaci {
 		this.usumodi = usumodi;
 	}
 
-	public ZonedDateTime getFecmodi() {
+	public LocalDate getFecmodi() {
 		return fecmodi;
 	}
 
-	public void setFecmodi(ZonedDateTime fecmodi) {
+	public void setFecmodi(LocalDate fecmodi) {
 		this.fecmodi = fecmodi;
 	}
 

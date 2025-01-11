@@ -1,12 +1,8 @@
-// package com.epmapat.erp_epmapat.modelo.contabilidad;
 package com.epmapat.erp_epmapat.modelo.contabilidad;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.*;
-
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 @Entity
 @Table(name = "beneficiarios")
@@ -37,45 +33,40 @@ public class Beneficiarios {
 	private Ifinan idifinan;
    
 	private Long swconsufin;
+	private Integer modulo;
 	private Long usucrea;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "feccrea")
-	private Date feccrea;
+	private LocalDate feccrea;
 	private Long usumodi;
-	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fecmodi")
-	private Date fecmodi;
+	private LocalDate fecmodi;
 
 	public Beneficiarios() {
 		super();
 	}
 
-	public Beneficiarios(Long idbene, String codben, String nomben, String tpidben, String rucben, String ciben,
-			String tlfben, String dirben, String mailben, Long tpcueben,String cuebanben, String foto, Gruposbene idgrupo,
-			Ifinan idifinan, Long swconsufin, Long usucrea, Date feccrea, Long usumodi, Date fecmodi) {
-		super();
-		this.idbene = idbene;
-		this.codben = codben;
-		this.nomben = nomben;
-		this.tpidben = tpidben;
-		this.rucben = rucben;
-		this.ciben = ciben;
-		this.tlfben = tlfben;
-		this.dirben = dirben;
-		this.mailben = mailben;
-		this.tpcueben = tpcueben;
-		this.setCuebanben(cuebanben);
-		this.foto = foto;
-		this.idgrupo = idgrupo;
-		this.idifinan = idifinan;
-		this.swconsufin = swconsufin;
-		this.usucrea = usucrea;
-		this.feccrea = feccrea;
-		this.usumodi = usumodi;
-		this.fecmodi = fecmodi;
-	}
+	// public Beneficiarios(Long idbene, String codben, String nomben, String tpidben, String rucben, String ciben,
+	// 		String tlfben, String dirben, String mailben, Long tpcueben,String cuebanben, String foto, Gruposbene idgrupo,
+	// 		Ifinan idifinan, Long swconsufin, Long usucrea, Date feccrea, Long usumodi, Date fecmodi) {
+	// 	super();
+	// 	this.idbene = idbene;
+	// 	this.codben = codben;
+	// 	this.nomben = nomben;
+	// 	this.tpidben = tpidben;
+	// 	this.rucben = rucben;
+	// 	this.ciben = ciben;
+	// 	this.tlfben = tlfben;
+	// 	this.dirben = dirben;
+	// 	this.mailben = mailben;
+	// 	this.tpcueben = tpcueben;
+	// 	this.setCuebanben(cuebanben);
+	// 	this.foto = foto;
+	// 	this.idgrupo = idgrupo;
+	// 	this.idifinan = idifinan;
+	// 	this.swconsufin = swconsufin;
+	// 	this.usucrea = usucrea;
+	// 	this.feccrea = feccrea;
+	// 	this.usumodi = usumodi;
+	// 	this.fecmodi = fecmodi;
+	// }
 
 	public Long getIdbene() {
 		return idbene;
@@ -167,10 +158,10 @@ public class Beneficiarios {
 	public void setUsucrea(Long usucrea) {
 		this.usucrea = usucrea;
 	}
-	public Date getFeccrea() {
+	public LocalDate getFeccrea() {
 		return feccrea;
 	}
-	public void setFeccrea(Date feccrea) {
+	public void setFeccrea(LocalDate feccrea) {
 		this.feccrea = feccrea;
 	}
 	public Long getUsumodi() {
@@ -179,11 +170,11 @@ public class Beneficiarios {
 	public void setUsumodi(Long usumodi) {
 		this.usumodi = usumodi;
 	}
-	public Date getFecmodi() {
+	public LocalDate getFecmodi() {
 		return fecmodi;
 	}
 
-	public void setFecmodi(Date fecmodi) {
+	public void setFecmodi(LocalDate fecmodi) {
 		this.fecmodi = fecmodi;
 	}
 
@@ -193,6 +184,14 @@ public class Beneficiarios {
 
 	public void setCuebanben(String cuebanben) {
 		this.cuebanben = cuebanben;
+	}
+
+	public Integer getModulo() {
+		return modulo;
+	}
+
+	public void setModulo(Integer modulo) {
+		this.modulo = modulo;
 	}
 
 }

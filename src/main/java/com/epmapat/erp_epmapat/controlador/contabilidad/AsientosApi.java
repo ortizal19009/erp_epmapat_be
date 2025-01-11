@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.controlador.contabilidad;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -28,9 +29,8 @@ public class AsientosApi {
 
 	@GetMapping
 	public List<Asientos> getAsientos(
-			@Param(value = "asi_com") Integer asi_com,
-			@Param(value = "tipcom1") Integer tipcom1,
-			@Param(value = "tipcom2") Integer tipcom2,
+			@Param(value = "asi_com") Integer asi_com,	//1 o 2
+			@Param(value = "tipcom") Integer tipcom,
 			@Param(value = "desdeNum") Long desdeNum,
 			@Param(value = "hastaNum") Long hastaNum,
 			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
@@ -38,7 +38,7 @@ public class AsientosApi {
 		if (asi_com == 1) {
 			return asiServicio.findAsientos(desdeNum, hastaNum, desdeFecha, hastaFecha);
 		} else if (asi_com == 2)
-			return asiServicio.findComprobantes(tipcom1, tipcom2, desdeNum, hastaNum, desdeFecha, hastaFecha);
+			return asiServicio.findComprobantes(tipcom, desdeNum, hastaNum, desdeFecha, hastaFecha);
 		else
 			return null;
 	}
@@ -52,17 +52,6 @@ public class AsientosApi {
 	public Long ultimocompro(@Param("tipcom") Integer tipcom) {
 		return asiServicio.findLastComproByTipcom(tipcom);
 	}
-
-	// @GetMapping("/tipcom/{tipcom}/compro/{compro}")
-	// public Asientos valCompro(@PathVariable Long tipcom, @PathVariable Long
-	// compro) {
-	// return asiServicio.findByTipcomAndCompro(tipcom, compro);
-	// }
-
-	// @GetMapping("/tipcom/{tipcom}/lastcompro")
-	// public Asientos valCompro(@PathVariable Integer tipcom) {
-	// return asiServicio.findLastComproByTipcom(tipcom);
-	// }
 
 	@GetMapping("/asiento")
 	public Asientos obtenerAsientoPorId(@Param("idasiento") Long idasiento) {
@@ -84,7 +73,7 @@ public class AsientosApi {
 	}
 
 	@GetMapping("/ultimafecha")
-	public Date obtenerUltimaFecha() {
+	public LocalDate obtenerUltimaFecha() {
 		return asiServicio.obtenerUltimaFecha();
 	}
 
@@ -95,8 +84,8 @@ public class AsientosApi {
 	}
 
 	@PostMapping
-	public Asientos saveAsiento(@RequestBody Asientos asiento) {
-		return asiServicio.save(asiento);
+	public Asientos saveAsiento(@RequestBody Asientos x) {
+		return asiServicio.save( x );
 	}
 
 	@PutMapping("/{idasiento}")
@@ -116,7 +105,7 @@ public class AsientosApi {
 		y.setCerrado(x.getCerrado());
 		y.setSwretencion(x.getSwretencion());
 		y.setTotalspi(x.getTotalspi());
-		y.setIddocumento(x.getIddocumento());
+		y.setIntdoc(x.getIntdoc());
 		y.setIdbene(x.getIdbene());
 		y.setIdcueban(x.getIdcueban());
 		y.setUsucrea(x.getUsucrea());

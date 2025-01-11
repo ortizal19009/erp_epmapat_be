@@ -25,8 +25,8 @@ public class Reformas {
     private String numdoc;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "iddocumento")
-    private Documentos iddocumento;
+    @JoinColumn(name = "intdoc")
+    private Documentos intdoc;
 
     private Integer usucrea;
     @Temporal(TemporalType.DATE)
@@ -81,11 +81,11 @@ public class Reformas {
     public void setNumdoc(String numdoc) {
         this.numdoc = numdoc;
     }
-    public Documentos getIddocumento() {
-        return iddocumento;
+    public Documentos getIntdoc() {
+        return intdoc;
     }
-    public void setIddocumento(Documentos iddocumento) {
-        this.iddocumento = iddocumento;
+    public void setIntdoc(Documentos intdoc) {
+        this.intdoc = intdoc;
     }
     public Integer getUsucrea() {
         return usucrea;

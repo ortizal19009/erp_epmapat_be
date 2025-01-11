@@ -16,6 +16,10 @@ public class CertipresuServicio {
 	@Autowired
 	private CertipresuR dao;
 
+	public List<Certipresu> findDesdeHasta(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
+		return dao.findDesdeHasta(desdeNum, hastaNum, desdeFecha, hastaFecha);
+	}
+
 	public Certipresu findFirstByOrderByNumeroDesc() {
 		return dao.findFirstByOrderByNumeroDesc();
 	}
@@ -28,10 +32,6 @@ public class CertipresuServicio {
 		return dao.findById(id);
 	}
 
-	public List<Certipresu> findDesdeHasta(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
-		return dao.findDesdeHasta(desdeNum, hastaNum, desdeFecha, hastaFecha);
-	}
-
 	public <S extends Certipresu> S save(S entity) {
 		return dao.save(entity);
 	}
@@ -39,5 +39,5 @@ public class CertipresuServicio {
 	public void deleteById(Long id) {
 		dao.deleteById(id);
 	}
-	
+
 }

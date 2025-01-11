@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.repositorio.contabilidad;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -15,35 +16,22 @@ import com.epmapat.erp_epmapat.modelo.contabilidad.Asientos;
 
 public interface AsientosR extends JpaRepository<Asientos, Long> {
 
-	// @Query(value = "SELECT * FROM asientos ORDER BY idasiento DESC LIMIT 10 ", nativeQuery = true)
-	// public List<Asientos> findLastTen();
-
-	// @Query(value = "SELECT * FROM asientos WHERE tipcom = (?1) and compro BETWEEN (?2) AND (?3)", nativeQuery = true)
-	// public List<Asientos> findByNumero(Long tipo, Long desde, Long hasta);
-
+	//Asientos por números y fechas
 	@Query(value = "SELECT * FROM asientos WHERE asiento BETWEEN (?1) AND (?2) and fecha BETWEEN (?3) AND (?4) ORDER BY asiento ASC", nativeQuery = true)
 	public List<Asientos> findAsientos(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha);
 
-	@Query(value = "SELECT * FROM asientos WHERE tipcom BETWEEN (?1) AND (?2) and compro BETWEEN (?3) AND (?4) and fecha BETWEEN (?5) AND (?6) ORDER BY compro ASC", nativeQuery = true)
-	public List<Asientos> findComprobantes(Integer tipcom1, Integer tipcom2, Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha);
-
-	// @Query(value = "SELECT * FROM asientos WHERE tipcom > ?1 and asiento BETWEEN (?2) AND (?3) and fecha BETWEEN (?4) AND (?5) ORDER BY asiento ASC", nativeQuery = true)
-	// public List<Asientos> findTodos(Long tipo, Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha);
-
-	// @Query(value = "SELECT max(compro) FROM asientos WHERE tipcom = (?1) group by tipcom ORDER BY tipcom", nativeQuery = true)
-	// public List<Asientos> findByCompro(Long tipcom);
-
-	// @Query(value = "SELECT * FROM asientos WHERE fecha BETWEEN  (?3) AND (?4) OR compro BETWEEN (?1) AND (?2) ORDER BY asiento ASC", nativeQuery = true)
-	// public List<Asientos> findByDorN(Long d_num, Long h_num, Date d_date, Date h_date);
+	//Comprobantes por números y fechas
+	@Query(value = "SELECT * FROM asientos WHERE tipcom=?1 and compro BETWEEN (?2) AND (?3) and fecha BETWEEN (?4) AND (?5) ORDER BY compro ASC", nativeQuery = true)
+	public List<Asientos> findComprobantes(Integer tipcom, Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha);
 
 	// Ultimo por Asiento
 	Asientos findFirstByOrderByAsientoDesc();
 
 	// Ultimo por Fecha
 	@Query("SELECT MAX(a.fecha) FROM Asientos a")
-	Date findUltimaFecha();
+	LocalDate findUltimaFecha();
 
-	// Ultimo comrobante
+	// Ultimo comprobante
 	@Query("SELECT MAX(a.compro) FROM Asientos a WHERE a.tipcom = :tipcom")
 	Long findLastComproByTipcom(@Param("tipcom") Integer tipcom);
 

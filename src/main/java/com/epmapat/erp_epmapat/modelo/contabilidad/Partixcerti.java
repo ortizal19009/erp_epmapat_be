@@ -29,10 +29,10 @@ public class Partixcerti {
 	@DateTimeFormat(iso = ISO.DATE)
 	@Column(name = "fecmodi")
 	private Date fecmodi;
-	private Long idejecucion;
+	private Long inteje;
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "idpresupue")
-	private Presupue idpresupue;
+	@JoinColumn(name = "intpre")
+	private Presupue intpre;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idcerti")
 	private Certipresu idcerti;
@@ -40,25 +40,6 @@ public class Partixcerti {
 
 	public Partixcerti() {
 		super();
-	}
-
-	public Partixcerti(Long idparxcer, String descripcion, BigDecimal valor, BigDecimal saldo, BigDecimal totprmisos, Long usucrea,
-			Date feccrea, Long usumodi, Date fecmodi, Long idejecucion, Presupue idpresupue, Certipresu idcerti,
-			Long idparxcer_) {
-		super();
-		this.idparxcer = idparxcer;
-		this.descripcion = descripcion;
-		this.valor = valor;
-		this.saldo = saldo;
-		this.totprmisos = totprmisos;
-		this.usucrea = usucrea;
-		this.feccrea = feccrea;
-		this.usumodi = usumodi;
-		this.fecmodi = fecmodi;
-		this.idejecucion = idejecucion;
-		this.idpresupue = idpresupue;
-		this.idcerti = idcerti;
-		this.idparxcer_ = idparxcer_;
 	}
 
 	public Long getIdparxcer() {
@@ -115,17 +96,17 @@ public class Partixcerti {
 	public void setFecmodi(Date fecmodi) {
 		this.fecmodi = fecmodi;
 	}
-	public Long getIdejecucion() {
-		return idejecucion;
+	public Long getInteje() {
+		return inteje;
 	}
-	public void setIdejecucion(Long idejecucion) {
-		this.idejecucion = idejecucion;
+	public void setInteje(Long inteje) {
+		this.inteje = inteje;
 	}
-	public Presupue getIdpresupue() {
-		return idpresupue;
+	public Presupue getIntpre() {
+		return intpre;
 	}
-	public void setIdpresupue(Presupue idpresupue) {
-		this.idpresupue = idpresupue;
+	public void setIntpre(Presupue intpre) {
+		this.intpre = intpre;
 	}
 	public Certipresu getIdcerti() {
 		return idcerti;

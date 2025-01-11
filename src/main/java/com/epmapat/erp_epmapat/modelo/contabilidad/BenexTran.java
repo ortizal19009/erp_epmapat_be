@@ -13,10 +13,6 @@ import javax.persistence.Table;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
 
-// public class BenexTran {
-   
-// }
-
 @Entity
 @Table(name = "benextran")
 public class BenexTran {
@@ -24,14 +20,14 @@ public class BenexTran {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idbenxtra; 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "idtransa")
-	private Transaci idtransa; 
+	@JoinColumn(name = "inttra")
+	private Transaci inttra; 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idbene")
 	private Beneficiarios idbene; 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "iddocumento")
-	private Documentos iddocumento; 
+	@JoinColumn(name = "intdoc")
+	private Documentos intdoc; 
 	private String numdoc; 
 	private BigDecimal valor; 
 	private BigDecimal totpagcob; 
@@ -41,39 +37,23 @@ public class BenexTran {
 	private String codparreci; 
 	private String codcuereci; 
 	private Long asierefe;
+	
 	public BenexTran() {
 		super();
 		
 	}
-	public BenexTran(Long idbenxtra, Transaci idtransa, Beneficiarios idbene, Documentos iddocumento, String numdoc,
-			BigDecimal valor, BigDecimal totpagcob, BigDecimal pagocobro, Long idpagcob, Long intpre, String codparreci,
-			String codcuereci, Long asierefe) {
-		super();
-		this.idbenxtra = idbenxtra;
-		this.idtransa = idtransa;
-		this.idbene = idbene;
-		this.iddocumento = iddocumento;
-		this.numdoc = numdoc;
-		this.valor = valor;
-		this.totpagcob = totpagcob;
-		this.pagocobro = pagocobro;
-		this.idpagcob = idpagcob;
-		this.intpre = intpre;
-		this.codparreci = codparreci;
-		this.codcuereci = codcuereci;
-		this.asierefe = asierefe;
-	}
+	
 	public Long getIdbenxtra() {
 		return idbenxtra;
 	}
 	public void setIdbenxtra(Long idbenxtra) {
 		this.idbenxtra = idbenxtra;
 	}
-	public Transaci getIdtransa() {
-		return idtransa;
+	public Transaci getInttra() {
+		return inttra;
 	}
-	public void setIdtransa(Transaci idtransa) {
-		this.idtransa = idtransa;
+	public void setInttra(Transaci inttra) {
+		this.inttra = inttra;
 	}
 	public Beneficiarios getIdbene() {
 		return idbene;
@@ -81,11 +61,11 @@ public class BenexTran {
 	public void setIdbene(Beneficiarios idbene) {
 		this.idbene = idbene;
 	}
-	public Documentos getIddocumento() {
-		return iddocumento;
+	public Documentos getIntdoc() {
+		return intdoc;
 	}
-	public void setIddocumento(Documentos iddocumento) {
-		this.iddocumento = iddocumento;
+	public void setIntdoc(Documentos intdoc) {
+		this.intdoc = intdoc;
 	}
 	public String getNumdoc() {
 		return numdoc;

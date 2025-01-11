@@ -14,17 +14,17 @@ public class Ifinan {
 	private String nomifinan;
 	private String foto;
 
-	public Ifinan() {
-		super();
-	}
+	// public Ifinan() {
+	// 	super();
+	// }
 
-	public Ifinan(Long idifinan, String codifinan, String nomifinan, String foto) {
-		super();
-		this.idifinan = idifinan;
-		this.codifinan = codifinan;
-		this.nomifinan = nomifinan;
-		this.foto = foto;
-	}
+	// public Ifinan(Long idifinan, String codifinan, String nomifinan, String foto) {
+	// 	super();
+	// 	this.idifinan = idifinan;
+	// 	this.codifinan = codifinan;
+	// 	this.nomifinan = nomifinan;
+	// 	this.foto = foto;
+	// }
 
 	public Long getIdifinan() {
 		return idifinan;

@@ -47,8 +47,15 @@ public class CertipresuApi {
 		return certiServicio.findFirstByOrderByNumeroDesc();
 	}
 
+	//Valida número certificación (OJO preferibre debería retornar true/false y con Param)
 	@GetMapping("/numero/{numero}/tipo/{tipo}")
 	public Certipresu valNumero(@PathVariable Long numero, @PathVariable Integer tipo) {
+		return certiServicio.findByNumeroAndTipo(numero, tipo);
+	}
+
+	//Una certificación por número
+	@GetMapping("/numero")
+	public Certipresu findCertipresu(@Param(value = "numero") Long numero, @Param(value = "tipo") Integer tipo ) {
 		return certiServicio.findByNumeroAndTipo(numero, tipo);
 	}
 
@@ -58,23 +65,23 @@ public class CertipresuApi {
 	}
 
 	@PutMapping("/{idcerti}")
-	public ResponseEntity<Certipresu> updateCertiPresu(@PathVariable Long idcerti, @RequestBody Certipresu certipresum) {
-		Certipresu certipresu = certiServicio.findById(idcerti)
+	public ResponseEntity<Certipresu> updateCertiPresu(@PathVariable Long idcerti, @RequestBody Certipresu y) {
+		Certipresu x = certiServicio.findById(idcerti)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No se encuenta este Id" + idcerti));
-		certipresu.setTipo(certipresum.getTipo());
-		certipresu.setNumero(certipresum.getNumero());
-		certipresu.setFecha(certipresum.getFecha());
-		certipresu.setValor(certipresum.getValor());
-		certipresu.setDescripcion(certipresum.getDescripcion());
-		certipresu.setNumdoc(certipresum.getNumdoc());
-		certipresu.setUsucrea(certipresum.getUsucrea());
-		certipresu.setFeccrea(certipresum.getFeccrea());
-		certipresu.setUsumodi(certipresum.getUsumodi());
-		certipresu.setFecmodi(certipresum.getFecmodi());
-		certipresu.setIdbene(certipresum.getIdbene());
-		certipresu.setIdbeneres(certipresum.getIdbeneres());
-		certipresu.setIddocumento(certipresum.getIddocumento());
-		Certipresu updateCerti = certiServicio.save(certipresu);
+		x.setTipo(y.getTipo());
+		x.setNumero(y.getNumero());
+		x.setFecha(y.getFecha());
+		x.setValor(y.getValor());
+		x.setDescripcion(y.getDescripcion());
+		x.setNumdoc(y.getNumdoc());
+		x.setUsucrea(y.getUsucrea());
+		x.setFeccrea(y.getFeccrea());
+		x.setUsumodi(y.getUsumodi());
+		x.setFecmodi(y.getFecmodi());
+		x.setIdbene(y.getIdbene());
+		x.setIdbeneres(y.getIdbeneres());
+		x.setIntdoc(y.getIntdoc());
+		Certipresu updateCerti = certiServicio.save(x);
 		return ResponseEntity.ok(updateCerti);
 	}
 

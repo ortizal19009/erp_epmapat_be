@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
@@ -50,37 +49,37 @@ public class PregastosApi {
       return presuServicio.buscaByCodigo(codpar);
    }
 
-   @GetMapping("/{idpresupue}")
-   public ResponseEntity<Presupue> getByIdNovedad(@PathVariable Long idpresupue) {
-      Presupue x = presuServicio.findById(idpresupue)
+   @GetMapping("/{intpre}")
+   public ResponseEntity<Presupue> getByIdNovedad(@PathVariable Long intpre) {
+      Presupue x = presuServicio.findById(intpre)
             .orElseThrow(() -> new ResourceNotFoundExcepciones(
-                  ("No existe Partida con Idpresupue: " + idpresupue)));
+                  ("No existe Partida con Intpre: " + intpre)));
       return ResponseEntity.ok(x);
    }
 
    // Cuenta las Partidas por Actividad
-   @GetMapping("/count")
-   public ResponseEntity<Long> countPresupueWithIdestrfunc(@RequestParam("idestrfunc") Long idestrfunc) {
-      Long count = presuServicio.countByIdestrfunc(idestrfunc);
-      return ResponseEntity.ok(count);
-   }
+   // @GetMapping("/count")
+   // public ResponseEntity<Long> countPresupueWithIdestrfunc(@RequestParam("intest") Long intest) {
+   //    Long count = presuServicio.countByIdestrfunc(intest);
+   //    return ResponseEntity.ok(count);
+   // }
 
    // Cuenta las Partidas por Actividad
-   @GetMapping("/actividad")
-   public List<Presupue> findByActividad(@RequestParam("idestrfunc") Long idestrfunc) {
-      return presuServicio.findByActividad(idestrfunc);
-   }
+   // @GetMapping("/actividad")
+   // public List<Presupue> findByActividad(@RequestParam("intest") Long intest) {
+   //    return presuServicio.findByActividad(intest);
+   // }
 
     @PostMapping
     public ResponseEntity<Presupue> save(@RequestBody Presupue x) {
         return ResponseEntity.ok(presuServicio.save( x ));
     }
 
-   @PutMapping("/{idpresupue}")
-   public ResponseEntity<Presupue> update(@PathVariable Long idpresupue, @RequestBody Presupue x) {
-      Presupue y = presuServicio.findById(idpresupue)
+   @PutMapping("/{intpre}")
+   public ResponseEntity<Presupue> update(@PathVariable Long intpre, @RequestBody Presupue x) {
+      Presupue y = presuServicio.findById(intpre)
             .orElseThrow(() -> new ResourceNotFoundExcepciones(
-                  ("No existe Idpresupue: " + idpresupue)));
+                  ("No existe Intpre: " + intpre)));
       y.setTippar(x.getTippar());
       y.setCodpar(x.getCodpar());
       y.setCodigo(x.getCodigo());
@@ -91,9 +90,9 @@ public class PregastosApi {
       y.setTotmisos(x.getTotmisos());
       y.setTotdeven(x.getTotdeven());
       y.setFuncion(x.getFuncion());
-      y.setIdestrfunc(x.getIdestrfunc());
+      // y.setIdestrfunc(x.getIdestrfunc());
+      // y.setIntcla(x.getIntcla());
       y.setCodacti(x.getCodacti());
-      y.setIntcla(x.getIntcla());
       y.setCodpart(x.getCodpart());
       y.setSwpluri(x.getSwpluri());
       y.setUsucrea(x.getUsucrea());
@@ -105,9 +104,10 @@ public class PregastosApi {
       return ResponseEntity.ok(actualizar);
    }
 
-   @DeleteMapping("/{idpresupue}")
-   private ResponseEntity<Boolean> deletePresupue(@PathVariable("idpresupue") Long idpresupue) {
-      presuServicio.deleteById(idpresupue);
-      return ResponseEntity.ok(!(presuServicio.findById(idpresupue) != null));
+   @DeleteMapping("/{intpre}")
+   private ResponseEntity<Boolean> deletePresupue(@PathVariable("intpre") Long intpre) {
+      presuServicio.deleteById(intpre);
+      return ResponseEntity.ok(!(presuServicio.findById(intpre) != null));
    }
+   
 }

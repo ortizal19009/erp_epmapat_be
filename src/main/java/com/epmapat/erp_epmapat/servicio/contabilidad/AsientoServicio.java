@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.servicio.contabilidad;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -39,8 +40,8 @@ public class AsientoServicio {
 	}
 
 	//Busca por número de Cpmprobante
-	public List<Asientos> findComprobantes(Integer tipcom1, Integer tipcom2, Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
-		return dao.findComprobantes(tipcom1, tipcom2, desdeNum, hastaNum, desdeFecha, hastaFecha);
+	public List<Asientos> findComprobantes(Integer tipcom, Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
+		return dao.findComprobantes(tipcom, desdeNum, hastaNum, desdeFecha, hastaFecha);
 	}
 
 	// Un Asiento
@@ -60,7 +61,7 @@ public class AsientoServicio {
 	}
 
 	// Ultima Fecha
-	public Date obtenerUltimaFecha() {
+	public LocalDate obtenerUltimaFecha() {
 		return dao.findUltimaFecha();
 	}
 

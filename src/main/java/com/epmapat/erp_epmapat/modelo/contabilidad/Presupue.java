@@ -6,6 +6,8 @@ import javax.persistence.*;
 
 import com.epmapat.erp_epmapat.modelo.Clasificador;
 
+// import com.epmapat.erp_epmapat.modelo.Clasificador;
+
 @Entity
 @Table(name = "presupue")
 
@@ -13,7 +15,7 @@ public class Presupue {
 
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Long idpresupue;
+   private Long intpre;
    
    private Integer tippar;
    private String codpar;
@@ -26,15 +28,17 @@ public class Presupue {
    private Double totdeven;
    private String funcion;
 
-   private Long idestrfunc;
-   String codacti;
+   // private Long intest;
+   // @ManyToOne(fetch = FetchType.LAZY)
+   private String codacti;
 
+   //Para el clasificador usa intcla y codpart
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "intcla")
    private Clasificador intcla;
-
    private String codpart;
-   private Boolean swpluri;
+
+   private Integer swpluri;
 
    private Integer usucrea;
    @Column(name = "feccrea")
@@ -44,12 +48,12 @@ public class Presupue {
    @Column(name = "fecmodi")
    private ZonedDateTime fecmodi;
 
-   public Long getIdpresupue() {
-      return idpresupue;
+   public Long getIntpre() {
+      return intpre;
    }
 
-   public void setIdpresupue(Long idpresupue) {
-      this.idpresupue = idpresupue;
+   public void setIntpre(Long intpre) {
+      this.intpre = intpre;
    }
 
    public Integer getTippar() {
@@ -132,13 +136,12 @@ public class Presupue {
       this.funcion = funcion;
    }
 
-   public Long getIdestrfunc() {
-      return idestrfunc;
-   }
-
-   public void setIdestrfunc(Long idestrfunc) {
-      this.idestrfunc = idestrfunc;
-   }
+   // public Long getIntest() {
+   //    return intest;
+   // }
+   // public void setIntest(Long intest) {
+   //    this.intest = intest;
+   // }
 
    public String getCodacti() {
       return codacti;
@@ -148,6 +151,7 @@ public class Presupue {
       this.codacti = codacti;
    }
 
+   //Para el clasificador usa intcla y codpart
    public Clasificador getIntcla() {
       return intcla;
    }
@@ -164,11 +168,11 @@ public class Presupue {
       this.codpart = codpart;
    }
 
-   public Boolean getSwpluri() {
+   public Integer getSwpluri() {
       return swpluri;
    }
 
-   public void setSwpluri(Boolean swpluri) {
+   public void setSwpluri(Integer swpluri) {
       this.swpluri = swpluri;
    }
 

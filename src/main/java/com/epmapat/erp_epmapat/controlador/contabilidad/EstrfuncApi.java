@@ -48,11 +48,11 @@ public class EstrfuncApi {
       return estrfuncServicio.findCodigoNombre(codigoNombre.toLowerCase());
    }
 
-   @GetMapping("/{idestrfunc}")
-   public ResponseEntity<Estrfunc> getByIdNovedad(@PathVariable Long idestrfunc) {
-      Estrfunc x = estrfuncServicio.findById(idestrfunc)
+   @GetMapping("/{intest}")
+   public ResponseEntity<Estrfunc> getByIdNovedad(@PathVariable Long intest) {
+      Estrfunc x = estrfuncServicio.findById(intest)
             .orElseThrow(() -> new ResourceNotFoundExcepciones(
-                  ("No existe la Cuenta con Id: " + idestrfunc)));
+                  ("No existe la Cuenta con Id: " + intest)));
       return ResponseEntity.ok(x);
    }
 
@@ -61,11 +61,11 @@ public class EstrfuncApi {
       return estrfuncServicio.save(x);
    }
 
-   @PutMapping("/{idestrfunc}")
-   public ResponseEntity<Estrfunc> update(@PathVariable Long idestrfunc, @RequestBody Estrfunc x) {
-      Estrfunc y = estrfuncServicio.findById(idestrfunc)
+   @PutMapping("/{intest}")
+   public ResponseEntity<Estrfunc> update(@PathVariable Long intest, @RequestBody Estrfunc x) {
+      Estrfunc y = estrfuncServicio.findById(intest)
             .orElseThrow(() -> new ResourceNotFoundExcepciones(
-                  ("No existe Institución con Id: " + idestrfunc)));
+                  ("No existe Actividad con Id: " + intest)));
       y.setCodigo(x.getCodigo());
       y.setNombre(x.getNombre());
       y.setMovimiento(x.getMovimiento());
@@ -75,10 +75,10 @@ public class EstrfuncApi {
       return ResponseEntity.ok(actualizar);
    }
 
-   @DeleteMapping("/{idestrfunc}")
-   private ResponseEntity<Boolean> deleteEstrfunc(@PathVariable("idestrfunc") Long idestrfunc) {
-      estrfuncServicio.deleteById(idestrfunc);
-      return ResponseEntity.ok(!(estrfuncServicio.findById(idestrfunc) != null));
+   @DeleteMapping("/{intest}")
+   private ResponseEntity<Boolean> deleteEstrfunc(@PathVariable("intest") Long intest) {
+      estrfuncServicio.deleteById(intest);
+      return ResponseEntity.ok(!(estrfuncServicio.findById(intest) != null));
    }
 
 }

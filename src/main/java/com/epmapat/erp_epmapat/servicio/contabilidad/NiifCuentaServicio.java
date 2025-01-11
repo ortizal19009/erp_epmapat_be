@@ -19,12 +19,8 @@ public class NiifCuentaServicio {
       return dao.findAll();
    }
 
-   public List<NiifCuentas> findByNomcue(String nomcue) {
-      return dao.findByNomcue(nomcue);
-   }
-
-   public List<NiifCuentas> findByCodcue(String codcue) {
-      return dao.findByCodcue(codcue);
+   public List<NiifCuentas> findByCodigoyNombre(String codcue, String nomcue) {
+      return dao.findByCodigoyNombre(codcue, nomcue);
    }
 
    public <S extends NiifCuentas> S save(S entity) {
