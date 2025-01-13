@@ -57,7 +57,6 @@ public class RecaudacionMicroservice {
 		return singIn;
 	}
 	public Object sinOutCaja(String username) {
-		System.out.println(username);
 		Object singIn = restTemplate.exchange(URL_CAJA + "/singout?username=" + username ,
 				HttpMethod.PUT, null, Object.class);
 		return singIn;
@@ -75,7 +74,6 @@ public class RecaudacionMicroservice {
 			return responseEntity.getBody();
 		} catch (RestClientException e) {
 			// Handle specific exceptions and log errors
-			System.out.printf("Error while making PUT request to {}", URL_FACTURA, e);
 			throw new RuntimeException("Error collecting payment: " + e.getMessage());
 		}
 	}

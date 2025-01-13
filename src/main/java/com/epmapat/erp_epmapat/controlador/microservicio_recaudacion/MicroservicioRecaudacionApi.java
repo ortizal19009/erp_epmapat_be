@@ -34,7 +34,6 @@ public class MicroservicioRecaudacionApi {
 
     @PutMapping("/cobrar")
     public ResponseEntity<?> cobrarFacturas(@RequestBody FacturaRequest factura) {
-        System.out.println("Recibido el objeto factura: " + factura);
         Object response = sRecaudacionMicroservice.cobrar(factura);
         return ResponseEntity.ok(response);
     }

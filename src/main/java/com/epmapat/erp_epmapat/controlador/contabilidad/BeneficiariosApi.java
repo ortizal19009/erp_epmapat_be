@@ -47,7 +47,6 @@ public class BeneficiariosApi {
 	@GetMapping("/nombengru")
 	public List<Beneficiarios> findByGrupoBene(@Param(value = "nomben") String nomben,
 			@Param(value = "idgrupo") Long idgrupo) {
-		System.out.println("nomben: " + nomben.toLowerCase());
 		return beneServicio.findByNombenGru(nomben.toLowerCase(), idgrupo);
 	}
 

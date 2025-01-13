@@ -36,6 +36,8 @@ public class Usuarios {
    private String alias;
    private String priusu;
    private String perfil;
+   private Long toolbarframe; 
+   private Long toolbarsheet;
 
    // ====== Getteres y Setters =======
    public String getPerfil() {
@@ -157,5 +159,22 @@ public class Usuarios {
    public void setAlias(String alias) {
       this.alias = alias;
    }
+
+   public Long getToolbarframe() {
+      return toolbarframe;
+   }
+
+   public void setToolbarframe(Long toolbarframe) {
+      this.toolbarframe = toolbarframe;
+   }
+
+   public Long getToolbarsheet() {
+      return toolbarsheet;
+   }
+
+   public void setToolbarsheet(Long toolbarsheet) {
+      this.toolbarsheet = toolbarsheet;
+   }
+   
 
 }

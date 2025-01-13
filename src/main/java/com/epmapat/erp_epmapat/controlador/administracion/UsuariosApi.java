@@ -1,6 +1,8 @@
 package com.epmapat.erp_epmapat.controlador.administracion;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -8,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -79,9 +82,27 @@ public class UsuariosApi {
       y.setAlias(x.getAlias());
       y.setPriusu(x.getPriusu());
       y.setPerfil(x.getPerfil());
+      y.setToolbarframe(x.getToolbarframe());
+      y.setToolbarsheet(x.getToolbarsheet());
 
       Usuarios actualizar = usuServicio.save(y);
       return ResponseEntity.ok(actualizar);
+   }
+
+   @PostMapping
+   public ResponseEntity<Object> saveUsuario(@RequestBody Usuarios user) {
+      Map<String, Object> response = new HashMap<>();
+      Usuarios _user= usuServicio.save(user);
+      if(_user != null ){
+         response.put("status", ResponseEntity.ok());
+         response.put("message", "Usuario creado");
+         
+      }else{
+         response.put("status", ResponseEntity.ok());
+         response.put("message", "Usuario no creado");
+      }
+      return ResponseEntity.ok(response);
+
    }
 
    @GetMapping("one")

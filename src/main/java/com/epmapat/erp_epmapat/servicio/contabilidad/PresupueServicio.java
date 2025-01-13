@@ -40,7 +40,7 @@ public class PresupueServicio {
    }
 
    public List<Presupue> findByTippar(Long tippar) {
-   return dao.findByTippar(tippar);
+      return dao.findByTippar(tippar);
    }
 
    public List<Presupue> buscaByCodigoI(String codpar) {
@@ -90,6 +90,10 @@ public class PresupueServicio {
    public Double totalCodpar(Long tippar, String codpar) {
       Double total = dao.totalCodpar(tippar, codpar);
       return total;
+   }
+
+   public List<Presupue> findByActividad(Long intest) {
+      return dao.findByActividad(intest);
    }
 
 }
