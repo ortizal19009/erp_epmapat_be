@@ -1,0 +1,23 @@
+package com.epmapat.erp_epmapat.modelo.rrhh;
+
+import java.math.BigDecimal;
+
+import javax.persistence.*;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@Table(name = "cargos")
+public class Cargos {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idcargo; 
+    private String descripcion; 
+    private Boolean estado; 
+    private BigDecimal sueldo; 
+}
