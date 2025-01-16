@@ -16,4 +16,12 @@ public class ContemergenciaServicio {
     public List<Contemergencia> findAll() {
         return dao.findAll();
     }
+
+    public List<Contemergencia> findByContEmergencia(String nombre) {
+        return dao.findByContEmergencia(nombre);
+    }
+
+    public Contemergencia save(Contemergencia ce) {
+        return dao.save(ce);
+    }
 }

@@ -16,4 +16,8 @@ public class PersonalServicio {
     public List<Personal> findAll() {
         return dao.findAll();
     }
+
+    public Personal save(Personal p) {
+        return dao.save(p);
+    }
 }
