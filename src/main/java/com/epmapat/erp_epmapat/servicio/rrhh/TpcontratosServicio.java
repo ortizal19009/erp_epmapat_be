@@ -16,4 +16,8 @@ public class TpcontratosServicio {
     public List<Tpcontratos> findAll() {
         return dao.findAll();
     }
+
+    public Tpcontratos save(Tpcontratos tpcontratos) {
+        return dao.save(tpcontratos);
+    }
 }

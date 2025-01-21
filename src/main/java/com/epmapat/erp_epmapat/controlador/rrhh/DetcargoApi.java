@@ -11,23 +11,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.modelo.rrhh.Cargos;
-import com.epmapat.erp_epmapat.servicio.rrhh.CargosServicio;
+import com.epmapat.erp_epmapat.modelo.rrhh.Detcargo;
+import com.epmapat.erp_epmapat.servicio.rrhh.DetcargoServicio;
 
 @RestController
-@RequestMapping("/cargos")
+@RequestMapping("/detcargo")
 @CrossOrigin("*")
-public class CargosApi {
+public class DetcargoApi {
     @Autowired
-    private CargosServicio cargosServicio;
+    private DetcargoServicio detcargoServicio;
 
     @GetMapping
-    public ResponseEntity<List<Cargos>> getAll() {
-        return ResponseEntity.ok(cargosServicio.findAll());
+    public ResponseEntity<List<Detcargo>> getAll() {
+        return ResponseEntity.ok(detcargoServicio.findAll());
     }
 
     @PostMapping
-    public ResponseEntity<Cargos> saveCargo(@RequestBody Cargos cargo) {
-        return ResponseEntity.ok(this.cargosServicio.save(cargo));
+    public ResponseEntity<Detcargo> save(@RequestBody Detcargo detcargo) {
+        return ResponseEntity.ok(detcargoServicio.save(detcargo));
     }
 }

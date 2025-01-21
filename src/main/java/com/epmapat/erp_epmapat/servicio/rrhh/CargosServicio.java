@@ -16,4 +16,8 @@ public class CargosServicio {
     public List<Cargos> findAll() {
         return dao.findAll();
     }
+
+    public Cargos save(Cargos cargos) {
+        return dao.save(cargos);
+    }
 }

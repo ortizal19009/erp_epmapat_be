@@ -12,14 +12,15 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "cargos")
-public class Cargos {
+@Table(name = "detcargo")
+public class Detcargo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idcargo; 
-    private String descripcion; 
-    private Boolean estado; 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "iddetcargo_detcargo")
-    private Detcargo iddetcargo_detcargo; 
+    private Long iddetcargo;
+    private String rol;
+    private String eje;
+    private String grupoocupacional;
+    private Boolean estado;
+    private BigDecimal sueldo;
+
 }
