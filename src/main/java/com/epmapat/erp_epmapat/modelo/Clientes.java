@@ -34,14 +34,8 @@ public class Clientes {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idnacionalidad_nacionalidad")
 	private Nacionalidad idnacionalidad_nacionalidad;
-	/* @Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name ="feccrea") */
 	private LocalDate feccrea;
 	private Long usumodi;
-/* 	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name ="fecmodi") */
 	private LocalDate fecmodi;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idpjuridica_personeriajuridica")
