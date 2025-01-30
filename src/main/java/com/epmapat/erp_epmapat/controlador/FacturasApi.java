@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.DTO.RemiDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
@@ -258,7 +259,7 @@ public class FacturasApi {
 	@PutMapping("/{idfactura}")
 	public ResponseEntity<Facturas> updateFacturas(@PathVariable long idfactura, @RequestBody Facturas x) {
 		Facturas y = facServicio.findById(idfactura)
-		.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
+				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
 		BigDecimal interes = rxfServicio.getTotalInteres(idfactura);
 		if (interes == null) {
 			y.setInterescobrado(x.getInterescobrado());
@@ -518,4 +519,9 @@ public class FacturasApi {
 		return ResponseEntity.ok(facServicio.getCVByFacturasNoConsumo(fecha));
 	}
 
+	@GetMapping("/remisiones")
+	public ResponseEntity<List<RemiDTO>> getFacForRemisiones(@RequestParam Long idcliente,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechatope) {
+		return ResponseEntity.ok(facServicio.getFacForRemisiones(idcliente, fechatope));
+	}
 }

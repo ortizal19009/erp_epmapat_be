@@ -30,4 +30,5 @@ public class Facxremi {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idremision_remisiones")
     private Remision idremision_remisiones;
+    private Long cuota;
 }

@@ -1,12 +1,16 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import com.epmapat.erp_epmapat.DTO.RemiDTO;
 import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
@@ -16,6 +20,10 @@ public class FacturaServicio {
 
 	@Autowired
 	private FacturasR dao;
+	@Autowired
+	@Lazy
+	private InteresServicio interesServicio;
+
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
 	}
@@ -246,6 +254,35 @@ public class FacturaServicio {
 
 	public List<CVFacturasNoConsumo> getCVByFacturasNoConsumo(LocalDate fecha) {
 		return dao.getCVByFacturasNoConsumo(fecha);
+	}
+
+	public List<RemiDTO> getFacForRemisiones(Long idcliente, LocalDate topefecha) {
+		List<Remision> _facturas = dao.getFacForRemisiones(idcliente, topefecha);
+		List<RemiDTO> remision = new ArrayList<>();
+
+		for (Remision item : _facturas) {
+			RemiDTO remi = new RemiDTO();
+			System.out.println(item.getIdfactura());
+
+			Object interes = interesServicio.facturaid(item.getIdfactura());
+			if (interes instanceof Double) {
+				remi.setIntereses(BigDecimal.valueOf((Double) interes));
+			} else {
+				remi.setIntereses(BigDecimal.ZERO); // Default if not a Double
+			}
+			System.out.println(interes);
+
+			remi.setIdfactura(item.getIdfactura());
+			remi.setDescripcion(item.getDescripcion());
+			remi.setTotal(item.getTotal());
+			remi.setFeccrea(item.getFeccrea());
+			// ama
+			remi.setIntereses((BigDecimal) interes);
+
+			remision.add(remi);
+		}
+
+		return remision;
 	}
 
 }
