@@ -262,23 +262,16 @@ public class FacturaServicio {
 
 		for (Remision item : _facturas) {
 			RemiDTO remi = new RemiDTO();
-			System.out.println(item.getIdfactura());
-
 			Object interes = interesServicio.facturaid(item.getIdfactura());
 			if (interes instanceof Double) {
-				remi.setIntereses(BigDecimal.valueOf((Double) interes));
+				remi.setIntereses(BigDecimal.valueOf((Double) interes)); // Convert Double to BigDecimal
 			} else {
 				remi.setIntereses(BigDecimal.ZERO); // Default if not a Double
 			}
-			System.out.println(interes);
-
 			remi.setIdfactura(item.getIdfactura());
 			remi.setDescripcion(item.getDescripcion());
 			remi.setTotal(item.getTotal());
 			remi.setFeccrea(item.getFeccrea());
-			// ama
-			remi.setIntereses((BigDecimal) interes);
-
 			remision.add(remi);
 		}
 

@@ -194,4 +194,7 @@ public class RubroxfacServicio {
 		return dao.getCarteraVencidaxRubros(fechacobro);
 	}
 
+	public List<RubroxfacI> getRubrosForRemisiones(Long idcliente, LocalDate topefecha) {
+		return dao.getRubrosForRemisiones(idcliente, topefecha);
+	}
 }

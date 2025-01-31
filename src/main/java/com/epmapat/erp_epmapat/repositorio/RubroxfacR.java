@@ -36,9 +36,12 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "select sum(valorunitario) from rubroxfac rf join rubros r on rf.idrubro_rubros = r.idrubro where idfactura_facturas = ?1", nativeQuery = true)
 	Double sumaRubros(Long idfactura);
 
-	/* @Modifying
-	@Query("DELETE FROM Rubroxfac r WHERE r.idrubroxfac = :idrubroxfac")
-	void deleteRubroDuplicado(@Param("idrubroxfac") Long idrubroxfac); */
+	/*
+	 * @Modifying
+	 * 
+	 * @Query("DELETE FROM Rubroxfac r WHERE r.idrubroxfac = :idrubroxfac")
+	 * void deleteRubroDuplicado(@Param("idrubroxfac") Long idrubroxfac);
+	 */
 
 	@Query(value = " select * from rubroxfac rf where rf.idfactura_facturas = ?1 and rf.idrubro_rubros = ?2", nativeQuery = true)
 	List<Rubroxfac> getOneFxR(Long idfactura, Long idrubro);
@@ -187,5 +190,38 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 
 	@Query(value = "SELECT sum(rf.cantidad * rf.valorunitario) as interes FROM rubroxfac rf where rf.idfactura_facturas = ?1 and rf.idrubro_rubros = 5", nativeQuery = true)
 	BigDecimal getTotalInteres(Long idfactura);
+	/* CONSULTA PARA REMISIONES */
+
+	@Query(value = "select \r\n" + //
+				"r.descripcion,\r\n" + //
+				"sum(rf.cantidad * rf.valorunitario) as sum\t\r\n" + //
+				"from\r\n" + //
+				"\trubroxfac rf\r\n" + //
+				"join facturas f on\r\n" + //
+				"\trf.idfactura_facturas = f.idfactura\r\n" + //
+				"join rubros r on \r\n" + //
+				"\trf.idrubro_rubros = r.idrubro \r\n" + //
+				"join modulos m on\r\n" + //
+				"\tf.idmodulo = m.idmodulo\r\n" + //
+				"join clientes c on\r\n" + //
+				"\tf.idcliente = c.idcliente\r\n" + //
+				"where\r\n" + //
+				"\tf.totaltarifa > 0\r\n" + //
+				"\tand f.idcliente = ?1\r\n" + //
+				"\tand (( (f.estado = 1\r\n" + //
+				"\t\tor f.estado = 2)\r\n" + //
+				"\tand f.fechacobro is null)\r\n" + //
+				"\tor f.estado = 3 )\r\n" + //
+				"\tand f.fechaeliminacion is null\r\n" + //
+				"\tand f.fechaconvenio is null\r\n" + //
+				"\tand not rf.idrubro_rubros = 165\r\n" + //
+				"\tand f.feccrea <= ?2\r\n" + //
+				"\tand (f.idmodulo = 3\r\n" + //
+				"\t\tor f.idmodulo = 4\r\n" + //
+				"\t\tor f.idmodulo = 27) \r\n" + //
+				"\t\t\r\n" + //
+				"\t\tgroup by r.descripcion\r\n" + //
+				"", nativeQuery = true)
+	public List<RubroxfacI> getRubrosForRemisiones(Long idcliente, LocalDate topefecha);
 
 }
