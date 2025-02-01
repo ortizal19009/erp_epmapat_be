@@ -31,4 +31,5 @@ public class Facxremi {
     @JoinColumn(name = "idremision_remisiones")
     private Remision idremision_remisiones;
     private Long cuota;
+    private Long tipfactura;
 }

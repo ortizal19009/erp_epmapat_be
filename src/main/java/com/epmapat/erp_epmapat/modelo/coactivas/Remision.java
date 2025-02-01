@@ -28,7 +28,7 @@ public class Remision {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idremision; 
-    	@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idcliente_clientes")
     private Clientes idcliente_clientes; 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -38,7 +38,7 @@ public class Remision {
     private LocalDate fectopedeuda; 
     private LocalDate fectopepago; 
     private BigDecimal totcapital; 
-    private BigDecimal totinteres; 
+    private BigDecimal totintereses; 
     private Boolean swconvenio; 
     private Long usucrea; 
     private LocalDate feccrea; 

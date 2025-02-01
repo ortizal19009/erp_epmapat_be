@@ -1,5 +1,7 @@
 package com.epmapat.erp_epmapat.servicio.coactivas;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +21,7 @@ public class RemisionServicio {
         return dao.findAll(pageable);
     }
 
+    @Transactional
     public Remision saveRemision(Remision remision) {
         return dao.save(remision);
     }
