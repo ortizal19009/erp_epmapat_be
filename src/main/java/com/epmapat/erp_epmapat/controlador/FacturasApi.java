@@ -524,4 +524,10 @@ public class FacturasApi {
 			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechatope) {
 		return ResponseEntity.ok(facServicio.getFacForRemisiones(idcliente, fechatope));
 	}
+
+	@PutMapping("/remisionfactura")
+	public ResponseEntity<Facturas> updateFactura(@RequestParam Long idfactura, @RequestBody Facturas factura) {
+		return ResponseEntity.ok(facServicio.updateFactura(idfactura, factura));
+	}
+
 }

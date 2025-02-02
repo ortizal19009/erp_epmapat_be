@@ -201,4 +201,9 @@ public class RubroServicio implements RubrosR {
    public Rubros findByIdRubro(Long idrubro) {
       return dao.findByIdRubro(idrubro);
    }
+
+   @Override
+   public List<Rubros> findByName(String descripcion) {
+      return dao.findByName(descripcion);
+   }
 }

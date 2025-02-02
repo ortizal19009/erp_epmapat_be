@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
@@ -91,6 +92,12 @@ public class RubrosApi {
 
 		Rubros actualizar = rubServicio.save(y);
 		return ResponseEntity.ok(actualizar);
+	}
+
+	@GetMapping("/findByName")
+	public ResponseEntity<List<Rubros>> getByName(@RequestParam String descripcion) {
+		return ResponseEntity.ok(rubServicio.findByName(descripcion.toLowerCase()));
+
 	}
 
 }

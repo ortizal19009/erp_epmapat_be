@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import javax.management.RuntimeErrorException;
+
 import com.epmapat.erp_epmapat.DTO.RemiDTO;
 import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -276,6 +278,21 @@ public class FacturaServicio {
 		}
 
 		return remision;
+	}
+
+	public Facturas updateFactura(Long idfactura, Facturas factura) {
+
+		Optional<Facturas> existingFactura = dao.findById(idfactura);
+		if (existingFactura.isPresent()) {
+			Facturas existingFact = existingFactura.get();
+			existingFact.setConveniopago(factura.getConveniopago());
+			existingFact.setFechaconvenio(factura.getFechaconvenio());
+			existingFact.setUsumodi(factura.getUsumodi());
+			existingFact.setFecmodi(factura.getFecmodi());
+			return dao.save(existingFact);
+		} else {
+			throw new RuntimeErrorException(null, "FACTURA NO ENCONTRADA");
+		}
 	}
 
 }

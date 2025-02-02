@@ -322,12 +322,22 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<CVFacturasNoConsumo> getCVByFacturasNoConsumo(LocalDate fecha);
 
 	/* CONSULTA PARA LAS REMISIONES DE MULTAS HE INTERESES */
-	@Query(value = "select f.idfactura, m.descripcion, f.feccrea, SUM(rf.valorunitario * rf.cantidad ) AS total " +
-			"from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join modulos m on f.idmodulo = m.idmodulo join clientes c on f.idcliente = c.idcliente " +
-			"where f.totaltarifa > 0 and f.idcliente = ?1 and (( (f.estado = 1 or f.estado = 2)	and f.fechacobro is null) or f.estado = 3 )	and f.fechaeliminacion is null " +
-			"and f.fechaconvenio is null and not rf.idrubro_rubros = 165 and f.feccrea <= ?2 and (f.idmodulo = 3 or f.idmodulo = 4 or f.idmodulo = 27) " +
-			"group by f.idfactura, m.descripcion, f.feccrea", nativeQuery = true)
-	public List<Remision> getFacForRemisiones(Long idcliente, LocalDate topefecha);
+	@Query(value = "SELECT f.idfactura, m.descripcion, f.feccrea, SUM(rf.valorunitario * rf.cantidad) AS total " +
+	"FROM rubroxfac rf " +
+	"JOIN facturas f ON rf.idfactura_facturas = f.idfactura " +
+	"JOIN modulos m ON f.idmodulo = m.idmodulo " +
+	"JOIN clientes c ON f.idcliente = c.idcliente " +
+	"WHERE f.totaltarifa > 0 " +
+	"AND f.idcliente = ?1 " +
+	"AND ((f.estado IN (1, 2) AND f.fechacobro IS NULL) OR f.estado = 3) " +
+	"AND f.fechaeliminacion IS NULL " +
+	"AND f.fechaconvenio IS NULL " +
+	"AND rf.idrubro_rubros NOT IN (165, 5, 6) " +
+	"AND m.idmodulo IN (3, 4, 27) " +
+	"AND f.feccrea <= ?2 " +
+	"GROUP BY f.idfactura, m.descripcion, f.feccrea " +
+	"ORDER BY m.descripcion ASC", nativeQuery = true)
+public List<Remision> getFacForRemisiones(Long idcliente, LocalDate topefecha);
 
 	/*
 	 * 
