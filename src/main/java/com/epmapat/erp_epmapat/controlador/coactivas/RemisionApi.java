@@ -1,7 +1,11 @@
 package com.epmapat.erp_epmapat.controlador.coactivas;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +33,15 @@ public class RemisionApi {
     @PostMapping
     public ResponseEntity<Remision> saveRemision(@RequestBody Remision remision) {
         return ResponseEntity.ok(remisionServicio.saveRemision(remision));
+    }
+
+    @GetMapping("/reportes")
+    public ResponseEntity<List<Remision>> getRemisionesByFeccrea(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
+            System.out.println(d);
+            System.out.println(h);
+        return ResponseEntity.ok(remisionServicio.findRemisionesByFeccrea(d, h));
+
     }
 
 }

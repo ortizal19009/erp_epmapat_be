@@ -1,5 +1,8 @@
 package com.epmapat.erp_epmapat.servicio.coactivas;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,4 +28,8 @@ public class RemisionServicio {
     public Remision saveRemision(Remision remision) {
         return dao.save(remision);
     }
+
+    public List<Remision> findRemisionesByFeccrea(LocalDate d, LocalDate h) {
+        return dao.findRemisionesByFeccrea(d, h);
+     }
 }
