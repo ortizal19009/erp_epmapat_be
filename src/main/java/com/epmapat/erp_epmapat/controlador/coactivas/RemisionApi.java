@@ -38,8 +38,6 @@ public class RemisionApi {
     @GetMapping("/reportes")
     public ResponseEntity<List<Remision>> getRemisionesByFeccrea(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
-            System.out.println(d);
-            System.out.println(h);
         return ResponseEntity.ok(remisionServicio.findRemisionesByFeccrea(d, h));
 
     }

@@ -11,6 +11,8 @@ import javax.management.RuntimeErrorException;
 
 import com.epmapat.erp_epmapat.DTO.RemiDTO;
 import com.epmapat.erp_epmapat.interfaces.*;
+
+import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -293,6 +295,10 @@ public class FacturaServicio {
 		} else {
 			throw new RuntimeErrorException(null, "FACTURA NO ENCONTRADA");
 		}
+	}
+
+	public List<CVFacturasNoConsumo> getCvFacturasByRubro(Long idrubro, LocalDate fecha) {
+		return dao.getCvFacturasByRubro(idrubro, fecha);
 	}
 
 }

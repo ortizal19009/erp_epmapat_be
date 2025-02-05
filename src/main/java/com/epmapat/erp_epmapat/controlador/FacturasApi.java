@@ -530,4 +530,10 @@ public class FacturasApi {
 		return ResponseEntity.ok(facServicio.updateFactura(idfactura, factura));
 	}
 
+	@GetMapping("/reportes/cv_facxrubro")
+	public ResponseEntity<List<CVFacturasNoConsumo>> getCvFacturasByRubro(@RequestParam Long idrubro,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+		return ResponseEntity.ok(facServicio.getCvFacturasByRubro(idrubro, fecha));
+	}
+
 }

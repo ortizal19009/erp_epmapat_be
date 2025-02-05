@@ -323,21 +323,21 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	/* CONSULTA PARA LAS REMISIONES DE MULTAS HE INTERESES */
 	@Query(value = "SELECT f.idfactura, m.descripcion, f.feccrea, SUM(rf.valorunitario * rf.cantidad) AS total " +
-	"FROM rubroxfac rf " +
-	"JOIN facturas f ON rf.idfactura_facturas = f.idfactura " +
-	"JOIN modulos m ON f.idmodulo = m.idmodulo " +
-	"JOIN clientes c ON f.idcliente = c.idcliente " +
-	"WHERE f.totaltarifa > 0 " +
-	"AND f.idcliente = ?1 " +
-	"AND ((f.estado IN (1, 2) AND f.fechacobro IS NULL) OR f.estado = 3) " +
-	"AND f.fechaeliminacion IS NULL " +
-	"AND f.fechaconvenio IS NULL " +
-	"AND rf.idrubro_rubros NOT IN (165, 5, 6) " +
-	"AND m.idmodulo IN (3, 4, 27) " +
-	"AND f.feccrea <= ?2 " +
-	"GROUP BY f.idfactura, m.descripcion, f.feccrea " +
-	"ORDER BY m.descripcion ASC", nativeQuery = true)
-public List<Remision> getFacForRemisiones(Long idcliente, LocalDate topefecha);
+			"FROM rubroxfac rf " +
+			"JOIN facturas f ON rf.idfactura_facturas = f.idfactura " +
+			"JOIN modulos m ON f.idmodulo = m.idmodulo " +
+			"JOIN clientes c ON f.idcliente = c.idcliente " +
+			"WHERE f.totaltarifa > 0 " +
+			"AND f.idcliente = ?1 " +
+			"AND ((f.estado IN (1, 2) AND f.fechacobro IS NULL) OR f.estado = 3) " +
+			"AND f.fechaeliminacion IS NULL " +
+			"AND f.fechaconvenio IS NULL " +
+			"AND rf.idrubro_rubros NOT IN (165, 5, 6) " +
+			"AND m.idmodulo IN (3, 4, 27) " +
+			"AND f.feccrea <= ?2 " +
+			"GROUP BY f.idfactura, m.descripcion, f.feccrea " +
+			"ORDER BY m.descripcion ASC", nativeQuery = true)
+	public List<Remision> getFacForRemisiones(Long idcliente, LocalDate topefecha);
 
 	/*
 	 * 
@@ -355,5 +355,10 @@ public List<Remision> getFacForRemisiones(Long idcliente, LocalDate topefecha);
 	 * 
 	 * 
 	 */
+
+	@Query(value = "select f.idfactura as factura, c.nombre , sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro join clientes c on f.idcliente = c.idcliente "+
+			 "where r.idrubro = ?1 and f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?2 or f.fechacobro is null)) or f.estado = 3 ) " +
+			"and f.fechaconvenio is null and f.fechaeliminacion is null group by f.idfactura, c.nombre 	", nativeQuery = true)
+	public List<CVFacturasNoConsumo> getCvFacturasByRubro(Long idrubro, LocalDate fecha); 
 
 }
