@@ -22,8 +22,8 @@ public class Usrxmodulos {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idusrxmodulos;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "iduduario_usuarios")
-    private Usuarios iduduario_usuarios;
+    @JoinColumn(name = "idusuario_usuarios")
+    private Usuarios idusuario_usuarios;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "iderpmodulo_erpmodulos")
     private Erpmodulos iderpmodulo_erpmodulos;

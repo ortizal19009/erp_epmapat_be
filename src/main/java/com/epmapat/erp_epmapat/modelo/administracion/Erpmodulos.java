@@ -18,6 +18,6 @@ import lombok.Setter;
 public class Erpmodulos {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long iderpmodulos;
-    private String descipcion;
+    private Long iderpmodulo;
+    private String descripcion;
 }
