@@ -2,6 +2,7 @@ package com.epmapat.erp_epmapat.controlador.coactivas;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,10 +37,15 @@ public class RemisionApi {
     }
 
     @GetMapping("/reportes")
-    public ResponseEntity<List<Remision>> getRemisionesByFeccrea(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
+    public ResponseEntity<List<Remision>> getRemisionesByFeccrea(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
         return ResponseEntity.ok(remisionServicio.findRemisionesByFeccrea(d, h));
 
     }
 
+    @GetMapping("/one")
+    public ResponseEntity<Optional<Remision>> getRemisionById(@RequestParam Long idremision) {
+        return ResponseEntity.ok(remisionServicio.findRemisionById(idremision));
+    }
 }

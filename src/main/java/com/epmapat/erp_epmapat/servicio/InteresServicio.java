@@ -113,7 +113,15 @@ public class InteresServicio {
 		// Uso de Java Streams para mapear la lista
 		factura.stream().forEach(_factura -> {
 			// Convertir la fecha de creación a LocalDate
-			LocalDate fecInicio = LocalDate.parse(_factura.getFeccrea());
+			LocalDate fecInicio;
+			if (_factura.getFormapago() == 4) {
+				fecInicio = LocalDate.parse(_factura.getFechatransferencia());
+
+			} else {
+				fecInicio = LocalDate.parse(_factura.getFeccrea());
+
+			}
+			// LocalDate fecInicio = LocalDate.parse(_factura.getFeccrea());
 			LocalDate fecFinal = LocalDate.now();
 			int anioI = fecInicio.getYear();
 			int anioF = fecFinal.getYear();
@@ -122,7 +130,6 @@ public class InteresServicio {
 			if (anioI < anioF) {
 				int mesI = fecInicio.getMonthValue();
 				if (mesI == 12 && mesF == 1 && anioI + 1 == anioF) {
-					System.out.println("");
 				} else {
 					while (anioI <= anioF) {
 						if (anioI < anioF) {

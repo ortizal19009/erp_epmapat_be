@@ -251,7 +251,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// f.idfactura = rf.idfactura_facturas where f.idfactura = ?1 and not (
 	// rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5) group by
 	// rf.idfactura_facturas , f.feccrea ", nativeQuery = true)
-	@Query(value = "select rf.idfactura_facturas as idfactura, sum(rf.cantidad * rf.valorunitario) as suma,f.feccrea from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas  where f.idfactura = ?1 and not ( rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5 ) group by rf.idfactura_facturas , f.feccrea ", nativeQuery = true)
+	@Query(value = "select rf.idfactura_facturas as idfactura, sum(rf.cantidad * rf.valorunitario) as suma, f.feccrea, f.formapago, f.fechatransferencia from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas  where f.idfactura = ?1 and not ( rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5 ) group by rf.idfactura_facturas , f.feccrea, f.formapago, f.fechatransferencia ", nativeQuery = true)
 	public List<FacIntereses> getForIntereses(Long idfactura);
 
 	/*

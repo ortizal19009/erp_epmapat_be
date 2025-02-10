@@ -2,6 +2,7 @@ package com.epmapat.erp_epmapat.servicio.coactivas;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -31,5 +32,8 @@ public class RemisionServicio {
 
     public List<Remision> findRemisionesByFeccrea(LocalDate d, LocalDate h) {
         return dao.findRemisionesByFeccrea(d, h);
-     }
+    }
+    public Optional<Remision> findRemisionById(Long idremision){
+        return dao.findById(idremision);
+    }
 }
