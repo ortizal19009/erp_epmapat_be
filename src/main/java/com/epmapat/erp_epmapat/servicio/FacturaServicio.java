@@ -282,6 +282,28 @@ public class FacturaServicio {
 		return remision;
 	}
 
+	public List<RemiDTO> getFacForRemisionesAbonados(Long idcliente, Long cuenta, LocalDate topefecha) {
+		List<Remision> _facturas = dao.getFacForRemisionesAbonados(idcliente, cuenta, topefecha);
+		List<RemiDTO> remision = new ArrayList<>();
+
+		for (Remision item : _facturas) {
+			RemiDTO remi = new RemiDTO();
+			Object interes = interesServicio.facturaid(item.getIdfactura());
+			if (interes instanceof Double) {
+				remi.setIntereses(BigDecimal.valueOf((Double) interes)); // Convert Double to BigDecimal
+			} else {
+				remi.setIntereses(BigDecimal.ZERO); // Default if not a Double
+			}
+			remi.setIdfactura(item.getIdfactura());
+			remi.setDescripcion(item.getDescripcion());
+			remi.setTotal(item.getTotal());
+			remi.setFeccrea(item.getFeccrea());
+			remision.add(remi);
+		}
+
+		return remision;
+	}
+
 	public Facturas updateFactura(Long idfactura, Facturas factura) {
 
 		Optional<Facturas> existingFactura = dao.findById(idfactura);
