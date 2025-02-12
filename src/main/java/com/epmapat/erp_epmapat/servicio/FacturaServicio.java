@@ -276,6 +276,7 @@ public class FacturaServicio {
 			remi.setDescripcion(item.getDescripcion());
 			remi.setTotal(item.getTotal());
 			remi.setFeccrea(item.getFeccrea());
+			remi.setNrofactura(item.getNrofactura());
 			remision.add(remi);
 		}
 
@@ -298,6 +299,7 @@ public class FacturaServicio {
 			remi.setDescripcion(item.getDescripcion());
 			remi.setTotal(item.getTotal());
 			remi.setFeccrea(item.getFeccrea());
+			remi.setNrofactura(item.getNrofactura());
 			remision.add(remi);
 		}
 

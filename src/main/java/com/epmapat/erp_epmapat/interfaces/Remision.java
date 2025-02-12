@@ -9,4 +9,5 @@ public interface Remision {
     LocalDate getFeccrea();
     BigDecimal getTotal();
     BigDecimal getIntereses();
+    String getNrofactura();
 }

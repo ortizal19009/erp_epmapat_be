@@ -17,5 +17,6 @@ public class RemiDTO {
     private LocalDate feccrea;
     private BigDecimal total;
     private BigDecimal intereses;
+    private String nrofactura;
 
 }
