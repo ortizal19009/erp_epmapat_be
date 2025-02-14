@@ -313,6 +313,7 @@ public class FacturaServicio {
 			Facturas existingFact = existingFactura.get();
 			existingFact.setConveniopago(factura.getConveniopago());
 			existingFact.setFechaconvenio(factura.getFechaconvenio());
+			existingFact.setSwcondonar(factura.getSwcondonar());
 			existingFact.setUsumodi(factura.getUsumodi());
 			existingFact.setFecmodi(factura.getFecmodi());
 			return dao.save(existingFact);

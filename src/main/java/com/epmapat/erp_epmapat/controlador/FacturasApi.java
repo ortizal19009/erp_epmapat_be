@@ -266,7 +266,6 @@ public class FacturasApi {
 		} else {
 			y.setInterescobrado(interes.add(x.getInterescobrado()));
 		}
-
 		y.setConveniopago(x.getConveniopago());
 		y.setEstado(x.getEstado());
 		y.setEstadoconvenio(x.getEstadoconvenio());
