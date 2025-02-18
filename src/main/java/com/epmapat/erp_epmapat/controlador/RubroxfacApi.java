@@ -42,7 +42,7 @@ public class RubroxfacApi {
    }
 
    @GetMapping("/sumarubros")
-   public Double getSumaRubros(@RequestParam("idfactura") Long idfactura) {
+   public Double getSumaRubros(@RequestParam Long idfactura) {
       return rxfServicio.getSumaRubros(idfactura);
    }
 
