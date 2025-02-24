@@ -14,6 +14,7 @@ import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
+import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 
@@ -98,6 +99,41 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	@Query(value = "SELECT * FROM emisiones e join lecturas l on e.idemision = l.idemision join facturas f on l.idfactura = f.idfactura where not f.fechaeliminacion is null and l.idemision = ?1 order by f.idabonado", nativeQuery = true)
 	List<Lecturas> findByIdEmisiones(Long idemision);
 
+	@Query(value = "select\r\n" + //
+				"\trf.idfactura_facturas as planilla,\r\n" + //
+				"\tl.idlectura,\r\n" + //
+				"\te.emision ,\r\n" + //
+				"\tl.idabonado_abonados as cuenta,\r\n" + //
+				"\tc.nombre,\r\n" + //
+				"\tr.descripcion as ruta, \r\n" + //
+				"\tsum(rf.cantidad * rf.valorunitario) as suma\r\n" + //
+				"from\r\n" + //
+				"\temisiones e\r\n" + //
+				"join lecturas l on\r\n" + //
+				"\te.idemision = l.idemision\r\n" + //
+				"join facturas f on\r\n" + //
+				"\tl.idfactura = f.idfactura\r\n" + //
+				"join clientes c on\r\n" + //
+				"\tf.idcliente = c.idcliente\r\n" + //
+				"join abonados a on\r\n" + //
+				"\tl.idabonado_abonados = a.idabonado\r\n" + //
+				"join rutas r on\r\n" + //
+				"\ta.idruta_rutas = r.idruta\r\n" + //
+				"join rubroxfac rf on \r\n" + //
+				"\tl.idfactura = rf.idfactura_facturas\r\n" + //
+				"where\r\n" + //
+				"\tnot f.fechaeliminacion is null\r\n" + //
+				"\tand l.idemision = ?1\r\n" + //
+				"group by\r\n" + //
+				"\trf.idfactura_facturas,\r\n" + //
+				"\tl.idlectura,\r\n" + //
+				"\te.emision ,\r\n" + //
+				"\tl.idabonado_abonados,\r\n" + //
+				"\tc.nombre,\r\n" + //
+				"\tr.descripcion\r\n" + //
+				"order by\r\n" + //
+				"\tl.idabonado_abonados", nativeQuery = true)
+	List<RepFacEliminadasByEmision> findByIdEmisionesR(Long idemision);
 	/* REPORTES DE LOS RUBROS DE LA EMISION INICIAL */
 	@Async
 	@Query(value = " WITH max_fechaemision AS ( "

@@ -22,6 +22,7 @@ import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
+import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
@@ -191,6 +192,10 @@ public class LecturasApi {
 	@GetMapping("/emision")
 	public ResponseEntity<List<Lecturas>> getByIdEmisiones(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.findByIdEmisiones(idemision));
+	}
+	@GetMapping("reporte/emision")
+	public ResponseEntity<List<RepFacEliminadasByEmision>> getByIdEmisionesR(@RequestParam Long idemision) {
+		return ResponseEntity.ok(lecServicio.findByIdEmisionesR(idemision));
 	}
 
 	@GetMapping("/reportes/rubros/inicial")

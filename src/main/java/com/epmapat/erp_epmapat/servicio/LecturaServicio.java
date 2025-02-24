@@ -14,6 +14,7 @@ import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
+import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
@@ -128,6 +129,9 @@ public class LecturaServicio {
 
 	public List<Lecturas> findByIdEmisiones(Long idemision) {
 		return dao.findByIdEmisiones(idemision);
+	}
+	public List<RepFacEliminadasByEmision> findByIdEmisionesR(Long idemision) {
+		return dao.findByIdEmisionesR(idemision);
 	}
 
 	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision) {
