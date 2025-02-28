@@ -60,5 +60,7 @@ public interface TransaciR extends JpaRepository<Transaci, Long> {
 	// Transaciones de los Asientos por números y fechas (Para el reporte de detalle de asientos)
 	@Query(value = "SELECT * FROM transaci t INNER JOIN asientos a ON t.idasiento = a.idasiento WHERE a.asiento BETWEEN (?1) AND (?2) and a.fecha BETWEEN (?3) AND (?4) ORDER BY a.asiento ASC", nativeQuery = true)
 	public List<Transaci> tranAsientos(Long desdeAsi, Long hastaAsi, Date desdeFecha, Date hastaFecha);	
+	@Query(value = "SELECT * FROM transaci t JOIN asientos a ON  t.idasiento = a.idasiento WHERE t.codcue LIKE ?1% AND a.tipasi=1 ORDER BY codcue ASC", nativeQuery = true)
+	public List<Transaci> aperInicial(String codcue); 
 
 }

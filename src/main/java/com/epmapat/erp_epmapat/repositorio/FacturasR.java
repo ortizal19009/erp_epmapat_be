@@ -204,7 +204,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			@Param("d_fecha") LocalDate h_fecha, @Param("recaudador") Long idrecaudador);
 
 	// Cuenta las Facturas pendientes de un Abonado
-	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL and fechaconvenio is null")
+	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL and not f.idmodulo = 27 and fechaconvenio is null")
 	long countFacturasByAbonadoAndPendientes(@Param("idabonado") Long idabonado);
 
 	// Listado de facturas anuladas
@@ -225,8 +225,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Facturas> findByFecEliminacion(Date d, Date h);
 
 	/* reporte de facturas cobradas por transferencia */
-	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 and not rf.idrubro_rubros = 165  group by f.idfactura order by f.nrofactura asc")
-	public List<Object[]> transferenciasCobradas(Date d_fecha, Date h_fecha);
+	@Query(value = "select f.idfactura, f.fechatransferencia, f.nrofactura, f.formapago, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) as valor, c.nombre, c.cedula, f.swiva from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura join clientes c on f.idcliente = c.idcliente where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 and not rf.idrubro_rubros = 165  group by f.idfactura, c.nombre, c.cedula order by f.nrofactura asc" , nativeQuery = true)
+	public List<R_transferencias> transferenciasCobradas(Date d_fecha, Date h_fecha);
 
 	/* REPORTE DE FACTURAS TRANSFERIDAS PERO NO COBRADAS */
 	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 group by f.idfactura order by f.nrofactura asc")

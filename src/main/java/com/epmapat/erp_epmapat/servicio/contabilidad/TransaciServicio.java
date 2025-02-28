@@ -107,12 +107,15 @@ public class TransaciServicio {
 		return tflujo;
 	}
 
-	@GetMapping("/tipasi")
+
 	// public ResponseEntity<List<Transaci>> getByTipAsi(@RequestParam("tipasi") Long tipasi) {
 	// 	return ResponseEntity.ok(dao.findByTipAsi(tipasi));
 	// }
-	public List<Transaci> getByTipAsi(@RequestParam("tipasi") Long tipasi) {
+	public List<Transaci> getByTipAsi( Long tipasi) {
 		return dao.findByTipAsi(tipasi);
 	}
-
+	public List<Transaci> aperInicial(String codcue) {
+		// TODO Auto-generated method stub
+		return dao.aperInicial(codcue);
+	}
 }

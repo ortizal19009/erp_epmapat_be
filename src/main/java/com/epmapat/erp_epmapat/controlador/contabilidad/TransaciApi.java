@@ -102,7 +102,8 @@ public class TransaciApi {
 	}
 
 	@GetMapping("/tipasi")
-	public ResponseEntity<List<Transaci>> getByTipAsi(@RequestParam("tipasi") Long tipasi) {
+	public ResponseEntity<List<Transaci>> getByTipAsi(@RequestParam Long tipasi) {
+		System.out.println(tipasi);
 		return ResponseEntity.ok(tranServicio.getByTipAsi(tipasi));
 	}
 
@@ -203,6 +204,10 @@ public class TransaciApi {
 	public ResponseEntity<Boolean> deleteTransaci(@PathVariable("inttra") Long inttra) {
 		tranServicio.deleteById(inttra);
 		return ResponseEntity.ok(!(tranServicio.findById(inttra) != null));
+	}
+	@GetMapping("/aperini")
+	public ResponseEntity<List<Transaci>> getAperInicial(@RequestParam("codcue") String Codcue) {
+		return ResponseEntity.ok(tranServicio.aperInicial(Codcue));
 	}
 
 }

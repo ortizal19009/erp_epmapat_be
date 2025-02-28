@@ -201,7 +201,8 @@ public class FacturaServicio {
 	}
 
 	/* transferencias cobradas */
-	public List<Object[]> transferenciasCobradas(Date d_fecha, Date h_fecha) {
+	public List<R_transferencias> transferenciasCobradas(Date d_fecha, Date h_fecha) {
+		System.out.println("Por aqui");
 		return this.dao.transferenciasCobradas(d_fecha, h_fecha);
 	}
 
