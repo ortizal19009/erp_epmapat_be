@@ -6,23 +6,24 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.epmapat.erp_epmapat.modelo.Ntacredito;
-import com.epmapat.erp_epmapat.repositorio.NtacreditoR;
+import com.epmapat.erp_epmapat.modelo.Valoresnc;
+import com.epmapat.erp_epmapat.repositorio.ValoresncR;
 
 @Service
-public class NtacreditoServicio {
+public class ValoresncServicio {
     @Autowired
-    private NtacreditoR dao;
-
-    public List<Ntacredito> findAll() {
+    private ValoresncR dao;
+    
+        public List<Valoresnc> findAll() {
         return dao.findAll();
     }
 
-    public Ntacredito save(Ntacredito ntacredito) {
+    public Valoresnc save(Valoresnc ntacredito) {
         return dao.save(ntacredito);
     }
 
-    public Optional<Ntacredito> findById(Long idntacredito) {
+    public Optional<Valoresnc> findById(Long idntacredito) {
         return dao.findById(idntacredito);
     }
+
 }

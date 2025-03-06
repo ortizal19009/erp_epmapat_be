@@ -13,29 +13,29 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.modelo.Ntacredito;
-import com.epmapat.erp_epmapat.servicio.NtacreditoServicio;
+import com.epmapat.erp_epmapat.modelo.Valoresnc;
+import com.epmapat.erp_epmapat.servicio.ValoresncServicio;
 
 @RestController
-@RequestMapping("/ntacredito")
+@RequestMapping("/valoresnc")
 @CrossOrigin("*")
-public class NtacreditoApi {
+public class ValoresncApi {
     @Autowired
-    private NtacreditoServicio ntacreditoServicio;
-
+    private ValoresncServicio valoresServicio;
+    
+    
     @GetMapping
-    public ResponseEntity<List<Ntacredito>> getAll() {
-        return ResponseEntity.ok(ntacreditoServicio.findAll());
+    public ResponseEntity<List<Valoresnc>> getAll() {
+        return ResponseEntity.ok(valoresServicio.findAll());
     }
 
-    @GetMapping("/{idntacredito}")
-    public ResponseEntity<Optional<Ntacredito>> getById(@PathVariable Long idntacredito) {
-        return ResponseEntity.ok(ntacreditoServicio.findById(idntacredito));
+    @GetMapping("/{idvaloresnc}")
+    public ResponseEntity<Optional<Valoresnc>> getById(@PathVariable Long idvaloresnc) {
+        return ResponseEntity.ok(valoresServicio.findById(idvaloresnc));
     }
 
     @PostMapping
-    public ResponseEntity<Ntacredito> save(@RequestBody Ntacredito ntacredito) {
-        return ResponseEntity.ok(ntacreditoServicio.save(ntacredito));
+    public ResponseEntity<Valoresnc> save(@RequestBody Valoresnc valoresnc) {
+        return ResponseEntity.ok(valoresServicio.save(valoresnc));
     }
-
 }
