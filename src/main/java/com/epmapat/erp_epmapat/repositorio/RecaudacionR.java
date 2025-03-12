@@ -1,5 +1,7 @@
 package com.epmapat.erp_epmapat.repositorio;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -23,5 +25,36 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
     @Query(value = "select r.recaudador from recaudacion r where Date(fechacobro) between ?1 and ?2 group by r.recaudador order by recaudador", nativeQuery = true)
     public List<RecaudadorI> findListRecaudador(Date d, Date h);
 
+    @Query(value = "select f.idfactura,c.nombre,f.nrofactura,f.estado,f.formapago," +
+            "sum((rf.cantidad * rf.valorunitario)+f.swiva ) as valor " +
+            "from recaudacion r " +
+            "join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
+            "join facturas f on fr.idfactura = f.idfactura " +
+            "join rubroxfac rf on rf.idfactura_facturas = f.idfactura " +
+            "join clientes c on c.idcliente = f.idcliente " +
+            "where r.fechacobro between ?1 and ?2 " +
+            "group by f.idfactura, c.nombre, f.nrofactura, f.estado, f.formapago " +
+            "order by f.nrofactura asc", nativeQuery = true)
+    public Object[] findFacturasToReport(LocalDateTime d, LocalDateTime h);
+
+    @Query(value = "select rf.idrubro_rubros, rb.descripcion, COUNT(f.idfactura) as nfacturas, sum(rf.cantidad * rf.valorunitario) as valor "
+            +
+            "from recaudacion r join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
+            "join facturas f on fr.idfactura = f.idfactura " +
+            "join rubroxfac rf on rf.idfactura_facturas = f.idfactura " +
+            "join rubros rb on rf.idrubro_rubros = rb.idrubro " +
+            "where r.fechacobro between ?1 and ?2 and f.feccrea <= ?3 " +
+            "group by rf.idrubro_rubros, rb.descripcion", nativeQuery = true)
+    public Object[] findRubrosAnterioresToReport(LocalDateTime d, LocalDateTime h, LocalDate t);
+
+    @Query(value = "select rf.idrubro_rubros, rb.descripcion, COUNT(f.idfactura) as nfacturas, sum(rf.cantidad * rf.valorunitario) as valor "
+            +
+            "from recaudacion r join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
+            "join facturas f on fr.idfactura = f.idfactura " +
+            "join rubroxfac rf on rf.idfactura_facturas = f.idfactura " +
+            "join rubros rb on rf.idrubro_rubros = rb.idrubro " +
+            "where r.fechacobro between ?1 and ?2 and f.feccrea > ?3 and rf.idrubro_rubros = 165" +
+            "group by rf.idrubro_rubros, rb.descripcion", nativeQuery = true)
+    public Object[] findRubrosActualesToReport(LocalDateTime d, LocalDateTime h, LocalDate t);
 
 }
