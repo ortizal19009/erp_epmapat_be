@@ -2,6 +2,8 @@ package com.epmapat.erp_epmapat.controlador;
 
 import java.util.Date;
 import java.util.List;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.RecaudaFacturasI;
 import com.epmapat.erp_epmapat.interfaces.RecaudadorI;
 import com.epmapat.erp_epmapat.modelo.Recaudacion;
 import com.epmapat.erp_epmapat.servicio.RecaudacionServicio;
@@ -89,6 +92,18 @@ public class RecaudacionApi {
       rec.setUsucrea(recaudacion.getUsucrea());
       Recaudacion updateRecaudacion = recaServicio.save(rec);
       return ResponseEntity.ok(updateRecaudacion);
+   }
+   @GetMapping("/reportes/facturas")
+   public ResponseEntity<List<RecaudaFacturasI>>findFacturasToReport(@RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime d, @RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime h){
+      return ResponseEntity.ok(recaServicio.findFacturasToReport(d, h));
+   }
+   @GetMapping("/reportes/rubanteriores")
+   public ResponseEntity<Object[]>findRubrosAnterioresToReport(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime d, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime h, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate t){
+      return ResponseEntity.ok(recaServicio.findRubrosAnterioresToReport(d, h, t));
+   }
+   @GetMapping("/reportes/rubactuales")
+   public ResponseEntity<Object[]>findRubrosActualesToReport(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime d, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam LocalDateTime h, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate t){
+      return ResponseEntity.ok(recaServicio.findRubrosActualesToReport(d, h, t));
    }
 
 }

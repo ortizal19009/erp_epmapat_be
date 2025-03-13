@@ -3,10 +3,13 @@ package com.epmapat.erp_epmapat.servicio;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.RecaudaFacturasI;
 import com.epmapat.erp_epmapat.interfaces.RecaudadorI;
 import com.epmapat.erp_epmapat.modelo.Recaudacion;
 import com.epmapat.erp_epmapat.repositorio.RecaudacionR;
@@ -37,6 +40,15 @@ public class RecaudacionServicio {
    }
    public List<RecaudadorI> findListRecaudador(Date d, Date h) {
       return dao.findListRecaudador( d, h);
+   }
+   public List<RecaudaFacturasI> findFacturasToReport(LocalDateTime d, LocalDateTime h){
+      return dao.findFacturasToReport(d, h);
+   }
+   public Object[] findRubrosAnterioresToReport(LocalDateTime d, LocalDateTime h, LocalDate t){
+      return dao.findRubrosAnterioresToReport(d, h, t);
+   }
+   public Object[] findRubrosActualesToReport(LocalDateTime d, LocalDateTime h, LocalDate t){
+      return dao.findRubrosActualesToReport(d, h, t);
    }
 
 }
