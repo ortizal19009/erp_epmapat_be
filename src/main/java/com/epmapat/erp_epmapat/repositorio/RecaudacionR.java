@@ -26,15 +26,17 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
         @Query(value = "select r.recaudador from recaudacion r where Date(fechacobro) between ?1 and ?2 group by r.recaudador order by recaudador", nativeQuery = true)
         public List<RecaudadorI> findListRecaudador(Date d, Date h);
 
-        @Query(value = "select f.idfactura,c.nombre,f.nrofactura,f.estado,f.formapago," +
+        //
+        @Query(value = "select f.idfactura,c.nombre,f.nrofactura,f.estado,f.formapago, f.fechacobro, u.nomusu, f.idabonado," +
                         "sum((rf.cantidad * rf.valorunitario)+f.swiva ) as valor " +
                         "from recaudacion r " +
                         "join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
                         "join facturas f on fr.idfactura = f.idfactura " +
+                        "join usuarios u on f.usuariocobro = u.idusuario "+
                         "join rubroxfac rf on rf.idfactura_facturas = f.idfactura " +
                         "join clientes c on c.idcliente = f.idcliente " +
                         "where r.fechacobro between ?1 and ?2 and not rf.idrubro_rubros = 165 " +
-                        "group by f.idfactura, c.nombre, f.nrofactura, f.estado, f.formapago " +
+                        "group by f.idfactura, c.nombre, f.nrofactura, f.estado, f.formapago, f.fechacobro, u.nomusu " +
                         "order by f.nrofactura asc", nativeQuery = true)
         public List<RecaudaFacturasI> findFacturasToReport(LocalDateTime d, LocalDateTime h);
 
