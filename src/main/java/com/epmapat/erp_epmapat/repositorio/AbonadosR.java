@@ -60,6 +60,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 			+ "c.fechanacimiento as fechanacimiento, " + "c.email as email) " +
 			"FROM Clientes c INNER JOIN Abonados a ON c.idcliente = a.idcliente_clientes")
 	List<Map<String, Object>> allAbonadosCampos();
+
 	// Campos específicos de Clientes y Abonados
 	/*
 	 * @Query("SELECT new map(" +
@@ -74,4 +75,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	 */
 	// Un Abonado
 	Abonados findByIdabonado(Long idabonado);
+
+	@Query(value = "SELECT * FROM abonados a where a.idruta_rutas = ?1 order by a.idabonado asc", nativeQuery = true)
+	public List<Abonados> getCuentasByRutas(Long idruta);
 }

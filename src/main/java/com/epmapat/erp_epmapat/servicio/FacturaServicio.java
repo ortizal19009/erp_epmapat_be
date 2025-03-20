@@ -6,27 +6,56 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.management.RuntimeErrorException;
 
 import com.epmapat.erp_epmapat.DTO.RemiDTO;
+import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
+import com.epmapat.erp_epmapat.controlador.AbonadosApi;
+import com.epmapat.erp_epmapat.controlador.AboxSuspensionC;
 import com.epmapat.erp_epmapat.interfaces.*;
 
-import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+
+import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Facturas;
+import com.epmapat.erp_epmapat.repositorio.AbonadosR;
+import com.epmapat.erp_epmapat.repositorio.AboxSuspensionR;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 
 @Service
 public class FacturaServicio {
+
+	private final AboxSuspensionR aboxSuspensionR;
+
+	private final AboxSuspensionC aboxSuspensionC;
+
+	private final AbonadosR abonadosR;
+
+	private final AbonadoServicio abonadoServicio;
+
+	private final AbonadosApi abonadosApi;
 
 	@Autowired
 	private FacturasR dao;
 	@Autowired
 	@Lazy
 	private InteresServicio interesServicio;
+	@Autowired
+	@Lazy
+	private AbonadoServicio abonadosServicio;
+
+	FacturaServicio(AbonadosApi abonadosApi, AbonadoServicio abonadoServicio, AbonadosR abonadosR,
+			AboxSuspensionC aboxSuspensionC, AboxSuspensionR aboxSuspensionR) {
+		this.abonadosApi = abonadosApi;
+		this.abonadoServicio = abonadoServicio;
+		this.abonadosR = abonadosR;
+		this.aboxSuspensionC = aboxSuspensionC;
+		this.aboxSuspensionR = aboxSuspensionR;
+	}
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -324,6 +353,152 @@ public class FacturaServicio {
 
 	public List<CVFacturasNoConsumo> getCvFacturasByRubro(Long idrubro, LocalDate fecha) {
 		return dao.getCvFacturasByRubro(idrubro, fecha);
+	}
+
+	public List<ValorFactDTO> findFacturasSinCobro(Long cuenta) {
+		// Obtener la lista de facturas desde el DAO
+		List<FacturasSinCobroInter> facturas = dao.findFacturasSinCobro(cuenta);
+		// Procesar la lista y transformar cada FacturasSinCobroInter en ValorFactDTO
+		List<ValorFactDTO> facturasActualizadas = facturas.stream()
+				.map(item -> {
+					// Obtener el interés desde el servicio
+					Object interesObj = interesServicio.facturaid(item.getIdfactura());
+					BigDecimal interes = BigDecimal.ZERO; // Valor por defecto
+
+					// Convertir el interés a BigDecimal
+					if (interesObj instanceof Double) {
+						interes = BigDecimal.valueOf((Double) interesObj); // Convertir Double a BigDecimal
+					} else if (interesObj instanceof BigDecimal) {
+						interes = (BigDecimal) interesObj; // Ya es BigDecimal, no es necesario convertir
+					} else {
+						System.err.println("Tipo de interés no soportado: " + interesObj.getClass().getName());
+					}
+					// Crear un nuevo objeto ValorFactDTO y asignar los valores
+					ValorFactDTO dto = new ValorFactDTO();
+					dto.setIdfactura(item.getIdfactura());
+					dto.setSubtotal(item.getSubtotal());
+					dto.setNumfacturas(facturas.size());
+					dto.setInteres(interes);
+					dto.setCuenta(cuenta);
+					// Calcular el total sumando el subtotal y el interés
+					BigDecimal total = item.getSubtotal().add(interes);
+					dto.setTotal(total);
+					return dto; // Devolver el DTO
+				})
+				.collect(Collectors.toList()); // Recopilar los DTOs en una lista
+		// Devolver la lista de DTOs
+		return facturasActualizadas;
+	}
+
+	public ValorFactDTO getTotalesByAbonado(Long cuenta) {
+		// Obtener la lista de facturas
+		List<ValorFactDTO> facturas = findFacturasSinCobro(cuenta);
+
+		// Inicializar acumuladores
+		BigDecimal st = BigDecimal.ZERO; // Subtotal acumulado
+		BigDecimal t = BigDecimal.ZERO; // Total acumulado
+		BigDecimal i = BigDecimal.ZERO; // Interés acumulado
+
+		// Calcular los totales
+		for (ValorFactDTO item : facturas) {
+			st = st.add(item.getSubtotal()); // Acumular subtotal
+			t = t.add(item.getTotal()); // Acumular total
+			i = i.add(item.getInteres()); // Acumular interés
+		}
+
+		// Crear un nuevo DTO con los totales calculados
+		ValorFactDTO newFactura = new ValorFactDTO();
+		newFactura.setSubtotal(st);
+		newFactura.setTotal(t);
+		newFactura.setInteres(i);
+		newFactura.setNumfacturas(facturas.size());
+		newFactura.setCuenta(cuenta);
+
+		// Devolver el DTO con los totales
+		return newFactura;
+	}
+
+	public List<ValorFactDTO> findSincobroDatos(Long cuenta) {
+		// Obtener la lista de facturas desde el DAO
+		List<FacturasSinCobroInter> facturas = dao.findSincobroDatos(cuenta);
+		// Procesar la lista y transformar cada FacturasSinCobroInter en ValorFactDTO
+		List<ValorFactDTO> facturasActualizadas = facturas.stream()
+				.map(item -> {
+					// Obtener el interés desde el servicio
+					Object interesObj = interesServicio.facturaid(item.getIdfactura());
+					BigDecimal interes = BigDecimal.ZERO; // Valor por defecto
+
+					// Convertir el interés a BigDecimal
+					if (interesObj instanceof Double) {
+						interes = BigDecimal.valueOf((Double) interesObj); // Convertir Double a BigDecimal
+					} else if (interesObj instanceof BigDecimal) {
+						interes = (BigDecimal) interesObj; // Ya es BigDecimal, no es necesario convertir
+					} else {
+						System.err.println("Tipo de interés no soportado: " + interesObj.getClass().getName());
+					}
+					// Crear un nuevo objeto ValorFactDTO y asignar los valores
+					ValorFactDTO dto = new ValorFactDTO();
+					dto.setIdfactura(item.getIdfactura());
+					dto.setSubtotal(item.getSubtotal());
+					dto.setNumfacturas(facturas.size());
+					dto.setInteres(interes);
+					dto.setCuenta(cuenta);
+					dto.setNombre(item.getNombre());
+					dto.setCedula(item.getCedula());
+					dto.setDireccionubicacion(item.getDireccionubicacion());
+					// Calcular el total sumando el subtotal y el interés
+					BigDecimal total = item.getSubtotal().add(interes);
+					dto.setTotal(total);
+					return dto; // Devolver el DTO
+				})
+				.collect(Collectors.toList()); // Recopilar los DTOs en una lista
+		// Devolver la lista de DTOs
+		return facturasActualizadas;
+	}
+
+	public ValorFactDTO getTotalesByAbonadoDatos(Long cuenta) {
+		// Obtener la lista de facturas
+		List<ValorFactDTO> facturas = findSincobroDatos(cuenta);
+		ValorFactDTO newFactura = new ValorFactDTO();
+
+		if (facturas.size() > 0) {
+			// Inicializar acumuladores
+			BigDecimal st = BigDecimal.ZERO; // Subtotal acumulado
+			BigDecimal t = BigDecimal.ZERO; // Total acumulado
+			BigDecimal i = BigDecimal.ZERO; // Interés acumulado
+
+			// Calcular los totales
+			for (ValorFactDTO item : facturas) {
+				st = st.add(item.getSubtotal()); // Acumular subtotal
+				t = t.add(item.getTotal()); // Acumular total
+				i = i.add(item.getInteres()); // Acumular interés
+			}
+
+			// Crear un nuevo DTO con los totales calculados
+			newFactura.setSubtotal(st);
+			newFactura.setTotal(t);
+			newFactura.setInteres(i);
+			newFactura.setNumfacturas(facturas.size());
+			newFactura.setCuenta(cuenta);
+			newFactura.setNombre(facturas.get(0).getNombre());
+			newFactura.setCedula(facturas.get(0).getCedula());
+			newFactura.setDireccionubicacion(facturas.get(0).getDireccionubicacion());
+			return newFactura;
+		} else {
+			List<Abonados> abonado = abonadosServicio.getByIdabonado(cuenta);
+			newFactura.setSubtotal(BigDecimal.ZERO);
+			newFactura.setTotal(BigDecimal.ZERO);
+			newFactura.setInteres(BigDecimal.ZERO);
+			newFactura.setNumfacturas(facturas.size());
+			newFactura.setCuenta(cuenta);
+			newFactura.setNombre(abonado.get(0).getIdresponsable().getNombre());
+			newFactura.setCedula(abonado.get(0).getIdresponsable().getCedula());
+			newFactura.setDireccionubicacion(abonado.get(0).getDireccionubicacion());
+			return newFactura;
+		}
+
+		// Devolver el DTO con los totales
+		// return newFactura;
 	}
 
 }

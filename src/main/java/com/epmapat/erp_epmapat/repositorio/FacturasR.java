@@ -378,4 +378,16 @@ public List<Remision> getFacForRemisionesAbonados(Long idcliente,Long cuenta,  L
 			"and f.fechaconvenio is null and f.fechaeliminacion is null group by f.idfactura, c.nombre 	", nativeQuery = true)
 	public List<CVFacturasNoConsumo> getCvFacturasByRubro(Long idrubro, LocalDate fecha); 
 
+
+	@Query(value = "select f.idfactura, sum(rf.cantidad * rf.valorunitario) as subtotal from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null group by f.idfactura ORDER BY f.idfactura", nativeQuery = true)
+    public List<FacturasSinCobroInter> findFacturasSinCobro(Long cuenta);
+
+	@Query(value = "select f.idfactura, sum(rf.cantidad * rf.valorunitario) as subtotal, c.nombre, c.cedula, a.idabonado as cuenta, a.direccionubicacion "+
+	"from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas "+
+	"join clientes c on c.idcliente = f.idcliente "+
+	"join abonados a on a.idabonado = f.idabonado "+
+	"where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null "+
+	"group by f.idfactura, c.nombre, c.cedula, a.idabonado, a.direccionubicacion ORDER BY f.idfactura", nativeQuery = true)
+    public List<FacturasSinCobroInter> findSincobroDatos(Long cuenta);
+
 }

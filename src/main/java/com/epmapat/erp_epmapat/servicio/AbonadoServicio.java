@@ -3,11 +3,14 @@ package com.epmapat.erp_epmapat.servicio;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
 // import com.epmapat.erp_epmapat.repositorio.ClientesR;
@@ -17,6 +20,9 @@ public class AbonadoServicio {
 
 	@Autowired
 	private AbonadosR dao;
+	@Autowired
+	@Lazy
+	private FacturaServicio facturaServicio;
 
 	public List<Abonados> findAll(String c, Sort sort) {
 		if (c != null) {
@@ -26,7 +32,7 @@ public class AbonadoServicio {
 		}
 	}
 
-	//Todos los Abonados, Campos específicos
+	// Todos los Abonados, Campos específicos
 	public List<Map<String, Object>> allAbonadosCampos() {
 		return dao.allAbonadosCampos();
 	}
@@ -63,7 +69,7 @@ public class AbonadoServicio {
 		return dao.findByIdruta(idruta);
 	}
 
-	public List<Abonados> findByIdCliente(Long idcliente){
+	public List<Abonados> findByIdCliente(Long idcliente) {
 		return dao.findByIdCliente(idcliente);
 	}
 
@@ -87,13 +93,29 @@ public class AbonadoServicio {
 	public boolean clienteTieneAbonados(Long idcliente) {
 		return dao.existsByIdcliente_clientes(idcliente);
 	}
+
 	public Abonados findOne(Long idabonado) {
 		return dao.findOne(idabonado);
 	}
-	//Un Abonado
+
+	// Un Abonado
 	public Abonados unAbonado(Long idabonado) {
 		return dao.findByIdabonado(idabonado);
 	}
 
+	public List<ValorFactDTO> getCuentasByRutas(Long idruta) {
+		// Obtener la lista de abonados por ruta
+		List<Abonados> abonados = dao.getCuentasByRutas(idruta);
+	
+		// Procesar cada abonado y obtener los totales
+		List<ValorFactDTO> totales = abonados.stream()
+			.map(item -> {
+				return facturaServicio.getTotalesByAbonadoDatos(item.getIdabonado());
+			}) // Obtener los totales para cada abonado
+			.collect(Collectors.toList()); // Recopilar los resultados en una lista
+	
+		// Devolver la lista de totales
+		return totales;
+	}
 
 }

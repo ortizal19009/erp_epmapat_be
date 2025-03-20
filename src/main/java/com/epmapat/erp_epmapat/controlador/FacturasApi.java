@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.DTO.RemiDTO;
+import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
@@ -540,6 +541,23 @@ public class FacturasApi {
 	public ResponseEntity<List<CVFacturasNoConsumo>> getCvFacturasByRubro(@RequestParam Long idrubro,
 			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
 		return ResponseEntity.ok(facServicio.getCvFacturasByRubro(idrubro, fecha));
+	}
+
+	@GetMapping("/sincobrar/cuentas")
+    public ResponseEntity<List<ValorFactDTO>> getFacturasSinCobro(@RequestParam Long cuenta){
+        return ResponseEntity.ok(facServicio.findFacturasSinCobro(cuenta));
+    }
+	@GetMapping("/sincobrar/total")
+    public ResponseEntity<ValorFactDTO> totalByCuenta(@RequestParam Long cuenta){
+        return ResponseEntity.ok(facServicio.getTotalesByAbonado(cuenta));
+    }
+	@GetMapping("/sincobrar/datos")
+	public List<ValorFactDTO> findSincobroDatos(@RequestParam Long cuenta) {
+		return facServicio.findSincobroDatos(cuenta);
+	}
+	@GetMapping("/sincobrar/total/datos")
+	public ValorFactDTO getTotalesByAbonadoDatos(@RequestParam Long cuenta) {
+		return facServicio.getTotalesByAbonadoDatos(cuenta);
 	}
 
 }
