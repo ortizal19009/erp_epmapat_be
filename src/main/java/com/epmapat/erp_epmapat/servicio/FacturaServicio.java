@@ -455,8 +455,48 @@ public class FacturaServicio {
 		// Devolver la lista de DTOs
 		return facturasActualizadas;
 	}
-
 	public ValorFactDTO getTotalesByAbonadoDatos(Long cuenta) {
+		List<ValorFactDTO> facturas = findSincobroDatos(cuenta);
+		ValorFactDTO newFactura = new ValorFactDTO();
+	
+		if (!facturas.isEmpty()) {
+			// Calcular totales usando Streams
+			BigDecimal subtotal = facturas.stream().map(ValorFactDTO::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+			BigDecimal total = facturas.stream().map(ValorFactDTO::getTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+			BigDecimal interes = facturas.stream().map(ValorFactDTO::getInteres).reduce(BigDecimal.ZERO, BigDecimal::add);
+	
+			// Tomar los datos del primer elemento
+			ValorFactDTO firstFactura = facturas.get(0);
+			return crearValorFactDTO(cuenta, subtotal, total, interes, facturas.size(), firstFactura.getNombre(), firstFactura.getCedula(), firstFactura.getDireccionubicacion());
+		}
+	
+		// Manejo del caso donde no hay facturas
+		List<Abonados> abonado = abonadosServicio.getByIdabonado(cuenta);
+		if (abonado.isEmpty()) {
+			return crearValorFactDTO(cuenta, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, "N/A", "N/A", "N/A");
+		}
+	
+		// Obtener los datos del abonado
+		Abonados firstAbonado = abonado.get(0);
+		return crearValorFactDTO(cuenta, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, firstAbonado.getIdresponsable().getNombre(), firstAbonado.getIdresponsable().getCedula(), firstAbonado.getDireccionubicacion());
+	}
+	
+	// Método auxiliar para evitar código repetitivo
+	private ValorFactDTO crearValorFactDTO(Long cuenta, BigDecimal subtotal, BigDecimal total, BigDecimal interes, int numFacturas, String nombre, String cedula, String direccion) {
+		ValorFactDTO dto = new ValorFactDTO();
+		dto.setSubtotal(subtotal);
+		dto.setTotal(total);
+		dto.setInteres(interes);
+		dto.setNumfacturas(numFacturas);
+		dto.setCuenta(cuenta);
+		dto.setNombre(nombre);
+		dto.setCedula(cedula);
+		dto.setDireccionubicacion(direccion);
+		return dto;
+	}
+	
+
+	public ValorFactDTO _getTotalesByAbonadoDatos(Long cuenta) {
 		// Obtener la lista de facturas
 		List<ValorFactDTO> facturas = findSincobroDatos(cuenta);
 		ValorFactDTO newFactura = new ValorFactDTO();

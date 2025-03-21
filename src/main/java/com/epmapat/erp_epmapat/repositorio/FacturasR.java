@@ -390,4 +390,23 @@ public List<Remision> getFacForRemisionesAbonados(Long idcliente,Long cuenta,  L
 	"group by f.idfactura, c.nombre, c.cedula, a.idabonado, a.direccionubicacion ORDER BY f.idfactura", nativeQuery = true)
     public List<FacturasSinCobroInter> findSincobroDatos(Long cuenta);
 
+
+	/* 
+	select
+	a.idabonado ,
+	sum(rf.cantidad * rf.valorunitario), 
+	count(f) as facturas
+from
+	facturas f
+join rubroxfac rf on
+	f.idfactura = rf.idfactura_facturas
+join abonados a on
+	a.idabonado = f.idabonado
+join rutas r on r.idruta = a.idruta_rutas
+where a.idruta_rutas =2 and
+	f.idabonado > 0 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null 
+group by
+	a.idabonado
+	 */
+
 }
