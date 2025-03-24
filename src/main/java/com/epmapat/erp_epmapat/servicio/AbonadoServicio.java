@@ -106,14 +106,14 @@ public class AbonadoServicio {
 	public List<ValorFactDTO> getCuentasByRutas(Long idruta) {
 		// Obtener la lista de abonados por ruta
 		List<Abonados> abonados = dao.getCuentasByRutas(idruta);
-	
+
 		// Procesar cada abonado y obtener los totales
 		List<ValorFactDTO> totales = abonados.stream()
-			.map(item -> {
-				return facturaServicio.getTotalesByAbonadoDatos(item.getIdabonado());
-			}) // Obtener los totales para cada abonado
-			.collect(Collectors.toList()); // Recopilar los resultados en una lista
-	
+				.map(item -> {
+					return facturaServicio.getTotalesByAbonadoDatos(item.getIdabonado());
+				}) // Obtener los totales para cada abonado
+				.collect(Collectors.toList()); // Recopilar los resultados en una lista
+
 		// Devolver la lista de totales
 		return totales;
 	}

@@ -12,19 +12,18 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ValorFactDTO {
+public class InteresFacDTO {
     private Long idfactura;
     private Float subtotal;
-    private BigDecimal total;
     private BigDecimal interes;
-    private Integer numfacturas;
-    private Long cuenta;
-    private String nombre;
-    private String cedula;
-    private String direccionubicacion;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate fectransferencia;
+    private BigDecimal total;
     private Long formapago;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate feccrea;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate fectransferencia;
+    public void setSuma(Float subtotal2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setSuma'");
+    }
 }

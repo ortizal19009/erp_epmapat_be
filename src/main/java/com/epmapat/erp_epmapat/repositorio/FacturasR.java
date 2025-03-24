@@ -225,7 +225,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Facturas> findByFecEliminacion(Date d, Date h);
 
 	/* reporte de facturas cobradas por transferencia */
-	@Query(value = "select f.idfactura, f.fechatransferencia, f.nrofactura, f.formapago, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) as valor, c.nombre, c.cedula, f.swiva from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura join clientes c on f.idcliente = c.idcliente where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 and not rf.idrubro_rubros = 165  group by f.idfactura, c.nombre, c.cedula order by f.nrofactura asc" , nativeQuery = true)
+	@Query(value = "select f.idfactura, f.fechatransferencia, f.nrofactura, f.formapago, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) as valor, c.nombre, c.cedula, f.swiva from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura join clientes c on f.idcliente = c.idcliente where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 and not rf.idrubro_rubros = 165  group by f.idfactura, c.nombre, c.cedula order by f.nrofactura asc", nativeQuery = true)
 	public List<R_transferencias> transferenciasCobradas(Date d_fecha, Date h_fecha);
 
 	/* REPORTE DE FACTURAS TRANSFERIDAS PERO NO COBRADAS */
@@ -338,23 +338,25 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"GROUP BY f.idfactura, m.descripcion, f.feccrea " +
 			"ORDER BY m.descripcion ASC", nativeQuery = true)
 	public List<Remision> getFacForRemisiones(Long idcliente, LocalDate topefecha);
-	@Query(value = "SELECT f.idfactura,f.nrofactura, m.descripcion, f.feccrea, SUM(rf.valorunitario * rf.cantidad) AS total " +
-	"FROM rubroxfac rf " +
-	"JOIN facturas f ON rf.idfactura_facturas = f.idfactura " +
-	"JOIN modulos m ON f.idmodulo = m.idmodulo " +
-	"JOIN clientes c ON f.idcliente = c.idcliente " +
-	"WHERE f.totaltarifa > 0 " +
-	"AND f.idcliente = ?1 " +
-	"AND f.idabonado = ?2 " +
-	"AND ((f.estado IN (1, 2) AND f.fechacobro IS NULL) OR f.estado = 3) " +
-	"AND f.fechaeliminacion IS NULL " +
-	"AND f.fechaconvenio IS NULL " +
-	"AND rf.idrubro_rubros NOT IN (165, 5, 6) " +
-	"AND m.idmodulo IN (3, 4, 27) " +
-	"AND f.feccrea <= ?3 " +
-	"GROUP BY f.idfactura, m.descripcion, f.feccrea, f.nrofactura " +
-	"ORDER BY m.descripcion ASC", nativeQuery = true)
-public List<Remision> getFacForRemisionesAbonados(Long idcliente,Long cuenta,  LocalDate topefecha);
+
+	@Query(value = "SELECT f.idfactura,f.nrofactura, m.descripcion, f.feccrea, SUM(rf.valorunitario * rf.cantidad) AS total "
+			+
+			"FROM rubroxfac rf " +
+			"JOIN facturas f ON rf.idfactura_facturas = f.idfactura " +
+			"JOIN modulos m ON f.idmodulo = m.idmodulo " +
+			"JOIN clientes c ON f.idcliente = c.idcliente " +
+			"WHERE f.totaltarifa > 0 " +
+			"AND f.idcliente = ?1 " +
+			"AND f.idabonado = ?2 " +
+			"AND ((f.estado IN (1, 2) AND f.fechacobro IS NULL) OR f.estado = 3) " +
+			"AND f.fechaeliminacion IS NULL " +
+			"AND f.fechaconvenio IS NULL " +
+			"AND rf.idrubro_rubros NOT IN (165, 5, 6) " +
+			"AND m.idmodulo IN (3, 4, 27) " +
+			"AND f.feccrea <= ?3 " +
+			"GROUP BY f.idfactura, m.descripcion, f.feccrea, f.nrofactura " +
+			"ORDER BY m.descripcion ASC", nativeQuery = true)
+	public List<Remision> getFacForRemisionesAbonados(Long idcliente, Long cuenta, LocalDate topefecha);
 
 	/*
 	 * 
@@ -373,40 +375,47 @@ public List<Remision> getFacForRemisionesAbonados(Long idcliente,Long cuenta,  L
 	 * 
 	 */
 
-	@Query(value = "select f.idfactura as factura, c.nombre , sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro join clientes c on f.idcliente = c.idcliente "+
-			 "where r.idrubro = ?1 and f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?2 or f.fechacobro is null)) or f.estado = 3 ) " +
+	@Query(value = "select f.idfactura as factura, c.nombre , sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro join clientes c on f.idcliente = c.idcliente "
+			+
+			"where r.idrubro = ?1 and f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?2 or f.fechacobro is null)) or f.estado = 3 ) "
+			+
 			"and f.fechaconvenio is null and f.fechaeliminacion is null group by f.idfactura, c.nombre 	", nativeQuery = true)
-	public List<CVFacturasNoConsumo> getCvFacturasByRubro(Long idrubro, LocalDate fecha); 
-
+	public List<CVFacturasNoConsumo> getCvFacturasByRubro(Long idrubro, LocalDate fecha);
 
 	@Query(value = "select f.idfactura, sum(rf.cantidad * rf.valorunitario) as subtotal from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null group by f.idfactura ORDER BY f.idfactura", nativeQuery = true)
-    public List<FacturasSinCobroInter> findFacturasSinCobro(Long cuenta);
+	public List<FacturasSinCobroInter> findFacturasSinCobro(Long cuenta);
 
-	@Query(value = "select f.idfactura, sum(rf.cantidad * rf.valorunitario) as subtotal, c.nombre, c.cedula, a.idabonado as cuenta, a.direccionubicacion "+
-	"from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas "+
-	"join clientes c on c.idcliente = f.idcliente "+
-	"join abonados a on a.idabonado = f.idabonado "+
-	"where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null "+
-	"group by f.idfactura, c.nombre, c.cedula, a.idabonado, a.direccionubicacion ORDER BY f.idfactura", nativeQuery = true)
-    public List<FacturasSinCobroInter> findSincobroDatos(Long cuenta);
+	@Query(value = "select f.idfactura, sum(rf.cantidad * rf.valorunitario) as subtotal, c.nombre, c.cedula, a.idabonado as cuenta, a.direccionubicacion, f.formapago, e.feccrea, f.fechatransferencia as fectransferencia "
+			+
+			"from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas " +
+			"join clientes c on c.idcliente = f.idcliente " +
+			"join lecturas l on l.idfactura = f.idfactura " +
+			"join emisiones e on l.idemision = e.idemision "+
+			"join abonados a on a.idabonado = f.idabonado " +
+			"where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null "
+			+
+			"group by f.idfactura, c.nombre, c.cedula, a.idabonado, a.direccionubicacion, e.feccrea ORDER BY f.idfactura", nativeQuery = true)
+	public List<FacturasSinCobroInter> findSincobroDatos(Long cuenta);
 
-
-	/* 
-	select
-	a.idabonado ,
-	sum(rf.cantidad * rf.valorunitario), 
-	count(f) as facturas
-from
-	facturas f
-join rubroxfac rf on
-	f.idfactura = rf.idfactura_facturas
-join abonados a on
-	a.idabonado = f.idabonado
-join rutas r on r.idruta = a.idruta_rutas
-where a.idruta_rutas =2 and
-	f.idabonado > 0 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null 
-group by
-	a.idabonado
+	/*
+	 * 
+	 * select
+	 * a.idabonado ,
+	 * sum(rf.cantidad * rf.valorunitario),
+	 * count(f) as facturas
+	 * from
+	 * facturas f
+	 * join rubroxfac rf on
+	 * f.idfactura = rf.idfactura_facturas
+	 * join abonados a on
+	 * a.idabonado = f.idabonado
+	 * join rutas r on r.idruta = a.idruta_rutas
+	 * where a.idruta_rutas =2 and
+	 * f.idabonado > 0 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is
+	 * null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is
+	 * null
+	 * group by
+	 * a.idabonado
 	 */
 
 }

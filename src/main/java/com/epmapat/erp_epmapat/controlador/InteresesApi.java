@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.DTO.InteresFacDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Intereses;
 import com.epmapat.erp_epmapat.servicio.InteresServicio;
@@ -47,7 +48,7 @@ public class InteresesApi {
 
 	@PostMapping
 	public ResponseEntity<Intereses> saveIntereses(@RequestBody Intereses x) {
-		return ResponseEntity.ok(inteServicio.save( x ));
+		return ResponseEntity.ok(inteServicio.save(x));
 	}
 
 	@GetMapping("/{idinteres}")
@@ -77,9 +78,15 @@ public class InteresesApi {
 		inteServicio.deleteById(idinteres);
 		return ResponseEntity.ok(!(inteServicio.findById(idinteres) != null));
 	}
+
 	@GetMapping("/calcular")
-	public ResponseEntity<Object> calcularIntereses(@RequestParam Long idfactura){
-		return ResponseEntity.ok(inteServicio.facturaid(idfactura)); 
+	public ResponseEntity<Object> calcularIntereses(@RequestParam Long idfactura) {
+		return ResponseEntity.ok(inteServicio.facturaid(idfactura));
+	}
+
+	@GetMapping("/prueba/interesxfactura")
+	public ResponseEntity<?> interesToFactura(InteresFacDTO factura) {
+		return ResponseEntity.ok(inteServicio.interesToFactura(factura));
 	}
 
 }

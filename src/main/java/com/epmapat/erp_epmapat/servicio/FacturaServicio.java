@@ -381,7 +381,7 @@ public class FacturaServicio {
 					dto.setInteres(interes);
 					dto.setCuenta(cuenta);
 					// Calcular el total sumando el subtotal y el interés
-					BigDecimal total = item.getSubtotal().add(interes);
+					BigDecimal total = BigDecimal.valueOf(item.getSubtotal()).add(interes);
 					dto.setTotal(total);
 					return dto; // Devolver el DTO
 				})
@@ -395,13 +395,13 @@ public class FacturaServicio {
 		List<ValorFactDTO> facturas = findFacturasSinCobro(cuenta);
 
 		// Inicializar acumuladores
-		BigDecimal st = BigDecimal.ZERO; // Subtotal acumulado
+		Float st = (float) 0; // Subtotal acumulado
 		BigDecimal t = BigDecimal.ZERO; // Total acumulado
 		BigDecimal i = BigDecimal.ZERO; // Interés acumulado
 
 		// Calcular los totales
 		for (ValorFactDTO item : facturas) {
-			st = st.add(item.getSubtotal()); // Acumular subtotal
+			st += item.getSubtotal(); // Acumular subtotal
 			t = t.add(item.getTotal()); // Acumular total
 			i = i.add(item.getInteres()); // Acumular interés
 		}
@@ -421,68 +421,79 @@ public class FacturaServicio {
 	public List<ValorFactDTO> findSincobroDatos(Long cuenta) {
 		// Obtener la lista de facturas desde el DAO
 		List<FacturasSinCobroInter> facturas = dao.findSincobroDatos(cuenta);
-		// Procesar la lista y transformar cada FacturasSinCobroInter en ValorFactDTO
-		List<ValorFactDTO> facturasActualizadas = facturas.stream()
-				.map(item -> {
-					// Obtener el interés desde el servicio
-					Object interesObj = interesServicio.facturaid(item.getIdfactura());
-					BigDecimal interes = BigDecimal.ZERO; // Valor por defecto
 
-					// Convertir el interés a BigDecimal
-					if (interesObj instanceof Double) {
-						interes = BigDecimal.valueOf((Double) interesObj); // Convertir Double a BigDecimal
-					} else if (interesObj instanceof BigDecimal) {
-						interes = (BigDecimal) interesObj; // Ya es BigDecimal, no es necesario convertir
-					} else {
-						System.err.println("Tipo de interés no soportado: " + interesObj.getClass().getName());
-					}
-					// Crear un nuevo objeto ValorFactDTO y asignar los valores
-					ValorFactDTO dto = new ValorFactDTO();
-					dto.setIdfactura(item.getIdfactura());
-					dto.setSubtotal(item.getSubtotal());
-					dto.setNumfacturas(facturas.size());
-					dto.setInteres(interes);
-					dto.setCuenta(cuenta);
-					dto.setNombre(item.getNombre());
-					dto.setCedula(item.getCedula());
-					dto.setDireccionubicacion(item.getDireccionubicacion());
-					// Calcular el total sumando el subtotal y el interés
-					BigDecimal total = item.getSubtotal().add(interes);
-					dto.setTotal(total);
-					return dto; // Devolver el DTO
-				})
-				.collect(Collectors.toList()); // Recopilar los DTOs en una lista
-		// Devolver la lista de DTOs
-		return facturasActualizadas;
+		// Procesar la lista y transformar cada FacturasSinCobroInter en ValorFactDTO
+		return facturas.stream().map(item -> {
+			ValorFactDTO dto = new ValorFactDTO();
+			// Asignar valores al DTO
+			dto.setIdfactura(item.getIdfactura());
+			dto.setSubtotal(item.getSubtotal());
+			dto.setNumfacturas(facturas.size());
+			dto.setCuenta(cuenta);
+			dto.setNombre(item.getNombre());
+			dto.setCedula(item.getCedula());
+			dto.setDireccionubicacion(item.getDireccionubicacion());
+			dto.setFeccrea(item.getFeccrea());
+			dto.setFectransferencia(item.getFectransferencia());
+			dto.setFormapago(item.getFormapago());
+			Object interesObj = interesServicio.interesToFactura(dto);
+			BigDecimal interes = BigDecimal.ZERO; // Valor por defecto
+			// Convertir el interés a BigDecimal correctamente
+			if (interesObj instanceof Double) {
+				interes = BigDecimal.valueOf((Double) interesObj);
+			} else if (interesObj instanceof BigDecimal) {
+				interes = (BigDecimal) interesObj;
+			} else if (interesObj instanceof Float) {
+				interes = BigDecimal.valueOf((Float) interesObj);
+			} else {
+				System.err.println("Tipo de interés no soportado: "
+						+ (interesObj != null ? interesObj.getClass().getName() : "null"));
+			}
+
+			dto.setInteres(interes);
+
+			// Calcular el total correctamente usando BigDecimal
+			BigDecimal total = BigDecimal.valueOf(item.getSubtotal()).add(interes);
+			dto.setTotal(total);
+
+			return dto;
+		}).collect(Collectors.toList()); // Recopilar los DTOs en una lista
 	}
+
 	public ValorFactDTO getTotalesByAbonadoDatos(Long cuenta) {
 		List<ValorFactDTO> facturas = findSincobroDatos(cuenta);
 		ValorFactDTO newFactura = new ValorFactDTO();
-	
+
 		if (!facturas.isEmpty()) {
 			// Calcular totales usando Streams
-			BigDecimal subtotal = facturas.stream().map(ValorFactDTO::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+			Float subtotal = facturas.stream().map(ValorFactDTO::getSubtotal).reduce((float) 0,
+					Float::sum);
 			BigDecimal total = facturas.stream().map(ValorFactDTO::getTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
-			BigDecimal interes = facturas.stream().map(ValorFactDTO::getInteres).reduce(BigDecimal.ZERO, BigDecimal::add);
-	
+			BigDecimal interes = facturas.stream().map(ValorFactDTO::getInteres).reduce(BigDecimal.ZERO,
+					BigDecimal::add);
+
 			// Tomar los datos del primer elemento
 			ValorFactDTO firstFactura = facturas.get(0);
-			return crearValorFactDTO(cuenta, subtotal, total, interes, facturas.size(), firstFactura.getNombre(), firstFactura.getCedula(), firstFactura.getDireccionubicacion());
+			return crearValorFactDTO(cuenta, subtotal, total, interes, facturas.size(), firstFactura.getNombre(),
+					firstFactura.getCedula(), firstFactura.getDireccionubicacion());
 		}
-	
+
 		// Manejo del caso donde no hay facturas
 		List<Abonados> abonado = abonadosServicio.getByIdabonado(cuenta);
 		if (abonado.isEmpty()) {
-			return crearValorFactDTO(cuenta, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, "N/A", "N/A", "N/A");
+			return crearValorFactDTO(cuenta, (float) 0, BigDecimal.ZERO, BigDecimal.ZERO, 0, "N/A", "N/A", "N/A");
 		}
-	
+
 		// Obtener los datos del abonado
 		Abonados firstAbonado = abonado.get(0);
-		return crearValorFactDTO(cuenta, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, firstAbonado.getIdresponsable().getNombre(), firstAbonado.getIdresponsable().getCedula(), firstAbonado.getDireccionubicacion());
+		return crearValorFactDTO(cuenta, (float) 0, BigDecimal.ZERO, BigDecimal.ZERO, 0,
+				firstAbonado.getIdresponsable().getNombre(), firstAbonado.getIdresponsable().getCedula(),
+				firstAbonado.getDireccionubicacion());
 	}
-	
+
 	// Método auxiliar para evitar código repetitivo
-	private ValorFactDTO crearValorFactDTO(Long cuenta, BigDecimal subtotal, BigDecimal total, BigDecimal interes, int numFacturas, String nombre, String cedula, String direccion) {
+	private ValorFactDTO crearValorFactDTO(Long cuenta, Float subtotal, BigDecimal total, BigDecimal interes,
+			int numFacturas, String nombre, String cedula, String direccion) {
 		ValorFactDTO dto = new ValorFactDTO();
 		dto.setSubtotal(subtotal);
 		dto.setTotal(total);
@@ -494,7 +505,6 @@ public class FacturaServicio {
 		dto.setDireccionubicacion(direccion);
 		return dto;
 	}
-	
 
 	public ValorFactDTO _getTotalesByAbonadoDatos(Long cuenta) {
 		// Obtener la lista de facturas
@@ -503,13 +513,13 @@ public class FacturaServicio {
 
 		if (facturas.size() > 0) {
 			// Inicializar acumuladores
-			BigDecimal st = BigDecimal.ZERO; // Subtotal acumulado
+			Float st = (float) 0; // Subtotal acumulado
 			BigDecimal t = BigDecimal.ZERO; // Total acumulado
 			BigDecimal i = BigDecimal.ZERO; // Interés acumulado
 
 			// Calcular los totales
 			for (ValorFactDTO item : facturas) {
-				st = st.add(item.getSubtotal()); // Acumular subtotal
+				st += item.getSubtotal(); // Acumular subtotal
 				t = t.add(item.getTotal()); // Acumular total
 				i = i.add(item.getInteres()); // Acumular interés
 			}
@@ -526,7 +536,7 @@ public class FacturaServicio {
 			return newFactura;
 		} else {
 			List<Abonados> abonado = abonadosServicio.getByIdabonado(cuenta);
-			newFactura.setSubtotal(BigDecimal.ZERO);
+			newFactura.setSubtotal((float) 0);
 			newFactura.setTotal(BigDecimal.ZERO);
 			newFactura.setInteres(BigDecimal.ZERO);
 			newFactura.setNumfacturas(facturas.size());
