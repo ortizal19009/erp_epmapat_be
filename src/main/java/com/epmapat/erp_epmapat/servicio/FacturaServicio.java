@@ -83,8 +83,8 @@ public class FacturaServicio {
 	}
 
 	// Planillas por Cliente
-	public List<Facturas> findByIdcliente(Long idcliente) {
-		return dao.findByIdcliente(idcliente);
+	public List<Facturas> findByIdcliente(Long idcliente, Long limit) {
+		return dao.findByIdcliente(idcliente, limit);
 	}
 
 	// Planillas por Abonado

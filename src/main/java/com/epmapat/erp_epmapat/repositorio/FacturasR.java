@@ -32,8 +32,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Facturas> findDesde(Long desde, Long hasta);
 
 	// Planillas por Cliente
-	@Query(value = "SELECT * FROM facturas WHERE idcliente=?1 ORDER BY idfactura DESC LIMIT 12", nativeQuery = true)
-	public List<Facturas> findByIdcliente(Long idcliente);
+	@Query(value = "SELECT * FROM facturas WHERE idcliente=?1 and totaltarifa > 0 ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
+	public List<Facturas> findByIdcliente(Long idcliente, Long limit);
 
 	// 15 Planillas de un Abonado
 	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY idfactura DESC LIMIT 15", nativeQuery = true)
@@ -95,10 +95,10 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Long> findSinCobroAbo(Long idabonado);
 
 	// Planillas Sin cobrar por modulo y Abonado (para Convenios)
-	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idmodulo=?1 and idabonado=?2 and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
+	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idmodulo=?1 and idabonado=?2 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobrarAbo(Long idmodulo, Long idabonado);
 
-	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and (idmodulo = 3 or idmodulo = 4) and idabonado=?1 and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
+	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and (idmodulo = 3 or idmodulo = 4) and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobrarAboMod(Long idabonado);
 
 	@Query(value = "SELECT count (*) FROM facturas WHERE totaltarifa > 0 and (idmodulo = 3 or idmodulo = 4) and idabonado=?1 and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ", nativeQuery = true)

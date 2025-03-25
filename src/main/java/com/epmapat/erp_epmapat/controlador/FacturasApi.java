@@ -55,13 +55,14 @@ public class FacturasApi {
 
 	@GetMapping
 	public List<Facturas> getAll(@Param(value = "desde") Long desde, @Param(value = "hasta") Long hasta,
-			@Param(value = "idcliente") Long idcliente) {
+			@Param(value = "idcliente") Long idcliente, @Param(value = "limit") Long limit) {
 		if (desde != null)
 			return facServicio.findDesde(desde, hasta);
 		else {
-			if (idcliente != null)
-				return facServicio.findByIdcliente(idcliente);
-			else
+			if (idcliente != null) {
+				System.out.println(limit);
+				return facServicio.findByIdcliente(idcliente, limit);
+			} else
 				return facServicio.findAll();
 		}
 	}
@@ -544,17 +545,20 @@ public class FacturasApi {
 	}
 
 	@GetMapping("/sincobrar/cuentas")
-    public ResponseEntity<List<ValorFactDTO>> getFacturasSinCobro(@RequestParam Long cuenta){
-        return ResponseEntity.ok(facServicio.findFacturasSinCobro(cuenta));
-    }
+	public ResponseEntity<List<ValorFactDTO>> getFacturasSinCobro(@RequestParam Long cuenta) {
+		return ResponseEntity.ok(facServicio.findFacturasSinCobro(cuenta));
+	}
+
 	@GetMapping("/sincobrar/total")
-    public ResponseEntity<ValorFactDTO> totalByCuenta(@RequestParam Long cuenta){
-        return ResponseEntity.ok(facServicio.getTotalesByAbonado(cuenta));
-    }
+	public ResponseEntity<ValorFactDTO> totalByCuenta(@RequestParam Long cuenta) {
+		return ResponseEntity.ok(facServicio.getTotalesByAbonado(cuenta));
+	}
+
 	@GetMapping("/sincobrar/datos")
 	public List<ValorFactDTO> findSincobroDatos(@RequestParam Long cuenta) {
 		return facServicio.findSincobroDatos(cuenta);
 	}
+
 	@GetMapping("/sincobrar/total/datos")
 	public ValorFactDTO getTotalesByAbonadoDatos(@RequestParam Long cuenta) {
 		return facServicio.getTotalesByAbonadoDatos(cuenta);
