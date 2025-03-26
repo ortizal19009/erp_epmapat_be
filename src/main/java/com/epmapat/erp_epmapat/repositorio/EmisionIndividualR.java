@@ -49,6 +49,17 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         + "where ei.idemision = ?1 and not rfa.idrubro_rubros = 5 "
                         + "group by rfa.idfactura_facturas, fa.idabonado, la.idfactura, ea.emision  "
                         + "order by fa.idabonado asc;", nativeQuery = true)
+        public List<EmisionIndividualRia> _emisionIndividualAnterior(Integer idemision);
+
+        
+        @Query(value = "select fa.idabonado as cuenta, l.idfactura as facturaa, ea.emision as emisiona, sum(rfa.cantidad * rfa.valorunitario) as tanterior "
+                        + "from lecturas l "
+                        + "join facturas fa on l.idfactura = fa.idfactura "
+                        + "join rubroxfac rfa on rfa.idfactura_facturas = l.idfactura "
+                        + "join emisiones ea on ea.idemision = l.idemision "
+                        + "where l.idemision = ?1 and not rfa.idrubro_rubros = 5 and not l.observaciones is null "
+                        + "group by rfa.idfactura_facturas, fa.idabonado, l.idfactura, ea.emision  "
+                        + "order by fa.idabonado asc;", nativeQuery = true)
         public List<EmisionIndividualRia> emisionIndividualAnterior(Integer idemision);
 
         @Query(value = "select fn.idabonado  as cuenta, ln.idfactura as facturan, en.emision as emisionn, sum(rfn.cantidad * rfn.valorunitario) as tnuevo "

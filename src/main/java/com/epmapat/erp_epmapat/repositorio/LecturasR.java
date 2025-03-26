@@ -146,7 +146,8 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			+ "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total , count(a.idabonado) as abonados "
 			+ "FROM lecturas l join rubroxfac rf on l.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro "
 			+ "join abonados a on l.idabonado_abonados = a.idabonado "
-			+ "WHERE l.idemision = ?1 and not rf.idrubro_rubros = 5 "
+			+ "WHERE l.idemision = ?1 and not rf.idrubro_rubros = 5 and rf.valorunitario > 0 " + //
+								" "
 			+ "AND l.fechaemision = (SELECT fechaemision FROM max_fechaemision) "
 			+ "group by rf.idrubro_rubros , r.descripcion ; ", nativeQuery = true)
 	CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision);
@@ -174,7 +175,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			+ "join rubroxfac rf on l.idfactura = rf.idfactura_facturas "
 			+ "join facturas f on rf.idfactura_facturas = f.idfactura "
 			+ "join rubros r on rf.idrubro_rubros  = r.idrubro  "
-			+ "where ei.idemision = ?1 and f.fechaeliminacion is null and not rf.idrubro_rubros = 5 "
+			+ "where ei.idemision = ?1 and f.fechaeliminacion is null and not rf.idrubro_rubros = 5 and rf.valorunitario > 0 "
 			+ "group by rf.idrubro_rubros , r.descripcion ", nativeQuery = true)
 	public CompletableFuture<List<RubroxfacIReport>> getAllNewLecturas(Long idemision);
 
@@ -182,19 +183,27 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	 * --REPORTE DE LOS RUBROS ELIMINADOS
 	 */
 	@Query(value = "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total , count(l.idabonado_abonados) as abonados "
+			+ "from lecturas l  "
+			+ "join rubroxfac rf on l.idfactura = rf.idfactura_facturas "
+			+ "join rubros r on rf.idrubro_rubros  = r.idrubro  "
+			+ "where l.idemision = ?1 and not rf.idrubro_rubros = 5 and rf.valorunitario > 0 and not l.observaciones is null "
+			+ "group by rf.idrubro_rubros , r.descripcion ", nativeQuery = true)
+	public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(Long idemision);
+	
+	@Query(value = "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total , count(l.idabonado_abonados) as abonados "
 			+ "from emisionindividual ei "
 			+ "join lecturas l on ei.idlecturaanterior = l.idlectura "
 			+ "join rubroxfac rf on l.idfactura = rf.idfactura_facturas "
 			+ "join rubros r on rf.idrubro_rubros  = r.idrubro  "
-			+ "where ei.idemision = ?1 and not rf.idrubro_rubros = 5 "
+			+ "where ei.idemision = ?1 and not rf.idrubro_rubros = 5 and rf.valorunitario > 0 "
 			+ "group by rf.idrubro_rubros , r.descripcion ", nativeQuery = true)
-	public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(Long idemision);
+	public CompletableFuture<List<RubroxfacIReport>> _getAllDeleteLecturas(Long idemision);
 
 	@Query(value = "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total , count(l.idabonado_abonados) as abonados "
 			+ "from lecturas l join rubroxfac rf on l.idfactura = rf.idfactura_facturas "
 			+ "join facturas f on rf.idfactura_facturas = f.idfactura "
 			+ "join rubros r on rf.idrubro_rubros  = r.idrubro "
-			+ "where l.idemision = ?1 and f.fechaeliminacion is null and not rf.idrubro_rubros = 5 "
+			+ "where l.idemision = ?1 and f.fechaeliminacion is null and not rf.idrubro_rubros = 5 and rf.valorunitario > 0 "
 			+ "group by rf.idrubro_rubros , r.descripcion ", nativeQuery = true)
 	public CompletableFuture<List<RubroxfacIReport>> getAllActual(Long idemision);
 

@@ -55,7 +55,7 @@ public class EmisionIndividualApi {
 
     @GetMapping("/reportes/anteriores")
     public ResponseEntity<List<EmisionIndividualRia>> emisionIndividualAnterior(
-            @RequestParam("idemision") Integer idemision) {
+            @RequestParam Integer idemision) {
         return ResponseEntity.ok(sei.emisionIndividualAnterior(idemision));
     }
 
