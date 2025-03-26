@@ -84,9 +84,4 @@ public class InteresesApi {
 		return ResponseEntity.ok(inteServicio.facturaid(idfactura));
 	}
 
-	@GetMapping("/prueba/interesxfactura")
-	public ResponseEntity<?> interesToFactura(InteresFacDTO factura) {
-		return ResponseEntity.ok(inteServicio.interesToFactura(factura));
-	}
-
 }
