@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.Ntacredito;
@@ -24,5 +26,9 @@ public class NtacreditoServicio {
 
     public Optional<Ntacredito> findById(Long idntacredito) {
         return dao.findById(idntacredito);
+    }
+    public List<Ntacredito> findAllNtaCredito(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return dao.findAllNtaCreditos(pageable);
     }
 }
