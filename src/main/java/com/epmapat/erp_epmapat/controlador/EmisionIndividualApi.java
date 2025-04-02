@@ -16,6 +16,7 @@ import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRia;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRin;
 import com.epmapat.erp_epmapat.interfaces.IemiIndividual;
 import com.epmapat.erp_epmapat.interfaces.R_refacturacion_int;
+import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
 import com.epmapat.erp_epmapat.modelo.EmisionIndividual;
 import com.epmapat.erp_epmapat.servicio.EmisionIndividualServicio;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,5 +76,14 @@ public class EmisionIndividualApi {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
         return ResponseEntity.ok(sei.getRefacturacionxFecha(d, h));
+    }
+
+    @GetMapping("/reporte/refacturacion/rubros/anterior")
+    public ResponseEntity<List<RubroxfacI>> getRefacturacionxEmisionRubrosAnteriores(Long idemision) {
+        return ResponseEntity.ok(sei.getRefacturacionxEmisionRubrosAnteriores(idemision));
+    }
+    @GetMapping("/reporte/refacturacion/rubros/nuevo")
+    public ResponseEntity<List<RubroxfacI>> getRefacturacionxEmisionRubrosNuevos(Long idemision) {
+        return ResponseEntity.ok(sei.getRefacturacionxEmisionRubrosNuevos(idemision));
     }
 }

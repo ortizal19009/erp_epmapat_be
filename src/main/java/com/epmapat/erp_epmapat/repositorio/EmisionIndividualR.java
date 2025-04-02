@@ -11,6 +11,7 @@ import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRia;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRin;
 import com.epmapat.erp_epmapat.interfaces.IemiIndividual;
 import com.epmapat.erp_epmapat.interfaces.R_refacturacion_int;
+import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
 import com.epmapat.erp_epmapat.modelo.EmisionIndividual;
 
 public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Long> {
@@ -51,7 +52,6 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         + "order by fa.idabonado asc;", nativeQuery = true)
         public List<EmisionIndividualRia> _emisionIndividualAnterior(Integer idemision);
 
-        
         @Query(value = "select fa.idabonado as cuenta, l.idfactura as facturaa, ea.emision as emisiona, sum(rfa.cantidad * rfa.valorunitario) as tanterior "
                         + "from lecturas l "
                         + "join facturas fa on l.idfactura = fa.idfactura "
@@ -85,6 +85,24 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         + " where e.idemision = ?1 "
                         + " order by ln.idabonado_abonados asc", nativeQuery = true)
         public List<R_refacturacion_int> getRefacturacionxEmision(Long idemision);
+
+        @Query(value = "select ra.idrubro as idrubro_rubros, ra.descripcion, sum(rfa.cantidad * rfa.valorunitario) "
+                        + " from emisionindividual e "
+                        + " join lecturas ln on e.idlecturaanterior = ln.idlectura "
+                        + "join rubroxfac rfa on rfa.idfactura_facturas = ln.idfactura "
+                        + "join rubros ra on rfa.idrubro_rubros = ra.idrubro "
+                        + " where e.idemision = ?1 and not rfa.idrubro_rubros = 5 "
+                        + "group by ra.idrubro, ra.descripcion;", nativeQuery = true)
+        public List<RubroxfacI> getRefacturacionxEmisionRubrosAnteriores(Long idemision);
+
+        @Query(value = "select rn.idrubro  as idrubro_rubros, rn.descripcion, sum(rfn.cantidad * rfn.valorunitario) "
+                        + "from emisionindividual e "
+                        + "join lecturas ln on e.idlecturanueva = ln.idlectura "
+                        + "join rubroxfac rfn on rfn.idfactura_facturas = ln.idfactura "
+                        + "join rubros rn on rfn.idrubro_rubros = rn.idrubro "
+                        + "where e.idemision = ?1 and not rfn.idrubro_rubros = 5 "
+                        + "group by rn.idrubro, rn.descripcion;", nativeQuery = true)
+        public List<RubroxfacI> getRefacturacionxEmisionRubrosNuevos(Long idemision);
 
         @Query(value = "select ln.idabonado_abonados as cuenta, c.nombre ,  fa.fechaeliminacion as fecelimina , ln.idfactura as nuevaplanilla, fn.totaltarifa as valornuevo,  la.idfactura as anteriorplanilla, fa.totaltarifa as valoranterior, la.observaciones "
                         + " from emisionindividual e "
