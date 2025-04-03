@@ -64,4 +64,12 @@ public class EmisionIndividualServicio {
         return dao.getRefacturacionxEmisionRubrosNuevos(idemision);
     }
 
+    public List<RubroxfacI> getRefacturacionxFechaRubrosAnteriores(Date d, Date h) {
+        return dao.getRefacturacionxFechaRubrosAnteriores(d, h);
+    }
+
+    public List<RubroxfacI> getRefacturacionxFechaRubrosNuevos(Date d, Date h) {
+        return dao.getRefacturacionxFechaRubrosNuevos(d, h);
+    }
+
 }

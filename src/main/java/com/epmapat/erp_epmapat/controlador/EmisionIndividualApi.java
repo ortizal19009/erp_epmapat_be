@@ -82,8 +82,23 @@ public class EmisionIndividualApi {
     public ResponseEntity<List<RubroxfacI>> getRefacturacionxEmisionRubrosAnteriores(Long idemision) {
         return ResponseEntity.ok(sei.getRefacturacionxEmisionRubrosAnteriores(idemision));
     }
+
     @GetMapping("/reporte/refacturacion/rubros/nuevo")
     public ResponseEntity<List<RubroxfacI>> getRefacturacionxEmisionRubrosNuevos(Long idemision) {
         return ResponseEntity.ok(sei.getRefacturacionxEmisionRubrosNuevos(idemision));
+    }
+
+    @GetMapping("/reporte/refacturacion/fecha/anterior")
+    public List<RubroxfacI> getRefacturacionxFechaRubrosAnteriores(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+        return sei.getRefacturacionxFechaRubrosAnteriores(d, h);
+    }
+
+    @GetMapping("/reporte/refacturacion/fecha/nuevo")
+    public List<RubroxfacI> getRefacturacionxFechaRubrosNuevos(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+        return sei.getRefacturacionxFechaRubrosNuevos(d, h);
     }
 }
