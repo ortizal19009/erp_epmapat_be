@@ -143,12 +143,12 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                 la.observaciones
             FROM emisionindividual e
             INNER JOIN lecturas ln ON e.idlecturanueva = ln.idlectura
-            INNER JOIN emisiones ea on ea.idemision = la.idemision
+            INNER JOIN emisiones en on en.idemision = ln.idemision
             INNER JOIN abonados a ON ln.idabonado_abonados = a.idabonado
             INNER JOIN clientes c ON a.idresponsable = c.idcliente
             INNER JOIN facturas fn ON ln.idfactura = fn.idfactura
             INNER JOIN lecturas la ON e.idlecturaanterior = la.idlectura
-            INNER JOIN emisiones en on en.idemision = ln.idemision
+            INNER JOIN emisiones ea on ea.idemision = ln.idemision
             INNER JOIN facturas fa ON la.idfactura = fa.idfactura
             WHERE fa.fechaeliminacion BETWEEN :fechaInicio AND :fechaFin
             GROUP BY
@@ -157,7 +157,9 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                 fa.fechaeliminacion,
                 ln.idfactura,
                 la.idfactura,
-                la.observaciones
+                la.observaciones,
+                ea.emision,
+                en.emision
             ORDER BY ln.idabonado_abonados ASC
             """, nativeQuery = true)
     List<R_refacturacion_int> getRefacturacionxFecha(
