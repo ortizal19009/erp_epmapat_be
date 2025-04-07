@@ -12,4 +12,7 @@ public interface R_refacturacion_int {
     BigDecimal  getValoranterior();
     String getObservaciones();
     Date getFecelimina();
+    Long getEmisionanterior();
+    Long getEmisionnueva();
+
 }

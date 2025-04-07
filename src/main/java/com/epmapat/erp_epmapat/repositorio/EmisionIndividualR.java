@@ -131,6 +131,8 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                 c.nombre,
                 fa.fechaeliminacion AS fecelimina,
                 ln.idfactura AS nuevaplanilla,
+                ea.emision as emisionanterior,
+                en.emision as emisionnueva,
                 (SELECT SUM(rfn.valorunitario * rfn.cantidad)
                 FROM rubroxfac rfn
                 WHERE rfn.idfactura_facturas = ln.idfactura and not rfn.idrubro_rubros = 5) AS valornuevo,
@@ -141,10 +143,12 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                 la.observaciones
             FROM emisionindividual e
             INNER JOIN lecturas ln ON e.idlecturanueva = ln.idlectura
+            INNER JOIN emisiones ea on ea.idemision = la.idemision
             INNER JOIN abonados a ON ln.idabonado_abonados = a.idabonado
             INNER JOIN clientes c ON a.idresponsable = c.idcliente
             INNER JOIN facturas fn ON ln.idfactura = fn.idfactura
             INNER JOIN lecturas la ON e.idlecturaanterior = la.idlectura
+            INNER JOIN emisiones en on en.idemision = ln.idemision
             INNER JOIN facturas fa ON la.idfactura = fa.idfactura
             WHERE fa.fechaeliminacion BETWEEN :fechaInicio AND :fechaFin
             GROUP BY
