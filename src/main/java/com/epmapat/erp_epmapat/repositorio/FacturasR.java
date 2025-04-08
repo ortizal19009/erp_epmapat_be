@@ -8,10 +8,11 @@ import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.epmapat.erp_epmapat.modelo.Facturas;
 
-// @Repository
+@Repository
 public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	// VALIDACION DE LA ULTIMA FACTURA DEL RECAUDADOR
@@ -98,7 +99,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idmodulo=?1 and idabonado=?2 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobrarAbo(Long idmodulo, Long idabonado);
 
-	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and (idmodulo = 3 or idmodulo = 4) and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
+	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and (idmodulo = 3 or idmodulo = 4) and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobrarAboMod(Long idabonado);
 
 	@Query(value = "SELECT count (*) FROM facturas WHERE totaltarifa > 0 and (idmodulo = 3 or idmodulo = 4) and idabonado=?1 and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ", nativeQuery = true)

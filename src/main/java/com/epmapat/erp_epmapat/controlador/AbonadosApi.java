@@ -32,14 +32,10 @@ import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 
 public class AbonadosApi {
 
-	private final AbonadosR abonadosR;
-
 	@Autowired
 	private AbonadoServicio aboServicio;
 
-	AbonadosApi(AbonadosR abonadosR) {
-		this.abonadosR = abonadosR;
-	}
+
 
 	/*
 	 * @Autowired
