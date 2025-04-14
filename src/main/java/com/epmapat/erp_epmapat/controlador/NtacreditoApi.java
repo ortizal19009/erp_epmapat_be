@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.interfaces.NtaCreditoSaldos;
 import com.epmapat.erp_epmapat.modelo.Ntacredito;
 import com.epmapat.erp_epmapat.servicio.NtacreditoServicio;
 
@@ -39,9 +40,16 @@ public class NtacreditoApi {
     public ResponseEntity<Ntacredito> save(@RequestBody Ntacredito ntacredito) {
         return ResponseEntity.ok(ntacreditoServicio.save(ntacredito));
     }
+
     @GetMapping("/all")
-    public ResponseEntity<Page<Ntacredito>> getAllPageable(@RequestParam(defaultValue ="0") int page, @RequestParam(defaultValue = "15" )int size){
-        return ResponseEntity.ok(ntacreditoServicio.findAllNtaCredito(page,size));
+    public ResponseEntity<Page<Ntacredito>> getAllPageable(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+        return ResponseEntity.ok(ntacreditoServicio.findAllNtaCredito(page, size));
+    }
+
+    @GetMapping("/saldosNC")
+    public ResponseEntity<List<NtaCreditoSaldos>> getSaldosByCuenta(@RequestParam Long cuenta) {
+        return ResponseEntity.ok(ntacreditoServicio.findSaldosByCuenta(cuenta));
     }
 
 }
