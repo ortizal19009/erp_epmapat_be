@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.DTO.InteresFacDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Intereses;
 import com.epmapat.erp_epmapat.servicio.InteresServicio;

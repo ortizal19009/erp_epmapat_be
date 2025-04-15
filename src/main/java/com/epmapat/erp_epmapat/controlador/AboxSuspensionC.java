@@ -17,7 +17,6 @@ import com.epmapat.erp_epmapat.servicio.AboxSuspensionS;
 @RestController
 @RequestMapping("/aboxsuspension")
 @CrossOrigin(origins = "*")
-
 public class AboxSuspensionC {
 
 	@Autowired
