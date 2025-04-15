@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.NtaCreditoSaldos;
 import com.epmapat.erp_epmapat.modelo.Ntacredito;
 import com.epmapat.erp_epmapat.repositorio.NtacreditoR;
 
@@ -32,5 +33,8 @@ public class NtacreditoServicio {
         Pageable pageable = PageRequest.of(page, size);
         return dao.findAllNtaCreditos(pageable);
         //return null;
+    }
+    public List<NtaCreditoSaldos> findSaldosByCuenta(Long cuenta){
+        return dao.findSaldosByCuenta(cuenta);
     }
 }
