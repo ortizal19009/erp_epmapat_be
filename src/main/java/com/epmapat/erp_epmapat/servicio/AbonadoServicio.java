@@ -110,6 +110,10 @@ public class AbonadoServicio {
 	public List<AbonadoI> getAbonadoInterfaceIdentificacion(String identificacion) {
 		return dao.getAbonadoInterfaceIdentificacion(identificacion);
 	}
+	
+	public List<AbonadoI> getAbonadoInterfaceIdCliente(Long idcliente) {
+		return dao.getAbonadoInterfaceIdCliente(idcliente);
+	}
 
 	// Un Abonado
 	public Abonados unAbonado(Long idabonado) {

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -44,8 +43,8 @@ public class ClientesApi {
 			return null;
 	}
 
-	@GetMapping("/{idcliente}")
-	public ResponseEntity<Clientes> getByIdCliente(@PathVariable Long idcliente) {
+	@GetMapping("/one")
+	public ResponseEntity<Clientes> getByIdCliente(@RequestParam Long idcliente) {
 		Clientes clienteM = cliServicio.findById(idcliente)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe ese cliente con ese Id: " + idcliente)));
 		return ResponseEntity.ok(clienteM);

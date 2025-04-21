@@ -36,8 +36,6 @@ public class AbonadosApi {
 	@Autowired
 	private AbonadoServicio aboServicio;
 
-
-
 	/*
 	 * @Autowired
 	 * private ServiciosS serviciosS;
@@ -174,17 +172,25 @@ public class AbonadosApi {
 	public List<Abonados> getAbonadoxIcliente(@PathVariable("identificacion") String identificacionCliente) {
 		return aboServicio.findByidentIficacionCliente(identificacionCliente);
 	}
-	    @GetMapping("/resabonado")
-    public ResponseEntity<List<AbonadoI>> getAbonadoInterface(@RequestParam Long idabonado){
-        return ResponseEntity.ok( aboServicio.getAbonadoInterface(idabonado));
-    }
-    @GetMapping("/resabonado/nombre")
-    public ResponseEntity<List<AbonadoI>> getAbonadoInterfaceNombre(@RequestParam String nombre){
-        return ResponseEntity.ok(aboServicio.getAbonadoInterfaceNombre(nombre.toLowerCase()));
-    }
-    @GetMapping("/resabonado/identificacion")
-    public ResponseEntity<List<AbonadoI>> getAbonadoInterfaceIdentificacion(@RequestParam String identificacion){
-        return ResponseEntity.ok(aboServicio.getAbonadoInterfaceIdentificacion(identificacion));
+
+	@GetMapping("/resabonado")
+	public ResponseEntity<List<AbonadoI>> getAbonadoInterface(@RequestParam Long idabonado) {
+		return ResponseEntity.ok(aboServicio.getAbonadoInterface(idabonado));
+	}
+
+	@GetMapping("/resabonado/nombre")
+	public ResponseEntity<List<AbonadoI>> getAbonadoInterfaceNombre(@RequestParam String nombre) {
+		return ResponseEntity.ok(aboServicio.getAbonadoInterfaceNombre(nombre.toLowerCase()));
+	}
+
+	@GetMapping("/resabonado/identificacion")
+	public ResponseEntity<List<AbonadoI>> getAbonadoInterfaceIdentificacion(@RequestParam String identificacion) {
+		return ResponseEntity.ok(aboServicio.getAbonadoInterfaceIdentificacion(identificacion));
+	}
+
+	@GetMapping("/resabonado/idcliente")
+	public ResponseEntity<List<AbonadoI>> findAbonadoInterfaceIdCliente(@RequestParam Long idcliente) {
+		return ResponseEntity.ok(aboServicio.getAbonadoInterfaceIdCliente(idcliente));
 	}
 	/*
 	 * @PutMapping("/{idabonado}/s/{idservicio}")
