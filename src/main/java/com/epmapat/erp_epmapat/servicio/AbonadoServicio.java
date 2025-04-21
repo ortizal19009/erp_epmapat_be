@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
+import com.epmapat.erp_epmapat.interfaces.AbonadoI;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
 // import com.epmapat.erp_epmapat.repositorio.ClientesR;
@@ -96,6 +97,18 @@ public class AbonadoServicio {
 
 	public Abonados findOne(Long idabonado) {
 		return dao.findOne(idabonado);
+	}
+
+	public List<AbonadoI> getAbonadoInterface(Long idabonado) {
+		return dao.getAbonadoInterface(idabonado);
+	}
+
+	public List<AbonadoI> getAbonadoInterfaceNombre(String nombre) {
+		return dao.getAbonadoInterfaceNombre(nombre);
+	}
+
+	public List<AbonadoI> getAbonadoInterfaceIdentificacion(String identificacion) {
+		return dao.getAbonadoInterfaceIdentificacion(identificacion);
 	}
 
 	// Un Abonado

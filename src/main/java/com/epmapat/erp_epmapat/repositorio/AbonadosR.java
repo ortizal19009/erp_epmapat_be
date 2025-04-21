@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import com.epmapat.erp_epmapat.interfaces.AbonadoI;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 // import com.epmapat.erp_epmapat.modelo.Clientes;
 
@@ -19,6 +20,15 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 
 	@Query(value = "SELECT * FROM abonados where idabonado = ?1", nativeQuery = true)
 	public Abonados findOne(Long idabonado);
+
+	@Query(value = "SELECT a.idabonado, c.nombre, c.cedula as identificacion, ct.descripcion as categoria, r.descripcion as ruta, a.direccionubicacion as direccion, a.estado from abonados a join clientes c on c.idcliente = a.idcliente_clientes join categorias ct on ct.idcategoria = a.idcategoria_categorias join rutas r on a.idruta_rutas = r.idruta where a.idabonado = ?1", nativeQuery = true)
+	public List<AbonadoI> getAbonadoInterface(Long idabonado);
+
+	@Query(value = "SELECT a.idabonado, c.nombre, c.cedula as identificacion, ct.descripcion as categoria, r.descripcion as ruta, a.direccionubicacion as direccion, a.estado from abonados a join clientes c on c.idcliente = a.idcliente_clientes join categorias ct on ct.idcategoria = a.idcategoria_categorias join rutas r on a.idruta_rutas = r.idruta where LOWER(c.nombre) LIKE %?1% ", nativeQuery = true)
+	public List<AbonadoI> getAbonadoInterfaceNombre(String nombre);
+
+	@Query(value = "SELECT a.idabonado, c.nombre, c.cedula as identificacion, ct.descripcion as categoria, r.descripcion as ruta, a.direccionubicacion as direccion, a.estado from abonados a join clientes c on c.idcliente = a.idcliente_clientes join categorias ct on ct.idcategoria = a.idcategoria_categorias join rutas r on a.idruta_rutas = r.idruta where LOWER(c.cedula) LIKE %?1% ", nativeQuery = true)
+	public List<AbonadoI> getAbonadoInterfaceIdentificacion(String identificacion);
 
 	// Abonado por ID (o sea por Cuenta con abonados/id)
 	@Query(value = "SELECT * FROM abonados WHERE idabonado=?1", nativeQuery = true)

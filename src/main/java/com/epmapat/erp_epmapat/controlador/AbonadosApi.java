@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.AbonadoI;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
@@ -173,7 +174,18 @@ public class AbonadosApi {
 	public List<Abonados> getAbonadoxIcliente(@PathVariable("identificacion") String identificacionCliente) {
 		return aboServicio.findByidentIficacionCliente(identificacionCliente);
 	}
-
+	    @GetMapping("/resabonado")
+    public ResponseEntity<List<AbonadoI>> getAbonadoInterface(@RequestParam Long idabonado){
+        return ResponseEntity.ok( aboServicio.getAbonadoInterface(idabonado));
+    }
+    @GetMapping("/resabonado/nombre")
+    public ResponseEntity<List<AbonadoI>> getAbonadoInterfaceNombre(@RequestParam String nombre){
+        return ResponseEntity.ok(aboServicio.getAbonadoInterfaceNombre(nombre.toLowerCase()));
+    }
+    @GetMapping("/resabonado/identificacion")
+    public ResponseEntity<List<AbonadoI>> getAbonadoInterfaceIdentificacion(@RequestParam String identificacion){
+        return ResponseEntity.ok(aboServicio.getAbonadoInterfaceIdentificacion(identificacion));
+	}
 	/*
 	 * @PutMapping("/{idabonado}/s/{idservicio}")
 	 * public Abonados addServxAbo(@PathVariable Long idabonado, @PathVariable Long
