@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.NtaCreditoSaldos;
 import com.epmapat.erp_epmapat.modelo.Ntacredito;
 import com.epmapat.erp_epmapat.servicio.NtacreditoServicio;
@@ -50,6 +52,28 @@ public class NtacreditoApi {
     @GetMapping("/saldosNC")
     public ResponseEntity<List<NtaCreditoSaldos>> getSaldosByCuenta(@RequestParam Long cuenta) {
         return ResponseEntity.ok(ntacreditoServicio.findSaldosByCuenta(cuenta));
+    }
+
+    @PutMapping("/up")
+    public ResponseEntity<Ntacredito> updateNtaCredito(@RequestParam Long idntacredito,
+            @RequestBody Ntacredito ntacredito) {
+        Ntacredito _ntacredito = ntacreditoServicio.findById(idntacredito)
+                .orElseThrow(() -> new ResourceNotFoundExcepciones("No se encontro el dato"));
+        _ntacredito.setValor(ntacredito.getValor());
+        _ntacredito.setObservacion(ntacredito.getObservacion());
+        _ntacredito.setDevengado(ntacredito.getDevengado());
+        _ntacredito.setIdtransfernota(ntacredito.getIdntacredito());
+        _ntacredito.setRazontransferencia(ntacredito.getRazontransferencia());
+        _ntacredito.setNrofactura(ntacredito.getNrofactura());
+        _ntacredito.setUsuarioeliminacion(ntacredito.getUsuarioeliminacion());
+        _ntacredito.setFechaeliminacion(ntacredito.getFechaeliminacion());
+        _ntacredito.setRazoneliminacion(ntacredito.getRazoneliminacion());
+        _ntacredito.setIdcliente_clientes(ntacredito.getIdcliente_clientes());
+        _ntacredito.setIdabonado_abonados(ntacredito.getIdabonado_abonados());
+        _ntacredito.setUsumodi(ntacredito.getUsumodi());
+        _ntacredito.setFecmodi(ntacredito.getFecmodi());
+        Ntacredito upNotaCredito = ntacreditoServicio.save(_ntacredito);
+        return ResponseEntity.ok(upNotaCredito);
     }
 
 }
