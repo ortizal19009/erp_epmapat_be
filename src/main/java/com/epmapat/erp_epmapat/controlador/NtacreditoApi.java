@@ -54,7 +54,7 @@ public class NtacreditoApi {
         return ResponseEntity.ok(ntacreditoServicio.findSaldosByCuenta(cuenta));
     }
 
-    @PutMapping("/up")
+    @PutMapping("/upall")
     public ResponseEntity<Ntacredito> updateNtaCredito(@RequestParam Long idntacredito,
             @RequestBody Ntacredito ntacredito) {
         Ntacredito _ntacredito = ntacreditoServicio.findById(idntacredito)
@@ -72,6 +72,15 @@ public class NtacreditoApi {
         _ntacredito.setIdabonado_abonados(ntacredito.getIdabonado_abonados());
         _ntacredito.setUsumodi(ntacredito.getUsumodi());
         _ntacredito.setFecmodi(ntacredito.getFecmodi());
+        Ntacredito upNotaCredito = ntacreditoServicio.save(_ntacredito);
+        return ResponseEntity.ok(upNotaCredito);
+    }
+    @PutMapping("/up")
+    public ResponseEntity<Ntacredito> updatealcobrar(@RequestParam Long idntacredito,
+            @RequestBody Ntacredito ntacredito) {
+        Ntacredito _ntacredito = ntacreditoServicio.findById(idntacredito)
+                .orElseThrow(() -> new ResourceNotFoundExcepciones("No se encontro el dato"));
+        _ntacredito.setDevengado(ntacredito.getDevengado());
         Ntacredito upNotaCredito = ntacreditoServicio.save(_ntacredito);
         return ResponseEntity.ok(upNotaCredito);
     }
