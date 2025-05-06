@@ -402,6 +402,27 @@ public class FacturasApi {
 				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
 	}
 
+	@GetMapping("/comprobante/pago")
+	public ResponseEntity<Resource> comprobantePago(
+			@RequestParam Long idfactura) throws JRException, IOException, SQLException {
+		System.out.println(idfactura);
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("idfactura", idfactura);
+		params.put("fileName", "ComprobantePago");
+		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
+		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
+		MediaType mediaType = MediaType.APPLICATION_PDF;
+		;
+		/*
+		 * if (tipo == "excel") { mediaType = MediaType.APPLICATION_OCTET_STREAM; } else
+		 * { }
+		 */
+		// mediaType = MediaType.APPLICATION_PDF;
+
+		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
+				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
+	}
+
 	// FACTURAS ANULACIÓN
 	@GetMapping("/anulaciones")
 	public ResponseEntity<List<Facturas>> getFacturasAnuladas(@RequestParam Long limit) {
