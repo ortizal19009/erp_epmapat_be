@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRI;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRia;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRin;
+import com.epmapat.erp_epmapat.interfaces.FacEliminadas;
 import com.epmapat.erp_epmapat.interfaces.IemiIndividual;
 import com.epmapat.erp_epmapat.interfaces.R_refacturacion_int;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
@@ -100,5 +102,17 @@ public class EmisionIndividualApi {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
         return sei.getRefacturacionxFechaRubrosNuevos(d, h);
+    }
+
+    @GetMapping("/reporte/eliminadas/fechaeliminacion")
+    public ResponseEntity<List<FacEliminadas>> getFacElimByFechaElimina(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate d,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate h) {
+        return ResponseEntity.ok(sei.getFacElimByFechaElimina(d, h));
+    }
+
+    @GetMapping("/reporte/eliminadas/emision")
+    public ResponseEntity<List<FacEliminadas>> getFacElimByEmision(@RequestParam Long idemision) {
+        return ResponseEntity.ok(sei.getFacElimByEmision(idemision));
     }
 }

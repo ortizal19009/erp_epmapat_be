@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRI;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRia;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRin;
+import com.epmapat.erp_epmapat.interfaces.FacEliminadas;
 import com.epmapat.erp_epmapat.interfaces.IemiIndividual;
 import com.epmapat.erp_epmapat.interfaces.R_refacturacion_int;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
@@ -70,6 +72,14 @@ public class EmisionIndividualServicio {
 
     public List<RubroxfacI> getRefacturacionxFechaRubrosNuevos(Date d, Date h) {
         return dao.getRefacturacionxFechaRubrosNuevos(d, h);
+    }
+
+    public List<FacEliminadas> getFacElimByFechaElimina(LocalDate d, LocalDate h) {
+        return dao.getFacElimByFechaElimina(d, h);
+    }
+
+    public List<FacEliminadas> getFacElimByEmision(Long idemision) {
+        return dao.getFacElimByEmision(idemision);
     }
 
 }

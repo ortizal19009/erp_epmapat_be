@@ -9,7 +9,7 @@ public interface R_refacturacion_int {
     Long getNuevaplanilla();
     BigDecimal getValornuevo();
     Long getAnteriorplanilla();
-    BigDecimal  getValoranterior();
+    BigDecimal getValoranterior();
     String getObservaciones();
     Date getFecelimina();
     Long getEmisionanterior();
