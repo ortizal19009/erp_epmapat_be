@@ -1,6 +1,10 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -26,9 +30,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.epmapat.erp_epmapat.DTO.RemiDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
+import com.epmapat.erp_epmapat.config.jasperConfig.ReportRequest;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
@@ -37,6 +43,13 @@ import com.epmapat.erp_epmapat.servicio.FacturaServicio;
 import com.epmapat.erp_epmapat.servicio.RubroxfacServicio;
 
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 
@@ -311,6 +324,45 @@ public class FacturasApi {
 	 * ============================== *********REPORTES*************
 	 * ==============================
 	 */
+
+	@PostMapping(value = "/generate-custom", produces = MediaType.APPLICATION_PDF_VALUE)
+public ResponseEntity<InputStreamResource> generateCustomReport(@RequestBody ReportRequest request) {
+
+    if (request.getReportName() == null || request.getReportName().isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre de reporte requerido");
+    }
+
+    try (InputStream jrxmlStream = getClass().getResourceAsStream("/reports/" + request.getReportName() + ".jrxml")) {
+
+        if (jrxmlStream == null) {
+            throw new FileNotFoundException("Reporte no encontrado: " + request.getReportName());
+        }
+
+        JasperReport report = JasperCompileManager.compileReport(jrxmlStream);
+        System.out.println(report + "heloo");
+
+        JasperPrint jasperPrint = JasperFillManager.fillReport(
+                report,
+                request.getParameters() != null ? request.getParameters() : new HashMap<>(),
+                new JRBeanCollectionDataSource(request.getData() != null ? request.getData() : List.of())
+        );
+
+        ByteArrayOutputStream pdfStream = new ByteArrayOutputStream();
+        JasperExportManager.exportReportToPdfStream(jasperPrint, pdfStream);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + request.getReportName() + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray())));
+
+    } catch (Exception e) {
+        throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Error generando reporte: " + e.getMessage(),
+                e);
+    }
+}
+
 
 	@GetMapping("/reportes/facturascobradas")
 	public ResponseEntity<Resource> reporteFacturasCobradas(
