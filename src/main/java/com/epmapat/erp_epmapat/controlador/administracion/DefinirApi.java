@@ -1,8 +1,13 @@
 package com.epmapat.erp_epmapat.controlador.administracion;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
@@ -37,6 +42,23 @@ public class DefinirApi {
 
         Definir z = defServicio.save(y);
         return ResponseEntity.ok(z);
+    }
+
+    @PutMapping("/subir-firma/{id}")
+    public ResponseEntity<Object> subirFirma(
+            @PathVariable Long id,
+            @RequestParam("archivo") MultipartFile archivo,
+            @RequestParam("clave") String clave) {
+                Map<String, Object> response = new HashMap<>();
+        try {
+
+            defServicio.guardarFirma(id, archivo, clave);
+            response.put("message", "Firma cargada correctamente.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
     }
 
 }
