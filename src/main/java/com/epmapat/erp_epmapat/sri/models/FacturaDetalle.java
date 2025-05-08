@@ -1,4 +1,4 @@
-package com.epmapat.erp_epmapat.controlador.sri.models;
+package com.epmapat.erp_epmapat.sri.models;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

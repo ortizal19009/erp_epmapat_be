@@ -259,7 +259,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * REPORTE DE TRANSFERENCIAS
 	 */
 	// TRANSFERENCIAS REALIZADAS POR RANGO
-	@Query(value = "select f.idfactura, sum(rf.cantidad * rf.valorunitario ) as total, f.fechatransferencia, f.idmodulo, c.nombre from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechatransferencia between ?1 and ?2 and f.formapago = 4 and f.fechaeliminacion is null and f.fechaconvenio is null group by f.idfactura, c.nombre", nativeQuery = true)
+	@Query(value = "select f.idfactura,f.nrofactura, sum(rf.cantidad * rf.valorunitario ) as total, f.fechatransferencia, f.idmodulo, c.nombre from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechatransferencia between ?1 and ?2 and f.formapago = 4 and f.fechaeliminacion is null and f.fechaconvenio is null group by f.idfactura, f.nrofactura, c.nombre", nativeQuery = true)
 	public List<FacTransferencias> getFacAllTransferidas(LocalDate d, LocalDate h);
 
 	@Query(value = "select f.idfactura, sum(rf.cantidad * rf.valorunitario ) as total, f.fechatransferencia, f.idmodulo, c.nombre from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechatransferencia between ?1 and ?2 and f.formapago = 4 and f.pagado = 1 and f.estado = 1 and f.fechaeliminacion is null and f.fechaconvenio is null group by f.idfactura, c.nombre", nativeQuery = true)

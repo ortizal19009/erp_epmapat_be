@@ -60,5 +60,13 @@ public class DefinirApi {
                     .body("Error: " + e.getMessage());
         }
     }
+    @GetMapping("/desEncriptar")
+    public ResponseEntity<Object> desencriptar(@RequestParam Long id) throws Exception{
+        return ResponseEntity.ok(defServicio.desEncriptar(id));
+    }
+    @GetMapping("/encriptar")
+    public ResponseEntity<Object> encriptar(@RequestParam String clave) throws Exception{
+        return ResponseEntity.ok(defServicio.encriptar(clave));
+    }
 
 }

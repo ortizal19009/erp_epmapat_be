@@ -13,4 +13,5 @@ public interface FacTransferencias {
     Long getIdmodulo();
 
     String getNombre();
+    String getNrofactura();
 }

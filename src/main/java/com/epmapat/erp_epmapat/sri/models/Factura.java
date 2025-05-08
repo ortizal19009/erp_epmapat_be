@@ -1,4 +1,4 @@
-package com.epmapat.erp_epmapat.controlador.sri.models;
+package com.epmapat.erp_epmapat.sri.models;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,6 +35,7 @@ public class Factura {
     private String direccionestablecimiento;
     private LocalDateTime fechaemision;
     private String tipoidentificacioncomprador;
+    private String identificacioncomprador;
     private String guiaremision;
     private String razonsocialcomprador;
     private String telefonocomprador;
@@ -42,6 +43,7 @@ public class Factura {
     private String concepto;
     private String recaudador;
     private String referencia;
+    private String direccioncomprador;
     
     @OneToMany(mappedBy = "factura", cascade = CascadeType.ALL)
     private List<FacturaDetalle> detalles = new ArrayList<>();

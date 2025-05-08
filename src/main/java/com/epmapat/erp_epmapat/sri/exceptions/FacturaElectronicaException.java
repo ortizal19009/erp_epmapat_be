@@ -1,4 +1,4 @@
-package com.epmapat.erp_epmapat.controlador.sri.exceptions;
+package com.epmapat.erp_epmapat.sri.exceptions;
 
 public class FacturaElectronicaException extends RuntimeException {
 

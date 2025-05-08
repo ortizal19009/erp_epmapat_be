@@ -28,37 +28,51 @@ public class DefinirServicio {
         return dao.save(entity);
     }
 
-public Definir guardarFirma(Long id, MultipartFile archivo, String claveFirma) throws Exception {
-    // Validar parámetros de entrada
-    if (id == null) {
-        throw new IllegalArgumentException("El ID no puede ser nulo");
-    }
-    if (archivo == null || archivo.isEmpty()) {
-        throw new IllegalArgumentException("El archivo de firma no puede estar vacío");
-    }
-    if (claveFirma == null || claveFirma.trim().isEmpty()) {
-        throw new IllegalArgumentException("La clave de firma no puede estar vacía");
+    public Definir guardarFirma(Long id, MultipartFile archivo, String claveFirma) throws Exception {
+        // Validar parámetros de entrada
+        if (id == null) {
+            throw new IllegalArgumentException("El ID no puede ser nulo");
+        }
+        if (archivo == null || archivo.isEmpty()) {
+            throw new IllegalArgumentException("El archivo de firma no puede estar vacío");
+        }
+        if (claveFirma == null || claveFirma.trim().isEmpty()) {
+            throw new IllegalArgumentException("La clave de firma no puede estar vacía");
+        }
+
+        // Buscar el registro
+        Definir definir = dao.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Registro no encontrado con ID: " + id));
+
+        try {
+            // Procesar los datos
+            byte[] firmaBytes = archivo.getBytes();
+            String claveCifrada = AESUtil.cifrar(claveFirma);
+
+            // Actualizar el objeto
+            definir.setFirma(firmaBytes);
+            definir.setClaveFirma(claveCifrada);
+
+            // Guardar y retornar
+            return dao.save(definir);
+        } catch (IOException e) {
+            throw new RuntimeException("Error al leer el archivo de firma", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al cifrar la clave o guardar la firma", e);
+        }
     }
 
-    // Buscar el registro
-    Definir definir = dao.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Registro no encontrado con ID: " + id));
+    public Object desEncriptar(Long id) throws Exception {
+        // Buscar el registro
+        Definir definir = dao.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Registro no encontrado con ID: " + id));
+        String claveCifrada = AESUtil.descifrar(definir.getClaveFirma());
+        return claveCifrada;
 
-    try {
-        // Procesar los datos
-        byte[] firmaBytes = archivo.getBytes();
-        String claveCifrada = AESUtil.cifrar(claveFirma);
-        
-        // Actualizar el objeto
-        definir.setFirma(firmaBytes); 
-        definir.setClaveFirma(claveCifrada);
-        
-        // Guardar y retornar
-        return dao.save(definir);
-    } catch (IOException e) {
-        throw new RuntimeException("Error al leer el archivo de firma", e);
-    } catch (Exception e) {
-        throw new RuntimeException("Error al cifrar la clave o guardar la firma", e);
     }
-}
+
+    public Object encriptar(String clave) throws Exception {
+        String claveCifrada = AESUtil.cifrar(clave);
+        return claveCifrada;
+    }
 }
