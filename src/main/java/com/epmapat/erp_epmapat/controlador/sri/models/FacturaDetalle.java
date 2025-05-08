@@ -38,6 +38,11 @@ public class FacturaDetalle {
     
     @OneToMany(mappedBy = "detalle", cascade = CascadeType.ALL)
     private List<FacturaDetalleImpuesto> impuestos = new ArrayList<>();
+
+    public Object getPreciototalsinimpuesto() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPreciototalsinimpuesto'");
+    }
     
     // Getters y Setters
 }

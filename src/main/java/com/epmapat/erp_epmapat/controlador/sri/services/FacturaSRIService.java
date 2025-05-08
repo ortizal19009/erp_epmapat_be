@@ -5,9 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
 import javax.transaction.Transactional;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -18,12 +20,14 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
 import com.epmapat.erp_epmapat.controlador.sri.configuratios.SRIProperties;
-import com.epmapat.erp_epmapat.controlador.sri.dtos.FacturaElectronica;
-import com.epmapat.erp_epmapat.controlador.sri.dtos.ResultadoGeneracion;
+import com.epmapat.erp_epmapat.controlador.sri.dtos.*;
+import com.epmapat.erp_epmapat.controlador.sri.exceptions.FacturaElectronicaException;
 import com.epmapat.erp_epmapat.controlador.sri.models.Factura;
 import com.epmapat.erp_epmapat.controlador.sri.repositories.FacturaR;
 
@@ -31,113 +35,178 @@ import com.epmapat.erp_epmapat.controlador.sri.repositories.FacturaR;
 @Transactional
 public class FacturaSRIService {
 
+    private static final Logger logger = LoggerFactory.getLogger(FacturaSRIService.class);
+    
     private final FacturaR facturaRepository;
     private final JAXBContext jaxbContext;
     private final Schema schema;
     private final SRIProperties sriProperties;
 
-    public FacturaSRIService(FacturaR facturaRepository,
-            SRIProperties sriProperties) throws Exception {
+    public FacturaSRIService(FacturaR facturaRepository, SRIProperties sriProperties) 
+            throws FacturaElectronicaException {
         this.facturaRepository = facturaRepository;
         this.sriProperties = sriProperties;
-        this.jaxbContext = JAXBContext.newInstance(FacturaElectronica.class);
-
-        // Cargar esquema XSD para validación
-        SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        this.schema = sf.newSchema(new File(sriProperties.getXsdPath()));
+        
+        try {
+            this.jaxbContext = JAXBContext.newInstance(FacturaElectronica.class);
+            SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            this.schema = sf.newSchema(new File(sriProperties.getXsdPath()));
+        } catch (Exception e) {
+            throw new FacturaElectronicaException("Error inicializando servicio de facturación electrónica", e);
+        }
     }
 
-    /**
-     * Genera XML para un lote de facturas
-     * 
-     * @param idsFacturas Lista de IDs de facturas
-     * @return Lista de resultados con estado de cada factura
-     */
     public List<ResultadoGeneracion> generarXmlPorLote(List<Long> idsFacturas) {
         return idsFacturas.stream()
                 .map(this::procesarFactura)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
     private ResultadoGeneracion procesarFactura(Long idFactura) {
         try {
             Factura factura = facturaRepository.findById(idFactura)
-                    .orElseThrow(null);
+                    .orElseThrow(() -> new FacturaElectronicaException("Factura no encontrada con ID: " + idFactura));
 
-            // Validar factura antes de procesar
             validarFactura(factura);
-
-            // Generar XML
+            
             FacturaElectronica facturaElectronica = mapearFacturaElectronica(factura);
             byte[] xmlBytes = generarXml(facturaElectronica);
-
-            // Firmar XML
             byte[] xmlFirmado = firmarXml(xmlBytes, factura.getClaveacceso());
-
-            // Validar contra XSD
+            
             validarXsd(xmlFirmado);
 
-            // Actualizar estado en base de datos
-            factura.setXmlautorizado(xmlFirmado);
-            factura.setEstado("GENERADA");
-            facturaRepository.save(factura);
+            actualizarEstadoFactura(factura, xmlFirmado, "GENERADA");
 
-            return new ResultadoGeneracion(idFactura, "OK", "XML generado correctamente", xmlFirmado);
+            return ResultadoGeneracion.(idFactura, "XML generado correctamente", xmlFirmado);
+            
         } catch (Exception e) {
-            return new ResultadoGeneracion(idFactura, "ERROR", e.getMessage(), null);
+            logger.error("Error procesando factura ID: " + idFactura, e);
+            return ResultadoGeneracion.error(idFactura, e.getMessage());
         }
     }
 
     private FacturaElectronica mapearFacturaElectronica(Factura factura) {
         FacturaElectronica fe = new FacturaElectronica();
-
+        
         // InfoTributaria
-        InfoTributaria infoTributaria = new InfoTributaria();
-        infoTributaria.setAmbiente(sriProperties.getAmbiente());
-        infoTributaria.setTipoEmision(sriProperties.getTipoEmision());
-        infoTributaria.setRazonSocial(factura.getRazonsocialcomprador());
-        infoTributaria.setRuc(sriProperties.getRuc());
-        infoTributaria.setClaveAcceso(factura.getClaveacceso());
-        infoTributaria.setCodDoc("01"); // 01=Factura
-        infoTributaria.setEstab(factura.getEstablecimiento());
-        infoTributaria.setPtoEmi(factura.getPuntoemision());
-        infoTributaria.setSecuencial(factura.getSecuencial());
-        infoTributaria.setDirMatriz(sriProperties.getDirMatriz());
-
-        fe.setInfoTributaria(infoTributaria);
-
+        fe.setInfoTributaria(mapearInfoTributaria(factura));
+        
         // InfoFactura
-        InfoFactura infoFactura = new InfoFactura();
-        infoFactura.setFechaEmision(factura.getFechaemision().format(DateTimeFormatter.ISO_DATE_TIME));
-        infoFactura.setDirEstablecimiento(factura.getDireccionestablecimiento());
-        infoFactura.setContribuyenteEspecial(sriProperties.getContribuyenteEspecial());
-        infoFactura.setObligadoContabilidad(sriProperties.getObligadoContabilidad());
-        infoFactura.setTipoIdentificacionComprador(factura.getTipoidentificacioncomprador());
-        infoFactura.setRazonSocialComprador(factura.getRazonsocialcomprador());
-        infoFactura.setIdentificacionComprador(factura.getGuiaremision()); // Asumo que guía de remisión es
-                                                                           // identificación
-        infoFactura.setTotalSinImpuestos(calcularTotalSinImpuestos(factura));
-        infoFactura.setTotalDescuento(calcularTotalDescuentos(factura));
-
+        fe.setInfoFactura(mapearInfoFactura(factura));
+        
         // Detalles
-        List<Detalle> detalles = factura.getDetalles().stream()
-                .map(this::mapearDetalle)
-                .collect(Collectors.toList());
-        fe.setDetalles(detalles);
-
+        fe.setDetalles(mapearDetalles(factura));
+        
         // Pagos
-        List<Pago> pagos = factura.getPagos().stream()
-                .map(this::mapearPago)
-                .collect(Collectors.toList());
-        fe.setPagos(pagos);
-
+        fe.setPagos(mapearPagos(factura));
+        
         // Totales
         fe.setTotalImpuestos(calcularTotalImpuestos(factura));
         fe.setImporteTotal(calcularImporteTotal(factura));
-
+        
         return fe;
     }
 
+    private InfoTributaria mapearInfoTributaria(Factura factura) {
+        InfoTributaria it = new InfoTributaria();
+        it.setAmbiente(sriProperties.getAmbiente());
+        it.setTipoEmision(sriProperties.getTipoEmision());
+        it.setRazonSocial(factura.getRazonsocialcomprador());
+        it.setRuc(sriProperties.getRuc());
+        it.setClaveAcceso(factura.getClaveacceso());
+        it.setCodDoc("01"); // 01=Factura
+        it.setEstab(factura.getEstablecimiento());
+        it.setPtoEmi(factura.getPuntoemision());
+        it.setSecuencial(factura.getSecuencial());
+        it.setDirMatriz(sriProperties.getDirMatriz());
+        return it;
+    }
+
+    private InfoFactura mapearInfoFactura(Factura factura) {
+        InfoFactura info = new InfoFactura();
+        info.setFechaEmision(factura.getFechaemision().format(DateTimeFormatter.ISO_DATE_TIME));
+        info.setDirEstablecimiento(factura.getDireccionestablecimiento());
+        info.setContribuyenteEspecial(sriProperties.getContribuyenteEspecial());
+        info.setObligadoContabilidad(sriProperties.getObligadoContabilidad());
+        info.setTipoIdentificacionComprador(factura.getTipoidentificacioncomprador());
+        info.setRazonSocialComprador(factura.getRazonsocialcomprador());
+        info.setIdentificacionComprador(factura.getGuiaremision());
+        info.setTotalSinImpuestos(calcularTotalSinImpuestos(factura));
+        info.setTotalDescuento(calcularTotalDescuentos(factura));
+        return info;
+    }
+
+    private List<Detalle> mapearDetalles(Factura factura) {
+        return factura.getDetalles().stream()
+                .map(d -> new Detalle(
+                        d.getCodigoprincipal(),
+                        d.getDescripcion(),
+                        d.getCantidad(),
+                        d.getPreciounitario(),
+                        d.getDescuento(),
+                        d.getPreciototalsinimpuesto(),
+                        d.getImpuestos()))
+                .collect(Collectors.toList());
+    }
+
+    private List<Pago> mapearPagos(Factura factura) {
+        return factura.getPagos().stream()
+                .map(p -> new Pago(
+                        p.getFormapago(),
+                        p.getTotal(),
+                        p.getPlazo(),
+                        p.getUnidadtiempo()))
+                .collect(Collectors.toList());
+    }
+
+    private void actualizarEstadoFactura(Factura factura, byte[] xmlFirmado, String estado) {
+        factura.setXmlautorizado(xmlFirmado);
+        factura.setEstado(estado);
+        facturaRepository.save(factura);
+    }
+
+    private void validarFactura(Factura factura) throws FacturaElectronicaException {
+        if (factura == null) {
+            throw new FacturaElectronicaException("La factura no puede ser nula");
+        }
+        
+        if (factura.getClaveacceso() == null || factura.getClaveacceso().isEmpty()) {
+            throw new FacturaElectronicaException("Clave de acceso es requerida");
+        }
+        
+        // Agregar más validaciones según necesidades
+    }
+
+    // Implementaciones de cálculos
+    private BigDecimal calcularTotalSinImpuestos(Factura factura) {
+        return factura.getDetalles().stream()
+                .map(d -> d.getPreciounitario().multiply(d.getCantidad()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calcularTotalDescuentos(Factura factura) {
+        return factura.getDetalles().stream()
+                .map(d -> Optional.ofNullable(d.getDescuento()).orElse(BigDecimal.ZERO))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calcularTotalImpuestos(Factura factura) {
+        return factura.getDetalles().stream()
+                .flatMap(d -> d.getImpuestos().stream())
+                .map(i -> i.getValor())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calcularImporteTotal(Factura factura) {
+        BigDecimal subtotal = calcularTotalSinImpuestos(factura);
+        BigDecimal descuentos = calcularTotalDescuentos(factura);
+        BigDecimal impuestos = calcularTotalImpuestos(factura);
+        return subtotal.subtract(descuentos).add(impuestos);
+    }
+
+    // Resto de métodos (generarXml, firmarXml, validarXsd) permanecen iguales
+    // ...
     private byte[] generarXml(FacturaElectronica facturaElectronica) throws JAXBException {
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -161,12 +230,4 @@ public class FacturaSRIService {
         validator.validate(new StreamSource(new ByteArrayInputStream(xmlBytes)));
     }
 
-    // Métodos auxiliares para cálculos
-    private BigDecimal calcularTotalSinImpuestos(Factura factura) {
-        return factura.getDetalles().stream()
-                .map(d -> d.getPreciounitario().multiply(d.getCantidad()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    // Otros métodos auxiliares...
 }
