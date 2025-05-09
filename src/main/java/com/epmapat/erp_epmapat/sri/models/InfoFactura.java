@@ -3,8 +3,6 @@ package com.epmapat.erp_epmapat.sri.models;
 import lombok.Data;
 import javax.xml.bind.annotation.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 @Data
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -13,8 +11,8 @@ public class InfoFactura {
     @XmlElement(name = "fechaEmision", required = true)
     private String fechaEmision;
 
-    @XmlElement(name = "dirEstablecimiento")
-    private String dirEstablecimiento;
+    @XmlElement(name = "direccionComprador")
+    private String direccionComprador;
 
     @XmlElement(name = "contribuyenteEspecial")
     private String contribuyenteEspecial;

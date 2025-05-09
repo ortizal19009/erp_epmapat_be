@@ -13,57 +13,54 @@ import com.epmapat.erp_epmapat.sri.models.Factura;
 @Service
 public class ClaveAccesoGenerator {
 
-
     public String generarClaveAcceso(Factura factura, Definir definir) {
- 
 
         // 1. Fecha de emisión (DDMMYYYY)
         String fechaEmision = formatToDDMMYYYY(factura.getFechaemision());
-        System.out.println("fecha emision"+fechaEmision);
+        System.out.println("fecha emision" + fechaEmision);
 
         // 2. Tipo de comprobante (2 dígitos)
         String tipoComprobante = String.format("%02d", 1);
-        System.out.println("tipocomprobante: "+tipoComprobante);
+        System.out.println("tipocomprobante: " + tipoComprobante);
 
         // 3. RUC del emisor (13 dígitos)
         String ruc = definir.getRuc();
-        System.out.println("ruc "+ruc);
-
+        System.out.println("ruc " + ruc);
 
         // 4. Ambiente (1 dígito: 1=Pruebas, 2=Producción)
         Byte ambiente = definir.getTipoambiente(); // "1" o "2"
-        System.out.println("ambiente " +ambiente);
+        System.out.println("ambiente " + ambiente);
 
         // 5. Serie (4 dígitos establecimiento + 3 dígitos punto emisión)
         String serie = factura.getEstablecimiento() + factura.getPuntoemision();
-        System.out.println("serie "+ serie);
+        System.out.println("serie " + serie);
 
         // 6. Secuencial (9 dígitos)
         String secuencial = String.format("%09d", Long.parseLong(factura.getSecuencial()));
-        System.out.println("secuancial "+secuencial);
+        System.out.println("secuancial " + secuencial);
 
         // 7. Código numérico (8 dígitos aleatorios)
         String codigoNumerico = generarCodigoNumerico();
-        System.out.println("codigoNumerico: "+ codigoNumerico);
+        System.out.println("codigoNumerico: " + codigoNumerico);
 
         // 8. Tipo de emisión (1 dígito, normal=1)
         byte tipoEmision = definir.getTipoambiente(); // Normal
-        System.out.println("tipoEmision: "+ tipoEmision);
+        System.out.println("tipoEmision: " + tipoEmision);
 
         // Concatenar todos los componentes
         String claveAcceso = fechaEmision + tipoComprobante + ruc + ambiente +
                 serie + secuencial + codigoNumerico + tipoEmision;
-        System.out.println("claveAcceso: "+ claveAcceso);
-
+        System.out.println("claveAcceso: " + claveAcceso);
 
         // 9. Calcular dígito verificador
-      /*   String digitoVerificador = calcularDigitoVerificador(claveAcceso);
-        System.out.println("digitoVerificador: "+ digitoVerificador); */
-
+        /*
+         * String digitoVerificador = calcularDigitoVerificador(claveAcceso);
+         * System.out.println("digitoVerificador: "+ digitoVerificador);
+         */
 
         // Retornar clave de acceso completa (49 dígitos)
         return claveAcceso;
-      /*   return claveAcceso + digitoVerificador; */
+        /* return claveAcceso + digitoVerificador; */
     }
 
     public static String formatToDDMMYYYY(LocalDateTime dateTime) {
@@ -71,7 +68,7 @@ public class ClaveAccesoGenerator {
             throw new IllegalArgumentException("La fecha no puede ser nula");
         }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dMyyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
         return dateTime.format(formatter);
     }
 
@@ -85,22 +82,22 @@ public class ClaveAccesoGenerator {
         if (claveAcceso43 == null || claveAcceso43.length() != 43) {
             throw new IllegalArgumentException("La clave de acceso debe tener exactamente 43 dígitos");
         }
-    
-        int[] patrones = {2, 3, 4, 5, 6, 7};
+
+        int[] patrones = { 2, 3, 4, 5, 6, 7 };
         int suma = 0;
         int j = 0;
-    
+
         // Recorrer desde el final hacia el inicio
         for (int i = claveAcceso43.length() - 1; i >= 0; i--) {
             int digito = Character.getNumericValue(claveAcceso43.charAt(i));
             suma += digito * patrones[j];
             j = (j + 1) % patrones.length; // repetir patrón
         }
-    
+
         int modulo = suma % 11;
         int digitoVerificador = (modulo == 0 || modulo == 1) ? 0 : 11 - modulo;
-    
+
         return String.valueOf(digitoVerificador);
     }
-    
+
 }

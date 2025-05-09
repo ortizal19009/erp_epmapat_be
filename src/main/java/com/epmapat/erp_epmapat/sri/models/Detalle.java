@@ -1,11 +1,16 @@
 package com.epmapat.erp_epmapat.sri.models;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.xml.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
 @Data
+@Getter
+@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Detalle {
 

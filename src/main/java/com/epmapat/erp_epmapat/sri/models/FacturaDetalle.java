@@ -14,12 +14,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "fec_factura_detalles")
 public class FacturaDetalle {
     @Id
@@ -39,10 +43,6 @@ public class FacturaDetalle {
     @OneToMany(mappedBy = "detalle", cascade = CascadeType.ALL)
     private List<FacturaDetalleImpuesto> impuestos = new ArrayList<>();
 
-    public Object getPreciototalsinimpuesto() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getPreciototalsinimpuesto'");
-    }
     
     // Getters y Setters
 }

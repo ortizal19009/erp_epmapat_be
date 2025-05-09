@@ -2,10 +2,13 @@ package com.epmapat.erp_epmapat.sri.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
+import com.epmapat.erp_epmapat.sri.dto.EmailRequest;
 import com.epmapat.erp_epmapat.sri.exceptions.FacturaElectronicaException;
+import com.epmapat.erp_epmapat.sri.interfaces.TotalSinImpuestos;
 import com.epmapat.erp_epmapat.sri.models.Comprobante;
 import com.epmapat.erp_epmapat.sri.models.Detalle;
 import com.epmapat.erp_epmapat.sri.models.Factura;
@@ -16,12 +19,16 @@ import com.epmapat.erp_epmapat.sri.models.InfoTributaria;
 import com.epmapat.erp_epmapat.sri.models.TotalConImpuestos;
 import com.epmapat.erp_epmapat.sri.models.Detalle.Impuesto;
 import com.epmapat.erp_epmapat.sri.models.TotalConImpuestos.TotalImpuesto;
+import com.epmapat.erp_epmapat.sri.repositories.FacturaDetalleR;
 
 import javax.persistence.EntityNotFoundException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -37,12 +44,15 @@ public class FacturaSRIService {
     @Autowired
     private ClaveAccesoGenerator claveAccesoGenerator;
 
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private FacturaDetalleR fDetalleR;
+
     private static final String VERSION = "1.1.0";
 
     public String generarXmlFactura(Factura factura) throws FacturaElectronicaException {
 
-        System.out.println("==================================================================> "
-                + factura.getEmailcomprador());
         try {
             // 1. Crear objeto raíz del comprobante
             Comprobante comprobante = new Comprobante();
@@ -78,6 +88,7 @@ public class FacturaSRIService {
         Definir def = getDefinir();
         String claveAcceso = claveAccesoGenerator.generarClaveAcceso(factura, def);
         System.out.println(claveAcceso);
+        System.out.println(factura.getClaveacceso());
         InfoTributaria infoTributaria = new InfoTributaria();
         infoTributaria.setAmbiente(def.getTipoambiente());
         infoTributaria.setTipoEmision((byte) 1);
@@ -94,19 +105,23 @@ public class FacturaSRIService {
     }
 
     private InfoFactura crearInfoFactura(Factura factura) {
+        TotalSinImpuestos tSinImpuestos = fDetalleR.getTotalSinImpuestos(factura.getIdfactura());
         InfoFactura infoFactura = new InfoFactura();
         infoFactura.setFechaEmision(formatToDDMMYYYY(factura.getFechaemision()));
         infoFactura.setObligadoContabilidad("SI");
         infoFactura.setTipoIdentificacionComprador(factura.getTipoidentificacioncomprador());
         infoFactura.setRazonSocialComprador(factura.getRazonsocialcomprador());
         infoFactura.setIdentificacionComprador(factura.getIdentificacioncomprador());
-        infoFactura.setDirEstablecimiento(factura.getDireccioncomprador());
+        infoFactura.setDireccionComprador(factura.getDireccioncomprador());
         // infoFactura.setContribuyenteEspecial(factura.getContribuyenteEspecial());
-        infoFactura.setTotalSinImpuestos(new BigDecimal(0));
-        infoFactura.setTotalDescuento(new BigDecimal(0));
+        infoFactura.setTotalSinImpuestos(tSinImpuestos.getTotalsinimpuestos().setScale(2, RoundingMode.HALF_UP));
+        infoFactura.setTotalDescuento(tSinImpuestos.getDescuento().setScale(2, RoundingMode.HALF_UP));
         infoFactura.setPropina(BigDecimal.ZERO);
-        infoFactura.setImporteTotal(new BigDecimal(0));
+        infoFactura.setImporteTotal(tSinImpuestos.getTotalsinimpuestos().add(tSinImpuestos.getDescuento()).setScale(2,
+                RoundingMode.HALF_UP));
         infoFactura.setMoneda("DOLAR");
+
+        /* totalConImpuestos */
         return infoFactura;
     }
 
@@ -210,5 +225,24 @@ public class FacturaSRIService {
                 .map(FacturaDetalleImpuesto::getBaseimponible)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public void processAndSendInvoice(String toEmail, String subject, String body, MultipartFile xmlFile)
+            throws Exception {
+        System.out.println(xmlFile.getSize());
+        // Convertir el archivo XML a bytes
+        byte[] xmlData = xmlFile.getBytes();
+        System.out.println(xmlData);
+        // Generar PDF a partir del XML
+        byte[] pdfData = PdfGenerationService.generatePdfFromXml(xmlData);
+
+        // Enviar por email
+        String attachmentName = "factura_" + System.currentTimeMillis() + ".pdf";
+        emailService.sendEmailWithAttachment(
+                toEmail,
+                subject,
+                body,
+                pdfData,
+                attachmentName);
     }
 }
