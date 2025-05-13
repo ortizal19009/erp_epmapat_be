@@ -52,7 +52,6 @@ public class FacturaSRIService {
     @Autowired
     private FacturaDetalleR fDetalleR;
      @Autowired
-    private XmlSignerService XmlSignerService;
 
     private static final String VERSION = "1.1.0";
 
