@@ -24,11 +24,14 @@ import com.epmapat.erp_epmapat.sri.repositories.FacturaDetalleR;
 import javax.persistence.EntityNotFoundException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+
+import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -48,6 +51,8 @@ public class FacturaSRIService {
     private EmailService emailService;
     @Autowired
     private FacturaDetalleR fDetalleR;
+     @Autowired
+    private XmlSignerService XmlSignerService;
 
     private static final String VERSION = "1.1.0";
 
@@ -81,6 +86,15 @@ public class FacturaSRIService {
 
         } catch (Exception e) {
             throw new FacturaElectronicaException("Error al generar XML para el SRI", e);
+        }
+    }
+
+    public static void saveXml(String xmlContent, String filePath) {
+        try {
+            Files.write(Paths.get(filePath), xmlContent.getBytes(), StandardOpenOption.CREATE);
+            System.out.println("Archivo XML guardado en: " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

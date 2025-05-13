@@ -11,11 +11,14 @@ import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
 @Service
@@ -67,4 +70,21 @@ public class XmlSignerService {
 
         return doc;
     }
+    
+    public PrivateKeyAndCert cargarLlavePrivada(byte[] keystoreBytes, String password) throws Exception {
+    KeyStore keystore = KeyStore.getInstance("PKCS12");
+
+    try (ByteArrayInputStream bis = new ByteArrayInputStream(keystoreBytes)) {
+        keystore.load(bis, password.toCharArray());
+    }
+
+    String alias = keystore.aliases().nextElement();
+    PrivateKey privateKey = (PrivateKey) keystore.getKey(alias, password.toCharArray());
+    X509Certificate certificate = (X509Certificate) keystore.getCertificate(alias);
+
+    return new PrivateKeyAndCert(privateKey, certificate);
+}
+
+public record PrivateKeyAndCert(PrivateKey privateKey, X509Certificate certificate) {}
+
 }
