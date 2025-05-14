@@ -121,6 +121,10 @@ public class FacturaServicio {
 		return dao.findFacSincobroByCuetna(cuenta);
 	}
 
+	public List<FacSinCobrar> findSincobroByCuetna(Long cuenta) {
+		return dao.findSincobroByCuetna(cuenta);
+	}
+
 	// Planillas Sin Cobrar de un Abonado (para Multas)
 	public List<Long> findSinCobroAbo(Long idabonado) {
 		return dao.findSinCobroAbo(idabonado);

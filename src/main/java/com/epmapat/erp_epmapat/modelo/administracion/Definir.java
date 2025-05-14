@@ -51,6 +51,8 @@ public class Definir {
     private String swpreingsin;
     @Type(type = "org.hibernate.type.BinaryType")
     private byte[] firma;
-    private String claveFirma;
+    private String clave_firma;
+    private String email; 
+    private String clave_email;
 
 }

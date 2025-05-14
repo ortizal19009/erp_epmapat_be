@@ -113,6 +113,7 @@ public class FacturasApi {
 
 	@GetMapping("/idabonado/{idabonado}")
 	public List<Facturas> getByIdabonado(@PathVariable Long idabonado) {
+		System.out.println("getByIdabonado");
 		return facServicio.findByIdabonado(idabonado);
 	}
 
@@ -167,6 +168,10 @@ public class FacturasApi {
 	@GetMapping("/facSincobrar/cuenta")
 	public List<FacSinCobrar> findFacSincobroByCuetna(@RequestParam Long cuenta) {
 		return facServicio.findFacSincobroByCuetna(cuenta);
+	}
+		@GetMapping("/sincobrar/cuenta")
+	public List<FacSinCobrar> findSincobroByCuetna(@RequestParam Long cuenta) {
+		return facServicio.findSincobroByCuetna(cuenta);
 	}
 
 	// IDs de las Planillas sin cobrar de un Abonado

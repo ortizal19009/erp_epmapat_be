@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 
+import com.epmapat.erp_epmapat.modelo.administracion.Definir;
+import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
 import com.epmapat.erp_epmapat.sri.dto.EmailRequest;
 import com.epmapat.erp_epmapat.sri.exceptions.FacturaElectronicaException;
 import com.epmapat.erp_epmapat.sri.models.Factura;
@@ -38,7 +40,10 @@ public class FacturaSRIController {
     @Autowired
     private FacturaR dao;
     @Autowired
-    private XmlSignerService XmlSignerService;
+    private XmlSignerService xmlSignerService;
+    @Autowired
+    private DefinirServicio definirService; 
+
 
     private final FacturaSRIService facturaSRIService;
     @Value("${xml.storage.path}")
@@ -49,12 +54,14 @@ public class FacturaSRIController {
     }
 
     @GetMapping("/generar-xml")
-    public ResponseEntity<String> generarXmlFactura(@RequestParam Long idfactura) {
+    public ResponseEntity<String> generarXmlFactura(@RequestParam Long idfactura) throws Exception {
+        Definir definir = definirService.findById(1L).orElseThrow(()-> new RuntimeException("Definir no encontrado"));
         try {
             Factura factura = dao.findById(idfactura).orElseThrow(() -> new RuntimeException("Factura no encontrada"));
             String xml = facturaSRIService.generarXmlFactura(factura);
-            FacturaSRIService.saveXml(xml, ".//xmlFiles//Factura_" + factura.getEstablecimiento() + "_"
-                    + factura.getPuntoemision() + "_" + factura.getSecuencial() + ".xml");
+            String xmlFirmado = xmlSignerService.signXml(xml, definir.getFirma(), "Junior2012");
+            FacturaSRIService.saveXml(xmlFirmado, ".//xmlFiles//Fac_" + factura.getEstablecimiento() + "-"
+                    + factura.getPuntoemision() + "-" + factura.getSecuencial() + ".xml");
             return ResponseEntity.ok(xml);
         } catch (FacturaElectronicaException e) {
             System.out.println("< ========= ERROR =========>");
@@ -78,12 +85,12 @@ public class FacturaSRIController {
         }
     }
 
-    @GetMapping("/firmar-xml")
+/*     @GetMapping("/firmar-xml")
     public ResponseEntity<Object> firmarDoc(File xmlFile, File p12File, String p12Password, String alias)
             throws Exception {
         Document doc = XmlSignerService.signXml(xmlFile, p12File, p12Password, alias);
         return ResponseEntity.ok(doc);
-    }
+    } */
 
     @PostMapping("/generate-pdf-jasper")
     public ResponseEntity<byte[]> generatePdfWithJasper(

@@ -51,7 +51,7 @@ public class DefinirServicio {
 
             // Actualizar el objeto
             definir.setFirma(firmaBytes);
-            definir.setClaveFirma(claveCifrada);
+            definir.setClave_firma(claveCifrada);
 
             // Guardar y retornar
             return dao.save(definir);
@@ -66,12 +66,12 @@ public class DefinirServicio {
         // Buscar el registro
         Definir definir = dao.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Registro no encontrado con ID: " + id));
-        String claveCifrada = AESUtil.descifrar(definir.getClaveFirma());
+        String claveCifrada = AESUtil.descifrar(definir.getClave_firma());
         return claveCifrada;
 
     }
 
-    public Object encriptar(String clave) throws Exception {
+    public String encriptar(String clave) throws Exception {
         String claveCifrada = AESUtil.cifrar(clave);
         return claveCifrada;
     }

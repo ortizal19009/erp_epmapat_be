@@ -29,7 +29,7 @@ public class DefinirApi {
     }
 
     @PutMapping("/{iddefinir}")
-    public ResponseEntity<Definir> update(@PathVariable Long iddefinir, @RequestBody Definir x) {
+    public ResponseEntity<Definir> update(@PathVariable Long iddefinir, @RequestBody Definir x) throws Exception {
         Definir y = defServicio.findById(iddefinir)
                 .orElseThrow(() -> new ResourceNotFoundExcepciones(
                         ("No existe: " + iddefinir)));
@@ -39,6 +39,22 @@ public class DefinirApi {
         y.setDireccion(x.getDireccion());
         y.setTipoambiente(x.getTipoambiente());
         y.setIva(x.getIva());
+        y.setFirma(x.getFirma());
+        y.setClave_firma(x.getClave_firma());
+        y.setEmail(x.getEmail());
+        System.out.println(x.getClave_email());
+                System.out.println("===============================================================");
+                        System.out.println(y.getClave_email());
+
+
+        if (x.getClave_email() == y.getClave_email()) {
+            System.out.println("No es igual");
+                        y.setClave_email(x.getClave_email());
+
+        } else {
+                        y.setClave_email(defServicio.encriptar(x.getClave_email()));
+
+        }
 
         Definir z = defServicio.save(y);
         return ResponseEntity.ok(z);
@@ -49,7 +65,7 @@ public class DefinirApi {
             @PathVariable Long id,
             @RequestParam("archivo") MultipartFile archivo,
             @RequestParam("clave") String clave) {
-                Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
         try {
 
             defServicio.guardarFirma(id, archivo, clave);
@@ -60,12 +76,14 @@ public class DefinirApi {
                     .body("Error: " + e.getMessage());
         }
     }
+
     @GetMapping("/desEncriptar")
-    public ResponseEntity<Object> desencriptar(@RequestParam Long id) throws Exception{
+    public ResponseEntity<Object> desencriptar(@RequestParam Long id) throws Exception {
         return ResponseEntity.ok(defServicio.desEncriptar(id));
     }
+
     @GetMapping("/encriptar")
-    public ResponseEntity<Object> encriptar(@RequestParam String clave) throws Exception{
+    public ResponseEntity<Object> encriptar(@RequestParam String clave) throws Exception {
         return ResponseEntity.ok(defServicio.encriptar(clave));
     }
 

@@ -51,7 +51,7 @@ public class FacturaSRIService {
     private EmailService emailService;
     @Autowired
     private FacturaDetalleR fDetalleR;
-     @Autowired
+    @Autowired
 
     private static final String VERSION = "1.1.0";
 
@@ -99,9 +99,15 @@ public class FacturaSRIService {
 
     private InfoTributaria crearInfoTributaria(Factura factura) {
         Definir def = getDefinir();
-        String claveAcceso = claveAccesoGenerator.generarClaveAcceso(factura, def);
+        String claveAcceso;
+        if (factura.getClaveacceso() == null) {
+            claveAcceso = claveAccesoGenerator.generarClaveAcceso(factura, def);
+        } else {
+            claveAcceso = factura.getClaveacceso();
+        }
         System.out.println(claveAcceso);
         System.out.println(factura.getClaveacceso());
+
         InfoTributaria infoTributaria = new InfoTributaria();
         infoTributaria.setAmbiente(def.getTipoambiente());
         infoTributaria.setTipoEmision((byte) 1);
