@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.*;
 @Data
 @Getter
 @Setter
-@XmlRootElement(name = "comprobante")
+@XmlRootElement(name = "factura")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Comprobante {
     @XmlAttribute
@@ -30,6 +30,5 @@ public class Comprobante {
     @XmlElement(name = "detalle")
     private List<Detalle> detalles;
     
-    @XmlElement(name = "totalConImpuestos")
-    private TotalConImpuestos totalConImpuestos;
+
 }

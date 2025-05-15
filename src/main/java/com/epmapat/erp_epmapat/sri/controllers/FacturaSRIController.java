@@ -10,6 +10,7 @@ import com.epmapat.erp_epmapat.sri.dto.EmailRequest;
 import com.epmapat.erp_epmapat.sri.exceptions.FacturaElectronicaException;
 import com.epmapat.erp_epmapat.sri.models.Factura;
 import com.epmapat.erp_epmapat.sri.repositories.FacturaR;
+import com.epmapat.erp_epmapat.sri.services.EmailService;
 import com.epmapat.erp_epmapat.sri.services.FacturaSRIService;
 import com.epmapat.erp_epmapat.sri.services.XmlSignerService;
 
@@ -22,7 +23,11 @@ import net.sf.jasperreports.engine.data.JRXmlDataSource;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +48,8 @@ public class FacturaSRIController {
     private XmlSignerService xmlSignerService;
     @Autowired
     private DefinirServicio definirService;
+    @Autowired
+    private EmailService emailService;
 
     private final FacturaSRIService facturaSRIService;
     @Value("${xml.storage.path}")
@@ -139,4 +146,33 @@ public class FacturaSRIController {
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
 
+    @PostMapping("/send")
+    public ResponseEntity<Map<String, Object>> sendMail(@RequestParam String emisor, @RequestParam String password, @RequestParam List<String> receptores, @RequestParam String asunto, @RequestParam String mensaje) {
+        try {
+            // Configuración del correo
+            emisor = "facturacion@epmapatulcan.gob.ec";
+            password = "79DB6F2BFA7FFED2E17F16CABA197D2063EB";
+            receptores = List.of("ortizln9@gmail.com", "alexis.ortiz81@outlook.com",
+                    "saulruales@gmail.com", "ortizln9@gmail.com");
+            asunto = "Prueba mail facturas";
+            mensaje = "<h1>ANUNCIO EPMAPA-T</h1><p>Este es un correo de prueba enviado desde el sistema.</p>";
+            // Envío del correo
+            boolean resultado = emailService.envioEmail(emisor, password, receptores, asunto, mensaje);
+
+            // Respuesta estructurada
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", resultado);
+            response.put("message", resultado ? "Correo enviado exitosamente" : "Error al enviar el correo");
+            response.put("timestamp", new Date());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Error en el servidor: " + e.getMessage());
+            errorResponse.put("timestamp", new Date());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 }

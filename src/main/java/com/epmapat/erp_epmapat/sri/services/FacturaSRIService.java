@@ -78,7 +78,6 @@ public class FacturaSRIService {
             comprobante.setDetalles(mapearDetalles(factura.getDetalles()));
 
             // 5. Configurar totales con impuestos
-            comprobante.setTotalConImpuestos(crearTotalConImpuestos(factura));
 
             // 6. Convertir a XML
             return convertirObjetoAXml(comprobante);
@@ -105,15 +104,13 @@ public class FacturaSRIService {
         } else {
             claveAcceso = factura.getClaveacceso();
         }
-        System.out.println(claveAcceso);
-        System.out.println(factura.getClaveacceso());
 
         InfoTributaria infoTributaria = new InfoTributaria();
         infoTributaria.setAmbiente(def.getTipoambiente());
         infoTributaria.setTipoEmision((byte) 1);
         infoTributaria.setRazonSocial(def.getRazonsocial());
         infoTributaria.setNombreComercial(def.getNombrecomercial());
-        infoTributaria.setRuc(factura.getIdentificacioncomprador());
+        infoTributaria.setRuc(def.getRuc());
         infoTributaria.setClaveAcceso(claveAcceso);
         infoTributaria.setCodDoc("01"); // "01" para factura
         infoTributaria.setEstab(factura.getEstablecimiento());
@@ -135,6 +132,8 @@ public class FacturaSRIService {
         // infoFactura.setContribuyenteEspecial(factura.getContribuyenteEspecial());
         infoFactura.setTotalSinImpuestos(tSinImpuestos.getTotalsinimpuestos().setScale(2, RoundingMode.HALF_UP));
         infoFactura.setTotalDescuento(tSinImpuestos.getDescuento().setScale(2, RoundingMode.HALF_UP));
+        infoFactura.setTotalConImpuestos(crearTotalConImpuestos(factura));
+
         infoFactura.setPropina(BigDecimal.ZERO);
         infoFactura.setImporteTotal(tSinImpuestos.getTotalsinimpuestos().add(tSinImpuestos.getDescuento()).setScale(2,
                 RoundingMode.HALF_UP));

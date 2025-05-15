@@ -10,30 +10,28 @@ public class InfoFactura {
 
     @XmlElement(name = "fechaEmision", required = true)
     private String fechaEmision;
-
-    @XmlElement(name = "direccionComprador")
-    private String direccionComprador;
-
-    @XmlElement(name = "contribuyenteEspecial")
-    private String contribuyenteEspecial;
-
     @XmlElement(name = "obligadoContabilidad")
     private String obligadoContabilidad; // "SI" o "NO"
-
     @XmlElement(name = "tipoIdentificacionComprador", required = true)
     private String tipoIdentificacionComprador; // "04" RUC, "05" Cédula, "06" Pasaporte, etc.
-
     @XmlElement(name = "razonSocialComprador", required = true)
     private String razonSocialComprador;
-
+    
     @XmlElement(name = "identificacionComprador", required = true)
     private String identificacionComprador;
 
+
+    @XmlElement(name = "direccionComprador")
+    private String direccionComprador;
+    @XmlElement(name = "contribuyenteEspecial")
+    private String contribuyenteEspecial;
     @XmlElement(name = "totalSinImpuestos", required = true)
     private BigDecimal totalSinImpuestos;
 
     @XmlElement(name = "totalDescuento", required = true)
     private BigDecimal totalDescuento;
+    @XmlElement(name = "totalConImpuestos")
+    private TotalConImpuestos totalConImpuestos;
 
     @XmlElement(name = "propina", required = true)
     private BigDecimal propina = BigDecimal.ZERO;

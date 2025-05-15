@@ -10,14 +10,14 @@ public class InfoTributaria {
     private Byte ambiente;
     @XmlElement(name = "tipoEmision")
     private Byte tipoEmision;
-    @XmlElement(name = "ruc")
-    private String ruc;
     
     @XmlElement(name = "razonSocial")
     private String razonSocial;
     
     @XmlElement(name = "nombreComercial")
     private String nombreComercial;
+        @XmlElement(name = "ruc")
+    private String ruc;
     @XmlElement(name = "claveAcceso")
     private String claveAcceso;
     @XmlElement(name = "codDoc")
