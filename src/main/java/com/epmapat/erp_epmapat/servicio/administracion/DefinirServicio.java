@@ -66,7 +66,7 @@ public class DefinirServicio {
         // Buscar el registro
         Definir definir = dao.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Registro no encontrado con ID: " + id));
-        String claveCifrada = AESUtil.descifrar(definir.getClave_firma());
+        String claveCifrada = AESUtil.descifrar(definir.getClave_email());
         return claveCifrada;
 
     }

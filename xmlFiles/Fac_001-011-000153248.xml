@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><comprobante id="comprobante" version="1.1.0">
+    <infoTributaria>
+        <ambiente>1</ambiente>
+        <tipoEmision>1</tipoEmision>
+        <ruc>0400022042</ruc>
+        <razonSocial>EMPRESA PUBLICA MUNICIPAL DE AGUA POTABLE Y ALCANTARILLADO DE TULCAN</razonSocial>
+        <nombreComercial>EPMAPA-T</nombreComercial>
+        <claveAcceso>1405202501046002881000110010110001532488423510016</claveAcceso>
+        <codDoc>01</codDoc>
+        <estab>001</estab>
+        <ptoEmi>011</ptoEmi>
+        <secuencial>000153248</secuencial>
+        <dirMatriz>JUAN RAMON ARELLANO Y BOLIVAR</dirMatriz>
+    </infoTributaria>
+    <infoFactura>
+        <fechaEmision>14/05/2025</fechaEmision>
+        <direccionComprador>SUCRE Y BOLIVAR </direccionComprador>
+        <obligadoContabilidad>SI</obligadoContabilidad>
+        <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+        <razonSocialComprador>RIOFRIO OROSCO JULIO CESAR</razonSocialComprador>
+        <identificacionComprador>0400022042</identificacionComprador>
+        <totalSinImpuestos>16.13</totalSinImpuestos>
+        <totalDescuento>0.00</totalDescuento>
+        <propina>0</propina>
+        <importeTotal>16.13</importeTotal>
+        <moneda>DOLAR</moneda>
+    </infoFactura>
+    <detalles>
+        <detalle>
+            <codigoPrincipal>1001</codigoPrincipal>
+            <descripcion>Agua Potable</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>8.99</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>0</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>8.99</baseImponible>
+                    <valor>0</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>1004</codigoPrincipal>
+            <descripcion>Conservación Fuentes</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>0.10</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>0</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>0.10</baseImponible>
+                    <valor>0</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>1003</codigoPrincipal>
+            <descripcion>Saneamiento</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>2.15</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>0</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>2.15</baseImponible>
+                    <valor>0</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>5</codigoPrincipal>
+            <descripcion>Intereses</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>0.25</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>0</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>0.25</baseImponible>
+                    <valor>0</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>1002</codigoPrincipal>
+            <descripcion>Alcantarillado</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>4.64</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>0</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>4.64</baseImponible>
+                    <valor>0</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+    </detalles>
+    <totalConImpuestos>
+        <totalImpuesto>
+            <codigo>2</codigo>
+            <codigoPorcentaje>2</codigoPorcentaje>
+            <baseImponible>16.13</baseImponible>
+            <valor>16.13</valor>
+        </totalImpuesto>
+    </totalConImpuestos>
+<Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><DigestValue>x0ZseG9kFxqhTrRKfzKvil72mlAh2dV81l1lHe1P4/M=</DigestValue></Reference></SignedInfo><SignatureValue>hTiSb3lhGlwYQ5vuwMMe5m8Jg6UhKLuD8NhCu5xFK4gHEzUefSuF7WKVk5f+t1QKkmGRBVFbaxn5&#13;
+1znuQn9WO+sZIMCBh0TF8hnnPt7dz+fBn6shuBHmw70U/yeyj0pjGt/y48/VeiL8PLV2i2IkNyfl&#13;
+8zgjRq9AUDhytx/1sSiqqx7VtD9erB+onXkdjgjQ9j79qgYGLk8xwrCsHklWddl0DNVXjSCv3I2Q&#13;
+Xfrqs/cBejwff2LtLSLLyfUnRGNMB8Bu5YkR9ZcJM8iFnOiqgova94fwa4OspynGlRcv9/95maxr&#13;
+DElIpDisjmlqwfAla6UPJxK7fC1k3g49lsTdPg==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIKLTCCCBWgAwIBAgIIJEkKkbxfx/QwDQYJKoZIhvcNAQELBQAwgbgxCzAJBgNVBAYTAkVTMUQw&#13;
+QgYDVQQHDDtCYXJjZWxvbmEgKHNlZSBjdXJyZW50IGFkZHJlc3MgYXQgd3d3LnVhbmF0YWNhLmNv&#13;
+bS9hZGRyZXNzKTEWMBQGA1UECgwNVUFOQVRBQ0EgUy5BLjEVMBMGA1UECwwMVFNQLVVBTkFUQUNB&#13;
+MRowGAYDVQQDDBFVQU5BVEFDQSBDQTIgMjAxNjEYMBYGA1UEYQwPVkFURVMtQTY2NzIxNDk5MB4X&#13;
+DTI0MDUxMzIyMTMwMFoXDTI3MDUxMzIyMTMwMFowggEHMQswCQYDVQQGEwJFQzFNMEsGA1UECgxE&#13;
+RU1QUkVTQSBQVUJMSUNBIE1VTklDSVBBTCBERSBBR1VBIFBPVEFCTEUgWSBBTENBTlRBUklMTEFE&#13;
+TyBERSBUVUxDQU4xGDAWBgNVBAwMD0dFUkVOVEUgR0VORVJBTDEWMBQGA1UEBAwNQlVSQkFOTyBP&#13;
+UlRJWjEXMBUGA1UEKgwOTk9SVEhPTiBSQU1JUk8xGTAXBgNVBAUTEElEQ0VDLTA0MDA5OTM4Mzgx&#13;
+JTAjBgNVBAMMHE5PUlRIT04gUkFNSVJPIEJVUkJBTk8gT1JUSVoxHDAaBgNVBGEME1ZBVEVDLTA0&#13;
+NjAwMjg4MTAwMDEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCjhKUFd4rjEpfrzvkn&#13;
+YiuKjexWujm7/aCnctNxL0HOnv+Hn/tLyWRvAWnDNZtNj0GLEOb4r13dqCazSZDgkcOviSWbScOl&#13;
+2lsGme3y3YHlcC77HYxs1v8DBNI+vWJL0k0Yg2Yf3eUX+QT2asimIlEEe00QZ2diU911S0UsVlHE&#13;
+4PjvOBi/WeIwI93xRBARMNgYyZQ0qCCn1CoGjaH64t8xATEJZWSOzxCdcr6c4MAVbqNJRgz+RIW8&#13;
+4O3Lnd/N5RI47WqF00/dWiuct77fkbBX8bpL/XzCuY8GsKiHF8Ml32eRdHf3Z/daR8TGNxL+Xl0Z&#13;
++F62nb/gccT5GeG63NlHAgMBAAGjggTnMIIE4zAbBgsrBgEEAYLxNmYDAQQMDAowNDAwOTkzODM4&#13;
+MB4GCysGAQQBgvE2ZgMLBA8MDTA0NjAwMjg4MTAwMDEwgdcGCCsGAQUFBwEBBIHKMIHHMFUGCCsG&#13;
+AQUFBzAChklodHRwOi8vd3d3LnVhbmF0YWNhLmNvbS9wdWJsaWMvZG93bmxvYWQvdHNwX2NlcnRp&#13;
+ZmljYXRlcy9zdWJvcmRpbmF0ZTEuY3J0MDYGCCsGAQUFBzABhipodHRwOi8vb2NzcDEudWFuYXRh&#13;
+Y2EuY29tL3B1YmxpYy9wa2kvb2NzcC8wNgYIKwYBBQUHMAGGKmh0dHA6Ly9vY3NwMi51YW5hdGFj&#13;
+YS5jb20vcHVibGljL3BraS9vY3NwLzAdBgNVHQ4EFgQUboDUdoHF2pukLL809Cduazs/IQMwDAYD&#13;
+VR0TAQH/BAIwADAfBgNVHSMEGDAWgBR9V+dgc84HRqnio2jw4RGydJJz/TCBjgYDVR0gBIGGMIGD&#13;
+MIGABgwrBgEEAYLxNmYCAwEwcDA3BggrBgEFBQcCARYraHR0cHM6Ly93d3cudWFuYXRhY2EuY29t&#13;
+L3B1YmxpYy9wa2kvZHBjLWVjLzA1BggrBgEFBQcCAjApDCdDRVJUSUZJQ0FETyBERSBSRVBSRVNF&#13;
+TlRBTlRFIEVOIEFSQ0hJVk8wgY8GA1UdHwSBhzCBhDBAoD6gPIY6aHR0cDovL2NybDEudWFuYXRh&#13;
+Y2EuY29tL3B1YmxpYy9wa2kvY3JsL0NBMnN1Ym9yZGluYWRhLmNybDBAoD6gPIY6aHR0cDovL2Ny&#13;
+bDIudWFuYXRhY2EuY29tL3B1YmxpYy9wa2kvY3JsL0NBMnN1Ym9yZGluYWRhLmNybDAOBgNVHQ8B&#13;
+Af8EBAMCBeAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMEMIICKAYDVR0RBIICHzCCAhuB&#13;
+GGVwbWFwYXR1bGNhbkBob3RtYWlsLmNvbaAbBgsrBgEEAYLxNmYDAaAMDAowNDAwOTkzODM4oB8G&#13;
+CysGAQQBgvE2ZgMCoBAMDk5PUlRIT04gUkFNSVJPoBgGCysGAQQBgvE2ZgMDoAkMB0JVUkJBTk+g&#13;
+FgYLKwYBBAGC8TZmAwSgBwwFT1JUSVqgIAYLKwYBBAGC8TZmAwWgEQwPR0VSRU5URSBHRU5FUkFM&#13;
+oGYGCysGAQQBgvE2ZgMHoFcMVUpVQU4gUkFNT04gQVJFTExBTk8gSU5URVJTRUNDSU46IEJPTElW&#13;
+QVIgUkVGRVJFTkNJQTogRlJFTlRFIEFMIFRFUk1JTkFMIFRFUlJFU1RSRSBESVKgHwYLKwYBBAGC&#13;
+8TZmAwigEAwOMDA1OTM5NjM5Njc3MzmgGAYLKwYBBAGC8TZmAwmgCQwHVFVMQ8OBTqBVBgsrBgEE&#13;
+AYLxNmYDCqBGDERFTVBSRVNBIFBVQkxJQ0EgTVVOSUNJUEFMIERFIEFHVUEgUE9UQUJMRSBZIEFM&#13;
+Q0FOVEFSSUxMQURPIERFIFRVTENBTqAeBgsrBgEEAYLxNmYDC6APDA0wNDYwMDI4ODEwMDAxoBMG&#13;
+CysGAQQBgvE2ZgMMoAQMAkVDoCQGCysGAQQBgvE2ZgMyoBUME1JFUFJFU0VOVEFOVEUgTEVHQUyg&#13;
+GAYLKwYBBAGC8TZmAzOgCQwHQVJDSElWTzANBgkqhkiG9w0BAQsFAAOCAgEARvr3hU4dABo6L/Re&#13;
+kCu9nrZy0EGK7Mc222Px1y001bKOB71+zsj/yHu2pFH/sjqNlXSyinRErqESHl02A6kIKomwPttr&#13;
+7cENw1a14lqPLTLTKImd35P+nkKissx/DjOczeFXrmmTG0fCDEbcZp6O7UrUBmiRswi1BZLPZf7g&#13;
+KA5xmCFif2seJJbBWFK+fx0De1hJn1ozE1DPx0f30TpxSbfp9eL02SkjZE8rpwcLuwrU0da8/wzC&#13;
+HzSZqIRcDYFPiuxOmbiJfJXTrEfrKSVzG1X/X1FLXn17POug9UhU4md65FVI1KRoEXwqlPewKyl6&#13;
+FooI/dJI5HiIOpOLwaRfxTz3bqwY4tKyBuvGp8Ucnu5jBgrDLzVRdj7CkmjeZlCCVAHXFYHNiys+&#13;
+a3NyqjVbGYpdLO1e0up87xwzCQgNmGwf4pTWNk1qyP2eajzrWrhiEgA2eRiSESKxJFyRtmNPrcVU&#13;
+oAEoGOqf+GPiox5t+dw7fTXmupCbRshMDs48/+ksf+wijl80fx8J35hsF6O7zg7fSdljx4CtSezU&#13;
+3nJJCNdugD2CbNYs4mQByG5QsLFToVP05sDgYwwycruth6sfyfGMHHJvwrm3zcM5P7baz9crJBqj&#13;
+FOXIX6GjbYPqbtIs/VRmaL0a4u0xoszsQBrDG1+7gkw6hMgs1tSxcqOgFBo=</X509Certificate></X509Data></KeyInfo></Signature></comprobante>
