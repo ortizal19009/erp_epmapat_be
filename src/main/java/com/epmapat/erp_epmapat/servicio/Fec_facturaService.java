@@ -34,8 +34,12 @@ public class Fec_facturaService {
    public <S extends Fec_factura> S save(S entity) {
       return dao.save(entity);
    }
-   public Optional<Fec_factura> findById(Long id){
+
+   public Optional<Fec_factura> findById(Long id) {
       return dao.findById(id);
    }
 
+   public String getNroFactura(Long idfactura) {
+      return dao.getNroFactura(idfactura);
+   }
 }

@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
+import com.epmapat.erp_epmapat.repositorio.Fec_facturaR;
 import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
 import com.epmapat.erp_epmapat.sri.dto.EmailRequest;
 import com.epmapat.erp_epmapat.sri.exceptions.FacturaElectronicaException;
@@ -16,6 +17,7 @@ import com.epmapat.erp_epmapat.sri.services.FacturaSRIService;
 import com.epmapat.erp_epmapat.sri.services.PdfGenerationService;
 import com.epmapat.erp_epmapat.sri.services.XmlParserService;
 import com.epmapat.erp_epmapat.sri.services.XmlSignerService;
+import com.epmapat.erp_epmapat.sri.services.XmlToPdfService;
 
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -27,11 +29,15 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.data.JRXmlDataSource;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ContentDisposition;
@@ -47,6 +55,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.core.io.InputStreamResource;
+
+import java.io.ByteArrayOutputStream;
 
 @RestController
 @RequestMapping("/api/sri")
@@ -60,15 +72,20 @@ public class FacturaSRIController {
     private DefinirServicio definirService;
     @Autowired
     private EmailService emailService;
-      @Autowired
+    @Autowired
     private XmlParserService xmlParserService;
-    
+    @Autowired
+    private XmlToPdfService xmlToPdfService;
+
     @Autowired
     private PdfGenerationService pdfGenerationService;
 
     private final FacturaSRIService facturaSRIService;
     @Value("${xml.storage.path}")
     private String xmlStoragePath;
+
+    @Autowired
+    private Fec_facturaR fec_factura;
 
     public FacturaSRIController(FacturaSRIService facturaSRIService) {
         this.facturaSRIService = facturaSRIService;
@@ -123,48 +140,75 @@ public class FacturaSRIController {
      * }
      */
 
-@GetMapping(value = "/generate-pdf", produces = MediaType.APPLICATION_PDF_VALUE)
-public ResponseEntity<byte[]> generateSamplePdf() {
-    // Datos XML de ejemplo embebidos en el servicio
-    String xmlData = """
-        <yourDataModel>
-            <field1>Valor ejemplo</field1>
-            <field2>123</field2>
-            <items>
-                <item>Item 1</item>
-                <item>Item 2</item>
-                <item>Item 3</item>
-            </items>
-        </yourDataModel>""";
-    
-    try {
-        // Parsear XML a objeto
-        YourDataModel data = xmlParserService.parseXmlToObject(xmlData);
-        
-        // Generar PDF
-        byte[] pdfBytes = pdfGenerationService.generatePdfFromData(data);
-        
-        // Configurar respuesta
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDisposition(
-            ContentDisposition.builder("attachment")
-                .filename("report.pdf")
-                .build());
-        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-        
-        return ResponseEntity.ok()
-            .headers(headers)
-            .body(pdfBytes);
-            
-    } catch (Exception e) {
-        return ResponseEntity.internalServerError().build();
-    }
-}
+    @GetMapping(value = "/generate_pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> generateSamplePdf() {
+        // Datos XML de ejemplo embebidos en el servicio
+        String xmlData = """
+                <yourDataModel>
+                    <field1>Valor ejemplo</field1>
+                    <field2>123</field2>
+                    <items>
+                        <item>Item 1</item>
+                        <item>Item 2</item>
+                        <item>Item 3</item>
+                    </items>
+                </yourDataModel>""";
 
+        try {
+            // Parsear XML a objeto
+            YourDataModel data = xmlParserService.parseXmlToObject(xmlData);
+
+            // Generar PDF
+            byte[] pdfBytes = pdfGenerationService.generatePdfFromData(data);
+
+            // Configurar respuesta
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(
+                    ContentDisposition.builder("attachment")
+                            .filename("report.pdf")
+                            .build());
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfBytes);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/generar-pdf")
+    public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {
+        String xmlAutorizado = fec_factura.getNroFactura(idfactura);
+        try {
+            // Generar el PDF como ByteArrayOutputStream
+            ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+
+            if (pdfStream == null || pdfStream.size() == 0) {
+                throw new RuntimeException("No se pudo generar el PDF.");
+            }
+
+            // Convertir el stream en un InputStreamResource
+            InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray()));
+
+            // Retornar el PDF como un archivo descargable
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=factura.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(pdfStream.size())
+                    .body(resource);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
 
     @PostMapping("/send")
-    public ResponseEntity<Map<String, Object>> sendMail(@RequestParam String emisor, @RequestParam String password, @RequestParam List<String> receptores, @RequestParam String asunto, @RequestParam String mensaje) {
+    public ResponseEntity<Map<String, Object>> sendMail(@RequestParam String emisor, @RequestParam String password,
+            @RequestParam List<String> receptores, @RequestParam String asunto, @RequestParam String mensaje) {
         try {
             // Configuración del correo
             emisor = "facturacion@epmapatulcan.gob.ec";

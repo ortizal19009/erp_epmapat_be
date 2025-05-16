@@ -13,64 +13,20 @@
               uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b3b">
     <property name="com.jasperassistant.designer.GridHeight" value="60"/>
     <property name="com.jasperassistant.designer.GridWidth" value="60"/>
-    
     <parameter name="param1" class="java.lang.String"/>
     <parameter name="param2" class="java.lang.Integer"/>
-    
-    <title>
-        <band height="79" splitType="Stretch">
-            <staticText>
-                <reportElement x="0" y="0" width="555" height="30" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b3c"/>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font size="18" isBold="true"/>
-                </textElement>
-                <text><![CDATA[Reporte Generado desde XML]]></text>
-            </staticText>
-            <textField>
-                <reportElement x="0" y="40" width="555" height="20" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b3d"/>
-                <textElement textAlignment="Center"/>
-                <textFieldExpression><![CDATA["Parámetro 1: " + $P{param1}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="0" y="60" width="555" height="20" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b3e"/>
-                <textElement textAlignment="Center"/>
-                <textFieldExpression><![CDATA["Parámetro 2: " + $P{param2}]]></textFieldExpression>
-            </textField>
-        </band>
-    </title>
-    
-    <detail>
-        <band height="125" splitType="Stretch">
-            <textField>
-                <reportElement x="0" y="0" width="555" height="20" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b3f"/>
-                <textFieldExpression><![CDATA["Field1: " + $F{field1}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="0" y="20" width="555" height="20" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b4a"/>
-                <textFieldExpression><![CDATA["Field2: " + $F{field2}]]></textFieldExpression>
-            </textField>
-            
-            <!-- Ejemplo para lista de items -->
-            <componentElement>
-                <reportElement x="0" y="50" width="555" height="50" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b4b"/>
-                <jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" 
-                         xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" 
-                         printOrder="Vertical">
-                    <datasetRun subDataset="itemsDataset" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b4c">
-                        <dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{items})]]></dataSourceExpression>
-                    </datasetRun>
-                    <jr:listContents height="50" width="555">
-                        <textField>
-                            <reportElement x="0" y="0" width="555" height="20" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b4d"/>
-                            <textFieldExpression><![CDATA[$F{this}]]></textFieldExpression>
-                        </textField>
-                    </jr:listContents>
-                </jr:list>
-            </componentElement>
-        </band>
-    </detail>
-    
+    <!-- Moved subDataset to the correct position -->
     <subDataset name="itemsDataset" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b4e">
         <field name="this" class="java.lang.String"/>
     </subDataset>
+    <title>
+        <band height="79" splitType="Stretch">
+            <!-- ... rest of your title band ... -->
+        </band>
+    </title>
+    <detail>
+        <band height="125" splitType="Stretch">
+            <!-- ... rest of your detail band ... -->
+        </band>
+    </detail>
 </jasperReport>
