@@ -9,20 +9,30 @@ import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
 import com.epmapat.erp_epmapat.sri.dto.EmailRequest;
 import com.epmapat.erp_epmapat.sri.exceptions.FacturaElectronicaException;
 import com.epmapat.erp_epmapat.sri.models.Factura;
+import com.epmapat.erp_epmapat.sri.models.YourDataModel;
 import com.epmapat.erp_epmapat.sri.repositories.FacturaR;
 import com.epmapat.erp_epmapat.sri.services.EmailService;
 import com.epmapat.erp_epmapat.sri.services.FacturaSRIService;
+import com.epmapat.erp_epmapat.sri.services.PdfGenerationService;
+import com.epmapat.erp_epmapat.sri.services.XmlParserService;
 import com.epmapat.erp_epmapat.sri.services.XmlSignerService;
 
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.data.JRXmlDataSource;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -50,6 +60,11 @@ public class FacturaSRIController {
     private DefinirServicio definirService;
     @Autowired
     private EmailService emailService;
+      @Autowired
+    private XmlParserService xmlParserService;
+    
+    @Autowired
+    private PdfGenerationService pdfGenerationService;
 
     private final FacturaSRIService facturaSRIService;
     @Value("${xml.storage.path}")
@@ -108,43 +123,45 @@ public class FacturaSRIController {
      * }
      */
 
-    @PostMapping("/generate-pdf-jasper")
-    public ResponseEntity<byte[]> generatePdfWithJasper(
-            @RequestParam("xmlFile") MultipartFile xmlFile,
-            @RequestParam("jrxmlTemplate") MultipartFile jrxmlTemplate) throws Exception {
-
-        // Cargar el diseño del reporte (.jrxml)
-        InputStream reportStream = jrxmlTemplate.getInputStream();
-        JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
-
-        // Crear datasource desde el XML
-        JRXmlDataSource xmlDataSource = new JRXmlDataSource(xmlFile.getInputStream(), "/ruta/nodo"); // Ajusta la ruta
-                                                                                                     // XPath
-
-        // Parámetros adicionales
-        Map<String, Object> parameters = new HashMap<>();
-        /*
-         * parameters.put("CLAVE_ACCESO", obtenerClaveAcceso(xml)); // Extraer del XML
-         * parameters.put("DIRECCION_MATRIZ", obtenerDireccionMatriz(xml));
-         * parameters.put("DIRECCION_ESTABLECIMIENTO",
-         * obtenerDireccionEstablecimiento(xml));
-         * parameters.put("LOGO", "ruta/a/logo.jpg");
-         */
-
-        // Llenar el reporte
-        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, xmlDataSource);
-
-        // Exportar a PDF
-        byte[] pdfBytes = JasperExportManager.exportReportToPdf(jasperPrint);
-
-        // Configurar respuesta HTTP
+@GetMapping(value = "/generate-pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+public ResponseEntity<byte[]> generateSamplePdf() {
+    // Datos XML de ejemplo embebidos en el servicio
+    String xmlData = """
+        <yourDataModel>
+            <field1>Valor ejemplo</field1>
+            <field2>123</field2>
+            <items>
+                <item>Item 1</item>
+                <item>Item 2</item>
+                <item>Item 3</item>
+            </items>
+        </yourDataModel>""";
+    
+    try {
+        // Parsear XML a objeto
+        YourDataModel data = xmlParserService.parseXmlToObject(xmlData);
+        
+        // Generar PDF
+        byte[] pdfBytes = pdfGenerationService.generatePdfFromData(data);
+        
+        // Configurar respuesta
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDisposition(ContentDisposition.builder("attachment")
-                .filename("reporte.pdf").build());
-
-        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+        headers.setContentDisposition(
+            ContentDisposition.builder("attachment")
+                .filename("report.pdf")
+                .build());
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(pdfBytes);
+            
+    } catch (Exception e) {
+        return ResponseEntity.internalServerError().build();
     }
+}
+
 
     @PostMapping("/send")
     public ResponseEntity<Map<String, Object>> sendMail(@RequestParam String emisor, @RequestParam String password, @RequestParam List<String> receptores, @RequestParam String asunto, @RequestParam String mensaje) {

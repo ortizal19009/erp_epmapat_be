@@ -51,11 +51,11 @@
 			<artifactId>jasperreports</artifactId>
 			<version>7.0.3</version>
 		</dependency>
-		<dependency>
+<!-- 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-fonts</artifactId>
 			<version>7.0.3</version>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
@@ -89,6 +89,27 @@
 			<artifactId>pdfbox</artifactId>
 			<version>2.0.27</version>
 		</dependency>
+		
+		    <!-- JasperReports -->
+	    <dependency>
+	        <groupId>net.sf.jasperreports</groupId>
+	        <artifactId>jasperreports</artifactId>
+	        <version>6.20.0</version>
+	    </dependency>
+	    
+	    <!-- Para trabajar con XML -->
+	    <dependency>
+	        <groupId>com.fasterxml.jackson.dataformat</groupId>
+	        <artifactId>jackson-dataformat-xml</artifactId>
+	    </dependency>
+	    
+	    <!-- Para compilar reportes JRXML -->
+	    <dependency>
+	        <groupId>org.codehaus.groovy</groupId>
+	        <artifactId>groovy-all</artifactId>
+	        <version>3.0.9</version>
+	        <type>pom</type>
+	    </dependency>
 	</dependencies>
 	<build>
 		<plugins>

@@ -252,15 +252,15 @@ public class FacturaSRIService {
         byte[] xmlData = xmlFile.getBytes();
         System.out.println(xmlData);
         // Generar PDF a partir del XML
-        byte[] pdfData = PdfGenerationService.generatePdfFromXml(xmlData);
+        //byte[] pdfData = PdfGenerationService.generatePdfFromXml(xmlData);
 
         // Enviar por email
         String attachmentName = "factura_" + System.currentTimeMillis() + ".pdf";
-        emailService.sendEmailWithAttachment(
+/*         emailService.se(
                 toEmail,
                 subject,
                 body,
                 pdfData,
-                attachmentName);
+                attachmentName); */
     }
 }
