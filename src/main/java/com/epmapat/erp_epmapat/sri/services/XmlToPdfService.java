@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,12 +17,12 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import com.itextpdf.html2pdf.HtmlConverter;
 
@@ -32,9 +33,6 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import java.io.ByteArrayOutputStream;
 
 @Service
 public class XmlToPdfService {
@@ -70,7 +68,15 @@ public class XmlToPdfService {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(new ByteArrayInputStream(xmlAutorizado.getBytes()));
+            // Document document = builder.parse(new
+            // ByteArrayInputStream(xmlAutorizado.getBytes()));
+            /*
+             * Document document = builder.parse(
+             * new ByteArrayInputStream(xmlAutorizado.getBytes(StandardCharsets.UTF_8)));
+             */
+            InputSource inputSource = new InputSource(new StringReader(xmlAutorizado));
+            inputSource.setEncoding("UTF-8");
+            Document document = builder.parse(inputSource);
 
             if (document != null) {
                 System.out.println("El documento XML se ha transformado correctamente.");
@@ -161,73 +167,6 @@ public class XmlToPdfService {
             throw new RuntimeException("Error al generar PDF: " + e.getMessage(), e);
         }
         return null;
-    }
-
-    public ByteArrayOutputStream generar_FacturaPDF(String xmlAutorizado) {
-        try {
-            // Parseo del XML
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(new ByteArrayInputStream(xmlAutorizado.getBytes()));
-
-            if (document == null) {
-                throw new RuntimeException("El documento XML no se ha podido transformar.");
-            }
-
-            // Extraer datos del XML
-            String razonSocial = getNodeText(document, "razonSocial");
-            String ruc = getNodeText(document, "ruc");
-            String numeroAutorizacion = getNodeText(document, "numeroAutorizacion");
-            String fechaEmision = getNodeText(document, "fechaEmision");
-            String totalSinImpuestos = getNodeText(document, "totalSinImpuestos");
-            String importeTotal = getNodeText(document, "importeTotal");
-
-            // Extraer items
-            NodeList items = document.getElementsByTagName("detalle");
-            List<Map<String, String>> itemsList = new ArrayList<>();
-            for (int i = 0; i < items.getLength(); i++) {
-                Element itemElement = (Element) items.item(i);
-                Map<String, String> item = new HashMap<>();
-                item.put("Codigo", getChildText(itemElement, "codigoPrincipal"));
-                item.put("Descripcion", getChildText(itemElement, "descripcion"));
-                item.put("Cantidad", getChildText(itemElement, "cantidad"));
-                item.put("PrecioUnitario", getChildText(itemElement, "precioUnitario"));
-                item.put("PrecioTotalSinImpuesto", getChildText(itemElement, "precioTotalSinImpuesto"));
-                itemsList.add(item);
-            }
-
-            // Cargar y compilar el reporte
-            try (InputStream reportStream = getClass().getResourceAsStream("/reports/factura_template.jrxml")) {
-                if (reportStream == null) {
-                    throw new RuntimeException("Plantilla factura_template.jrxml no encontrada en /reports/");
-                }
-
-                JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
-
-                // Preparar parámetros
-                Map<String, Object> parameters = new HashMap<>(Map.of(
-                        "RazonSocial", razonSocial,
-                        "Ruc", ruc,
-                        "NumeroAutorizacion", numeroAutorizacion,
-                        "FechaEmision", fechaEmision,
-                        "TotalSinImpuestos", totalSinImpuestos,
-                        "ImporteTotal", importeTotal));
-
-                // DataSource
-                JRDataSource itemsDataSource = new JRBeanCollectionDataSource(itemsList);
-
-                // Generar el PDF
-                JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, itemsDataSource);
-
-                // Retornar el PDF en un ByteArrayOutputStream
-                ByteArrayOutputStream pdfStream = new ByteArrayOutputStream();
-                JasperExportManager.exportReportToPdfStream(jasperPrint, pdfStream);
-
-                return pdfStream;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error al generar PDF: " + e.getMessage(), e);
-        }
     }
 
     // Helper methods for XML parsing

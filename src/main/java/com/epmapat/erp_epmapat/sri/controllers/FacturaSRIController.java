@@ -140,44 +140,6 @@ public class FacturaSRIController {
      * }
      */
 
-    @GetMapping(value = "/generate_pdf", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> generateSamplePdf() {
-        // Datos XML de ejemplo embebidos en el servicio
-        String xmlData = """
-                <yourDataModel>
-                    <field1>Valor ejemplo</field1>
-                    <field2>123</field2>
-                    <items>
-                        <item>Item 1</item>
-                        <item>Item 2</item>
-                        <item>Item 3</item>
-                    </items>
-                </yourDataModel>""";
-
-        try {
-            // Parsear XML a objeto
-            YourDataModel data = xmlParserService.parseXmlToObject(xmlData);
-
-            // Generar PDF
-            byte[] pdfBytes = pdfGenerationService.generatePdfFromData(data);
-
-            // Configurar respuesta
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDisposition(
-                    ContentDisposition.builder("attachment")
-                            .filename("report.pdf")
-                            .build());
-            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(pdfBytes);
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
-    }
 
     @GetMapping("/generar-pdf")
     public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {

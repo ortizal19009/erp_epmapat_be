@@ -46,11 +46,32 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- JasperReports -->
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
-			<version>7.0.3</version>
+			<version>6.21.4</version>
 		</dependency>
+
+		<!-- Funciones de JasperReports (DateTimeFunctions, etc.) -->
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-functions</artifactId>
+			<version>6.21.4</version>
+		</dependency>
+
+		<!-- Fuentes (evita errores en PDF) -->
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-fonts</artifactId>
+			<version>6.21.4</version>
+		</dependency>
+		<dependency>
+    <groupId>net.sourceforge.barbecue</groupId>
+    <artifactId>barbecue</artifactId>
+    <version>1.5-beta1</version>
+</dependency>
+
 		<!-- 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-fonts</artifactId>
@@ -102,11 +123,11 @@
 			<version>2.0.27</version>
 		</dependency>
 		<!-- JasperReports -->
-		<dependency>
+<!-- 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
 			<version>6.20.0</version>
-		</dependency>
+		</dependency> -->
 		<!-- Para trabajar con XML -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>

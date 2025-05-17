@@ -1,189 +1,239 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="factura_template" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
-    <parameter name="RazonSocial" class="java.lang.String"/>
-    <parameter name="Ruc" class="java.lang.String"/>
-    <parameter name="NumeroAutorizacion" class="java.lang.String"/>
-    <parameter name="FechaAutorizacion" class="java.lang.String"/>
-    <parameter name="FechaEmision" class="java.lang.String"/>
-    <parameter name="TotalSinImpuestos" class="java.lang.String"/>
-    <parameter name="ImporteTotal" class="java.lang.String"/>
-    <parameter name="NroFactura" class="java.lang.String"/>
-    <parameter name="Ambiente" class="java.lang.String"/>
-    <field name="Codigo" class="java.lang.String"/>
-    <field name="Descripcion" class="java.lang.String"/>
-    <field name="Cantidad" class="java.lang.String"/>
-    <field name="PrecioUnitario" class="java.lang.String"/>
-    <field name="PrecioTotalSinImpuesto" class="java.lang.String"/>
-    <!-- Encabezado de la Factura -->
-<title>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" name="factura_template" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<parameter name="RazonSocial" class="java.lang.String" />
+	<parameter name="Ruc" class="java.lang.String" />
+	<parameter name="NumeroAutorizacion" class="java.lang.String" />
+	<parameter name="FechaAutorizacion" class="java.lang.String" />
+	<parameter name="FechaEmision" class="java.lang.String" />
+	<parameter name="TotalSinImpuestos" class="java.lang.String" />
+	<parameter name="ImporteTotal" class="java.lang.String" />
+	<parameter name="NroFactura" class="java.lang.String" />
+	<parameter name="Ambiente" class="java.lang.String" />
+	<field name="Codigo" class="java.lang.String" />
+	<field name="Descripcion" class="java.lang.String" />
+	<field name="Cantidad" class="java.lang.String" />
+	<field name="PrecioUnitario" class="java.lang.String" />
+	<field name="PrecioTotalSinImpuesto" class="java.lang.String" />
+	<!-- Encabezado de la Factura -->
+	<title>
 		<band height="328">
 			<textField>
-				<reportElement x="339" y="1" width="209" height="31" uuid="525b2702-3518-4822-ab72-7bbc041b9181"/>
+				<reportElement x="339" y="1" width="209" height="31" uuid="525b2702-3518-4822-ab72-7bbc041b9181" />
 				<textElement>
-					<font size="16"/>
+					<font size="16" />
 				</textElement>
-				<textFieldExpression><![CDATA["R.U.C.: " + $P{Ruc}]]></textFieldExpression>
+				<textFieldExpression>
+					<![CDATA["R.U.C.: " + $P{Ruc}]]>
+				</textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="339" y="31" width="209" height="20" uuid="525b2702-3518-4822-ab72-7bbc041b9181"/>
+				<reportElement x="339" y="31" width="209" height="20" uuid="525b2702-3518-4822-ab72-7bbc041b9181" />
 				<textElement>
-					<font size="14"/>
+					<font size="14" />
 				</textElement>
-				<textFieldExpression><![CDATA["FACTURA"]]></textFieldExpression>
+				<textFieldExpression>
+					<![CDATA["FACTURA"]]>
+				</textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="339" y="71" width="209" height="20" uuid="525b2702-3518-4822-ab72-7bbc041b9181"/>
-				<textFieldExpression><![CDATA["NÚMERO DE AUTORIZACIÓN"]]></textFieldExpression>
+				<reportElement positionType="FixRelativeToBottom" x="339" y="71" width="209" height="20" uuid="525b2702-3518-4822-ab72-7bbc041b9181" />
+				<textFieldExpression>
+					<![CDATA["NÚMERO DE AUTORIZACIÓN"]]>
+				</textFieldExpression>
 			</textField>
 			<image>
-				<reportElement x="10" y="10" width="300" height="120" uuid="6700265d-f727-4443-a025-db96c081e74a"/>
-				<imageExpression><![CDATA["https://epmapatulcan.gob.ec/wp/wp-content/uploads/2021/05/LOGO-HORIZONTAL.png"]]></imageExpression>
+				<reportElement x="10" y="10" width="300" height="120" uuid="6700265d-f727-4443-a025-db96c081e74a" />
+				<imageExpression>
+					<![CDATA["https://epmapatulcan.gob.ec/wp/wp-content/uploads/2021/05/LOGO-HORIZONTAL.png"]]>
+				</imageExpression>
 			</image>
 			<textField>
-				<reportElement x="339" y="51" width="209" height="20" uuid="1fb19613-d210-4520-a430-4061ee4d0483"/>
-				<textFieldExpression><![CDATA[$P{NroFactura}]]></textFieldExpression>
+				<reportElement x="339" y="51" width="209" height="20" uuid="1fb19613-d210-4520-a430-4061ee4d0483" />
+				<textFieldExpression>
+					<![CDATA[$P{NroFactura}]]>
+				</textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="339" y="91" width="209" height="30" uuid="9c777873-5fad-4916-9e3f-4c1d017fbce0"/>
+				<reportElement positionType="FixRelativeToBottom" x="339" y="91" width="209" height="30" uuid="9c777873-5fad-4916-9e3f-4c1d017fbce0" />
 				<textElement>
-					<font size="9"/>
+					<font size="9" />
 				</textElement>
-				<textFieldExpression><![CDATA[$P{NumeroAutorizacion}]]></textFieldExpression>
+				<textFieldExpression>
+					<![CDATA[$P{NumeroAutorizacion}]]>
+				</textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="340" y="123" width="209" height="20" uuid="2592c23d-896d-4d68-bdae-4bbff7798688"/>
-				<textFieldExpression><![CDATA["FECHA Y HORA AUTORIZACIÓN"]]></textFieldExpression>
+				<reportElement positionType="FixRelativeToBottom" x="340" y="123" width="209" height="20" uuid="2592c23d-896d-4d68-bdae-4bbff7798688" />
+				<textFieldExpression>
+					<![CDATA["FECHA Y HORA AUTORIZACIÓN"]]>
+				</textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="340" y="143" width="209" height="30" uuid="97022309-6fc3-4f17-a792-3dc1fccdedd2"/>
+				<reportElement positionType="FixRelativeToBottom" x="340" y="143" width="209" height="30" uuid="97022309-6fc3-4f17-a792-3dc1fccdedd2" />
 				<textElement>
-					<font size="9"/>
+					<font size="9" />
 				</textElement>
-				<textFieldExpression><![CDATA[$P{FechaAutorizacion}]]></textFieldExpression>
+				<textFieldExpression>
+					<![CDATA[$P{FechaAutorizacion}]]>
+				</textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="341" y="171" width="209" height="20" uuid="79fd8e6f-47a0-4e2a-be3b-0b7a18d34d47"/>
-				<textFieldExpression><![CDATA["AMBIENTE"]]></textFieldExpression>
+				<reportElement positionType="FixRelativeToBottom" x="341" y="171" width="209" height="20" uuid="79fd8e6f-47a0-4e2a-be3b-0b7a18d34d47" />
+				<textFieldExpression>
+					<![CDATA["AMBIENTE"]]>
+				</textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="341" y="191" width="209" height="30" uuid="94b7b269-426d-4060-9bd0-6a7dde241373"/>
+				<reportElement positionType="FixRelativeToBottom" x="341" y="191" width="209" height="30" uuid="94b7b269-426d-4060-9bd0-6a7dde241373" />
 				<textElement>
-					<font size="9"/>
+					<font size="9" />
 				</textElement>
-				<textFieldExpression><![CDATA[$P{FechaAutorizacion}]]></textFieldExpression>
+				<textFieldExpression>
+					<![CDATA[$P{FechaAutorizacion}]]>
+				</textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="340" y="220" width="209" height="20" uuid="73cdb3b6-bd61-4536-99eb-c889d5b30a64"/>
-				<textFieldExpression><![CDATA["CLAVE DE ACCESO"]]></textFieldExpression>
+				<reportElement positionType="FixRelativeToBottom" x="340" y="220" width="209" height="20" uuid="73cdb3b6-bd61-4536-99eb-c889d5b30a64" />
+				<textFieldExpression>
+					<![CDATA["CLAVE DE ACCESO"]]>
+				</textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="10" y="143" width="300" height="30" uuid="c969bd76-e4e3-481b-b33f-fa3fd06f19d5"/>
-				<textFieldExpression><![CDATA[$P{RazonSocial}]]></textFieldExpression>
+				<reportElement x="10" y="143" width="300" height="30" uuid="c969bd76-e4e3-481b-b33f-fa3fd06f19d5" />
+				<textFieldExpression>
+					<![CDATA[$P{RazonSocial}]]>
+				</textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement x="10" y="180" width="300" height="30" uuid="c969bd76-e4e3-481b-b33f-fa3fd06f19d5" />
+				<textFieldExpression>
+					<![CDATA["EPMAPA-T"]]>
+				</textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="10" y="220" width="300" height="30" uuid="c969bd76-e4e3-481b-b33f-fa3fd06f19d5" />
+				<textFieldExpression>
+					<![CDATA["DIRECCIÓN MATRIZ"]]>
+				</textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="10" y="260" width="300" height="30" uuid="c969bd76-e4e3-481b-b33f-fa3fd06f19d5" />
+				<textFieldExpression>
+					<![CDATA["DIRECCIÓN SUCURSAL"]]>
+				</textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="10" y="290" width="300" height="30" uuid="c969bd76-e4e3-481b-b33f-fa3fd06f19d5" />
+				<textFieldExpression>
+					<![CDATA["AGENTE DE RETENCIÓN N°"]]>
+				</textFieldExpression>
+			</textField>
+			
+
 		</band>
 	</title>
-    <!-- Información del Cliente -->
-    <pageHeader>
-        <band height="60">
-            <textField>
-                <reportElement x="0" y="0" width="555" height="20"/>
-                <textFieldExpression>
-                    <![CDATA["Razón Social: " + $P{RazonSocial}]]>
-                </textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="0" y="20" width="555" height="20"/>
-                <textFieldExpression>
-                    <![CDATA["RUC: " + $P{Ruc}]]>
-                </textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="0" y="40" width="555" height="20"/>
-                <textFieldExpression>
-                    <![CDATA["Fecha Emisión: " + $P{FechaEmision}]]>
-                </textFieldExpression>
-            </textField>
-        </band>
-    </pageHeader>
-    <!-- Encabezado de Columnas -->
-    <columnHeader>
-        <band height="20">
-            <staticText>
-                <reportElement x="0" y="0" width="100" height="20"/>
-                <text>
-                    <![CDATA[Codigo]]>
-                </text>
-            </staticText>
-            <staticText>
-                <reportElement x="100" y="0" width="200" height="20"/>
-                <text>
-                    <![CDATA[Descripción]]>
-                </text>
-            </staticText>
-            <staticText>
-                <reportElement x="300" y="0" width="50" height="20"/>
-                <text>
-                    <![CDATA[Cantidad]]>
-                </text>
-            </staticText>
-            <staticText>
-                <reportElement x="350" y="0" width="100" height="20"/>
-                <text>
-                    <![CDATA[Precio Unitario]]>
-                </text>
-            </staticText>
-            <staticText>
-                <reportElement x="450" y="0" width="100" height="20"/>
-                <text>
-                    <![CDATA[Total Sin Impuesto]]>
-                </text>
-            </staticText>
-        </band>
-    </columnHeader>
-    <!-- Detalles de la Factura -->
-    <detail>
-        <band height="20">
-            <textField>
-                <reportElement x="0" y="0" width="100" height="20"/>
-                <textFieldExpression>
-                    <![CDATA[$F{Codigo}]]>
-                </textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="100" y="0" width="200" height="20"/>
-                <textFieldExpression>
-                    <![CDATA[$F{Descripcion}]]>
-                </textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="300" y="0" width="50" height="20"/>
-                <textFieldExpression>
-                    <![CDATA[$F{Cantidad}]]>
-                </textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="350" y="0" width="100" height="20"/>
-                <textFieldExpression>
-                    <![CDATA[$F{PrecioUnitario}]]>
-                </textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="450" y="0" width="100" height="20"/>
-                <textFieldExpression>
-                    <![CDATA[$F{PrecioTotalSinImpuesto}]]>
-                </textFieldExpression>
-            </textField>
-        </band>
-    </detail>
-    <!-- Pie de página -->
-    <summary>
-        <band height="40">
-            <textField>
-                <reportElement x="350" y="0" width="200" height="20"/>
-                <textFieldExpression>
-                    <![CDATA["Total: " + $P{ImporteTotal}]]>
-                </textFieldExpression>
-            </textField>
-        </band>
-    </summary>
+	<!-- Información del Cliente -->
+	<pageHeader>
+		<band height="60">
+			<textField>
+				<reportElement x="0" y="0" width="555" height="20" />
+				<textFieldExpression>
+					<![CDATA["Razón Social: " + $P{RazonSocial}]]>
+				</textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="20" width="555" height="20" />
+				<textFieldExpression>
+					<![CDATA["RUC: " + $P{Ruc}]]>
+				</textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="40" width="555" height="20" />
+				<textFieldExpression>
+					<![CDATA["Fecha Emisión: " + $P{FechaEmision}]]>
+				</textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<!-- Encabezado de Columnas -->
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="20" />
+				<text>
+					<![CDATA[Codigo]]>
+				</text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="0" width="200" height="20" />
+				<text>
+					<![CDATA[Descripción]]>
+				</text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="0" width="50" height="20" />
+				<text>
+					<![CDATA[Cantidad]]>
+				</text>
+			</staticText>
+			<staticText>
+				<reportElement x="350" y="0" width="100" height="20" />
+				<text>
+					<![CDATA[Precio Unitario]]>
+				</text>
+			</staticText>
+			<staticText>
+				<reportElement x="450" y="0" width="100" height="20" />
+				<text>
+					<![CDATA[Total Sin Impuesto]]>
+				</text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<!-- Detalles de la Factura -->
+	<detail>
+		<band height="20">
+			<textField>
+				<reportElement x="0" y="0" width="100" height="20" />
+				<textFieldExpression>
+					<![CDATA[$F{Codigo}]]>
+				</textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="100" y="0" width="200" height="20" />
+				<textFieldExpression>
+					<![CDATA[$F{Descripcion}]]>
+				</textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="0" width="50" height="20" />
+				<textFieldExpression>
+					<![CDATA[$F{Cantidad}]]>
+				</textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="350" y="0" width="100" height="20" />
+				<textFieldExpression>
+					<![CDATA[$F{PrecioUnitario}]]>
+				</textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="450" y="0" width="100" height="20" />
+				<textFieldExpression>
+					<![CDATA[$F{PrecioTotalSinImpuesto}]]>
+				</textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<!-- Pie de página -->
+	<summary>
+		<band height="40">
+			<textField>
+				<reportElement x="350" y="0" width="200" height="20" />
+				<textFieldExpression>
+					<![CDATA["Total: " + $P{ImporteTotal}]]>
+				</textFieldExpression>
+			</textField>
+		</band>
+	</summary>
 </jasperReport>
