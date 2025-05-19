@@ -24,6 +24,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import com.epmapat.erp_epmapat.repositorio.contabilidad.Tabla15R;
 import com.itextpdf.html2pdf.HtmlConverter;
 
 import net.sf.jasperreports.engine.JRDataSource;
@@ -38,6 +39,8 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 public class XmlToPdfService {
     @Autowired
     FacturaSRIService facturaSRIService;
+    @Autowired
+    private Tabla15R tabla15r;
 
     public void generarPdfDesdeXml(String xmlContent, String pdfPath) throws Exception {
         // Ruta temporal para el HTML generado
@@ -79,8 +82,6 @@ public class XmlToPdfService {
             Document document = builder.parse(inputSource);
 
             if (document != null) {
-                System.out.println("El documento XML se ha transformado correctamente.");
-
                 // Extraer datos esenciales del XML
                 String razonSocial = getNodeText(document, "razonSocial");
                 String ruc = getNodeText(document, "ruc");
@@ -93,21 +94,33 @@ public class XmlToPdfService {
                 String direccionMatriz = getNodeText(document, "dirMatriz");
                 String direccionEstablecimiento = getNodeText(document, "dirEstablecimiento");
                 String telefono = getNodeText(document, "telefono");
-                String correoElectronico = getNodeText(document, "Email");
+                // String correoElectronico = getNodeText(document, "Email");
                 String nombreComercial = getNodeText(document, "nombreComercial");
                 String obligadoContabilidad = getNodeText(document, "obligadoContabilidad");
                 String contribuyenteEspecial = getNodeText(document, "contribuyenteEspecial");
                 String nroFactura = getNodeText(document, "estab") + "-" + getNodeText(document, "ptoEmi") + "-"
                         + getNodeText(document, "secuencial");
                 String ambiente = getNodeText(document, "ambiente");
+                String razonSocialComprador = getNodeText(document, "razonSocialComprador");
+                String identificacionComprador = getNodeText(document, "identificacionComprador");
+                String direccionComprador = getNodeText(document, "direccionComprador");
+                String giaRemision = getNodeText(document, "");
+                String formaPago = tabla15r.getNombre(getNodeText(document, "formaPago"));
+                String total = getNodeText(document, "total");
+                String totalDescuento = getNodeText(document, "totalDescuento");
+                String propina = getNodeText(document, "propina");
 
                 // Extraer items de la factura
                 NodeList items = document.getElementsByTagName("detalle");
+                NodeList infoAdicional = document.getElementsByTagName("campoAdicional");
+                Map<String, Object> parameters = new HashMap<>();
+
                 List<Map<String, String>> itemsList = new ArrayList<>();
                 for (int i = 0; i < items.getLength(); i++) {
                     Node itemNode = items.item(i);
                     if (itemNode.getNodeType() == Node.ELEMENT_NODE) {
                         Element itemElement = (Element) itemNode;
+
                         Map<String, String> item = new HashMap<>();
                         item.put("Codigo", getChildText(itemElement, "codigoPrincipal"));
                         item.put("Descripcion", getChildText(itemElement, "descripcion"));
@@ -116,6 +129,21 @@ public class XmlToPdfService {
                         item.put("PrecioTotalSinImpuesto", getChildText(itemElement, "precioTotalSinImpuesto"));
 
                         itemsList.add(item);
+                    }
+                }
+                // Extraer INFORMACION ADICIONAL
+                // List<Map<String, String>> infoAdicionalList = new ArrayList<>();
+                for (int i = 0; i < infoAdicional.getLength(); i++) {
+                    Node itemNode = infoAdicional.item(i);
+                    if (itemNode.getNodeType() == Node.ELEMENT_NODE) {
+                        Element itemElement = (Element) itemNode;
+                        Map<String, String> item = new HashMap<>();
+                        String nombre = itemElement.getAttribute("nombre");
+                        String valor = itemElement.getTextContent();
+                        System.out.println(nombre + " - " + valor);
+                        item.put(nombre, valor);
+                        // item.put("Valor", valor);
+                        parameters.put(nombre, valor);
                     }
                 }
 
@@ -128,10 +156,9 @@ public class XmlToPdfService {
                     System.out.println("Si encontrado");
                 }
                 JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
-                System.out.println("NumeroAutorizacion: " + numeroAutorizacion);
+                System.out.println("NumeroAutorizacion: " + ambiente);
 
                 // Preparar parámetros y datos
-                Map<String, Object> parameters = new HashMap<>();
                 parameters.put("RazonSocial", razonSocial);
                 parameters.put("Ruc", ruc);
                 parameters.put("NumeroAutorizacion", numeroAutorizacion);
@@ -142,12 +169,21 @@ public class XmlToPdfService {
                 parameters.put("DireccionMatriz", direccionMatriz);
                 parameters.put("DireccionEstablecimiento", direccionEstablecimiento);
                 parameters.put("Telefono", telefono);
-                parameters.put("CorreoElectronico", correoElectronico);
+                // parameters.put("CorreoElectronico", correoElectronico);
                 parameters.put("NombreComercial", nombreComercial);
                 parameters.put("ObligadoContabilidad", obligadoContabilidad);
                 parameters.put("ContribuyenteEspecial", contribuyenteEspecial);
                 parameters.put("NroFactura", nroFactura);
                 parameters.put("Ambiente", ambiente);
+                parameters.put("AgenteRetencion", "00000001");
+                parameters.put("RazonSocialComprador", razonSocialComprador);
+                parameters.put("IdentificacionComprador", identificacionComprador);
+                parameters.put("DireccionComprador", direccionComprador);
+                parameters.put("GuiaRemision", giaRemision);
+                parameters.put("FormaPago", formaPago);
+                parameters.put("Total", total);
+                parameters.put("TotalDescuento", totalDescuento);
+                parameters.put("Propina", propina);
 
                 // Crear datasource para los items
                 JRDataSource itemsDataSource = new JRBeanCollectionDataSource(itemsList);
