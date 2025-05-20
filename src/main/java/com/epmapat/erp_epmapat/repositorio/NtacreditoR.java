@@ -15,4 +15,6 @@ public interface NtacreditoR extends JpaRepository<Ntacredito, Long> {
     public Page<Ntacredito> findAllNtaCreditos(Pageable pageable);
     @Query(value = "select n.idntacredito, n.idabonado_abonados as cuenta, (n.valor - n.devengado) as saldo, n.devengado from ntacredito n where n.idabonado_abonados = ?1", nativeQuery = true)
     public List<NtaCreditoSaldos> findSaldosByCuenta(Long cuenta);
+/*     @Query(value = "select * from ntacredito where idntacredito =?1", nativeQuery = true)
+    public List<Ntacredito> find  */
 }
