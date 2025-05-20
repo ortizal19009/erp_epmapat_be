@@ -12,6 +12,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,5 +48,8 @@ public class Ntacredito {
     private LocalDate feccrea;
     private Long usumodi;
     private LocalDate fecmodi;
-
+        @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "iddocumento_documentos")
+    private Documentos iddocumento_documentos;
+    private String refdocumento;
 }

@@ -72,6 +72,8 @@ public class NtacreditoApi {
         _ntacredito.setIdabonado_abonados(ntacredito.getIdabonado_abonados());
         _ntacredito.setUsumodi(ntacredito.getUsumodi());
         _ntacredito.setFecmodi(ntacredito.getFecmodi());
+        _ntacredito.setIddocumento_documentos(ntacredito.getIddocumento_documentos());
+        _ntacredito.setRefdocumento(ntacredito.getRefdocumento());
         Ntacredito upNotaCredito = ntacreditoServicio.save(_ntacredito);
         return ResponseEntity.ok(upNotaCredito);
     }
