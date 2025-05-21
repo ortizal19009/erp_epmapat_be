@@ -9,7 +9,6 @@
 	<parameter name="TotalSinImpuestos" class="java.lang.String"/>
 	<parameter name="DireccionMatriz" class="java.lang.String"/>
 	<parameter name="DireccionEstablecimiento" class="java.lang.String"/>
-	<parameter name="ImporteTotal" class="java.lang.String"/>
 	<parameter name="NroFactura" class="java.lang.String"/>
 	<parameter name="Ambiente" class="java.lang.String"/>
 	<parameter name="AgenteRetencion" class="java.lang.String"/>
@@ -24,7 +23,18 @@
 	<parameter name="Referencia" class="java.lang.String"/>
 	<parameter name="FormaPago" class="java.lang.String"/>
 	<parameter name="Total" class="java.lang.String"/>
-	<parameter name="TotalDescuento" class="java.lang.String"/>
+	<parameter name="ImporteTotal" class="java.math.BigDecimal"/>
+	<parameter name="TotalDescuento" class="java.math.BigDecimal"/>
+	<parameter name="SubTotalIVA0" class="java.math.BigDecimal"/>
+	<parameter name="SubTotalIVA12" class="java.math.BigDecimal"/>
+	<parameter name="SubTotalIVA15" class="java.math.BigDecimal"/>
+	<parameter name="SubTotalNoObjetoIVA" class="java.math.BigDecimal"/>
+	<parameter name="SubTotalExentoIVA" class="java.math.BigDecimal"/>
+	<parameter name="TotalICE" class="java.math.BigDecimal"/>
+	<parameter name="TotalIRBPNR" class="java.math.BigDecimal"/>
+	<parameter name="TotalIVA12" class="java.math.BigDecimal"/>
+	<parameter name="TotalIVA15" class="java.math.BigDecimal"/>
+	<parameter name="Propina" class="java.math.BigDecimal"/>
 	<field name="Codigo" class="java.lang.String"/>
 	<field name="Descripcion" class="java.lang.String"/>
 	<field name="Cantidad" class="java.lang.String"/>
@@ -33,21 +43,21 @@
 	<title>
 		<band height="328">
 			<textField>
-				<reportElement x="339" y="1" width="209" height="31" uuid="525b2702-3518-4822-ab72-7bbc041b9181"/>
+				<reportElement x="334" y="1" width="209" height="31" uuid="525b2702-3518-4822-ab72-7bbc041b9181"/>
 				<textElement>
 					<font size="16"/>
 				</textElement>
 				<textFieldExpression><![CDATA["R.U.C.: " + $P{Ruc}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="339" y="31" width="209" height="20" uuid="525b2702-3518-4822-ab72-7bbc041b9181"/>
+				<reportElement x="334" y="31" width="209" height="20" uuid="525b2702-3518-4822-ab72-7bbc041b9181"/>
 				<textElement>
 					<font size="14"/>
 				</textElement>
 				<textFieldExpression><![CDATA["FACTURA"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="339" y="71" width="209" height="20" uuid="525b2702-3518-4822-ab72-7bbc041b9181"/>
+				<reportElement positionType="FixRelativeToBottom" x="334" y="71" width="209" height="20" uuid="525b2702-3518-4822-ab72-7bbc041b9181"/>
 				<textFieldExpression><![CDATA["NÚMERO DE AUTORIZACIÓN"]]></textFieldExpression>
 			</textField>
 			<image>
@@ -55,40 +65,40 @@
 				<imageExpression><![CDATA["https://epmapatulcan.gob.ec/wp/wp-content/uploads/2021/05/LOGO-HORIZONTAL.png"]]></imageExpression>
 			</image>
 			<textField>
-				<reportElement x="339" y="51" width="209" height="20" uuid="1fb19613-d210-4520-a430-4061ee4d0483"/>
+				<reportElement x="334" y="51" width="209" height="20" uuid="1fb19613-d210-4520-a430-4061ee4d0483"/>
 				<textFieldExpression><![CDATA[$P{NroFactura}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="339" y="91" width="209" height="30" uuid="9c777873-5fad-4916-9e3f-4c1d017fbce0"/>
+				<reportElement positionType="FixRelativeToBottom" x="334" y="91" width="209" height="30" uuid="9c777873-5fad-4916-9e3f-4c1d017fbce0"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{NumeroAutorizacion}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="340" y="123" width="209" height="20" uuid="2592c23d-896d-4d68-bdae-4bbff7798688"/>
+				<reportElement positionType="FixRelativeToBottom" x="335" y="123" width="209" height="20" uuid="2592c23d-896d-4d68-bdae-4bbff7798688"/>
 				<textFieldExpression><![CDATA["FECHA Y HORA AUTORIZACIÓN"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="340" y="143" width="209" height="30" uuid="97022309-6fc3-4f17-a792-3dc1fccdedd2"/>
+				<reportElement positionType="FixRelativeToBottom" x="335" y="143" width="209" height="30" uuid="97022309-6fc3-4f17-a792-3dc1fccdedd2"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{FechaAutorizacion}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="341" y="171" width="209" height="20" uuid="79fd8e6f-47a0-4e2a-be3b-0b7a18d34d47"/>
+				<reportElement positionType="FixRelativeToBottom" x="336" y="171" width="209" height="20" uuid="79fd8e6f-47a0-4e2a-be3b-0b7a18d34d47"/>
 				<textFieldExpression><![CDATA["AMBIENTE: "+ $P{Ambiente}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="341" y="191" width="209" height="30" uuid="94b7b269-426d-4060-9bd0-6a7dde241373"/>
+				<reportElement positionType="FixRelativeToBottom" x="336" y="191" width="209" height="30" uuid="94b7b269-426d-4060-9bd0-6a7dde241373"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{FechaAutorizacion}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{Ambiente}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="340" y="220" width="209" height="20" uuid="73cdb3b6-bd61-4536-99eb-c889d5b30a64"/>
+				<reportElement positionType="FixRelativeToBottom" x="335" y="220" width="209" height="20" uuid="73cdb3b6-bd61-4536-99eb-c889d5b30a64"/>
 				<textFieldExpression><![CDATA["CLAVE DE ACCESO"]]></textFieldExpression>
 			</textField>
 			<textField>
@@ -115,10 +125,19 @@
 				<reportElement x="10" y="260" width="300" height="30" uuid="0b916377-32c1-4701-a47a-b23131012738"/>
 				<textFieldExpression><![CDATA["OBLIGADO A LLEVAR CONTABILIDAD: "+$P{ObligadoContabilidad}]]></textFieldExpression>
 			</textField>
+			<rectangle radius="10">
+				<reportElement mode="Transparent" x="320" y="0" width="235" height="318" uuid="322378f4-20ac-4e78-b7a5-f1b7033b7122"/>
+			</rectangle>
+			<componentElement>
+				<reportElement x="334" y="250" width="211" height="60" uuid="9bd3a110-f245-45fe-99cd-d14ea95b7aa9"/>
+				<jr:Codabar xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom" quietZone="1.0" verticalQuietZone="1.0" wideFactor="2.000001">
+					<jr:codeExpression><![CDATA[$P{NumeroAutorizacion}]]></jr:codeExpression>
+				</jr:Codabar>
+			</componentElement>
 		</band>
 	</title>
 	<pageHeader>
-		<band height="74">
+		<band height="66">
 			<textField>
 				<reportElement x="0" y="0" width="310" height="20" uuid="ae3645a7-bcd0-44e5-8b4e-c4aba22e21ea"/>
 				<textFieldExpression><![CDATA["Razón Social / Nombre y Apellido: " + $P{RazonSocialComprador}]]></textFieldExpression>
@@ -139,12 +158,18 @@
 				<reportElement x="340" y="20" width="211" height="20" uuid="89f99e4f-d5ed-4a0f-989c-3375a4c3810f"/>
 				<textFieldExpression><![CDATA["Guía Remisión: " + $P{GuiaRemision}]]></textFieldExpression>
 			</textField>
+			<rectangle radius="10">
+				<reportElement mode="Transparent" x="0" y="-8" width="555" height="68" uuid="25542f42-9973-45a1-9a24-89f766d05be8"/>
+			</rectangle>
+			<rectangle radius="10">
+				<reportElement mode="Transparent" x="0" y="-198" width="310" height="188" uuid="c76383eb-dc05-4849-bab5-23d35a5d5c32"/>
+			</rectangle>
 		</band>
 	</pageHeader>
 	<columnHeader>
 		<band height="23">
 			<staticText>
-				<reportElement x="0" y="0" width="50" height="19" uuid="e987898a-ba1c-4320-912c-5c6892e9a802"/>
+				<reportElement x="0" y="0" width="50" height="20" uuid="e987898a-ba1c-4320-912c-5c6892e9a802"/>
 				<box>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -200,7 +225,7 @@
                 ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="450" y="0" width="100" height="20" uuid="8f998bb4-5585-4e84-87ca-54c4c5a1352d"/>
+				<reportElement x="450" y="0" width="105" height="20" uuid="8f998bb4-5585-4e84-87ca-54c4c5a1352d"/>
 				<box>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -262,7 +287,7 @@
 				<textFieldExpression><![CDATA[$F{PrecioUnitario}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="450" y="0" width="100" height="20" uuid="188f4277-7abe-456f-b22e-169f75ee9855"/>
+				<reportElement x="450" y="0" width="105" height="20" uuid="188f4277-7abe-456f-b22e-169f75ee9855"/>
 				<box leftPadding="3" rightPadding="4">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -278,7 +303,7 @@
 		<band height="238">
 			<textField>
 				<reportElement x="367" y="10" width="126" height="20" uuid="8c0ff7e8-ea60-4391-afaa-d14ef8a89ddd"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -291,7 +316,7 @@
 			</textField>
 			<textField>
 				<reportElement x="367" y="30" width="126" height="20" uuid="69a65d8d-1e48-4c00-8167-d80b3dd51218"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -300,11 +325,11 @@
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["SUBTOTAL IVA 0%"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["SUBTOTAL IVA 0% "]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="367" y="70" width="126" height="20" uuid="398ceb0b-2401-4e35-91c3-709f8277065b"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -317,7 +342,7 @@
 			</textField>
 			<textField>
 				<reportElement x="367" y="50" width="126" height="20" uuid="d2d95dbc-c007-4a62-9c17-0d66a3444019"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -330,7 +355,7 @@
 			</textField>
 			<textField>
 				<reportElement x="367" y="90" width="126" height="20" uuid="79c392a3-59ff-46c4-96e5-9692dfda3c75"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -343,7 +368,7 @@
 			</textField>
 			<textField>
 				<reportElement x="367" y="110" width="126" height="20" uuid="06a5918f-77f6-49d1-a92d-ef38eacddcc6"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -356,7 +381,7 @@
 			</textField>
 			<textField>
 				<reportElement x="367" y="150" width="126" height="20" uuid="d5266463-78ac-4a71-897a-ccce0cba7ee1"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -369,7 +394,7 @@
 			</textField>
 			<textField>
 				<reportElement x="367" y="130" width="126" height="20" uuid="142d9b77-beac-447e-a1d6-601b1a7705de"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -382,7 +407,7 @@
 			</textField>
 			<textField>
 				<reportElement x="367" y="210" width="126" height="20" uuid="ef47bcb5-4a10-4b71-b5c7-3ea577874061"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -395,7 +420,7 @@
 			</textField>
 			<textField>
 				<reportElement x="367" y="190" width="126" height="20" uuid="c2e26262-e2a1-4b03-b3fd-11857b96a848"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -408,7 +433,7 @@
 			</textField>
 			<textField>
 				<reportElement x="367" y="170" width="126" height="20" uuid="b6f102a1-82cc-4840-a379-fd8b2d4c6975"/>
-				<box leftPadding="3">
+				<box leftPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -421,7 +446,7 @@
 			</textField>
 			<textField>
 				<reportElement x="493" y="210" width="60" height="20" uuid="2c860bc7-0b43-49ef-b455-9998d013f2d5"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -430,11 +455,11 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["VALOR TOTAL"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{ImporteTotal}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="493" y="190" width="60" height="20" uuid="99eee160-a52b-4573-bf08-2ba3454edcf6"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -443,11 +468,11 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["PROPINA"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{Propina}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="493" y="170" width="60" height="20" uuid="5e94eae0-542f-4927-aaa5-ebecaa234401"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -456,11 +481,11 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["IRBPNR"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{TotalIRBPNR}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="493" y="150" width="60" height="20" uuid="3ad5253a-eb57-4fc1-9132-e4decec9825b"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -469,11 +494,11 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["IVA 15%"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{TotalIVA15}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="493" y="130" width="60" height="20" uuid="71ad4872-b0e6-457d-88d6-559894aaafe9"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -482,11 +507,11 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ICE"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{TotalICE}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="493" y="110" width="60" height="20" uuid="8fba23ef-95fa-4f9f-b2b3-700a898d8bad"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -499,7 +524,7 @@
 			</textField>
 			<textField>
 				<reportElement x="493" y="70" width="60" height="20" uuid="1eae16ae-aae1-40d1-948a-4ce2366f03f9"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -508,11 +533,11 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["SUBTOTAL EXENTO IVA"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{SubTotalExentoIVA}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="493" y="90" width="60" height="20" uuid="5d037520-a3ff-421b-902d-18857f3bb084"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -525,7 +550,7 @@
 			</textField>
 			<textField>
 				<reportElement x="493" y="50" width="60" height="20" uuid="b9ed9f26-6c1a-4145-a6b8-e73378b5927f"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -534,11 +559,11 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["SUBTOTAL NO OBJETO IVA"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{SubTotalNoObjetoIVA}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="493" y="30" width="60" height="20" uuid="b931290d-b11f-478a-a2f7-74bfd7b83f61"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -547,11 +572,11 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["SUBTOTAL IVA 0%"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{SubTotalIVA0}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="493" y="10" width="60" height="20" uuid="72beeda3-f2dc-4918-85c4-705e2ac89353"/>
-				<box leftPadding="2" rightPadding="3">
+				<box leftPadding="2" rightPadding="5">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -560,7 +585,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["SUBTOTAL 15%"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{SubTotalIVA15}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="5" y="30" width="114" height="20" uuid="49cb2215-cf83-4f46-80e4-8f445b35ec3d"/>
@@ -626,7 +651,7 @@
 			</textField>
 			<textField>
 				<reportElement x="5" y="168" width="221" height="20" uuid="52633832-4063-424f-a6d9-b7da06680662"/>
-				<box>
+				<box leftPadding="5" rightPadding="5">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -636,14 +661,18 @@
 			</textField>
 			<textField>
 				<reportElement x="226" y="168" width="110" height="20" uuid="638885cf-7070-4dcc-9432-98938c204e99"/>
-				<box>
+				<box leftPadding="5" rightPadding="5">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textFieldExpression><![CDATA[$P{Total}]]></textFieldExpression>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{ImporteTotal}]]></textFieldExpression>
 			</textField>
+			<rectangle radius="10">
+				<reportElement mode="Transparent" x="0" y="20" width="341" height="120" uuid="a40e21ff-0790-4375-b5ce-1098a41aacc0"/>
+			</rectangle>
 		</band>
 	</summary>
 </jasperReport>
