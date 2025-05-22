@@ -2,55 +2,28 @@ package com.epmapat.erp_epmapat.sri.controllers;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.w3c.dom.Document;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.Fec_facturaR;
 import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
-import com.epmapat.erp_epmapat.sri.dto.EmailRequest;
 import com.epmapat.erp_epmapat.sri.exceptions.FacturaElectronicaException;
+import com.epmapat.erp_epmapat.sri.interfaces.fecFacturaDatos;
 import com.epmapat.erp_epmapat.sri.models.Factura;
-import com.epmapat.erp_epmapat.sri.models.YourDataModel;
 import com.epmapat.erp_epmapat.sri.repositories.FacturaR;
 import com.epmapat.erp_epmapat.sri.services.EmailService;
 import com.epmapat.erp_epmapat.sri.services.FacturaSRIService;
-import com.epmapat.erp_epmapat.sri.services.PdfGenerationService;
-import com.epmapat.erp_epmapat.sri.services.XmlParserService;
 import com.epmapat.erp_epmapat.sri.services.XmlSignerService;
 import com.epmapat.erp_epmapat.sri.services.XmlToPdfService;
 
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import net.sf.jasperreports.engine.data.JRXmlDataSource;
-
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -59,6 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.core.io.InputStreamResource;
 
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/sri")
@@ -73,12 +47,7 @@ public class FacturaSRIController {
     @Autowired
     private EmailService emailService;
     @Autowired
-    private XmlParserService xmlParserService;
-    @Autowired
     private XmlToPdfService xmlToPdfService;
-
-    @Autowired
-    private PdfGenerationService pdfGenerationService;
 
     private final FacturaSRIService facturaSRIService;
     @Value("${xml.storage.path}")
@@ -108,7 +77,6 @@ public class FacturaSRIController {
         } catch (
 
         FacturaElectronicaException e) {
-            System.out.println("< ========= ERROR =========>");
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
@@ -119,7 +87,6 @@ public class FacturaSRIController {
             @RequestParam String subject,
             @RequestParam String body,
             @RequestParam MultipartFile xmlFile) {
-        System.out.println(xmlFile);
         try {
             facturaSRIService.processAndSendInvoice(toEmail, subject, body, xmlFile);
             return ResponseEntity.ok("Factura convertida a PDF y enviada por email exitosamente");
@@ -140,13 +107,26 @@ public class FacturaSRIController {
      * }
      */
 
-
     @GetMapping("/generar-pdf")
     public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {
-        String xmlAutorizado = fec_factura.getNroFactura(idfactura);
+        fecFacturaDatos fecFactura = fec_factura.getNroFactura(idfactura);
+        String xmlAutorizado = fecFactura.getXmlautorizado();
+        LocalDate fehchaemision = fecFactura.getFechaemision();
+        LocalDate fechaLimite = LocalDate.of(2025, 5, 6);
+
         try {
             // Generar el PDF como ByteArrayOutputStream
-            ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+            ByteArrayOutputStream pdfStream;
+            // Comparar fechas
+            if (fehchaemision.isAfter(fechaLimite)) {
+                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+
+            } else if (fehchaemision.isBefore(fechaLimite)) {
+                pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
+
+            } else {
+                pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
+            }
 
             if (pdfStream == null || pdfStream.size() == 0) {
                 throw new RuntimeException("No se pudo generar el PDF.");
