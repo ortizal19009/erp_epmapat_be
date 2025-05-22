@@ -110,7 +110,7 @@ public class FacturaSRIController {
     @GetMapping("/generar-pdf")
     public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {
         fecFacturaDatos fecFactura = fec_factura.getNroFactura(idfactura);
-        if (fecFactura.getXmlautorizado() == null) {
+        if (fecFactura == null || fecFactura.getXmlautorizado() == null) {
             return ResponseEntity.noContent().build();
         }
         String xmlAutorizado = fecFactura.getXmlautorizado();
