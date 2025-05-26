@@ -127,8 +127,10 @@ public class FacturaSRIController {
             } else if (fehchaemision.isBefore(fechaLimite)) {
                 pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
 
+            } else if (fehchaemision.isEqual(fechaLimite)) {
+                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
             } else {
-                pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
+                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
             }
 
             if (pdfStream == null || pdfStream.size() == 0) {
