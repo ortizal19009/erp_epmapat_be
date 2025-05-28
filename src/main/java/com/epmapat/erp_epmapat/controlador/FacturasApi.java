@@ -321,6 +321,7 @@ public class FacturasApi {
 
 		y.setValorbase(x.getValorbase());
 		y.setSwcondonar(x.getSwcondonar());
+		y.setValornotacredito(x.getValornotacredito());
 		Facturas updateFacturas = facServicio.save(y);
 		return ResponseEntity.ok(updateFacturas);
 	}

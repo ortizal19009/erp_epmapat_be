@@ -2,6 +2,9 @@ package com.epmapat.erp_epmapat.jasperReports.controllers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map.Entry;
 
 import javax.sql.DataSource;
@@ -35,12 +38,27 @@ public class BuildReportsApi {
     public ResponseEntity<Resource> generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
         try {
             JasperDTO dto = new JasperDTO();
-            dto.setReportName(jasperDTO.getReportName()); 
+            dto.setReportName(jasperDTO.getReportName());
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
             for (Entry<String, Object> i : jasperDTO.getParameters().entrySet()) {
-                System.out.println("Key = " + i.getKey() +
-                        ", Value = " + i.getValue());
-                dto.getParameters().put(i.getKey(), i.getValue());
+                String key = i.getKey();
+                Object value = i.getValue();
+
+                System.out.println("Key = " + key + ", Value = " + value);
+
+                if ("desde".equals(key) || "hasta".equals(key)) {
+                    try {
+                        Date parsedDate = sdf.parse(value.toString());
+                        dto.getParameters().put(key, new java.sql.Date(parsedDate.getTime()));
+                    } catch (ParseException e) {
+                        e.printStackTrace(); // o lanza una excepción personalizada
+                    }
+                } else {
+                    dto.getParameters().put(key, value);
+                }
             }
+
             ByteArrayOutputStream pdfStream = buildReports.buildReport(dto, dataSource.getConnection());
             InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray()));
             return ResponseEntity.ok()

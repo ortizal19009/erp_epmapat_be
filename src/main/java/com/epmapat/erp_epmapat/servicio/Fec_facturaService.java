@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.repositorio.Fec_facturaR;
+import com.epmapat.erp_epmapat.sri.interfaces.fecFacturaDatos;
 
 @Service
 public class Fec_facturaService {
@@ -39,7 +40,7 @@ public class Fec_facturaService {
       return dao.findById(id);
    }
 
-   public String getNroFactura(Long idfactura) {
+   public fecFacturaDatos getNroFactura(Long idfactura) {
       return dao.getNroFactura(idfactura);
    }
 }
