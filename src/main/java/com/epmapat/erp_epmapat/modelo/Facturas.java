@@ -79,6 +79,4 @@ public class Facturas implements Serializable {
 	private Boolean swcondonar; 
 	private BigDecimal valornotacredito;
 
-	
-
 }

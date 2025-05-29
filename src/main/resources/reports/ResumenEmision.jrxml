@@ -187,7 +187,7 @@ GROUP BY l.idcategoria,
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font size="12"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Fecha de emisión: "+$F{feccrea}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Emisión: " + new java.text.SimpleDateFormat("yyyy-MM").format(new java.util.Date())]]></textFieldExpression>
 				</textField>
 			</frame>
 		</band>
