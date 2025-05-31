@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.ResEmisiones;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.servicio.EmisionServicio;
 
@@ -85,6 +86,11 @@ public class EmisionesApi {
 	@GetMapping("/id")
 	public ResponseEntity<List<Emisiones>> getByIdEmisiones(@RequestParam Long idemision) {
 		return ResponseEntity.ok(emiServicio.findByIdEmisiones(idemision));
+	}
+
+	@GetMapping("/resumen")
+	public ResponseEntity<List<ResEmisiones>> getResEmisiones(@RequestParam Long limit) {
+		return ResponseEntity.ok(emiServicio.getResEmisiones(limit));
 	}
 
 }
