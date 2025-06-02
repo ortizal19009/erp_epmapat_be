@@ -1,5 +1,7 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,8 +12,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.DTO.EstadisticasAbonadosDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.interfaces.AbonadoI;
+import com.epmapat.erp_epmapat.interfaces.EstadisticasAbonados;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
 // import com.epmapat.erp_epmapat.repositorio.ClientesR;
@@ -24,6 +28,15 @@ public class AbonadoServicio {
 	@Autowired
 	@Lazy
 	private FacturaServicio facturaServicio;
+
+	private static final Map<Integer, String> estados = new HashMap<>();
+
+	static {
+		estados.put(0, "Eliminado");
+		estados.put(1, "Activo");
+		estados.put(2, "Suspendido");
+		estados.put(3, "Suspendido y retirado");
+	}
 
 	public List<Abonados> findAll(String c, Sort sort) {
 		if (c != null) {
@@ -110,7 +123,7 @@ public class AbonadoServicio {
 	public List<AbonadoI> getAbonadoInterfaceIdentificacion(String identificacion) {
 		return dao.getAbonadoInterfaceIdentificacion(identificacion);
 	}
-	
+
 	public List<AbonadoI> getAbonadoInterfaceIdCliente(Long idcliente) {
 		return dao.getAbonadoInterfaceIdCliente(idcliente);
 	}
@@ -133,6 +146,46 @@ public class AbonadoServicio {
 
 		// Devolver la lista de totales
 		return totales;
+	}
+
+	public List<EstadisticasAbonados> getCuentasByCategoria() {
+		return dao.getCuentasByCategoria();
+	}
+
+	public List<EstadisticasAbonadosDTO> getCuentasByEstado() {
+		List<EstadisticasAbonados> estadisticas = dao.getCuentasByEstado();
+
+		// 1) Inicializar la lista de DTOs antes de iterar
+		List<EstadisticasAbonadosDTO> estadisticasDTO = new ArrayList<>();
+
+		for (EstadisticasAbonados ea : estadisticas) {
+			EstadisticasAbonadosDTO dto = new EstadisticasAbonadosDTO();
+
+			// 2) Obtener el código de estado del entity. Aquí asumimos que ea.getEstado()
+			// devuelve un Integer.
+			Integer codigo = ea.getEstado();
+
+			// 3) Convertir a Long para poder buscar en el mapa estático (que está declarado
+			// como Map<Long,String>).
+			/* Long codigoLong = Long.valueOf(codigoInt); */
+
+			// 4) Obtener la descripción del estado desde el mapa. Si no existe, se marca
+			// como "Desconocido".
+			String descripcion = estados.get(codigo);
+			if (descripcion == null) {
+				descripcion = "Desconocido";
+			}
+
+			// 5) Rellenar el DTO
+			dto.setEstado(codigo);
+			dto.setDescripcion(descripcion);
+			dto.setNcuentas(ea.getNcuentas());
+
+			// 6) Agregar el DTO a la lista (usando add en lugar de push)
+			estadisticasDTO.add(dto);
+		}
+
+		return estadisticasDTO;
 	}
 
 }

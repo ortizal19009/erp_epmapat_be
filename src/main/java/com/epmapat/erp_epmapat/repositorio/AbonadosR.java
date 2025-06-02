@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.epmapat.erp_epmapat.interfaces.AbonadoI;
+import com.epmapat.erp_epmapat.interfaces.EstadisticasAbonados;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 // import com.epmapat.erp_epmapat.modelo.Clientes;
 
@@ -92,9 +93,9 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	@Query(value = "SELECT * FROM abonados a where a.idruta_rutas = ?1 order by a.idabonado asc", nativeQuery = true)
 	public List<Abonados> getCuentasByRutas(Long idruta);
 
-	@Query(value = "select a.idcategoria_categorias, c.descripcion , count(*) from abonados a join categorias c on a.idcategoria_categorias = c.idcategoria group by a.idcategoria_categorias, c.descripcion", nativeQuery = true)
-	public List<Object> getCuentasByCategoria();
+	@Query(value = "select a.idcategoria_categorias, c.descripcion , count(*) as ncuentas from abonados a join categorias c on a.idcategoria_categorias = c.idcategoria group by a.idcategoria_categorias, c.descripcion", nativeQuery = true)
+	public List<EstadisticasAbonados> getCuentasByCategoria();
 
-	@Query(value = "select a.estado, count(*) from abonados a group by a.estado\t\r\n", nativeQuery = true)
-	public List<Object> getCuentasByEstado();
+	@Query(value = "select a.estado, count(*) as ncuentas from abonados a group by a.estado", nativeQuery = true)
+	public List<EstadisticasAbonados> getCuentasByEstado();
 }

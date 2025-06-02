@@ -20,11 +20,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.DTO.EstadisticasAbonadosDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.AbonadoI;
+import com.epmapat.erp_epmapat.interfaces.EstadisticasAbonados;
 import com.epmapat.erp_epmapat.modelo.Abonados;
-import com.epmapat.erp_epmapat.repositorio.AbonadosR;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 
 @RestController
@@ -206,6 +207,16 @@ public class AbonadosApi {
 	@GetMapping("/deudas")
 	public ResponseEntity<List<ValorFactDTO>> getTotatesAbonadosByRuta(@RequestParam Long idruta) {
 		return ResponseEntity.ok(aboServicio.getCuentasByRutas(idruta));
+	}
+
+	@GetMapping("/ncuentasByCategoria")
+	public List<EstadisticasAbonados> getCuentasByCategoria() {
+		return aboServicio.getCuentasByCategoria();
+	}
+
+	@GetMapping("/ncuentasByEstado")
+	public List<EstadisticasAbonadosDTO> getCuentasByEstado() {
+		return aboServicio.getCuentasByEstado();
 	}
 
 }
