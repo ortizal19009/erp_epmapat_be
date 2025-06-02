@@ -2,9 +2,11 @@ package com.epmapat.erp_epmapat.jasperReports.controllers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.sql.Connection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map.Entry;
 
 import javax.sql.DataSource;
@@ -37,37 +39,83 @@ public class BuildReportsApi {
     @PostMapping("/reportes")
     public ResponseEntity<Resource> generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
         try {
+            // Creamos un nuevo DTO donde meteremos valores ya convertidos
             JasperDTO dto = new JasperDTO();
             dto.setReportName(jasperDTO.getReportName());
+
+            // Formato para parsear cadenas “yyyy-MM-dd” a java.sql.Date
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-            for (Entry<String, Object> i : jasperDTO.getParameters().entrySet()) {
-                String key = i.getKey();
-                Object value = i.getValue();
+            // Recorremos cada par <clave, valor> que nos llegó en el JSON
+            for (Entry<String, Object> entry : jasperDTO.getParameters().entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
 
-                System.out.println("Key = " + key + ", Value = " + value);
-
+                // Si la clave es “desde” o “hasta”, asumimos que viene como String “yyyy-MM-dd”
                 if ("desde".equals(key) || "hasta".equals(key)) {
                     try {
-                        Date parsedDate = sdf.parse(value.toString());
-                        dto.getParameters().put(key, new java.sql.Date(parsedDate.getTime()));
+                        java.util.Date parsed = sdf.parse(value.toString());
+                        // Lo almacenamos como java.sql.Date para Jasper
+                        dto.getParameters().put(key, new java.sql.Date(parsed.getTime()));
                     } catch (ParseException e) {
-                        e.printStackTrace(); // o lanza una excepción personalizada
+                        // Si falla el parse, puedes lanzar una excepción controlada o asignar null
+                        throw new IllegalArgumentException("La fecha '" + value + "' no tiene formato yyyy-MM-dd", e);
                     }
+
                 } else {
-                    dto.getParameters().put(key, value);
+                    /*
+                     * Para cualquier otro parámetro numérico (por ejemplo un id), puede venir como:
+                     * • Integer (189)
+                     * • Long (189L)
+                     * • String ("189")
+                     *
+                     * Lo normal para Jasper es que, si la consulta SQL espera un LONG,
+                     * debemos convertirlo a Long en todos los casos.
+                     */
+                    if (value instanceof Integer) {
+                        System.out.println("Integer");
+                        // de Integer a Long
+                        // dto.getParameters().put(key, ((Integer) value).longValue());
+                        dto.getParameters().put(key, ( value));
+
+                    } else if (value instanceof Long) {
+                        System.out.println("Long");
+                        dto.getParameters().put(key, (Long) value);
+                    } else if (value instanceof String) {
+                        // intentamos parsear el String a Long
+                        try {
+                            dto.getParameters().put(key, Long.valueOf((String) value));
+                        } catch (NumberFormatException ex) {
+                            throw new IllegalArgumentException("El parámetro '" + key +
+                                    "' con valor '" + value + "' no es un Long válido", ex);
+                        }
+                    } else {
+                        // Si fuese otro tipo (por ejemplo List<?> u Object), lo dejamos tal cual,
+                        // o bien podrías lanzar un error indicando tipo no esperado.
+                        dto.getParameters().put(key, value);
+                    }
                 }
             }
 
-            ByteArrayOutputStream pdfStream = buildReports.buildReport(dto, dataSource.getConnection());
-            InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray()));
+            // Ahora invocamos a buildReport pasándole la conexión y el dto ya “limpio”
+            ByteArrayOutputStream pdfStream;
+            try (Connection conn = dataSource.getConnection()) {
+                pdfStream = buildReports.buildReport(dto, conn);
+            }
+
+            // Envolvemos el resultado en un Resource para devolverlo al cliente
+            InputStreamResource resource = new InputStreamResource(
+                    new ByteArrayInputStream(pdfStream.toByteArray()));
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "attachment; filename=" + jasperDTO.getReportName() + ".pdf")
                     .contentType(MediaType.APPLICATION_PDF)
                     .contentLength(pdfStream.size())
                     .body(resource);
+
         } catch (Exception e) {
+            // Aquí podrías registrar el error con un logger y devolver 500
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

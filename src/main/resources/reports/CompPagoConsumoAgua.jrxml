@@ -58,12 +58,9 @@
 		</box>
 	</style>
 	<subDataset name="DetallesFactura" uuid="25e7cfb9-414f-486c-953b-ebd40ba49c33">
-		<property name="com.jaspersoft.studio.data.sql.tables">
-			<![CDATA[cnVicm9zICwxOTQsMTUsMWRjYjMxYjEtZTMxZC00MzE1LThmZTQtMDM2MmQxYjYyMjc5O3J1YnJv
-eGZhYyAsMTUsMTMxLGI4MTAyNTM1LWVjMWItNDcyNy05ZjlmLTg3NzcwNGQ5OGE4Mjs=]]>
-		</property>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
-		<parameter name="idfactura" class="java.lang.Long"/>
+		<parameter name="idfactura" class="java.lang.Integer"/>
 		<queryString language="SQL">
 			<![CDATA[SELECT r.descripcion,
 	rf.cantidad,
@@ -113,7 +110,7 @@ WHERE
 	<subDataset name="FacturaTotales" uuid="4cdfb0b5-5c2d-48be-bf5d-dd1a1cf954c8">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<parameter name="idfactura" class="java.lang.Long"/>
+		<parameter name="idfactura" class="java.lang.Integer"/>
 		<queryString>
 			<![CDATA[SELECT 
     rf.idfactura_facturas,
@@ -187,7 +184,7 @@ LIMIT 8]]>
 			<groupExpression><![CDATA[$F{m3}]]></groupExpression>
 		</group>
 	</subDataset>
-	<parameter name="idfactura" class="java.lang.Long"/>
+	<parameter name="idfactura" class="java.lang.Integer"/>
 	<queryString language="SQL">
 		<![CDATA[select f.nrofactura, f.idfactura, c.nombre, c.cedula, l.fechaemision, a.direccionubicacion, l.idabonado_abonados as cuenta, ct.descripcion as categoria, u.nomusu, m.descripcion as modulo, e.emision, l.lecturaactual, l.lecturaanterior, l.lecturaactual - l.lecturaanterior as m3, f.fechacobro from lecturas l
  join emisiones e on l.idemision = e.idemision 
@@ -807,7 +804,7 @@ where l.idfactura = $P{idfactura}]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="7"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.0f", $F{cantidad}) ]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format("%.0f", $F{cantidad})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

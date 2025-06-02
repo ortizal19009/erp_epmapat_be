@@ -22,6 +22,7 @@ import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.charts.util.ChartUtil;
 
 @Service
 public class BuildReports {
@@ -43,7 +44,8 @@ public class BuildReports {
             JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
 
             // Usa JREmptyDataSource si el reporte principal no usa datos directamente
-            JRDataSource emptyDataSource = new JREmptyDataSource();
+            //JRDataSource emptyDataSource = new JREmptyDataSource();
+            // Configurar tema del gráfico
 
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, conn);
 
