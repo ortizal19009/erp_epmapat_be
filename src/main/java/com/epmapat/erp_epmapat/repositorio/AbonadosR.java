@@ -30,7 +30,6 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	@Query(value = "SELECT a.idabonado, c.nombre, c.cedula as identificacion, ct.descripcion as categoria, r.descripcion as ruta, a.direccionubicacion as direccion, a.estado from abonados a join clientes c on c.idcliente = a.idcliente_clientes join categorias ct on ct.idcategoria = a.idcategoria_categorias join rutas r on a.idruta_rutas = r.idruta where LOWER(c.cedula) LIKE %?1% ", nativeQuery = true)
 	public List<AbonadoI> getAbonadoInterfaceIdentificacion(String identificacion);
 
-	
 	@Query(value = "SELECT a.idabonado, c.nombre, c.cedula as identificacion, ct.descripcion as categoria, r.descripcion as ruta, a.direccionubicacion as direccion, a.estado from abonados a join clientes c on c.idcliente = a.idcliente_clientes join categorias ct on ct.idcategoria = a.idcategoria_categorias join rutas r on a.idruta_rutas = r.idruta where c.idcliente = ?1 ", nativeQuery = true)
 	public List<AbonadoI> getAbonadoInterfaceIdCliente(Long idcliente);
 
@@ -92,4 +91,10 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 
 	@Query(value = "SELECT * FROM abonados a where a.idruta_rutas = ?1 order by a.idabonado asc", nativeQuery = true)
 	public List<Abonados> getCuentasByRutas(Long idruta);
+
+	@Query(value = "select a.idcategoria_categorias, c.descripcion , count(*) from abonados a join categorias c on a.idcategoria_categorias = c.idcategoria group by a.idcategoria_categorias, c.descripcion", nativeQuery = true)
+	public List<Object> getCuentasByCategoria();
+
+	@Query(value = "select a.estado, count(*) from abonados a group by a.estado\t\r\n", nativeQuery = true)
+	public List<Object> getCuentasByEstado();
 }
