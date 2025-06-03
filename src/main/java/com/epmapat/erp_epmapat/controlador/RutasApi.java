@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.CuentasByRutas;
 import com.epmapat.erp_epmapat.modelo.Rutas;
 import com.epmapat.erp_epmapat.servicio.RutaServicio;
 
@@ -30,33 +31,34 @@ public class RutasApi {
 	@Autowired
 	private RutaServicio rutServicio;
 
-    @GetMapping
-    public List<Rutas> getAll() {
-        return rutServicio.findAllActive();
-    }
+	@GetMapping
+	public List<Rutas> getAll() {
+		return rutServicio.findAllActive();
+	}
 
 	@GetMapping("/valCodigo")
 	public ResponseEntity<Boolean> valCodigo(@Param(value = "codigo") String codigo) {
-		boolean rtn = rutServicio.valCodigo( codigo );
+		boolean rtn = rutServicio.valCodigo(codigo);
 		return ResponseEntity.ok(rtn);
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public Rutas saveRutas(@RequestBody Rutas x) {
-		return rutServicio.save( x );
+		return rutServicio.save(x);
 	}
-	
+
 	@GetMapping("/{idruta}")
-	public ResponseEntity<Rutas> getByIdRutas(@PathVariable Long idruta){
+	public ResponseEntity<Rutas> getByIdRutas(@PathVariable Long idruta) {
 		Rutas rutasM = rutServicio.findById(idruta)
-				.orElseThrow(()-> new ResourceNotFoundExcepciones("No existe la Ruta con ID: "+idruta));
+				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe la Ruta con ID: " + idruta));
 		return ResponseEntity.ok(rutasM);
 	}
+
 	@PutMapping(value = "/{idruta}")
-	public ResponseEntity<Rutas> updateRutas(@PathVariable Long idruta, @RequestBody Rutas rutasm){
+	public ResponseEntity<Rutas> updateRutas(@PathVariable Long idruta, @RequestBody Rutas rutasm) {
 		Rutas rutasM = rutServicio.findById(idruta)
-				.orElseThrow(()-> new ResourceNotFoundExcepciones("No existe la Ruta con ID: "+idruta));
+				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe la Ruta con ID: " + idruta));
 		rutasM.setDescripcion(rutasm.getDescripcion());
 		rutasM.setOrden(rutasm.getOrden());
 		rutasM.setUsucrea(rutasm.getUsucrea());
@@ -65,12 +67,17 @@ public class RutasApi {
 		rutasM.setUsumodi(rutasm.getUsumodi());
 		rutasM.setFecmodi(rutasm.getFecmodi());
 		Rutas updateRutas = rutServicio.save(rutasM);
-		return ResponseEntity.ok(updateRutas);	
+		return ResponseEntity.ok(updateRutas);
 	}
+
 	@DeleteMapping(value = "/{idruta}")
-	public ResponseEntity<Boolean> delteRuta(@PathVariable("idruta") Long idruta){
+	public ResponseEntity<Boolean> delteRuta(@PathVariable("idruta") Long idruta) {
 		rutServicio.deleteById(idruta);
-		return ResponseEntity.ok(!(rutServicio.findById(idruta)!=null));
+		return ResponseEntity.ok(!(rutServicio.findById(idruta) != null));
 	}
-	
+
+	@GetMapping("/cuentasByRuta")
+	public ResponseEntity<List<CuentasByRutas>> getNcuentasByRutas() {
+		return ResponseEntity.ok(rutServicio.getNcuentasByRutas());
+	}
 }

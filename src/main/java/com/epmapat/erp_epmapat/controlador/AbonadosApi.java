@@ -135,6 +135,7 @@ public class AbonadosApi {
 		abonadosM.setAdultomayor(abonadosm.getAdultomayor());
 		abonadosM.setMunicipio(abonadosm.getMunicipio());
 		abonadosM.setSwalcantarillado(abonadosm.getSwalcantarillado());
+		abonadosM.setGeolocalizacion(abonadosm.getGeolocalizacion());
 		Abonados updateAbonado = aboServicio.save(abonadosM);
 		return ResponseEntity.ok(updateAbonado);
 	}
