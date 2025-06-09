@@ -314,6 +314,7 @@ public class FacturasApi {
 		y.setUsucrea(x.getUsucrea());
 		y.setFeccrea(x.getFeccrea());
 		y.setSwiva(x.getSwiva());
+		y.setSecuencialfacilito(x.getSecuencialfacilito());
 		// y.setFeccrea(x.getFeccrea());
 
 		y.setUsumodi(x.getUsumodi());
