@@ -29,8 +29,8 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	public List<Lecturas> findByIdrutaxemision(Long idrutasxemision);
 
 	// Lecturas por Abonado (Historial de consumo)
-	@Query(value = "SELECT * FROM lecturas WHERE idabonado_abonados=?1 ORDER BY idlectura DESC LIMIT 12", nativeQuery = true)
-	public List<Lecturas> findByIdabonado(Long idabonado);
+	@Query(value = "SELECT * FROM lecturas WHERE idabonado_abonados=?1 ORDER BY idlectura DESC LIMIT ?2", nativeQuery = true)
+	public List<Lecturas> findByIdabonado(Long idabonado, Long limit);
 
 	@Query(value = "SELECT * FROM lecturas WHERE mesesmulta>=4 and estado=1 LIMIT 20", nativeQuery = true)
 	public List<Lecturas> findByMonth();

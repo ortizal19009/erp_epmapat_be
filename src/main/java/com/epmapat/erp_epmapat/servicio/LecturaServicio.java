@@ -34,8 +34,8 @@ public class LecturaServicio {
 		return dao.findByIdrutaxemision(idrutaxemision);
 	}
 
-	public List<Lecturas> findByIdabonado(Long idabonado) {
-		return dao.findByIdabonado(idabonado);
+	public List<Lecturas> findByIdabonado(Long idabonado, Long limit) {
+		return dao.findByIdabonado(idabonado, limit);
 	}
 
 	public List<Lecturas> findByMonth() {

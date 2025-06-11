@@ -50,18 +50,53 @@ public class BuildReportsApi {
             for (Entry<String, Object> entry : jasperDTO.getParameters().entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
+                System.out.println("desde".equals(key));
+                System.out.println("hasta".equals(key));
 
                 // Si la clave es “desde” o “hasta”, asumimos que viene como String “yyyy-MM-dd”
                 if ("desde".equals(key) || "hasta".equals(key)) {
                     try {
-                        java.util.Date parsed = sdf.parse(value.toString());
-                        // Lo almacenamos como java.sql.Date para Jasper
-                        dto.getParameters().put(key, new java.sql.Date(parsed.getTime()));
-                    } catch (ParseException e) {
-                        // Si falla el parse, puedes lanzar una excepción controlada o asignar null
-                        throw new IllegalArgumentException("La fecha '" + value + "' no tiene formato yyyy-MM-dd", e);
-                    }
+                        // Primero intentamos parsear como fecha con hora (formato completo)
+                        String[] dateFormats = {
+                                "yyyy-MM-dd HH:mm:ss", // Formato con hora completa
+                                "yyyy-MM-dd HH:mm", // Formato con hora y minutos
+                                "yyyy-MM-dd" // Formato solo fecha
+                        };
 
+                        java.util.Date parsed = null;
+                        ParseException lastException = null;
+                        // Intentamos con cada formato hasta que uno funcione
+                        for (String format : dateFormats) {
+                            try {
+                                SimpleDateFormat tempFormat = new SimpleDateFormat(format);
+                                tempFormat.setLenient(false); // Validación estricta
+                                parsed = tempFormat.parse(value.toString());
+                                System.out.println(parsed);
+                                break; // Si tiene éxito, salimos del bucle
+                            } catch (ParseException e) {
+                                lastException = e;
+                            }
+                        }
+
+                        if (parsed == null) {
+                            throw new IllegalArgumentException(
+                                    "La fecha '" + value + "' no tiene un formato válido. " +
+                                            "Formatos aceptados: yyyy-MM-dd, yyyy-MM-dd HH:mm, yyyy-MM-dd HH:mm:ss",
+                                    lastException);
+                        }
+
+                        // Almacenamos como java.sql.Timestamp si tiene hora, o java.sql.Date si es solo
+                        // fecha
+                        if (value.toString().trim().length() > 10) { // Tiene hora
+                            dto.getParameters().put(key, new java.sql.Timestamp(parsed.getTime()));
+                            System.out.println("CON HORA");
+                        } else {
+                            dto.getParameters().put(key, new java.sql.Date(parsed.getTime()));
+                        }
+
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("Error procesando fecha '" + value + "'", e);
+                    }
                 } else {
                     /*
                      * Para cualquier otro parámetro numérico (por ejemplo un id), puede venir como:
@@ -73,10 +108,9 @@ public class BuildReportsApi {
                      * debemos convertirlo a Long en todos los casos.
                      */
                     if (value instanceof Integer) {
-                        System.out.println("Integer");
                         // de Integer a Long
                         // dto.getParameters().put(key, ((Integer) value).longValue());
-                        dto.getParameters().put(key, ( value));
+                        dto.getParameters().put(key, (value));
 
                     } else if (value instanceof Long) {
                         System.out.println("Long");
