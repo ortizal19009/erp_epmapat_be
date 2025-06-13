@@ -11,7 +11,7 @@ public class ImpuestosServicio {
     @Autowired
     private ImpuestosR dao;
 
-public Impuestos getCurrentImpuesto(){
-    return dao.getCurrentImpuesto();
-}
+    public Impuestos getCurrentImpuesto() {
+        return dao.getCurrentImpuesto();
+    }
 }

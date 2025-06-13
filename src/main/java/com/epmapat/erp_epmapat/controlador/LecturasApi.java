@@ -181,7 +181,6 @@ public class LecturasApi {
 	@GetMapping("/fecEmision")
 	public ResponseEntity<Date> findDateByIdfactura(@RequestParam("idfactura") Long idfactura) {
 		return ResponseEntity.ok(lecServicio.findDateByIdfactura(idfactura));
-
 	}
 
 	@GetMapping("/fecemision")

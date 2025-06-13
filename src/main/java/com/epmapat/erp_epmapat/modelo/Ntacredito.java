@@ -43,12 +43,12 @@ public class Ntacredito {
     private Clientes idcliente_clientes;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idabonado_abonados")
-    private Abonados idabonado_abonados; 
+    private Abonados idabonado_abonados;
     private Long usucrea;
     private LocalDate feccrea;
     private Long usumodi;
     private LocalDate fecmodi;
-        @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "iddocumento_documentos")
     private Documentos iddocumento_documentos;
     private String refdocumento;
