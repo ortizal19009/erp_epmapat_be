@@ -169,7 +169,8 @@ public class FacturasApi {
 	public List<FacSinCobrar> findFacSincobroByCuetna(@RequestParam Long cuenta) {
 		return facServicio.findFacSincobroByCuetna(cuenta);
 	}
-		@GetMapping("/sincobrar/cuenta")
+
+	@GetMapping("/sincobrar/cuenta")
 	public List<FacSinCobrar> findSincobroByCuetna(@RequestParam Long cuenta) {
 		return facServicio.findSincobroByCuetna(cuenta);
 	}
@@ -333,43 +334,42 @@ public class FacturasApi {
 	 */
 
 	@PostMapping(value = "/generate-custom", produces = MediaType.APPLICATION_PDF_VALUE)
-public ResponseEntity<InputStreamResource> generateCustomReport(@RequestBody ReportRequest request) {
+	public ResponseEntity<InputStreamResource> generateCustomReport(@RequestBody ReportRequest request) {
 
-    if (request.getReportName() == null || request.getReportName().isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre de reporte requerido");
-    }
+		if (request.getReportName() == null || request.getReportName().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre de reporte requerido");
+		}
 
-    try (InputStream jrxmlStream = getClass().getResourceAsStream("/reports/" + request.getReportName() + ".jrxml")) {
+		try (InputStream jrxmlStream = getClass()
+				.getResourceAsStream("/reports/" + request.getReportName() + ".jrxml")) {
 
-        if (jrxmlStream == null) {
-            throw new FileNotFoundException("Reporte no encontrado: " + request.getReportName());
-        }
+			if (jrxmlStream == null) {
+				throw new FileNotFoundException("Reporte no encontrado: " + request.getReportName());
+			}
 
-        JasperReport report = JasperCompileManager.compileReport(jrxmlStream);
-        System.out.println(report + "heloo");
+			JasperReport report = JasperCompileManager.compileReport(jrxmlStream);
+			System.out.println(report + "heloo");
 
-        JasperPrint jasperPrint = JasperFillManager.fillReport(
-                report,
-                request.getParameters() != null ? request.getParameters() : new HashMap<>(),
-                new JRBeanCollectionDataSource(request.getData() != null ? request.getData() : List.of())
-        );
+			JasperPrint jasperPrint = JasperFillManager.fillReport(
+					report,
+					request.getParameters() != null ? request.getParameters() : new HashMap<>(),
+					new JRBeanCollectionDataSource(request.getData() != null ? request.getData() : List.of()));
 
-        ByteArrayOutputStream pdfStream = new ByteArrayOutputStream();
-        JasperExportManager.exportReportToPdfStream(jasperPrint, pdfStream);
+			ByteArrayOutputStream pdfStream = new ByteArrayOutputStream();
+			JasperExportManager.exportReportToPdfStream(jasperPrint, pdfStream);
 
-        return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"" + request.getReportName() + ".pdf\"")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray())));
+			return ResponseEntity.ok()
+					.header("Content-Disposition", "attachment; filename=\"" + request.getReportName() + ".pdf\"")
+					.contentType(MediaType.APPLICATION_PDF)
+					.body(new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray())));
 
-    } catch (Exception e) {
-        throw new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Error generando reporte: " + e.getMessage(),
-                e);
-    }
-}
-
+		} catch (Exception e) {
+			throw new ResponseStatusException(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Error generando reporte: " + e.getMessage(),
+					e);
+		}
+	}
 
 	@GetMapping("/reportes/facturascobradas")
 	public ResponseEntity<Resource> reporteFacturasCobradas(
@@ -643,5 +643,6 @@ public ResponseEntity<InputStreamResource> generateCustomReport(@RequestBody Rep
 	public ValorFactDTO getTotalesByAbonadoDatos(@RequestParam Long cuenta) {
 		return facServicio.getTotalesByAbonadoDatos(cuenta);
 	}
+
 
 }

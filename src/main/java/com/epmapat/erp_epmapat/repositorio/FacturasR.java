@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.epmapat.erp_epmapat.interfaces.*;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -66,7 +68,6 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "select f.idfactura, f.idmodulo, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar, m.descripcion as modulo from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas join modulos m on f.idmodulo = m.idmodulo where f.totaltarifa > 0 and f.idabonado= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165  group by f.idfactura, m.descripcion ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
 	public List<FacSinCobrar> findSincobroByCuetna(Long cuenta);
 
-
 	// Cartera a una fecha
 	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0  and (( (estado = 1 or estado = 2) and ( fechacobro>?1 or fechacobro is null)) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery = true)
 	public List<Facturas> cartera(LocalDate hasta);
@@ -108,6 +109,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	@Query(value = "SELECT count (*) FROM facturas WHERE totaltarifa > 0 and (idmodulo = 3 or idmodulo = 4) and idabonado=?1 and estado = 1 and fechacobro is null and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null ", nativeQuery = true)
 	public Long countSinCobrarAbo(Long idabonado);
+
 	// Recaudacion diaria - Facturas cobradas <Facturas>
 	// @Query(value = "SELECT * FROM facturas WHERE (fechacobro = ?1 or
 	// fechatransferencia=?1) and fechaanulacion is null and fechaeliminacion is
@@ -118,6 +120,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * ========================================= QUERIS PARA RETPORTES
 	 * ===========================================
 	 */
+
 
 	/*
 	 * GLOBALES
@@ -395,7 +398,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas " +
 			"join clientes c on c.idcliente = f.idcliente " +
 			"join lecturas l on l.idfactura = f.idfactura " +
-			"join emisiones e on l.idemision = e.idemision "+
+			"join emisiones e on l.idemision = e.idemision " +
 			"join abonados a on a.idabonado = f.idabonado " +
 			"where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null "
 			+

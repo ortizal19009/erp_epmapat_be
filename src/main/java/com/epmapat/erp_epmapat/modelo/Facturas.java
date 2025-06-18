@@ -3,6 +3,7 @@ package com.epmapat.erp_epmapat.modelo;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.TimeZone;
 
 import javax.persistence.*;
 
@@ -55,7 +56,7 @@ public class Facturas implements Serializable {
 	private Long estadoconvenio;
 	private Long formapago;
 	private String refeformapago;
-	private String horacobro;
+	private TimeZone horacobro;
 	private Long usuariotransferencia;
 	// @Temporal(TemporalType.DATE)
 	// @DateTimeFormat(iso = ISO.DATE)

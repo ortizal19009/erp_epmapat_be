@@ -1,0 +1,887 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 1_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 1_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 1_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="DetallesFactura" uuid="25e7cfb9-414f-486c-953b-ebd40ba49c33">
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+		<parameter name="idfactura" class="java.lang.Integer"/>
+		<queryString language="SQL">
+			<![CDATA[SELECT r.descripcion,
+	rf.cantidad,
+	rf.valorunitario,
+	rf.cantidad * rf.valorunitario AS total
+FROM rubroxfac rf
+	join rubros r ON 
+	 rf.idrubro_rubros = r.idrubro 
+WHERE 
+	 rf.idfactura_facturas = $P{idfactura} 
+	 AND NOT  ( 
+	 rf.idrubro_rubros = 165 
+	 OR rf.idrubro_rubros = 5)]]>
+		</queryString>
+		<field name="descripcion" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="descripcion"/>
+			<property name="com.jaspersoft.studio.field.label" value="descripcion"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="rubros"/>
+		</field>
+		<field name="cantidad" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="cantidad"/>
+			<property name="com.jaspersoft.studio.field.label" value="cantidad"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="rubroxfac"/>
+		</field>
+		<field name="valorunitario" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="valorunitario"/>
+			<property name="com.jaspersoft.studio.field.label" value="valorunitario"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="rubroxfac"/>
+		</field>
+		<field name="total" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="total"/>
+			<property name="com.jaspersoft.studio.field.label" value="total"/>
+		</field>
+		<group name="descripcion">
+			<groupExpression><![CDATA[$F{descripcion}]]></groupExpression>
+		</group>
+		<group name="cantidad">
+			<groupExpression><![CDATA[$F{cantidad}]]></groupExpression>
+		</group>
+		<group name="valorunitario">
+			<groupExpression><![CDATA[$F{valorunitario}]]></groupExpression>
+		</group>
+		<group name="total">
+			<groupExpression><![CDATA[$F{total}]]></groupExpression>
+		</group>
+	</subDataset>
+	<subDataset name="FacturaTotales" uuid="4cdfb0b5-5c2d-48be-bf5d-dd1a1cf954c8">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="idfactura" class="java.lang.Integer"/>
+		<queryString>
+			<![CDATA[SELECT 
+    rf.idfactura_facturas,
+    SUM(rf.cantidad * rf.valorunitario)  AS subtotal,
+    COALESCE(f.swiva, 0) AS iva,
+    COALESCE(f.interescobrado, 0) AS interes, 
+      COALESCE( f.valornotacredito, 0) as nc,
+    SUM(rf.cantidad * rf.valorunitario) + COALESCE(f.swiva, 0) + COALESCE(f.interescobrado, 0)  AS total
+FROM facturas f
+JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas 
+JOIN rubros r ON r.idrubro = rf.idrubro_rubros 
+WHERE rf.idrubro_rubros NOT IN (165, 5)
+  AND f.idfactura = $P{idfactura}
+GROUP BY rf.idfactura_facturas, f.swiva, f.interescobrado, f.valornotacredito]]>
+		</queryString>
+		<field name="idfactura_facturas" class="java.lang.Long">
+			<property name="com.jaspersoft.studio.field.name" value="idfactura_facturas"/>
+			<property name="com.jaspersoft.studio.field.label" value="idfactura_facturas"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="rubroxfac"/>
+		</field>
+		<field name="subtotal" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="subtotal"/>
+			<property name="com.jaspersoft.studio.field.label" value="subtotal"/>
+		</field>
+		<field name="iva" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="iva"/>
+			<property name="com.jaspersoft.studio.field.label" value="iva"/>
+		</field>
+		<field name="interes" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="interes"/>
+			<property name="com.jaspersoft.studio.field.label" value="interes"/>
+		</field>
+		<field name="nc" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="nc"/>
+			<property name="com.jaspersoft.studio.field.label" value="nc"/>
+		</field>
+		<field name="total" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="total"/>
+			<property name="com.jaspersoft.studio.field.label" value="total"/>
+		</field>
+	</subDataset>
+	<subDataset name="HistorialConsumo" uuid="d9d002d4-d5d1-4879-a6fb-864a91b89472">
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+		<parameter name="cuenta" class="java.lang.Long"/>
+		<queryString language="SQL">
+			<![CDATA[SELECT 
+    e.emision,
+    l.lecturaactual - l.lecturaanterior AS m3
+FROM lecturas l
+JOIN emisiones e ON l.idemision = e.idemision 
+WHERE 
+    l.idabonado_abonados = $P{cuenta} AND l.observaciones IS NULL
+    AND (l.lecturaactual - l.lecturaanterior) >= 0
+ORDER BY l.idemision DESC
+LIMIT 8]]>
+		</queryString>
+		<field name="emision" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="emision"/>
+			<property name="com.jaspersoft.studio.field.label" value="emision"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="emisiones"/>
+		</field>
+		<field name="m3" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="m3"/>
+			<property name="com.jaspersoft.studio.field.label" value="m3"/>
+		</field>
+		<group name="emision">
+			<groupExpression><![CDATA[$F{emision}]]></groupExpression>
+		</group>
+		<group name="m3">
+			<groupExpression><![CDATA[$F{m3}]]></groupExpression>
+		</group>
+	</subDataset>
+	<parameter name="idfactura" class="java.lang.Integer"/>
+	<queryString language="SQL">
+		<![CDATA[select
+	f.nrofactura,
+	f.idfactura,
+	c.nombre,
+	c.cedula,
+	c.direccion,
+	u.nomusu,
+	m.descripcion as modulo,
+	f.fechacobro
+from
+	 facturas f
+join clientes c on
+	f.idcliente = c.idcliente
+join usuarios u on
+	f.usuariocobro = u.idusuario
+join modulos m on
+	f.idmodulo = m.idmodulo
+where
+	f.idfactura= $P{idfactura}]]>
+	</queryString>
+	<field name="nrofactura" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="nrofactura"/>
+		<property name="com.jaspersoft.studio.field.label" value="nrofactura"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="facturas"/>
+	</field>
+	<field name="idfactura" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="idfactura"/>
+		<property name="com.jaspersoft.studio.field.label" value="idfactura"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="facturas"/>
+	</field>
+	<field name="nombre" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="nombre"/>
+		<property name="com.jaspersoft.studio.field.label" value="nombre"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="clientes"/>
+	</field>
+	<field name="cedula" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cedula"/>
+		<property name="com.jaspersoft.studio.field.label" value="cedula"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="clientes"/>
+	</field>
+	<field name="direccion" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="direccion"/>
+		<property name="com.jaspersoft.studio.field.label" value="direccion"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="clientes"/>
+	</field>
+	<field name="nomusu" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="nomusu"/>
+		<property name="com.jaspersoft.studio.field.label" value="nomusu"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="usuarios"/>
+	</field>
+	<field name="modulo" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="modulo"/>
+		<property name="com.jaspersoft.studio.field.label" value="modulo"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="modulos"/>
+	</field>
+	<field name="fechacobro" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="fechacobro"/>
+		<property name="com.jaspersoft.studio.field.label" value="fechacobro"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="facturas"/>
+	</field>
+	<group name="nrofactura">
+		<groupExpression><![CDATA[$F{nrofactura}]]></groupExpression>
+	</group>
+	<group name="idfactura">
+		<groupExpression><![CDATA[$F{idfactura}]]></groupExpression>
+	</group>
+	<group name="nombre">
+		<groupExpression><![CDATA[$F{nombre}]]></groupExpression>
+	</group>
+	<group name="cedula">
+		<groupExpression><![CDATA[$F{cedula}]]></groupExpression>
+	</group>
+	<group name="nomusu">
+		<groupExpression><![CDATA[$F{nomusu}]]></groupExpression>
+	</group>
+	<group name="modulo">
+		<groupExpression><![CDATA[$F{modulo}]]></groupExpression>
+	</group>
+	<group name="fechacobro">
+		<groupExpression><![CDATA[$F{fechacobro}]]></groupExpression>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="43" splitType="Stretch">
+			<image scaleImage="FillFrame">
+				<reportElement x="0" y="-20" width="180" height="60" uuid="dfa0bb5c-a08a-419f-a1e5-4f900780b02d"/>
+				<imageExpression><![CDATA["logo_epmapat-01.png"]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="162" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="80" height="20" uuid="cdf755d8-b20c-4a9e-a745-341f76ed1c57"/>
+				<box leftPadding="5" rightPadding="2">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nro. comprobante:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="20" width="80" height="20" uuid="fe5a1066-80a2-463b-a2d9-d8f1a7dcb1c6"/>
+				<box leftPadding="5" rightPadding="2">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nro. planilla:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="40" width="80" height="20" uuid="130e7c63-3188-434c-a305-acb86022367d"/>
+				<box leftPadding="5" rightPadding="2">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Ruc/Cédula:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="60" width="80" height="20" uuid="85e74fd7-ce42-4fa4-abfa-b85ee5fb57ea"/>
+				<box leftPadding="5" rightPadding="2">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cliente:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="80" width="80" height="20" uuid="770df8f3-5f0f-4a0c-adf8-1bbdeca94874"/>
+				<box leftPadding="5" rightPadding="2">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Dirección:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="140" width="80" height="20" uuid="ba2b233f-0d4f-4f38-86e7-fab1aed6bd1e"/>
+				<box leftPadding="5" rightPadding="2">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Módulo:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="120" width="80" height="20" uuid="92eebb7d-ea1a-46c1-93de-53edba6b3f88"/>
+				<box leftPadding="5" rightPadding="2">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Fec. Cobro:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="100" width="80" height="20" uuid="dd84d322-cbc9-4a6c-9809-0231ef40d8a5"/>
+				<box leftPadding="5" rightPadding="2">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Recaudador:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="80" y="0" width="100" height="20" uuid="8a10a91b-ba0c-426c-8786-592523a1dcea"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nrofactura}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="20" width="100" height="20" uuid="f74ff3e9-9fd3-4d98-bc65-b97506065ec2"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{idfactura}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="40" width="100" height="20" uuid="2a3fb0e6-ff1d-483f-bf8f-a4b2a9b424e0"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cedula}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="60" width="100" height="20" uuid="54890eda-ce12-405b-b57c-efa232e205d7"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nombre}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="80" width="100" height="20" uuid="60bd7891-29b1-4811-951a-cb2a9fd8156d"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{direccion}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="100" width="100" height="20" uuid="3c7d0b8d-3c58-47de-afb5-e60316a1f2f7"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nomusu}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="120" width="100" height="20" uuid="664ad43c-fd64-447d-a6c2-aa8245f53045"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[ new java.text.SimpleDateFormat("yyyy-MM-dd").format($F{fechacobro}) ]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="140" width="100" height="20" uuid="ce86168c-0c87-413e-8826-381e53b01208"/>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dotted"/>
+					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+					<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle" rotation="None">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{modulo}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="31" splitType="Stretch">
+			<componentElement>
+				<reportElement x="0" y="1" width="180" height="30" uuid="eca64775-0ca0-4cd9-b321-f8e42e4c0022">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
+					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
+					<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="DetallesFactura" uuid="4255deb2-e767-45ed-925f-48f555d8d370">
+						<datasetParameter name="idfactura">
+							<datasetParameterExpression><![CDATA[$P{idfactura}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="90" uuid="86412e07-5d7c-4235-aa0d-7c6fe8231fc1">
+						<jr:tableHeader style="Table_TD" height="15">
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="2ddf06e5-6ec2-43eb-b878-3630fc7d4e86"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[DESCRIPCIÓN]]></text>
+							</staticText>
+						</jr:tableHeader>
+						<jr:detailCell style="Table_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="90" height="15" uuid="b436cb7f-e3f2-42b1-8f2e-06699a8ab7ab"/>
+								<box leftPadding="5"/>
+								<textElement textAlignment="Left" verticalAlignment="Middle">
+									<font size="7" isBold="true"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{descripcion}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="30" uuid="02acb846-5be4-45eb-b789-84426eebe0fa">
+						<jr:tableHeader style="Table_TD" height="15">
+							<staticText>
+								<reportElement x="0" y="0" width="30" height="15" uuid="37c129d9-a75d-4317-a341-a56d70aa8cef"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[CANT.]]></text>
+							</staticText>
+						</jr:tableHeader>
+						<jr:detailCell style="Table_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="30" height="15" uuid="be187a24-752c-4eca-9158-7a13e3c886b0"/>
+								<box rightPadding="2"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.0f", $F{cantidad})]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="30" uuid="6da5e4cc-496d-445d-ac40-39bd0a5ada27">
+						<jr:tableHeader style="Table_TD" height="15">
+							<staticText>
+								<reportElement x="0" y="0" width="30" height="15" uuid="783235f9-c23d-439e-a8fd-20ca8ace5dd4"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[V. UNI]]></text>
+							</staticText>
+						</jr:tableHeader>
+						<jr:detailCell style="Table_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="30" height="15" uuid="4311c6dd-ae10-496a-a7cd-bc74fbc200d8"/>
+								<box rightPadding="2"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{valorunitario}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="30" uuid="7142b0b6-5ed8-49ad-9d12-602f8f06d703">
+						<jr:tableHeader style="Table_TD" height="15">
+							<staticText>
+								<reportElement x="0" y="0" width="30" height="15" uuid="49ba919a-2ed1-46f4-ad6e-8912289a2b14"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[V. TOT]]></text>
+							</staticText>
+						</jr:tableHeader>
+						<jr:detailCell style="Table_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="30" height="15" uuid="9197e41c-a6d0-4175-a163-ca5fc0e68a57"/>
+								<box rightPadding="2"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{total}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="116" splitType="Stretch">
+			<componentElement>
+				<reportElement x="0" y="2" width="180" height="75" uuid="07cebbfa-d15e-4498-8766-e4bb7cbbfbbf">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
+					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
+					<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="FacturaTotales" uuid="7eb9e031-411a-40a9-8835-c12cc0581189">
+						<datasetParameter name="idfactura">
+							<datasetParameterExpression><![CDATA[$P{idfactura}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="90" uuid="2616b920-0510-46c1-b752-5eca94f2a0aa">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+						<jr:tableHeader style="Table 1_TD" height="15" rowSpan="1">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="90e56c42-bb20-4cdc-9b22-9a36cf3b26cb"/>
+								<box leftPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement verticalAlignment="Middle">
+									<font size="7" isBold="true"/>
+								</textElement>
+								<text><![CDATA[SUB TOTAL:]]></text>
+							</staticText>
+						</jr:tableHeader>
+						<jr:tableFooter style="Table 1_TD" height="15" rowSpan="1">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="bfea052d-d535-4f47-970a-79531703ab52"/>
+								<box leftPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement verticalAlignment="Middle">
+									<font size="7" isBold="true"/>
+								</textElement>
+								<text><![CDATA[NOTA CRÉDITO:]]></text>
+							</staticText>
+						</jr:tableFooter>
+						<jr:columnHeader style="Table 1_TD" height="15" rowSpan="1">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="f93fc3b0-1586-4585-b8dc-fa546197e870"/>
+								<box leftPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement verticalAlignment="Middle">
+									<font size="7" isBold="true"/>
+								</textElement>
+								<text><![CDATA[IVA: ]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:columnFooter style="Table 1_TD" height="15" rowSpan="1">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="c4bdaac8-5997-4044-bcfa-476dcf390999"/>
+								<box leftPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement verticalAlignment="Middle">
+									<font size="7" isBold="true"/>
+								</textElement>
+								<text><![CDATA[TOTAL FACTURA: ]]></text>
+							</staticText>
+						</jr:columnFooter>
+						<jr:detailCell style="Table 1_TD" height="15">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="8ed6e688-8671-4ea6-a79f-bfbeba9dda0e"/>
+								<box leftPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement verticalAlignment="Middle">
+									<font size="7" isBold="true"/>
+								</textElement>
+								<text><![CDATA[INTERÉS:]]></text>
+							</staticText>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="90" uuid="89dea003-d67a-4345-bd39-a533a4cb2185">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+						<jr:tableHeader style="Table 1_TD" height="15" rowSpan="1">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+							<textField>
+								<reportElement x="0" y="0" width="90" height="15" uuid="83ff6764-1e55-473e-923e-5fdaaa85d2c4"/>
+								<box rightPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{subtotal}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:tableHeader>
+						<jr:tableFooter style="Table 1_TD" height="15" rowSpan="1">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+							<textField>
+								<reportElement x="0" y="0" width="90" height="15" uuid="7607e256-8165-45a4-87fa-7fe7f6be0f89"/>
+								<box rightPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="7" isBold="false"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{nc}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:tableFooter>
+						<jr:columnHeader style="Table 1_TD" height="15" rowSpan="1">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+							<textField>
+								<reportElement x="0" y="0" width="90" height="15" uuid="67916b8d-fe7e-4ea6-b90a-48f1966f9f98"/>
+								<box rightPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{iva}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:columnHeader>
+						<jr:columnFooter style="Table 1_TD" height="15" rowSpan="1">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+							<textField>
+								<reportElement x="0" y="0" width="90" height="15" uuid="0b1e8846-b024-451a-abaa-c88e515cd57f"/>
+								<box rightPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{total}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:columnFooter>
+						<jr:detailCell style="Table 1_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="90" height="15" uuid="72c5c25f-8d2c-4b16-a69b-8254935bd344"/>
+								<box rightPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="7"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{interes}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<componentElement>
+				<reportElement x="0" y="90" width="180" height="15" uuid="5866e74e-c03a-4a82-9e57-dd6647847d95">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
+					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
+					<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="FacturaTotales" uuid="86c2b4b7-0772-4f13-a3aa-a440f0c1bd5d">
+						<datasetParameter name="idfactura">
+							<datasetParameterExpression><![CDATA[$P{idfactura}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="90" uuid="f592fbfb-e04c-45a0-833f-45f0b40bffb7">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+						<jr:detailCell style="Table 1_TD" height="15">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="4a3f3a74-8018-4ac0-adbe-df93bd4dcc5b"/>
+								<box leftPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement verticalAlignment="Middle">
+									<font size="9" isBold="true" isItalic="true"/>
+								</textElement>
+								<text><![CDATA[TOTAL A PAGAR:]]></text>
+							</staticText>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="90" uuid="5bc2fb90-a8d7-4cc4-85a6-f35154643b28">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+						<jr:detailCell style="Table 1_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="90" height="15" uuid="86a9f392-eb2a-4ae9-80bf-f9dd34df354d"/>
+								<box rightPadding="5">
+									<pen lineWidth="0.5" lineStyle="Dotted"/>
+									<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="9" isBold="true" isItalic="true"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{total} - ($F{nc})) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="32" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement x="0" y="0" width="180" height="24" uuid="3464ec4c-2699-4132-bf44-d0ab030e66ff"/>
+				<textElement>
+					<font size="6" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[(Nota: Su comprobante de pago electrónico estara disponible en un lapso de 4 a 48 horas.) 
+Para mas información visita: www.epmapatulcan.gob.ec]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>
