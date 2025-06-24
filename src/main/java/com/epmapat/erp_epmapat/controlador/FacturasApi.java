@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -73,7 +75,6 @@ public class FacturasApi {
 			return facServicio.findDesde(desde, hasta);
 		else {
 			if (idcliente != null) {
-				System.out.println(limit);
 				return facServicio.findByIdcliente(idcliente, limit);
 			} else
 				return facServicio.findAll();
@@ -113,7 +114,6 @@ public class FacturasApi {
 
 	@GetMapping("/idabonado/{idabonado}")
 	public List<Facturas> getByIdabonado(@PathVariable Long idabonado) {
-		System.out.println("getByIdabonado");
 		return facServicio.findByIdabonado(idabonado);
 	}
 
@@ -279,6 +279,8 @@ public class FacturasApi {
 
 	@PutMapping("/{idfactura}")
 	public ResponseEntity<Facturas> updateFacturas(@PathVariable long idfactura, @RequestBody Facturas x) {
+		ZoneId horacobroZone = ZoneId.of("America/Guayaquil");
+
 		Facturas y = facServicio.findById(idfactura)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
 		BigDecimal interes = rxfServicio.getTotalInteres(idfactura);
@@ -287,6 +289,8 @@ public class FacturasApi {
 		} else {
 			y.setInterescobrado(interes.add(x.getInterescobrado()));
 		}
+		LocalTime hora = LocalTime.parse(x.getHoracobro().toString()); // Esto funciona
+
 		y.setConveniopago(x.getConveniopago());
 		y.setEstado(x.getEstado());
 		y.setEstadoconvenio(x.getEstadoconvenio());
@@ -296,7 +300,7 @@ public class FacturasApi {
 		y.setFechaeliminacion(x.getFechaeliminacion());
 		y.setFechatransferencia(x.getFechatransferencia());
 		y.setFormapago(x.getFormapago());
-		y.setHoracobro(x.getHoracobro());
+		y.setHoracobro(hora);
 		y.setIdabonado(x.getIdabonado());
 		y.setIdcliente(x.getIdcliente());
 		y.setIdmodulo(x.getIdmodulo());
@@ -348,7 +352,6 @@ public class FacturasApi {
 			}
 
 			JasperReport report = JasperCompileManager.compileReport(jrxmlStream);
-			System.out.println(report + "heloo");
 
 			JasperPrint jasperPrint = JasperFillManager.fillReport(
 					report,
@@ -464,7 +467,6 @@ public class FacturasApi {
 	@GetMapping("/comprobante/pago")
 	public ResponseEntity<Resource> comprobantePago(
 			@RequestParam Long idfactura) throws JRException, IOException, SQLException {
-		System.out.println(idfactura);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("idfactura", idfactura);
 		params.put("fileName", "ComprobantePago");
@@ -643,6 +645,5 @@ public class FacturasApi {
 	public ValorFactDTO getTotalesByAbonadoDatos(@RequestParam Long cuenta) {
 		return facServicio.getTotalesByAbonadoDatos(cuenta);
 	}
-
 
 }

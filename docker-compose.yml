@@ -4,20 +4,11 @@ services:
     image: erp_epmapat_be
     container_name: erp_epmapat_be
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.0.87:5432/ErpEpmapaT
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=086411421
     ports: 
-      - "9090:9090"
-    restart: "always"
-    networks:
-      - erp_epmapat
-  erp_epmapat_fe:
-    build: erp_epmapat_fe
-    image: erp_epmapat_fe
-    container_name: erp_epmapat_fe
-    ports: 
-      - "4200:4200"
+      - "8080:8080"
     restart: "always"
     networks:
       - erp_epmapat
