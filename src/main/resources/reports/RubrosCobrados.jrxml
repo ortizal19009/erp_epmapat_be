@@ -327,7 +327,7 @@ WHERE
 		<band height="4" splitType="Stretch"/>
 	</columnHeader>
 	<columnFooter>
-		<band height="78">
+		<band height="84">
 			<textField>
 				<reportElement x="78" y="60" width="70" height="15" uuid="157b4576-8544-47b9-a7e1-811de8bd9142"/>
 				<box leftPadding="5" rightPadding="5">
