@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.servicio.Fec_facturaService;
+import com.epmapat.erp_epmapat.sri.interfaces.fecFacturaDatos;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,9 +50,10 @@ public class Fec_facturaApi {
    public List<Fec_factura> getByNombreCliente(@RequestParam("cliente") String cliente) {
       return fecfacServicio.findByNombreCliente(cliente);
    }
+
    @GetMapping("/factura")
-   public ResponseEntity<Optional<Fec_factura>> getByIdFactura(@RequestParam("idfactura") Long idfactura){
-      return ResponseEntity.ok(fecfacServicio.findById(idfactura)); 
+   public ResponseEntity<Optional<Fec_factura>> getByIdFactura(@RequestParam("idfactura") Long idfactura) {
+      return ResponseEntity.ok(fecfacServicio.findById(idfactura));
    }
 
    @PostMapping
@@ -97,5 +99,11 @@ public class Fec_facturaApi {
       factura.setRecaudador(fecfactura.getRecaudador());
       Fec_factura upfecfactura = fecfacServicio.save(factura);
       return ResponseEntity.ok(upfecfactura);
+   }
+
+   @GetMapping("/fecFacturaDatos")
+   public fecFacturaDatos getDatosFecFactura(@RequestParam Long idfactura) {
+      fecFacturaDatos fecFactura = fecfacServicio.getNroFactura(idfactura);
+      return fecFactura;
    }
 }
