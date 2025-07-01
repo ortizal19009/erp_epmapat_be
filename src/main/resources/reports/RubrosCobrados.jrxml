@@ -327,7 +327,7 @@ WHERE
 		<band height="4" splitType="Stretch"/>
 	</columnHeader>
 	<columnFooter>
-		<band height="215">
+		<band height="78">
 			<textField>
 				<reportElement x="78" y="60" width="70" height="15" uuid="157b4576-8544-47b9-a7e1-811de8bd9142"/>
 				<box leftPadding="5" rightPadding="5">
@@ -629,7 +629,7 @@ WHERE
 		<band height="84" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<componentElement>
-				<reportElement stretchType="ElementGroupHeight" mode="Transparent" x="290" y="0" width="265" height="80" uuid="6b95b209-afd1-4e9c-9a6a-57dd8cf8c3c3">
+				<reportElement stretchType="ElementGroupHeight" mode="Transparent" x="290" y="0" width="265" height="70" uuid="6b95b209-afd1-4e9c-9a6a-57dd8cf8c3c3">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
@@ -750,7 +750,7 @@ WHERE
 				</jr:table>
 			</componentElement>
 			<componentElement>
-				<reportElement style="Table 1_TD" mode="Transparent" x="0" y="0" width="270" height="80" uuid="4f980554-3ebe-4178-88d9-dd9b708a797b">
+				<reportElement style="Table 1_TD" mode="Transparent" x="0" y="0" width="270" height="70" uuid="4f980554-3ebe-4178-88d9-dd9b708a797b">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
