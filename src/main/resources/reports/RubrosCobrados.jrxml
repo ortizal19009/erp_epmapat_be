@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -699,7 +699,16 @@ WHERE
 									<text><![CDATA[Descripción]]></text>
 								</staticText>
 							</jr:columnHeader>
-							<jr:columnFooter style="Table 1_CH" height="15" rowSpan="1"/>
+							<jr:columnFooter style="Table 1_CH" height="15" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="132" height="15" uuid="dfebec4d-6373-404e-9e12-3b172f900b42"/>
+									<box leftPadding="5" rightPadding="5"/>
+									<textElement verticalAlignment="Middle">
+										<font isBold="true"/>
+									</textElement>
+									<text><![CDATA[Sub. Total]]></text>
+								</staticText>
+							</jr:columnFooter>
 							<jr:detailCell style="Table 1_TD" height="15">
 								<textField>
 									<reportElement x="0" y="0" width="132" height="15" uuid="52531530-a30a-4e9c-b02a-63dffb809eca"/>
@@ -811,7 +820,16 @@ WHERE
 									<text><![CDATA[Descripción]]></text>
 								</staticText>
 							</jr:columnHeader>
-							<jr:columnFooter style="Table 1_CH" height="15" rowSpan="1"/>
+							<jr:columnFooter style="Table 1_CH" height="15" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="135" height="15" uuid="f15213ad-2348-458a-a394-7d9a1bf3a00e"/>
+									<box leftPadding="5" rightPadding="5"/>
+									<textElement verticalAlignment="Middle">
+										<font isBold="true"/>
+									</textElement>
+									<text><![CDATA[Sub. Total]]></text>
+								</staticText>
+							</jr:columnFooter>
 							<jr:detailCell style="Table 1_TD" height="15">
 								<textField>
 									<reportElement x="0" y="0" width="135" height="15" uuid="0481028f-2498-473d-9c3f-454165d78c01"/>
@@ -836,7 +854,9 @@ WHERE
 								<textField>
 									<reportElement x="0" y="0" width="65" height="15" uuid="273cdeaf-57f0-461c-8516-424936678361"/>
 									<box leftPadding="5" rightPadding="5"/>
-									<textElement textAlignment="Right" verticalAlignment="Middle"/>
+									<textElement textAlignment="Right" verticalAlignment="Middle">
+										<font isBold="true"/>
+									</textElement>
 									<textFieldExpression><![CDATA[String.format("%.2f", $V{sumaAnteriores}) + " $"]]></textFieldExpression>
 								</textField>
 							</jr:columnFooter>
