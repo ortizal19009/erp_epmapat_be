@@ -58,7 +58,6 @@ import org.springframework.http.MediaType;
 @RestController
 @RequestMapping("/facturas")
 @CrossOrigin(origins = "*")
-
 public class FacturasApi {
 
 	@Autowired
@@ -279,8 +278,9 @@ public class FacturasApi {
 
 	@PutMapping("/{idfactura}")
 	public ResponseEntity<Facturas> updateFacturas(@PathVariable long idfactura, @RequestBody Facturas x) {
-		ZoneId horacobroZone = ZoneId.of("America/Guayaquil");
-
+		System.out.println(x.getHoracobro());
+		System.out.println("Estamos solucionando");
+		LocalTime hora;
 		Facturas y = facServicio.findById(idfactura)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
 		BigDecimal interes = rxfServicio.getTotalInteres(idfactura);
@@ -289,7 +289,11 @@ public class FacturasApi {
 		} else {
 			y.setInterescobrado(interes.add(x.getInterescobrado()));
 		}
-		LocalTime hora = LocalTime.parse(x.getHoracobro().toString()); // Esto funciona
+		if (x.getHoracobro() != null) {
+			hora = LocalTime.parse(x.getHoracobro().toString()); // Esto funciona
+		} else {
+			hora = null;
+		}
 
 		y.setConveniopago(x.getConveniopago());
 		y.setEstado(x.getEstado());
