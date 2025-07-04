@@ -8,6 +8,8 @@ import java.util.TimeZone;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -57,6 +59,7 @@ public class Facturas implements Serializable {
 	private Long estadoconvenio;
 	private Long formapago;
 	private String refeformapago;
+	@JsonFormat(pattern = "H:m:s")
 	private LocalTime horacobro;
 	private Long usuariotransferencia;
 	// @Temporal(TemporalType.DATE)

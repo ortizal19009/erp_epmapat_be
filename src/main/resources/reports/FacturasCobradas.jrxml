@@ -2,7 +2,9 @@
 <!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="342"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="653"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -61,7 +63,7 @@ SELECT
     f.idfactura,
     c.nombre,
     f.nrofactura,
-    r.fechacobro,
+    f.fechacobro,
     fc.descripcion AS formacobro,
     m.descripcion AS modulo, 
     CAST(SUM((rf.cantidad * rf.valorunitario)) AS DECIMAL(19,2)) AS valor, 
@@ -70,7 +72,6 @@ SELECT
     u.nomusu
 FROM
     recaudo_unico fr
-    INNER JOIN recaudacion r ON r.idrecaudacion = fr.idrecaudacion
     INNER JOIN facturas f ON fr.idfactura = f.idfactura
     INNER JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
     INNER JOIN clientes c ON c.idcliente = f.idcliente
@@ -78,21 +79,20 @@ FROM
     INNER JOIN usuarios u ON f.usuariocobro = u.idusuario
     INNER JOIN modulos m ON f.idmodulo = m.idmodulo
 WHERE
-    r.fechacobro BETWEEN $P{desde} AND $P{hasta}
+    f.fechacobro BETWEEN $P{desde} AND $P{hasta}
     AND rf.idrubro_rubros NOT IN (5, 165)
 GROUP BY
     f.idfactura,
     c.nombre,
     f.nrofactura,
-    r.fechacobro,
+    f.fechacobro,
     fc.descripcion,
     u.nomusu, 
     m.descripcion,
     f.swiva,
     f.interescobrado
 ORDER BY
-    f.nrofactura ASC;
-]]>
+    f.nrofactura ASC;]]>
 	</queryString>
 	<field name="idfactura" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.name" value="idfactura"/>
