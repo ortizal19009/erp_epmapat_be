@@ -3,26 +3,19 @@ package com.epmapat.erp_epmapat.jasperReports.services;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.activation.DataSource;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.jasperReports.DTO.JasperDTO;
 
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JREmptyDataSource;
+
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.charts.util.ChartUtil;
 
 @Service
 public class BuildReports {

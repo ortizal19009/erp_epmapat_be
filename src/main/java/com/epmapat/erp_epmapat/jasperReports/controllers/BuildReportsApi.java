@@ -157,7 +157,6 @@ public class BuildReportsApi {
 
     @PostMapping("/reportes")
     public ResponseEntity<Resource> generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
-        System.out.println("WAIT A MINUTE.... PROCESSING...");
         try {
             JasperDTO dto = new JasperDTO();
             dto.setReportName(jasperDTO.getReportName());
@@ -178,12 +177,26 @@ public class BuildReportsApi {
                 } else {
                     params.put(key, normalizeParameterValue(key, value));
                 }
+                
             }
 
             dto.setParameters(params);
-            // Aquí iría tu lógica de generación del reporte
 
-            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build(); // Placeholder
+            ByteArrayOutputStream outputStream;
+            try (Connection conn = dataSource.getConnection()) {
+                outputStream = buildReports.buildReport(dto, conn);
+            }
+
+            ByteArrayInputStream pdfStream = new ByteArrayInputStream(outputStream.toByteArray());
+            InputStreamResource resource = new InputStreamResource(pdfStream);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=" + jasperDTO.getReportName() + ".pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(outputStream.size())
+                    .body(resource);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -226,18 +239,27 @@ public class BuildReportsApi {
     }
 
     private Object normalizeParameterValue(String key, Object value) {
-        if (value instanceof Integer) {
-            return ((Integer) value).longValue();
-        } else if (value instanceof Long || value instanceof java.util.Date) {
-            return value;
-        } else if (value instanceof String) {
-            try {
-                return Long.valueOf((String) value);
-            } catch (NumberFormatException e) {
-                return value; // o lanza excepción si sabes que debe ser Long
-            }
-        }
+    if (value instanceof Integer) {
         return value;
+    } else if (value instanceof Long) {
+        Long longVal = (Long) value;
+        if (longVal >= Integer.MIN_VALUE && longVal <= Integer.MAX_VALUE) {
+            return longVal.intValue();
+        } else {
+            throw new IllegalArgumentException("El valor Long excede el rango de Integer");
+        }
+    } else if (value instanceof java.util.Date) {
+        return value; // Devuelve la fecha tal cual
+    } else if (value instanceof String) {
+        try {
+            Integer intVal = Integer.valueOf((String) value);
+            return intVal;
+        } catch (NumberFormatException e) {
+            return value; // o lanza excepción si sabes que debe ser Integer
+        }
     }
+    return value;
+}
+
 
 }
