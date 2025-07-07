@@ -6,7 +6,8 @@ import java.sql.Connection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.sql.DataSource;
@@ -36,8 +37,8 @@ public class BuildReportsApi {
     @Autowired
     private DataSource dataSource;
 
-    @PostMapping("/reportes")
-    public ResponseEntity<Resource> generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
+    @PostMapping("/__reportes")
+    public ResponseEntity<Resource> __generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
         try {
             // Creamos un nuevo DTO donde meteremos valores ya convertidos
             JasperDTO dto = new JasperDTO();
@@ -50,8 +51,8 @@ public class BuildReportsApi {
             for (Entry<String, Object> entry : jasperDTO.getParameters().entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                System.out.println("desde".equals(key));
-                System.out.println("hasta".equals(key));
+                System.out.println("desde".equals(key) + " : desde");
+                System.out.println("hasta".equals(key) + " : hasta");
 
                 // Si la clave es “desde” o “hasta”, asumimos que viene como String “yyyy-MM-dd”
                 if ("desde".equals(key) || "hasta".equals(key)) {
@@ -152,6 +153,91 @@ public class BuildReportsApi {
             // Aquí podrías registrar el error con un logger y devolver 500
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
+    }
+
+    @PostMapping("/reportes")
+    public ResponseEntity<Resource> generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
+        System.out.println("WAIT A MINUTE.... PROCESSING...");
+        try {
+            JasperDTO dto = new JasperDTO();
+            dto.setReportName(jasperDTO.getReportName());
+
+            Map<String, Object> params = new HashMap<>();
+
+            for (Map.Entry<String, Object> entry : jasperDTO.getParameters().entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+
+                if (value == null)
+                    continue;
+
+                if ("desde".equalsIgnoreCase(key) || "hasta".equalsIgnoreCase(key)) {
+                    params.put(key, parseDateToSQLType(value.toString()));
+                } else if ("hdesde".equalsIgnoreCase(key) || "hhasta".equalsIgnoreCase(key)) {
+                    params.put(key, parseToSqlTime(value.toString()));
+                } else {
+                    params.put(key, normalizeParameterValue(key, value));
+                }
+            }
+
+            dto.setParameters(params);
+            // Aquí iría tu lógica de generación del reporte
+
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build(); // Placeholder
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    private Object parseDateToSQLType(String value) throws ParseException {
+        String[] formats = {
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd HH:mm",
+                "yyyy-MM-dd"
+        };
+
+        for (String format : formats) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat(format);
+                sdf.setLenient(false);
+                Date parsed = sdf.parse(value.trim());
+                if (format.contains("HH")) {
+                    return new java.sql.Timestamp(parsed.getTime());
+                } else {
+                    return new java.sql.Date(parsed.getTime());
+                }
+            } catch (ParseException ignored) {
+            }
+        }
+
+        throw new IllegalArgumentException("Fecha inválida: " + value);
+    }
+
+    private java.sql.Time parseToSqlTime(String timeStr) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+            sdf.setLenient(false);
+            Date parsed = sdf.parse(timeStr.trim());
+            return new java.sql.Time(parsed.getTime());
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Hora inválida: '" + timeStr + "'. Formato esperado: HH:mm:ss", e);
+        }
+    }
+
+    private Object normalizeParameterValue(String key, Object value) {
+        if (value instanceof Integer) {
+            return ((Integer) value).longValue();
+        } else if (value instanceof Long || value instanceof java.util.Date) {
+            return value;
+        } else if (value instanceof String) {
+            try {
+                return Long.valueOf((String) value);
+            } catch (NumberFormatException e) {
+                return value; // o lanza excepción si sabes que debe ser Long
+            }
+        }
+        return value;
     }
 
 }
