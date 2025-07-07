@@ -107,7 +107,7 @@ WHERE
 		<parameter name="hasta" class="java.util.Date"/>
 		<parameter name="hdesde" class="java.sql.Time"/>
 		<parameter name="hhasta" class="java.sql.Time"/>
-		<parameter name="tope" class="java.sql.Date"/>
+		<parameter name="tope" class="java.util.Date"/>
 		<queryString>
 			<![CDATA[SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , r.swiva AS iva 
 FROM Rubroxfac rf 

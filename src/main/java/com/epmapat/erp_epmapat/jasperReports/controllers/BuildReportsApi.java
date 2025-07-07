@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,7 +56,7 @@ public class BuildReportsApi {
                 System.out.println("hasta".equals(key) + " : hasta");
 
                 // Si la clave es “desde” o “hasta”, asumimos que viene como String “yyyy-MM-dd”
-                if ("desde".equals(key) || "hasta".equals(key)) {
+                if ("desde".equals(key) || "hasta".equals(key) || "tope".equals(key)) {
                     try {
                         // Primero intentamos parsear como fecha con hora (formato completo)
                         String[] dateFormats = {
@@ -155,6 +156,12 @@ public class BuildReportsApi {
         }
     }
 
+    @GetMapping("/reportes")
+    public ResponseEntity<String> reportesGetNotAllowed() {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body("El método GET no está permitido en este endpoint. Usa POST.");
+    }
+
     @PostMapping("/reportes")
     public ResponseEntity<Resource> generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
         try {
@@ -170,14 +177,14 @@ public class BuildReportsApi {
                 if (value == null)
                     continue;
 
-                if ("desde".equalsIgnoreCase(key) || "hasta".equalsIgnoreCase(key)) {
+                if ("desde".equalsIgnoreCase(key) || "hasta".equalsIgnoreCase(key) || "tope".equalsIgnoreCase(key)) {
                     params.put(key, parseDateToSQLType(value.toString()));
                 } else if ("hdesde".equalsIgnoreCase(key) || "hhasta".equalsIgnoreCase(key)) {
                     params.put(key, parseToSqlTime(value.toString()));
                 } else {
                     params.put(key, normalizeParameterValue(key, value));
                 }
-                
+
             }
 
             dto.setParameters(params);
@@ -228,38 +235,51 @@ public class BuildReportsApi {
     }
 
     private java.sql.Time parseToSqlTime(String timeStr) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-            sdf.setLenient(false);
-            Date parsed = sdf.parse(timeStr.trim());
-            return new java.sql.Time(parsed.getTime());
-        } catch (ParseException e) {
-            throw new IllegalArgumentException("Hora inválida: '" + timeStr + "'. Formato esperado: HH:mm:ss", e);
+        if (timeStr == null || timeStr.trim().isEmpty()) {
+            throw new IllegalArgumentException("Time string cannot be null or empty");
         }
+
+        String[] formats = {
+                "HH:mm:ss",
+                "HH:mm"
+        };
+
+        for (String format : formats) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat(format);
+                sdf.setLenient(false);
+                Date parsed = sdf.parse(timeStr.trim());
+                return new java.sql.Time(parsed.getTime());
+            } catch (ParseException e) {
+                // Try next format
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid time format: '" + timeStr +
+                "'. Expected formats: HH:mm:ss or HH:mm");
     }
 
     private Object normalizeParameterValue(String key, Object value) {
-    if (value instanceof Integer) {
+        if (value instanceof Integer) {
+            return value;
+        } else if (value instanceof Long) {
+            Long longVal = (Long) value;
+            if (longVal >= Integer.MIN_VALUE && longVal <= Integer.MAX_VALUE) {
+                return longVal.intValue();
+            } else {
+                throw new IllegalArgumentException("El valor Long excede el rango de Integer");
+            }
+        } else if (value instanceof java.util.Date) {
+            return value; // Devuelve la fecha tal cual
+        } else if (value instanceof String) {
+            try {
+                Integer intVal = Integer.valueOf((String) value);
+                return intVal;
+            } catch (NumberFormatException e) {
+                return value; // o lanza excepción si sabes que debe ser Integer
+            }
+        }
         return value;
-    } else if (value instanceof Long) {
-        Long longVal = (Long) value;
-        if (longVal >= Integer.MIN_VALUE && longVal <= Integer.MAX_VALUE) {
-            return longVal.intValue();
-        } else {
-            throw new IllegalArgumentException("El valor Long excede el rango de Integer");
-        }
-    } else if (value instanceof java.util.Date) {
-        return value; // Devuelve la fecha tal cual
-    } else if (value instanceof String) {
-        try {
-            Integer intVal = Integer.valueOf((String) value);
-            return intVal;
-        } catch (NumberFormatException e) {
-            return value; // o lanza excepción si sabes que debe ser Integer
-        }
     }
-    return value;
-}
-
 
 }
