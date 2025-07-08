@@ -2,6 +2,8 @@ package com.epmapat.erp_epmapat.jasperReports.controllers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,7 +26,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.epmapat.erp_epmapat.jasperReports.DTO.JasperDTO;
 import com.epmapat.erp_epmapat.jasperReports.services.BuildReports;
@@ -282,4 +286,34 @@ public class BuildReportsApi {
         return value;
     }
 
+    @PostMapping("/comprobante")
+    public ResponseEntity<String> imprimirPDF(@RequestParam("pdf") MultipartFile pdfFile) {
+        try {
+            // Guardar archivo temporal
+            File tempFile = File.createTempFile("comprobante_", ".pdf");
+            pdfFile.transferTo(tempFile);
+
+            // Llamar función de impresión
+            imprimirArchivoPDF(tempFile);
+
+            return ResponseEntity.ok("Impresión enviada correctamente.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error al imprimir: " + e.getMessage());
+        }
+    }
+
+    private void imprimirArchivoPDF(File pdf) throws IOException {
+        String os = System.getProperty("os.name").toLowerCase();
+
+        if (os.contains("win")) {
+            // Windows: usar comando nativo para imprimir
+            String comando = "cmd /c start /min acrord32 /p /h \"" + pdf.getAbsolutePath() + "\"";
+            Runtime.getRuntime().exec(comando);
+        } else {
+            // Linux o macOS: usar lpr
+            String[] comando = { "lp", "-d", "nombre_impresora", pdf.getAbsolutePath() };
+            Process process = new ProcessBuilder(comando).start();
+        }
+    }
 }

@@ -80,6 +80,7 @@ WHERE
 		<parameter name="hasta" class="java.util.Date"/>
 		<parameter name="hdesde" class="java.sql.Time"/>
 		<parameter name="hhasta" class="java.sql.Time"/>
+		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
 			<![CDATA[WITH facturas_validas AS (
     SELECT DISTINCT f.idfactura, f.swiva
@@ -87,6 +88,7 @@ WHERE
     WHERE f.fechacobro = $P{desde} 
       AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
       AND f.estado <> 3 
+      AND f.usuariocobro = $P{usuariocobro} 
       AND f.fechaeliminacion IS NULL 
       AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
 )
@@ -115,6 +117,7 @@ WHERE
     f.fechacobro = $P{desde}
     AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
     AND f.estado <> 3 
+    AND f.usuariocobro = $P{usuariocobro} 
     AND f.fechaeliminacion IS NULL 
     AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde});]]>
 		</queryString>
@@ -139,6 +142,7 @@ WHERE
 	<parameter name="idusuario" class="java.lang.Integer"/>
 	<parameter name="hdesde" class="java.sql.Time"/>
 	<parameter name="hhasta" class="java.sql.Time"/>
+	<parameter name="usuariocobro" class="java.lang.Integer"/>
 	<queryString language="SQL">
 		<![CDATA[WITH recaudo_unico AS (
     SELECT DISTINCT ON (fr.idfactura)
@@ -170,6 +174,7 @@ FROM
 WHERE
     f.fechacobro BETWEEN $P{desde} AND $P{hasta}
     AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
+   AND f.usuariocobro = $P{usuariocobro}
     AND rf.idrubro_rubros NOT IN (5, 165)
 GROUP BY
     f.idfactura,
@@ -640,7 +645,7 @@ ORDER BY
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="TotalesRubros" uuid="17617d1f-e5b5-41c7-a92c-a4cb6267ae94">
+					<datasetRun subDataset="TotalesRubros" uuid="5e2cbfaa-b3f4-416b-bd14-251e692997f6">
 						<datasetParameter name="desde">
 							<datasetParameterExpression><![CDATA[$P{desde}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -652,6 +657,9 @@ ORDER BY
 						</datasetParameter>
 						<datasetParameter name="hhasta">
 							<datasetParameterExpression><![CDATA[$P{hhasta}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="usuariocobro">
+							<datasetParameterExpression><![CDATA[$P{usuariocobro}]]></datasetParameterExpression>
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>

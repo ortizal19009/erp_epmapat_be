@@ -108,12 +108,14 @@ WHERE
 		<parameter name="hdesde" class="java.sql.Time"/>
 		<parameter name="hhasta" class="java.sql.Time"/>
 		<parameter name="tope" class="java.sql.Date"/>
+		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
 			<![CDATA[SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , r.swiva AS iva 
 FROM Rubroxfac rf 
 JOIN Facturas f ON f.idfactura = rf.idfactura_facturas 
 JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
-WHERE (date(f.fechacobro) BETWEEN $P{desde} AND $P{hasta} and f.horacobro between $P{hdesde} and $P{hhasta} ) AND f.feccrea <= $P{tope} AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=$P{desde} or f.fechaanulacion IS NULL) 
+WHERE (date(f.fechacobro) BETWEEN $P{desde} AND $P{hasta} and f.horacobro between $P{hdesde} and $P{hhasta} )  AND f.usuariocobro = $P{usuariocobro}
+ AND f.feccrea <= $P{tope} AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=$P{desde} or f.fechaanulacion IS NULL) 
 GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 		</queryString>
 		<field name="idrubro" class="java.lang.Integer">
@@ -147,12 +149,14 @@ GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 		<parameter name="hdesde" class="java.sql.Time"/>
 		<parameter name="hhasta" class="java.sql.Time"/>
 		<parameter name="tope" class="java.sql.Date"/>
+		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
 			<![CDATA[SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , r.swiva AS iva 
 FROM Rubroxfac rf 
 JOIN Facturas f ON f.idfactura = rf.idfactura_facturas 
 JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
-WHERE (date(f.fechacobro) BETWEEN $P{desde} AND $P{hasta} and f.horacobro between $P{hdesde} and $P{hhasta} ) AND f.feccrea > $P{tope} AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=$P{desde} or f.fechaanulacion IS NULL) 
+WHERE (date(f.fechacobro) BETWEEN $P{desde} AND $P{hasta} and f.horacobro between $P{hdesde} and $P{hhasta} )    AND f.usuariocobro = $P{usuariocobro}
+ AND f.feccrea > $P{tope} AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=$P{desde} or f.fechaanulacion IS NULL) 
 GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 		</queryString>
 		<field name="idrubro" class="java.lang.Integer">
@@ -185,6 +189,7 @@ GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 		<parameter name="hasta" class="java.util.Date"/>
 		<parameter name="hdesde" class="java.sql.Time"/>
 		<parameter name="hhasta" class="java.sql.Time"/>
+		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
 			<![CDATA[WITH facturas_del_dia AS (
     SELECT DISTINCT 
@@ -199,6 +204,7 @@ GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
         f.fechacobro BETWEEN $P{desde} and $P{hasta}
         AND f.horacobro BETWEEN $P{hdesde} and $P{hhasta}
         AND f.estado <> 3 
+           AND f.usuariocobro = $P{usuariocobro}
         AND f.fechaeliminacion IS NULL 
         AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
 )
@@ -250,6 +256,7 @@ GROUP BY
 	<parameter name="tope" class="java.util.Date"/>
 	<parameter name="hdesde" class="java.sql.Time"/>
 	<parameter name="hhasta" class="java.sql.Time"/>
+	<parameter name="usuariocobro" class="java.lang.Integer"/>
 	<queryString language="SQL">
 		<![CDATA[WITH facturas_validas AS (
     SELECT DISTINCT f.idfactura, f.swiva
@@ -257,6 +264,7 @@ GROUP BY
     WHERE f.fechacobro = $P{desde} 
       AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
       AND f.estado <> 3 
+      AND f.usuariocobro = $P{usuariocobro}
       AND f.fechaeliminacion IS NULL 
       AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
 )
@@ -285,6 +293,7 @@ WHERE
     f.fechacobro = $P{desde}
     AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
     AND f.estado <> 3 
+   AND f.usuariocobro = $P{usuariocobro}
     AND f.fechaeliminacion IS NULL 
     AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde});]]>
 	</queryString>
@@ -346,7 +355,7 @@ WHERE
 					<property name="com.jaspersoft.studio.components.autoresize.proportional" value="true"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="RubrosAntiguos" uuid="6cc5647f-8d03-4447-ba50-a500fd0d807b">
+					<datasetRun subDataset="RubrosAntiguos" uuid="5c018bb2-fec7-4b21-938b-efc3b0c3b74f">
 						<datasetParameter name="desde">
 							<datasetParameterExpression><![CDATA[$P{desde}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -361,6 +370,9 @@ WHERE
 						</datasetParameter>
 						<datasetParameter name="tope">
 							<datasetParameterExpression><![CDATA[$P{tope}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="usuariocobro">
+							<datasetParameterExpression><![CDATA[$P{usuariocobro}]]></datasetParameterExpression>
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>
@@ -458,7 +470,7 @@ WHERE
 					<property name="com.jaspersoft.studio.components.autoresize.proportional" value="true"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="RubrosAcuales" uuid="2052be0b-4ee3-4b9e-9b2f-2e9a7dc98f00">
+					<datasetRun subDataset="RubrosAcuales" uuid="a31c9aea-4295-44ca-894b-e0ad142669a7">
 						<datasetParameter name="desde">
 							<datasetParameterExpression><![CDATA[$P{desde}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -473,6 +485,9 @@ WHERE
 						</datasetParameter>
 						<datasetParameter name="tope">
 							<datasetParameterExpression><![CDATA[$P{tope}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="usuariocobro">
+							<datasetParameterExpression><![CDATA[$P{usuariocobro}]]></datasetParameterExpression>
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>
@@ -676,7 +691,7 @@ WHERE
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table 2_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="FacFPCobros" uuid="3cf96fab-1198-4d99-be01-a64af551b48b">
+					<datasetRun subDataset="FacFPCobros" uuid="5850e201-5479-49c7-b4f6-694f13e59565">
 						<datasetParameter name="desde">
 							<datasetParameterExpression><![CDATA[$P{desde}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -688,6 +703,9 @@ WHERE
 						</datasetParameter>
 						<datasetParameter name="hhasta">
 							<datasetParameterExpression><![CDATA[$P{hhasta}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="usuariocobro">
+							<datasetParameterExpression><![CDATA[$P{usuariocobro}]]></datasetParameterExpression>
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>
