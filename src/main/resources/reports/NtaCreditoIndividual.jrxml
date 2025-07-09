@@ -3,6 +3,8 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="NtaCreditoIndividual" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="13acf49e-4913-4d1b-bccc-113817ad15d1">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="189"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="805"/>
 	<style name="Title" forecolor="#FFFFFF" fontName="Times New Roman" fontSize="50" isBold="false"/>
 	<style name="SubTitle" forecolor="#CCCCCC" fontName="Times New Roman" fontSize="18" isBold="false"/>
 	<style name="Column header" forecolor="#666666" fontName="Times New Roman" fontSize="14" isBold="true"/>
@@ -43,7 +45,7 @@
 	<subDataset name="valoresnc" uuid="f511a751-3c49-43cb-aa42-17d9d003b45a">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
-		<parameter name="idntacredito_ntacredito" class="java.lang.Long"/>
+		<parameter name="idntacredito_ntacredito" class="java.lang.Integer"/>
 		<queryString language="SQL">
 			<![CDATA[select
 	vnc.fechaaplicado,
@@ -66,39 +68,107 @@ group by rf.idfactura_facturas, vnc.fechaaplicado, f.valornotacredito]]>
 		<field name="saldo" class="java.math.BigDecimal"/>
 		<field name="idfactura" class="java.lang.Long"/>
 	</subDataset>
-	<parameter name="idntacredito" class="java.lang.Long"/>
+	<subDataset name="Usuario" uuid="b5842d81-17af-4b22-8213-15c7bd149293">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="idusuario" class="java.lang.Integer"/>
+		<queryString>
+			<![CDATA[SELECT nomusu
+FROM usuarios
+WHERE 
+	 usuarios.idusuario = $P{idusuario}]]>
+		</queryString>
+		<field name="nomusu" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="nomusu"/>
+			<property name="com.jaspersoft.studio.field.label" value="nomusu"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="usuarios"/>
+		</field>
+	</subDataset>
+	<parameter name="idntacredito" class="java.lang.Integer"/>
+	<parameter name="idusuario" class="java.lang.Integer"/>
 	<queryString language="SQL">
-		<![CDATA[SELECT  
-nc.idntacredito,
-    nc.idabonado_abonados AS cuenta,   
-    c.nombre AS cliente,                             
-    c.cedula,                                 
-    f.nrofactura,                
-    f.idfactura AS planilla,       
-    nc.valor,                                
-    nc.devengado ,
-    nc.feccrea, 
-    nc.observacion, 
-    nc.refdocumento, 
-    d.nomdoc                                  
-FROM ntacredito nc
-JOIN clientes c ON nc.idcliente_clientes = c.idcliente
-JOIN facturas f ON CAST(nc.nrofactura AS BIGINT) = f.idfactura
-Join documentos d on nc.iddocumento_documentos = d.intdoc
-WHERE nc.idntacredito =  $P{idntacredito}]]>
+		<![CDATA[SELECT 
+	nc.idntacredito,
+	nc.idabonado_abonados AS cuenta,
+	c.nombre AS cliente,
+	c.cedula,
+	f.nrofactura,
+	f.idfactura AS planilla,
+	nc.valor,
+	nc.devengado,
+	nc.feccrea,
+	nc.observacion,
+	nc.refdocumento,
+	d.nomdoc
+FROM 
+	ntacredito nc
+	JOIN clientes c ON nc.idcliente_clientes = c.idcliente 
+	LEFT JOIN facturas f ON nc.nrofactura = f.idfactura::text -- ✅ CORREGIDO
+	JOIN documentos d ON nc.iddocumento_documentos = d.intdoc 
+WHERE 
+	nc.idntacredito = $P{idntacredito}
+]]>
 	</queryString>
-	<field name="cuenta" class="java.lang.Long"/>
-	<field name="cliente" class="java.lang.String"/>
-	<field name="cedula" class="java.lang.String"/>
-	<field name="nrofactura" class="java.lang.String"/>
-	<field name="planilla" class="java.lang.Long"/>
-	<field name="valor" class="java.math.BigDecimal"/>
-	<field name="devengado" class="java.math.BigDecimal"/>
-	<field name="idntacredito" class="java.lang.Long"/>
-	<field name="feccrea" class="java.sql.Date"/>
-	<field name="observacion" class="java.lang.String"/>
-	<field name="refdocumento" class="java.lang.String"/>
-	<field name="nomdoc" class="java.lang.String"/>
+	<field name="idntacredito" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="idntacredito"/>
+		<property name="com.jaspersoft.studio.field.label" value="idntacredito"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="ntacredito"/>
+	</field>
+	<field name="cuenta" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="cuenta"/>
+		<property name="com.jaspersoft.studio.field.label" value="cuenta"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="ntacredito"/>
+	</field>
+	<field name="cliente" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cliente"/>
+		<property name="com.jaspersoft.studio.field.label" value="cliente"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="clientes"/>
+	</field>
+	<field name="cedula" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cedula"/>
+		<property name="com.jaspersoft.studio.field.label" value="cedula"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="clientes"/>
+	</field>
+	<field name="nrofactura" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="nrofactura"/>
+		<property name="com.jaspersoft.studio.field.label" value="nrofactura"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="facturas"/>
+	</field>
+	<field name="planilla" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="planilla"/>
+		<property name="com.jaspersoft.studio.field.label" value="planilla"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="facturas"/>
+	</field>
+	<field name="valor" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="valor"/>
+		<property name="com.jaspersoft.studio.field.label" value="valor"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="ntacredito"/>
+	</field>
+	<field name="devengado" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="devengado"/>
+		<property name="com.jaspersoft.studio.field.label" value="devengado"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="ntacredito"/>
+	</field>
+	<field name="feccrea" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="feccrea"/>
+		<property name="com.jaspersoft.studio.field.label" value="feccrea"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="ntacredito"/>
+	</field>
+	<field name="observacion" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="observacion"/>
+		<property name="com.jaspersoft.studio.field.label" value="observacion"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="ntacredito"/>
+	</field>
+	<field name="refdocumento" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="refdocumento"/>
+		<property name="com.jaspersoft.studio.field.label" value="refdocumento"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="ntacredito"/>
+	</field>
+	<field name="nomdoc" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="nomdoc"/>
+		<property name="com.jaspersoft.studio.field.label" value="nomdoc"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="documentos"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -253,7 +323,8 @@ WHERE nc.idntacredito =  $P{idntacredito}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA["SALDO: " + $F{valor}.subtract($F{devengado})]]></textFieldExpression>
+				<textFieldExpression><![CDATA["SALDO: " + $F{valor}.subtract($F{devengado})
+]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -372,7 +443,7 @@ WHERE nc.idntacredito =  $P{idntacredito}]]>
 								<reportElement x="0" y="0" width="90" height="30" uuid="7ca1b601-604e-46a3-ae06-4dfe537130c6"/>
 								<box leftPadding="5"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd").format($F{fechaaplicado}) ]]></textFieldExpression>
+								<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd").format($F{fechaaplicado})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -391,9 +462,9 @@ WHERE nc.idntacredito =  $P{idntacredito}]]>
 		</band>
 	</columnFooter>
 	<pageFooter>
-		<band height="25" splitType="Stretch">
+		<band height="77" splitType="Stretch">
 			<frame>
-				<reportElement mode="Opaque" x="0" y="1" width="555" height="24" forecolor="#D0B48E" backcolor="#0D5FA6" uuid="729c3539-f946-4d0e-a0a7-bda2815ea1b0"/>
+				<reportElement mode="Opaque" x="0" y="52" width="555" height="24" forecolor="#D0B48E" backcolor="#0D5FA6" uuid="729c3539-f946-4d0e-a0a7-bda2815ea1b0"/>
 				<textField evaluationTime="Report">
 					<reportElement style="Column header" x="513" y="0" width="40" height="20" forecolor="#FFFFFF" uuid="4834e99c-7f6c-485a-b098-50e5187f2ab4"/>
 					<textElement verticalAlignment="Middle">
@@ -416,6 +487,72 @@ WHERE nc.idntacredito =  $P{idntacredito}]]>
 					<textFieldExpression><![CDATA["© " + new java.text.SimpleDateFormat("yyyy").format(new java.util.Date()) + " EPMAPA-Tulcán - Todos los derechos reservados"]]></textFieldExpression>
 				</textField>
 			</frame>
+			<componentElement>
+				<reportElement x="0" y="1" width="290" height="60" uuid="1d199c7c-116d-462b-bdf9-ed1b0526a32d">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
+					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
+					<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="Usuario" uuid="f9806a60-fc27-4609-80af-0016b6e3848e">
+						<datasetParameter name="idusuario">
+							<datasetParameterExpression><![CDATA[$P{idusuario}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="90" uuid="12401a71-18d5-42c9-b18e-7a82b6e173f7">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<jr:columnFooter style="Table_TH" height="15" rowSpan="1">
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="c0e55437-7380-4725-a2b5-985de3994912">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<box leftPadding="5"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Fecha imprime]]></text>
+							</staticText>
+						</jr:columnFooter>
+						<jr:detailCell style="Table_TD" height="15">
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="0a6b5b57-fe3c-4522-9d10-3facaa559eea">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<box leftPadding="5"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Usuario imprime]]></text>
+							</staticText>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="200" uuid="0c999659-e50f-4d3d-9e3d-f7e166ae200b">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+						<jr:columnFooter style="Table_TH" height="15" rowSpan="1">
+							<textField>
+								<reportElement x="0" y="0" width="200" height="15" uuid="22f1aff2-2704-4b9e-b6ac-f557e3acb6cf"/>
+								<box leftPadding="5" rightPadding="5"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[(new java.text.SimpleDateFormat("EEEE, dd MM YYYY", new java.util.Locale("es", "ES"))).format(new java.util.Date())]]></textFieldExpression>
+							</textField>
+						</jr:columnFooter>
+						<jr:detailCell style="Table_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="200" height="15" uuid="7bd338c6-9009-4bab-8294-a22871a539bb"/>
+								<box leftPadding="5" rightPadding="5"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{nomusu}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
 		</band>
 	</pageFooter>
 	<summary>
