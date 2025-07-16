@@ -13,11 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.data.domain.Page;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.EstadoConvenios;
 import com.epmapat.erp_epmapat.modelo.Convenios;
 import com.epmapat.erp_epmapat.servicio.ConvenioServicio;
 
@@ -99,6 +100,15 @@ public class ConveniosApi {
    private ResponseEntity<List<Convenios>> getByReferencia(@RequestParam("referencia") Long referencia) {
       List<Convenios> convenios = convServicio.findByReferencia(referencia);
       return ResponseEntity.ok(convenios);
+   }
+
+   @GetMapping("/estados")
+   public ResponseEntity<List<EstadoConvenios>> getEstadoByConvenios() {
+      return ResponseEntity.ok(convServicio.getEstadoByConvenios());
+   }
+   @GetMapping("/pendientesPago")
+   public ResponseEntity<Page<EstadoConvenios>> getByFacPendientes(@RequestParam Long d, @RequestParam Long h, @RequestParam int page, @RequestParam int size){
+      return ResponseEntity.ok(convServicio.getByFacPendientes(d, h, page, size));
    }
 
 }

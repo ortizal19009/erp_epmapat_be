@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.EstadoConvenios;
 import com.epmapat.erp_epmapat.modelo.Convenios;
 import com.epmapat.erp_epmapat.repositorio.ConveniosR;
 
@@ -67,4 +69,12 @@ public class ConvenioServicio {
     public List<Convenios> findByReferencia(Long referencia){
         return dao.findByReferencia(referencia);
     }
+    public List<EstadoConvenios> getEstadoByConvenios(){
+        return dao.getEstadoByConvenios();
+    }
+    public Page<EstadoConvenios> getByFacPendientes(Long d, Long h, int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return dao.getByFacPendientes(d, h, pageable);
+    }
+
 }
