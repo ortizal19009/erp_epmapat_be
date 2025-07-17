@@ -182,7 +182,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	/* REPORTE DE CARTERA VENCIDA POR RUBROS */
 	@Query(value = "select r.idrubro as codigo, r.descripcion, count(f.idfactura) facturas, sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro"
 			+
-			" where f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?1 or f.fechacobro is null)) or f.estado = 3 )"
+			" where f.totaltarifa > 0 and f.feccrea < ?1 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?1 or f.fechacobro is null)) or f.estado = 3 )"
 			+
 			" and f.fechaconvenio is null and f.fechaeliminacion is null group by rf.idrubro_rubros, r.descripcion, r.idrubro ", nativeQuery = true)
 	List<CarteraVencidaRubros_int> getCarteraVencidaxRubros(Date fechacobro);
