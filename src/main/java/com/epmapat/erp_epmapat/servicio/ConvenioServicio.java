@@ -76,5 +76,9 @@ public class ConvenioServicio {
         Pageable pageable = PageRequest.of(page, size);
         return dao.getByFacPendientes(d, h, pageable);
     }
+    public List<EstadoConvenios> gePendienteByConvenio(Long idconvenio){
+        return dao.gePendienteByConvenio(idconvenio);
+    }
+    
 
 }

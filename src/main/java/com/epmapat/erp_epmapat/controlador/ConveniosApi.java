@@ -25,7 +25,6 @@ import com.epmapat.erp_epmapat.servicio.ConvenioServicio;
 @RestController
 @RequestMapping("/convenios")
 @CrossOrigin("*")
-
 public class ConveniosApi {
 
    @Autowired
@@ -106,9 +105,16 @@ public class ConveniosApi {
    public ResponseEntity<List<EstadoConvenios>> getEstadoByConvenios() {
       return ResponseEntity.ok(convServicio.getEstadoByConvenios());
    }
+
    @GetMapping("/pendientesPago")
-   public ResponseEntity<Page<EstadoConvenios>> getByFacPendientes(@RequestParam Long d, @RequestParam Long h, @RequestParam int page, @RequestParam int size){
+   public ResponseEntity<Page<EstadoConvenios>> getByFacPendientes(@RequestParam Long d, @RequestParam Long h,
+         @RequestParam int page, @RequestParam int size) {
       return ResponseEntity.ok(convServicio.getByFacPendientes(d, h, page, size));
+   }
+
+   @GetMapping("/pendiente")
+   public ResponseEntity<List<EstadoConvenios>> gePendienteByConvenio(@RequestParam Long idconvenio) {
+      return ResponseEntity.ok(convServicio.gePendienteByConvenio(idconvenio));
    }
 
 }
