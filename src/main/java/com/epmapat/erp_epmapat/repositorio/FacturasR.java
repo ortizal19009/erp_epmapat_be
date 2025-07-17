@@ -292,7 +292,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" JOIN lecturas l ON f.idfactura = l.idfactura " +
 			" join emisiones e on l.idemision = e.idemision " +
 			" WHERE" +
-			"    f.totaltarifa > 0" +
+			"    f.totaltarifa > 0 and f.feccrea < ?1 " +
 			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
 			+
 			"    AND f.fechaconvenio IS NULL" +
@@ -316,7 +316,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" JOIN clientes c ON f.idcliente = c.idcliente" + //
 			" JOIN modulos m ON f.idmodulo = m.idmodulo" + //
 			" WHERE" + //
-			"    f.totaltarifa > 0" + //
+			"    f.totaltarifa > 0 and f.feccrea < ?1 " + //
 			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
 			+
 			"    and not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 )" + //
@@ -384,7 +384,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	@Query(value = "select f.idfactura as factura, c.nombre , sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro join clientes c on f.idcliente = c.idcliente "
 			+
-			"where r.idrubro = ?1 and f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?2 or f.fechacobro is null)) or f.estado = 3 ) "
+			"where r.idrubro = ?1 and f.totaltarifa > 0 and f.feccrea < ?2 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?2 or f.fechacobro is null)) or f.estado = 3 ) "
 			+
 			"and f.fechaconvenio is null and f.fechaeliminacion is null group by f.idfactura, c.nombre 	", nativeQuery = true)
 	public List<CVFacturasNoConsumo> getCvFacturasByRubro(Long idrubro, LocalDate fecha);

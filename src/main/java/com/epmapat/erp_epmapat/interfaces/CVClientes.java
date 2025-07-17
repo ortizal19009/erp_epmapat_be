@@ -10,4 +10,5 @@ public interface CVClientes {
     String getDireccion();
     String getEmail();
     String getModulo();
+    String getTelefono();
 }

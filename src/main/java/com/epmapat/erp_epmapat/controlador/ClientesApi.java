@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -165,5 +166,16 @@ public class ClientesApi {
 	ResponseEntity<List<CVClientes>> getCVByCliente(
 			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
 		return ResponseEntity.ok(cliServicio.getCVByCliente(fecha));
+	}
+
+	@GetMapping("/cartera/clientes")
+	public ResponseEntity<Page<CVClientes>> getCVOfClientes(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+		if (page < 0)
+			page = 0; // 👈 asegúrate que no sea negativo
+		Page<CVClientes> result = cliServicio.getCVOfClientes(fecha,page, size);
+		return ResponseEntity.ok(result);
 	}
 }

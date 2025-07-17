@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.CVClientes;
@@ -70,6 +71,10 @@ public class ClienteServicio {
 
 	public List<CVClientes> getCVByCliente(LocalDate fecha) {
 		return dao.getCVByCliente(fecha);
+	}
+	public Page<CVClientes> getCVOfClientes(LocalDate fecha, int page, int size){
+		Pageable pageable = PageRequest.of(page, size);
+		return dao.getCVOfClientes(fecha,pageable);
 	}
 
 }
