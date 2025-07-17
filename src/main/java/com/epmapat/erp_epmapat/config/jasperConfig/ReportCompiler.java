@@ -57,7 +57,6 @@ public class ReportCompiler {
      * // Example: if your report is in src/main/resources/reports/sample.jrxml
      * compiler.compileAndExportReport("/reports/sample.jrxml", "output/report.pdf",
      * null);
-     * System.out.println("Report generated successfully!");
      * } catch (JRException e) {
      * System.err.println("Error generating report: " + e.getMessage());
      * e.printStackTrace();

@@ -17,45 +17,26 @@ public class ClaveAccesoGenerator {
 
         // 1. Fecha de emisión (DDMMYYYY)
         String fechaEmision = formatToDDMMYYYY(factura.getFechaemision());
-        System.out.println("fecha emision" + fechaEmision);
-
         // 2. Tipo de comprobante (2 dígitos)
         String tipoComprobante = String.format("%02d", 1);
-        System.out.println("tipocomprobante: " + tipoComprobante);
-
         // 3. RUC del emisor (13 dígitos)
         String ruc = definir.getRuc();
-        System.out.println("ruc " + ruc);
-
         // 4. Ambiente (1 dígito: 1=Pruebas, 2=Producción)
         Byte ambiente = definir.getTipoambiente(); // "1" o "2"
-        System.out.println("ambiente " + ambiente);
-
         // 5. Serie (4 dígitos establecimiento + 3 dígitos punto emisión)
         String serie = factura.getEstablecimiento() + factura.getPuntoemision();
-        System.out.println("serie " + serie);
-
         // 6. Secuencial (9 dígitos)
         String secuencial = String.format("%09d", Long.parseLong(factura.getSecuencial()));
-        System.out.println("secuancial " + secuencial);
-
         // 7. Código numérico (8 dígitos aleatorios)
         String codigoNumerico = generarCodigoNumerico();
-        System.out.println("codigoNumerico: " + codigoNumerico);
-
         // 8. Tipo de emisión (1 dígito, normal=1)
         byte tipoEmision = definir.getTipoambiente(); // Normal
-        System.out.println("tipoEmision: " + tipoEmision);
-
         // Concatenar todos los componentes
         String claveAcceso = fechaEmision + tipoComprobante + ruc + ambiente +
                 serie + secuencial + codigoNumerico + tipoEmision;
-        System.out.println("claveAcceso: " + claveAcceso);
-
         // 9. Calcular dígito verificador
         /*
          * String digitoVerificador = calcularDigitoVerificador(claveAcceso);
-         * System.out.println("digitoVerificador: "+ digitoVerificador);
          */
 
         // Retornar clave de acceso completa (49 dígitos)

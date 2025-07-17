@@ -64,47 +64,21 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 	List<CVClientes> getCVByCliente(LocalDate fecha);
 
 	/* CARTERA VENCIDA */
-@Query(value = """
-		select
-			c.nombre,
-			sum(rf.cantidad * rf.valorunitario) as valor,
-			c.cedula ,
-			c.direccion,
-			c.email,
-			c.telefono
-		from
-			clientes c
-		join facturas f on
-			c.idcliente = f.idcliente
-		join rubroxfac rf on
-			rf.idfactura_facturas = f.idfactura
-		where
-			f.totaltarifa > 0
-			and (( (f.estado = 1
-				or f.estado = 2)
-			and f.feccrea < ?1
-			and ( f.fechacobro > ?1
-				or f.fechacobro is null))
-			or f.estado = 3 )
-			and f.fechaconvenio is null
-			and f.fechaeliminacion is null
-		group by
-			c.nombre,
-			c.cedula ,
-			c.direccion ,
-			c.email,
-			c.telefono
-		order by
-			c.nombre asc
-		""",
-	countQuery = """
-		select
-			count(*) 
-		from (
-			select 1
-			from clientes c
-			join facturas f on c.idcliente = f.idcliente
-			join rubroxfac rf on rf.idfactura_facturas = f.idfactura
+	@Query(value = """
+			select
+			c.idcliente,
+				c.nombre,
+				sum(rf.cantidad * rf.valorunitario) as valor,
+				c.cedula ,
+				c.direccion,
+				c.email,
+				c.telefono
+			from
+				clientes c
+			join facturas f on
+				c.idcliente = f.idcliente
+			join rubroxfac rf on
+				rf.idfactura_facturas = f.idfactura
 			where
 				f.totaltarifa > 0
 				and (( (f.estado = 1
@@ -116,14 +90,107 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 				and f.fechaconvenio is null
 				and f.fechaeliminacion is null
 			group by
+			c.idcliente,
 				c.nombre,
 				c.cedula ,
 				c.direccion ,
 				c.email,
 				c.telefono
-		) as sub
-	""",
-	nativeQuery = true)
-Page<CVClientes> getCVOfClientes(LocalDate fecha, Pageable pageable);
+			order by
+				c.nombre asc
+			""", countQuery = """
+				select
+					count(*)
+				from (
+					select 1
+					from clientes c
+					join facturas f on c.idcliente = f.idcliente
+					join rubroxfac rf on rf.idfactura_facturas = f.idfactura
+					where
+						f.totaltarifa > 0
+						and (( (f.estado = 1
+							or f.estado = 2)
+						and f.feccrea < ?1
+						and ( f.fechacobro > ?1
+							or f.fechacobro is null))
+						or f.estado = 3 )
+						and f.fechaconvenio is null
+						and f.fechaeliminacion is null
+					group by
+					c.idcliente,
+						c.nombre,
+						c.cedula ,
+						c.direccion ,
+						c.email,
+						c.telefono
+				) as sub
+			""", nativeQuery = true)
+	Page<CVClientes> getCVOfClientes(LocalDate fecha, Pageable pageable);
+
+	/* CARTERA VENCIDA */
+	@Query(value = """
+			select
+			c.idcliente,
+				c.nombre,
+				sum(rf.cantidad * rf.valorunitario) as valor,
+				c.cedula ,
+				c.direccion,
+				c.email,
+				c.telefono
+			from
+				clientes c
+			join facturas f on
+				c.idcliente = f.idcliente
+			join rubroxfac rf on
+				rf.idfactura_facturas = f.idfactura
+			where
+			(LOWER(c.nombre) like %?2% OR c.cedula like %?2%) and
+				f.totaltarifa > 0
+				and (( (f.estado = 1
+					or f.estado = 2)
+				and f.feccrea < ?1
+				and ( f.fechacobro > ?1
+					or f.fechacobro is null))
+				or f.estado = 3 )
+				and f.fechaconvenio is null
+				and f.fechaeliminacion is null
+			group by
+			c.idcliente,
+				c.nombre,
+				c.cedula ,
+				c.direccion ,
+				c.email,
+				c.telefono
+			order by
+				c.nombre asc
+			""", countQuery = """
+				select
+					count(*)
+				from (
+					select 1
+					from clientes c
+					join facturas f on c.idcliente = f.idcliente
+					join rubroxfac rf on rf.idfactura_facturas = f.idfactura
+					where
+						(LOWER(c.nombre) like %?2% OR c.cedula like %?2%) and
+						f.totaltarifa > 0
+						and (( (f.estado = 1
+							or f.estado = 2)
+						and f.feccrea < ?1
+						and ( f.fechacobro > ?1
+							or f.fechacobro is null))
+						or f.estado = 3 )
+						and f.fechaconvenio is null
+						and f.fechaeliminacion is null
+					group by
+					c.idcliente,
+						c.nombre,
+						c.cedula ,
+						c.direccion ,
+						c.email,
+						c.telefono
+				) as sub
+			""", nativeQuery = true)
+	Page<CVClientes> getCVOfNCliente(LocalDate fecha, String nombre, Pageable pageable);
 
 }

@@ -49,16 +49,11 @@ public class PdfGenerationService {
 
 /*     public static byte[] generatePdfFromXml(byte[] xmlBytes) {
         try {
-            System.out.println("Paso 1: Parseando el XML...");
             Document document = XmlParser.parseXmlFromBytes(xmlBytes);
-            System.out.println("Paso 2: Extrayendo información de la factura...");
             Map<String, String> facturaData = EcuadorianInvoiceExtractor.extractData(document);
-            System.out.println("Datos extraídos: " + facturaData);
 
-            System.out.println("Paso 3: Validando datos...");
             InvoiceValidator.validate(facturaData);
 
-            System.out.println("Paso 4: Generando PDF...");
             return PdfGenerator.generate(facturaData);
         } catch (XmlParser.XmlParseException e) {
             System.err.println("Error al parsear el XML: " + e.getMessage());

@@ -58,7 +58,6 @@ public class TransaciServicio {
 			BigDecimal valor = transaccion.getValor();
 			String cuenta1 = transaccion.getCodcue().substring(0, 1);
 			String cuenta2 = transaccion.getCodcue().substring(0, 2);
-			// System.out.println("cuenta: " + cuenta1);
 			if (cuenta1.equals("1") || cuenta2.equals("63") || cuenta2.equals("91")) {
 				if (transaccion.getDebcre() == 1)
 					saldo = saldo.add(valor);

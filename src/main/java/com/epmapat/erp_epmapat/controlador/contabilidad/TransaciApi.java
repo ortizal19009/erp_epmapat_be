@@ -103,7 +103,6 @@ public class TransaciApi {
 
 	@GetMapping("/tipasi")
 	public ResponseEntity<List<Transaci>> getByTipAsi(@RequestParam Long tipasi) {
-		System.out.println(tipasi);
 		return ResponseEntity.ok(tranServicio.getByTipAsi(tipasi));
 	}
 

@@ -278,8 +278,7 @@ public class FacturasApi {
 
 	@PutMapping("/{idfactura}")
 	public ResponseEntity<Facturas> updateFacturas(@PathVariable long idfactura, @RequestBody Facturas x) {
-		System.out.println(x.getHoracobro());
-		System.out.println("Estamos solucionando");
+
 		LocalTime hora;
 		Facturas y = facServicio.findById(idfactura)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));

@@ -72,9 +72,20 @@ public class ClienteServicio {
 	public List<CVClientes> getCVByCliente(LocalDate fecha) {
 		return dao.getCVByCliente(fecha);
 	}
-	public Page<CVClientes> getCVOfClientes(LocalDate fecha, int page, int size){
+
+	public Page<CVClientes> getCVOfClientes(LocalDate fecha, String name, int page, int size) {
+		// Validación defensiva para evitar índices negativos
+		if (page < 0) {
+			page = 0;
+		}
+
 		Pageable pageable = PageRequest.of(page, size);
-		return dao.getCVOfClientes(fecha,pageable);
+
+		if (name == null || name.isEmpty()) {
+			return dao.getCVOfClientes(fecha, pageable);
+		} else {
+			return dao.getCVOfNCliente(fecha, name, pageable);
+		}
 	}
 
 }

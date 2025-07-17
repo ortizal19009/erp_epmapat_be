@@ -89,7 +89,6 @@ public class FacturaSRIService {
     public static void saveXml(String xmlContent, String filePath) {
         try {
             Files.write(Paths.get(filePath), xmlContent.getBytes(), StandardOpenOption.CREATE);
-            System.out.println("Archivo XML guardado en: " + filePath);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -246,10 +245,8 @@ public class FacturaSRIService {
 
     public void processAndSendInvoice(String toEmail, String subject, String body, MultipartFile xmlFile)
             throws Exception {
-        System.out.println(xmlFile.getSize());
         // Convertir el archivo XML a bytes
         byte[] xmlData = xmlFile.getBytes();
-        System.out.println(xmlData);
         // Generar PDF a partir del XML
         //byte[] pdfData = PdfGenerationService.generatePdfFromXml(xmlData);
 

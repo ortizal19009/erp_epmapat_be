@@ -105,8 +105,6 @@ public class EmailService {
     public boolean __envioArchivo(final String emisor, final String password, List<String> receptores, String asunto,
             List<String> adjuntos, final String domiCorreo) {
         boolean envioExitoso = true;
-        System.out.println("Usuario: " + emisor + ".  Clave: " + password);
-
         Properties props = new Properties();
 
         // final String smtpUsername = "facturacion@emapasr.gob.ec";
@@ -179,7 +177,6 @@ public class EmailService {
             // transport.close();
 
         } catch (Exception e) {
-            System.out.println("Erro de envio de correo: " + e.getMessage());
             e.printStackTrace();
             envioExitoso = false;
         } finally {

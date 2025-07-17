@@ -171,11 +171,12 @@ public class ClientesApi {
 	@GetMapping("/cartera/clientes")
 	public ResponseEntity<Page<CVClientes>> getCVOfClientes(
 			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+			@RequestParam String name,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		if (page < 0)
 			page = 0; // 👈 asegúrate que no sea negativo
-		Page<CVClientes> result = cliServicio.getCVOfClientes(fecha,page, size);
+		Page<CVClientes> result = cliServicio.getCVOfClientes(fecha, name.toLowerCase(), page, size);
 		return ResponseEntity.ok(result);
 	}
 }

@@ -42,17 +42,12 @@ public class DefinirApi {
         y.setFirma(x.getFirma());
         y.setClave_firma(x.getClave_firma());
         y.setEmail(x.getEmail());
-        System.out.println(x.getClave_email());
-                System.out.println("===============================================================");
-                        System.out.println(y.getClave_email());
-
 
         if (x.getClave_email() == y.getClave_email()) {
-            System.out.println("No es igual");
-                        y.setClave_email(x.getClave_email());
+            y.setClave_email(x.getClave_email());
 
         } else {
-                        y.setClave_email(defServicio.encriptar(x.getClave_email()));
+            y.setClave_email(defServicio.encriptar(x.getClave_email()));
 
         }
 

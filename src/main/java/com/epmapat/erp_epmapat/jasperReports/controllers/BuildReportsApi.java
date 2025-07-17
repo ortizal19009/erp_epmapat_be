@@ -56,10 +56,7 @@ public class BuildReportsApi {
             for (Entry<String, Object> entry : jasperDTO.getParameters().entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                System.out.println("desde".equals(key) + " : desde");
-                System.out.println("hasta".equals(key) + " : hasta");
-
-                // Si la clave es “desde” o “hasta”, asumimos que viene como String “yyyy-MM-dd”
+                  // Si la clave es “desde” o “hasta”, asumimos que viene como String “yyyy-MM-dd”
                 if ("desde".equals(key) || "hasta".equals(key) || "tope".equals(key)) {
                     try {
                         // Primero intentamos parsear como fecha con hora (formato completo)
@@ -77,7 +74,6 @@ public class BuildReportsApi {
                                 SimpleDateFormat tempFormat = new SimpleDateFormat(format);
                                 tempFormat.setLenient(false); // Validación estricta
                                 parsed = tempFormat.parse(value.toString());
-                                System.out.println(parsed);
                                 break; // Si tiene éxito, salimos del bucle
                             } catch (ParseException e) {
                                 lastException = e;
@@ -95,7 +91,6 @@ public class BuildReportsApi {
                         // fecha
                         if (value.toString().trim().length() > 10) { // Tiene hora
                             dto.getParameters().put(key, new java.sql.Timestamp(parsed.getTime()));
-                            System.out.println("CON HORA");
                         } else {
                             dto.getParameters().put(key, new java.sql.Date(parsed.getTime()));
                         }
@@ -119,7 +114,6 @@ public class BuildReportsApi {
                         dto.getParameters().put(key, (value));
 
                     } else if (value instanceof Long) {
-                        System.out.println("Long");
                         dto.getParameters().put(key, (Long) value);
                     } else if (value instanceof String) {
                         // intentamos parsear el String a Long
