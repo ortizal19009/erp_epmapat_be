@@ -190,7 +190,6 @@ public class RubroxfacServicio {
 
 	/* REPORTE DE CARTERA VENCIDA POR RUBROS */
 	public List<CarteraVencidaRubros_int> getCarteraVencidaxRubros(LocalDate fechacobro) {
-		System.out.println("CARTERA VENCIDA DE RUBROS");
 		return dao.getCarteraVencidaxRubros(fechacobro);
 	}
 

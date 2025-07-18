@@ -401,11 +401,47 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * 
 	 */
 
-	@Query(value = "select f.idfactura as factura, c.nombre , sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro join clientes c on f.idcliente = c.idcliente "
-			+
-			"where r.idrubro = ?1 and f.totaltarifa > 0 and f.feccrea < ?2 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?2 or f.fechacobro is null)) or f.estado = 3 ) "
-			+
-			"and f.fechaconvenio is null and f.fechaeliminacion is null group by f.idfactura, c.nombre 	", nativeQuery = true)
+	/*
+	 * @Query(value =
+	 * "select f.idfactura as factura, c.nombre , sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro join clientes c on f.idcliente = c.idcliente "
+	 * +
+	 * "where r.idrubro = ?1 and f.totaltarifa > 0 and f.feccrea <= ?2 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro >= ?2 or f.fechacobro is null)) or f.estado = 3 ) "
+	 * +
+	 * "and f.fechaconvenio is null and f.fechaeliminacion is null group by f.idfactura, c.nombre 	"
+	 * , nativeQuery = true)
+	 */
+	@Query(value = """
+						SELECT
+			    f.idfactura AS factura,
+			    c.nombre AS nombre,
+			    SUM(rf.cantidad * rf.valorunitario) AS total,
+			    tf.totalFactura
+			FROM
+			    facturas f
+			JOIN clientes c ON f.idcliente = c.idcliente
+			JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
+			JOIN rubros r ON rf.idrubro_rubros = r.idrubro
+			JOIN (
+			    SELECT rf2.idfactura_facturas, SUM(rf2.cantidad * rf2.valorunitario) AS totalFactura
+			    FROM rubroxfac rf2
+			    GROUP BY rf2.idfactura_facturas
+			) tf ON tf.idfactura_facturas = f.idfactura
+			WHERE
+			    r.idrubro = ?1
+			    AND f.totaltarifa > 0
+			    AND f.feccrea <= ?2
+			    AND (
+			        ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?2 OR f.fechacobro IS NULL))
+			        OR f.estado = 3
+			    )
+			    AND f.fechaconvenio IS NULL
+			    AND f.fechaeliminacion IS NULL
+				AND rf.idrubro_rubros NOT IN (79, 5, 165)
+			GROUP BY
+			    f.idfactura, c.nombre, tf.totalFactura
+			ORDER BY c.nombre
+
+						""", nativeQuery = true)
 	public List<CVFacturasNoConsumo> getCvFacturasByRubro(Long idrubro, LocalDate fecha);
 
 	@Query(value = "select f.idfactura, sum(rf.cantidad * rf.valorunitario) as subtotal from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null group by f.idfactura ORDER BY f.idfactura", nativeQuery = true)
