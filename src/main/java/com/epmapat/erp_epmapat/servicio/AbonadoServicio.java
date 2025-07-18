@@ -188,6 +188,8 @@ public class AbonadoServicio {
 		return estadisticasDTO;
 	}
 
-
+	public List<Abonados> findByEstado(Long estado) {
+		return dao.findByEstado(estado);
+	}
 
 }

@@ -220,4 +220,8 @@ public class AbonadosApi {
 		return aboServicio.getCuentasByEstado();
 	}
 
+	@GetMapping("/estado/{estado}")
+	public ResponseEntity<List<Abonados>> getAbonadosByEstado(@PathVariable Long estado) {
+		return ResponseEntity.ok(aboServicio.findByEstado(estado));
+	}
 }
