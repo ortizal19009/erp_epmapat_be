@@ -56,6 +56,26 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
 	public List<Facturas> findSinCobro(Long idcliente);
 
+	// Planillas por Cliente (sinCobrar para cartera vencida)
+	@Query(value = """
+			select *
+					from
+						facturas
+					where
+						totaltarifa > 0
+						and idcliente = ?1
+						and feccrea < ?2
+						and (( (estado = 1
+							or estado = 2)
+						and (fechacobro is null or fechacobro >= ?2) )
+						or estado = 3 )
+						and fechaconvenio is null
+						and fechaeliminacion is null
+					order by
+						idfactura
+						""", nativeQuery = true)
+	public List<Facturas> SinCobroOfCV(Long idcliente, LocalDate fechacobro);
+
 	// Planillas sin cobrar por cliente valor a pagar calculado por la suma de los
 	// rubros
 	@Query(value = "select f.idfactura, f.idmodulo, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165  group by f.idfactura ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
@@ -119,7 +139,6 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * ========================================= QUERIS PARA RETPORTES
 	 * ===========================================
 	 */
-
 
 	/*
 	 * GLOBALES
@@ -292,11 +311,11 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" JOIN lecturas l ON f.idfactura = l.idfactura " +
 			" join emisiones e on l.idemision = e.idemision " +
 			" WHERE" +
-			"    f.totaltarifa > 0 and f.feccrea < ?1 " +
-			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
+			"    f.totaltarifa > 0 and f.feccrea <= ?1 " +
+			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
 			+
 			"    AND f.fechaconvenio IS NULL" +
-			"    AND f.fechaeliminacion IS NULL" +
+			"    AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" +
 			" GROUP BY" +
 			"     rf.idfactura_facturas, c.nombre, m.descripcion, l.idlectura, l.idabonado_abonados , e.emision" +
 			" ORDER BY" +
@@ -316,12 +335,12 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" JOIN clientes c ON f.idcliente = c.idcliente" + //
 			" JOIN modulos m ON f.idmodulo = m.idmodulo" + //
 			" WHERE" + //
-			"    f.totaltarifa > 0 and f.feccrea < ?1 " + //
-			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
+			"    f.totaltarifa > 0 and f.feccrea <= ?1 " + //
+			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
 			+
 			"    and not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 )" + //
 			"    AND f.fechaconvenio IS NULL" + //
-			"    AND f.fechaeliminacion IS NULL" + //
+			"    AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" + //
 			" GROUP BY" + //
 			"     rf.idfactura_facturas, c.nombre, m.descripcion, f.idabonado  " + //
 			" ORDER BY" + //

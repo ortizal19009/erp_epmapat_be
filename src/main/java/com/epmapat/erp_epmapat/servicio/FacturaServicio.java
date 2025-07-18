@@ -115,6 +115,10 @@ public class FacturaServicio {
 		return dao.findSinCobro(idcliente);
 	}
 
+	public List<Facturas> SinCobroOfCV(Long idcliente, LocalDate date) {
+		return dao.SinCobroOfCV(idcliente, date);
+	}
+
 	public List<FacSinCobrar> findFacSincobro(Long idcliente) {
 		return dao.findFacSincobro(idcliente);
 	}
@@ -556,6 +560,5 @@ public class FacturaServicio {
 		// Devolver el DTO con los totales
 		// return newFactura;
 	}
-
 
 }

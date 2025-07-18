@@ -180,47 +180,65 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<Rubroxfac> getMultaByIdFactura(Long idfactura);
 
 	/* REPORTE DE CARTERA VENCIDA POR RUBROS */
-	@Query(value = "select r.idrubro as codigo, r.descripcion, count(f.idfactura) facturas, sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro"
-			+
-			" where f.totaltarifa > 0 and f.feccrea < ?1 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > ?1 or f.fechacobro is null)) or f.estado = 3 )"
-			+
-			" and f.fechaconvenio is null and f.fechaeliminacion is null group by rf.idrubro_rubros, r.descripcion, r.idrubro ", nativeQuery = true)
-	List<CarteraVencidaRubros_int> getCarteraVencidaxRubros(Date fechacobro);
+	@Query(value = """
+			SELECT
+			    r.idrubro AS codigo,
+			    r.descripcion,
+			    COUNT(f.idfactura) AS facturas,
+			    SUM(rf.cantidad * rf.valorunitario) AS total
+			FROM
+			    rubroxfac rf
+			JOIN facturas f ON rf.idfactura_facturas = f.idfactura
+			JOIN rubros r ON rf.idrubro_rubros = r.idrubro
+			WHERE
+			    f.totaltarifa > 0
+			    AND f.feccrea <= ?1
+			    AND (
+			        ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL))
+			        OR f.estado = 3
+			    )
+			    AND f.fechaconvenio IS NULL
+			    AND f.fechaeliminacion IS NULL
+			    AND rf.idrubro_rubros NOT IN (79, 5, 165)
+			GROUP BY
+			    rf.idrubro_rubros, r.descripcion, r.idrubro
+			""", nativeQuery = true)
+	List<CarteraVencidaRubros_int> getCarteraVencidaxRubros(LocalDate fechacobro);
 
 	@Query(value = "SELECT sum(rf.cantidad * rf.valorunitario) as interes FROM rubroxfac rf where rf.idfactura_facturas = ?1 and rf.idrubro_rubros = 5", nativeQuery = true)
 	BigDecimal getTotalInteres(Long idfactura);
 	/* CONSULTA PARA REMISIONES */
 
 	@Query(value = "select \r\n" + //
-				"r.descripcion,\r\n" + //
-				"sum(rf.cantidad * rf.valorunitario) as sum\t\r\n" + //
-				"from\r\n" + //
-				"\trubroxfac rf\r\n" + //
-				"join facturas f on\r\n" + //
-				"\trf.idfactura_facturas = f.idfactura\r\n" + //
-				"join rubros r on \r\n" + //
-				"\trf.idrubro_rubros = r.idrubro \r\n" + //
-				"join modulos m on\r\n" + //
-				"\tf.idmodulo = m.idmodulo\r\n" + //
-				"join clientes c on\r\n" + //
-				"\tf.idcliente = c.idcliente\r\n" + //
-				"where\r\n" + //
-				"\tf.totaltarifa > 0\r\n" + //
-				"\tand f.idcliente = ?1\r\n" + //
-				"\tand (( (f.estado = 1\r\n" + //
-				"\t\tor f.estado = 2)\r\n" + //
-				"\tand f.fechacobro is null)\r\n" + //
-				"\tor f.estado = 3 )\r\n" + //
-				"\tand f.fechaeliminacion is null\r\n" + //
-				"\tand f.fechaconvenio is null\r\n" + //
-				"\tand not rf.idrubro_rubros = 165\r\n" + //
-				"\tand f.feccrea <= ?2\r\n" + //
-				"\tand (f.idmodulo = 3\r\n" + //
-				"\t\tor f.idmodulo = 4\r\n" + //
-				"\t\tor f.idmodulo = 27) \r\n" + //
-				"\t\t\r\n" + //
-				"\t\tgroup by r.descripcion\r\n" + //
-				"", nativeQuery = true)
+			"r.descripcion,\r\n" + //
+			"sum(rf.cantidad * rf.valorunitario) as sum\t\r\n" + //
+			"from\r\n" + //
+			"\trubroxfac rf\r\n" + //
+			"join facturas f on\r\n" + //
+			"\trf.idfactura_facturas = f.idfactura\r\n" + //
+			"join rubros r on \r\n" + //
+			"\trf.idrubro_rubros = r.idrubro \r\n" + //
+			"join modulos m on\r\n" + //
+			"\tf.idmodulo = m.idmodulo\r\n" + //
+			"join clientes c on\r\n" + //
+			"\tf.idcliente = c.idcliente\r\n" + //
+			"where\r\n" + //
+			"\tf.totaltarifa > 0\r\n" + //
+			"\tand f.idcliente = ?1\r\n" + //
+			"\tand (( (f.estado = 1\r\n" + //
+			"\t\tor f.estado = 2)\r\n" + //
+			"\tand f.fechacobro is null)\r\n" + //
+			"\tor f.estado = 3 )\r\n" + //
+			"\tand f.fechaeliminacion is null\r\n" + //
+			"\tand f.fechaconvenio is null\r\n" + //
+			"\tand not rf.idrubro_rubros = 165\r\n" + //
+			"\tand f.feccrea <= ?2\r\n" + //
+			"\tand (f.idmodulo = 3\r\n" + //
+			"\t\tor f.idmodulo = 4\r\n" + //
+			"\t\tor f.idmodulo = 27) \r\n" + //
+			"\t\t\r\n" + //
+			"\t\tgroup by r.descripcion\r\n" + //
+			"", nativeQuery = true)
 	public List<RubroxfacI> getRubrosForRemisiones(Long idcliente, LocalDate topefecha);
 
 }

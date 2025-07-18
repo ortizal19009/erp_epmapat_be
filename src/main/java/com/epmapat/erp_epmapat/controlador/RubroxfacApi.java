@@ -210,7 +210,7 @@ public class RubroxfacApi {
    /* REPORTE DE CARTERA VENCIDA POR RUBROS */
    @GetMapping("/reportes/carteravencida")
    public ResponseEntity<List<CarteraVencidaRubros_int>> getCarteraVencidaxRubros(
-         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechacobro) {
+         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechacobro) {
       return ResponseEntity.ok(rxfServicio.getCarteraVencidaxRubros(fechacobro));
    }
 
