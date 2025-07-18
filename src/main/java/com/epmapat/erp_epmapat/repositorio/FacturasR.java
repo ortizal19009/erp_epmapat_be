@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.epmapat.erp_epmapat.interfaces.*;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -58,23 +59,30 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	// Planillas por Cliente (sinCobrar para cartera vencida)
 	@Query(value = """
-			select *
-					from
-						facturas
-					where
-						totaltarifa > 0
-						and idcliente = ?1
-						and feccrea < ?2
-						and (( (estado = 1
-							or estado = 2)
-						and (fechacobro is null or fechacobro >= ?2) )
-						or estado = 3 )
-						and fechaconvenio is null
-						and fechaeliminacion is null
-					order by
-						idfactura
-						""", nativeQuery = true)
-	public List<Facturas> SinCobroOfCV(Long idcliente, LocalDate fechacobro);
+			   select f.idfactura as factura,
+			          m.descripcion as modulo,
+				   c.nombre,
+			          sum(rf.cantidad * rf.valorunitario) as total,
+			          f.idabonado as cuenta,
+			          f.feccrea
+			   from facturas f
+			   join rubroxfac rf on f.idfactura = rf.idfactura_facturas
+			   join modulos m on f.idmodulo = m.idmodulo
+			join clientes c on f.idcliente = c.idcliente
+			   where f.totaltarifa > 0
+			     and f.idcliente = ?1
+			     and f.feccrea <= ?2
+			     and (
+			           (f.estado = 1 or f.estado = 2)
+			           and (f.fechacobro is null or f.fechacobro >= ?2)
+			           or f.estado = 3
+			         )
+			     and f.fechaconvenio is null
+			     and f.fechaeliminacion is null and rf.idrubro_rubros not in (79, 5, 165)
+			   group by f.idfactura, m.descripcion, f.idabonado, f.feccrea, c.nombre
+			   order by f.idfactura
+			   """, nativeQuery = true)
+	List<CVFacturasNoConsumo> SinCobroOfCV(Long idcliente, LocalDate fechacobro);
 
 	// Planillas sin cobrar por cliente valor a pagar calculado por la suma de los
 	// rubros

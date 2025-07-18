@@ -158,7 +158,7 @@ public class FacturasApi {
 		return facServicio.findSinCobro(idcliente);
 	}
 		@GetMapping("/factCarteraVencida")
-	public List<Facturas> SinCobroOfCV(@RequestParam Long idcliente, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+	public List<CVFacturasNoConsumo> SinCobroOfCV(@RequestParam Long idcliente, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
 		return facServicio.SinCobroOfCV(idcliente, date);
 	}
 

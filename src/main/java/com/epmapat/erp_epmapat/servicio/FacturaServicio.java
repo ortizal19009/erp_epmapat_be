@@ -115,7 +115,7 @@ public class FacturaServicio {
 		return dao.findSinCobro(idcliente);
 	}
 
-	public List<Facturas> SinCobroOfCV(Long idcliente, LocalDate date) {
+	public List<CVFacturasNoConsumo> SinCobroOfCV(Long idcliente, LocalDate date) {
 		return dao.SinCobroOfCV(idcliente, date);
 	}
 
