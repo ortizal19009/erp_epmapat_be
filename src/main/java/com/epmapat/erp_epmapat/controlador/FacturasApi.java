@@ -18,6 +18,8 @@ import java.util.Map;
 import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.data.domain.Page;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -157,8 +159,10 @@ public class FacturasApi {
 	public List<Facturas> getSinCobro(@PathVariable Long idcliente) {
 		return facServicio.findSinCobro(idcliente);
 	}
-		@GetMapping("/factCarteraVencida")
-	public List<CVFacturasNoConsumo> SinCobroOfCV(@RequestParam Long idcliente, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+
+	@GetMapping("/factCarteraVencida")
+	public List<CVFacturasNoConsumo> SinCobroOfCV(@RequestParam Long idcliente,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
 		return facServicio.SinCobroOfCV(idcliente, date);
 	}
 
@@ -607,6 +611,22 @@ public class FacturasApi {
 	public ResponseEntity<List<CVFacturasNoConsumo>> getCVByFacturasNoConsumo(
 			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
 		return ResponseEntity.ok(facServicio.getCVByFacturasNoConsumo(fecha));
+	}
+
+	@GetMapping("/CV_consumo")
+	public ResponseEntity<Page<CarteraVencidaFacturas>> findCVByFacturas(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam int size) {
+		return ResponseEntity.ok(facServicio.getCVByConsumo(fecha, page, size));
+	}
+
+	@GetMapping("/CV_noconsumo")
+	public ResponseEntity<Page<CVFacturasNoConsumo>> getCVByFacturasNoConsumo(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+			@RequestParam(defaultValue = "20") int page,
+			@RequestParam int size) {
+		return ResponseEntity.ok(facServicio.getCVByNoConsumo(fecha, page, size));
 	}
 
 	@GetMapping("/remisiones")
