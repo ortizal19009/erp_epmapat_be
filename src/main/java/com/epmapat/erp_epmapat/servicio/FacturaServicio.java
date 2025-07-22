@@ -483,7 +483,60 @@ public class FacturaServicio {
 
 	public ValorFactDTO getTotalesByAbonadoDatos(Long cuenta) {
 		List<ValorFactDTO> facturas = findSincobroDatos(cuenta);
-		ValorFactDTO newFactura = new ValorFactDTO();
+
+		if (!facturas.isEmpty()) {
+			// Usamos reduce directamente para sumar
+			float subtotal = facturas.stream()
+					.map(ValorFactDTO::getSubtotal)
+					.reduce(0f, Float::sum);
+
+			BigDecimal total = facturas.stream()
+					.map(ValorFactDTO::getTotal)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+			BigDecimal interes = facturas.stream()
+					.map(ValorFactDTO::getInteres)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+			ValorFactDTO first = facturas.get(0);
+
+			return crearValorFactDTO(
+					cuenta,
+					subtotal,
+					total,
+					interes,
+					facturas.size(),
+					first.getNombre(),
+					first.getCedula(),
+					first.getDireccionubicacion());
+		}
+
+		// Si no hay facturas, obtener datos del abonado
+		return abonadosServicio.getByIdabonado(cuenta)
+				.stream()
+				.findFirst()
+				.map(a -> crearValorFactDTO(
+						cuenta,
+						0f,
+						BigDecimal.ZERO,
+						BigDecimal.ZERO,
+						0,
+						a.getIdresponsable().getNombre(),
+						a.getIdresponsable().getCedula(),
+						a.getDireccionubicacion()))
+				.orElseGet(() -> crearValorFactDTO(
+						cuenta,
+						0f,
+						BigDecimal.ZERO,
+						BigDecimal.ZERO,
+						0,
+						"N/A",
+						"N/A",
+						"N/A"));
+	}
+
+	public ValorFactDTO ___getTotalesByAbonadoDatos(Long cuenta) {
+		List<ValorFactDTO> facturas = findSincobroDatos(cuenta);
 
 		if (!facturas.isEmpty()) {
 			// Calcular totales usando Streams

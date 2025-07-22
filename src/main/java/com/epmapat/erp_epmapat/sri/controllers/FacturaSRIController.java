@@ -154,18 +154,17 @@ public class FacturaSRIController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<Map<String, Object>> sendMail(@RequestParam String emisor, @RequestParam String password,
-            @RequestParam List<String> receptores, @RequestParam String asunto, @RequestParam String mensaje) {
+    public ResponseEntity<Map<String, Object>> sendMail(
+            @RequestParam String emisor,
+            @RequestParam String password,
+            @RequestParam List<String> receptores,
+            @RequestParam String asunto,
+            @RequestParam String mensaje,
+            @RequestParam(required = false) MultipartFile file) {
+
         try {
-            // Configuración del correo
-            emisor = "facturacion@epmapatulcan.gob.ec";
-            password = "79DB6F2BFA7FFED2E17F16CABA197D2063EB";
-            receptores = List.of("ortizln9@gmail.com", "alexis.ortiz81@outlook.com",
-                    "saulruales@gmail.com", "ortizln9@gmail.com");
-            asunto = "Prueba mail facturas";
-            mensaje = "<h1>ANUNCIO EPMAPA-T</h1><p>Este es un correo de prueba enviado desde el sistema.</p>";
-            // Envío del correo
-            boolean resultado = emailService.envioEmail(emisor, password, receptores, asunto, mensaje);
+            // Envío del correo con o sin archivo
+            boolean resultado = emailService.envioEmail(emisor, password, receptores, asunto, mensaje, file);
 
             // Respuesta estructurada
             Map<String, Object> response = new HashMap<>();
@@ -183,4 +182,5 @@ public class FacturaSRIController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+
 }
