@@ -194,7 +194,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			    f.totaltarifa > 0
 			    AND f.feccrea <= ?1
 			    AND (
-			        ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL))
+			        ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL))
 			        OR f.estado = 3
 			    )
 			    AND f.fechaconvenio IS NULL

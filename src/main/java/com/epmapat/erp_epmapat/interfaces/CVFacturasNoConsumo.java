@@ -16,5 +16,6 @@ public interface CVFacturasNoConsumo {
 
     BigDecimal getTotalFactura();
     LocalDate getFeccrea();
+    Long getIdcliente();
 
 }

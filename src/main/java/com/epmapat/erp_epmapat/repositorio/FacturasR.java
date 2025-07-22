@@ -74,7 +74,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			     and f.feccrea <= ?2
 			     and (
 			           (f.estado = 1 or f.estado = 2)
-			           and (f.fechacobro is null or f.fechacobro >= ?2)
+			           and (f.fechacobro is null or f.fechacobro > ?2)
 			           or f.estado = 3
 			         )
 			     and f.fechaconvenio is null
@@ -320,7 +320,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" join emisiones e on l.idemision = e.idemision " +
 			" WHERE" +
 			"    f.totaltarifa > 0 and f.feccrea <= ?1 " +
-			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
+			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
 			+
 			"    AND f.fechaconvenio IS NULL" +
 			"    AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" +
@@ -346,7 +346,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" JOIN lecturas l ON f.idfactura = l.idfactura" +
 			" JOIN emisiones e ON l.idemision = e.idemision" +
 			" WHERE f.totaltarifa > 0 AND f.feccrea <= ?1" +
-			" AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL) OR f.estado = 3)" +
+			" AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL) OR f.estado = 3)" +
 			" AND f.fechaconvenio IS NULL" +
 			" AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" +
 			" GROUP BY rf.idfactura_facturas, c.nombre, c.idcliente, m.descripcion, l.idlectura, l.idabonado_abonados, e.emision ORDER BY total DESC",
@@ -377,7 +377,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" JOIN modulos m ON f.idmodulo = m.idmodulo" + //
 			" WHERE" + //
 			"    f.totaltarifa > 0 and f.feccrea <= ?1 " + //
-			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
+			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
 			+
 			"    and not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 )" + //
 			"    AND f.fechaconvenio IS NULL" + //
@@ -401,7 +401,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" JOIN clientes c ON f.idcliente = c.idcliente" + //
 			" JOIN modulos m ON f.idmodulo = m.idmodulo" + //
 			" WHERE" + //
-			"    f.totaltarifa > 0 and f.feccrea <= ?1 " + //
+			"    f.totaltarifa > 0 and f.feccrea < ?1 " + //
 			"    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
 			+
 			"    and not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 )" + //
