@@ -98,7 +98,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 				c.email,
 				c.telefono
 			order by
-				c.nombre asc
+				valor desc
 			""", countQuery = """
 				select
 					count(*)
@@ -164,7 +164,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 				c.email,
 				c.telefono
 			order by
-				c.nombre asc
+				valor desc
 			""", countQuery = """
 				select
 					count(*)

@@ -327,12 +327,12 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" GROUP BY" +
 			"     rf.idfactura_facturas, c.nombre, m.descripcion, l.idlectura, l.idabonado_abonados , e.emision" +
 			" ORDER BY" +
-			" c.nombre ASC;", nativeQuery = true)
+			" total DESC;", nativeQuery = true)
 	public List<CarteraVencidaFacturas> getCVByFacturasConsumo(LocalDate fecha);
 
 	@Query(value = "SELECT" +
 			"    rf.idfactura_facturas as factura," +
-			"    c.nombre," +
+			"    c.nombre, c.idcliente," +
 			"    m.descripcion as modulo," +
 			"    SUM(rf.cantidad * rf.valorunitario) AS total," +
 			"    l.idabonado_abonados as cuenta," +
@@ -349,8 +349,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL) OR f.estado = 3)" +
 			" AND f.fechaconvenio IS NULL" +
 			" AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" +
-			" GROUP BY rf.idfactura_facturas, c.nombre, m.descripcion, l.idlectura, l.idabonado_abonados, e.emision",
-
+			" GROUP BY rf.idfactura_facturas, c.nombre, c.idcliente, m.descripcion, l.idlectura, l.idabonado_abonados, e.emision ORDER BY total DESC",
 			countQuery = "SELECT COUNT(DISTINCT rf.idfactura_facturas) " +
 					"FROM rubroxfac rf " +
 					"JOIN facturas f ON rf.idfactura_facturas = f.idfactura " +
@@ -386,12 +385,12 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" GROUP BY" + //
 			"     rf.idfactura_facturas, c.nombre, m.descripcion, f.idabonado  " + //
 			" ORDER BY" + //
-			" c.nombre ASC;", nativeQuery = true)
+			" total desc;", nativeQuery = true)
 	public List<CVFacturasNoConsumo> getCVByFacturasNoConsumo(LocalDate fecha);
 
 	@Query(value = "SELECT" + //
 			"    rf.idfactura_facturas as factura," + //
-			"    c.nombre," + //
+			"    c.nombre, c.idcliente," + //
 			"    m.descripcion as modulo," + //
 			"    SUM(rf.cantidad * rf.valorunitario) AS total, " + //
 			"    f.idabonado as cuenta " + //
@@ -409,9 +408,9 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"    AND f.fechaconvenio IS NULL" + //
 			"    AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" + //
 			" GROUP BY" + //
-			"     rf.idfactura_facturas, c.nombre, m.descripcion, f.idabonado  " + //
+			"     rf.idfactura_facturas, c.nombre, c.idcliente, m.descripcion, f.idabonado  " + //
 			" ORDER BY" + //
-			" c.nombre ASC", countQuery = "SELECT COUNT(DISTINCT rf.idfactura_facturas) " + //
+			" total DESC", countQuery = "SELECT COUNT(DISTINCT rf.idfactura_facturas) " + //
 					"FROM rubroxfac rf " + //
 					"JOIN facturas f ON rf.idfactura_facturas = f.idfactura " + //
 					"WHERE f.totaltarifa > 0 and f.feccrea <= ?1 " + //
@@ -514,8 +513,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				AND rf.idrubro_rubros NOT IN (79, 5, 165)
 			GROUP BY
 			    f.idfactura, c.nombre, tf.totalFactura
-			ORDER BY c.nombre
-
+			ORDER BY total DESC
 						""", nativeQuery = true)
 	public List<CVFacturasNoConsumo> getCvFacturasByRubro(Long idrubro, LocalDate fecha);
 

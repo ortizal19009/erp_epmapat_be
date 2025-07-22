@@ -17,4 +17,5 @@ public interface CarteraVencidaFacturas {
 
     Long getM3();
 
+    Long getIdcliente();
 }
