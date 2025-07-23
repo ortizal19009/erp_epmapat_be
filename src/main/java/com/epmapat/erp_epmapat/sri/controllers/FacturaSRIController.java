@@ -153,16 +153,26 @@ public class FacturaSRIController {
         }
     }
 
-    @PostMapping("/send")
+    @PostMapping("/sendMail")
     public ResponseEntity<Map<String, Object>> sendMail(
-            @RequestParam String emisor,
-            @RequestParam String password,
+            @RequestParam(defaultValue = "") String emisor,
+            @RequestParam(defaultValue = "") String password,
             @RequestParam List<String> receptores,
             @RequestParam String asunto,
             @RequestParam String mensaje,
             @RequestParam(required = false) MultipartFile file) {
 
         try {
+            System.out.println(receptores);
+            System.out.println(asunto);
+            System.out.println(mensaje);
+
+            if (emisor.isEmpty()) {
+                emisor = "facturacion@epmapatulcan.gob.ec";
+            }
+            if (password.isEmpty()) {
+                password = "79DB6F2BFA7FFED2E17F16CABA197D2063EB";
+            }
             // Envío del correo con o sin archivo
             boolean resultado = emailService.envioEmail(emisor, password, receptores, asunto, mensaje, file);
 

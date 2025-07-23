@@ -36,7 +36,7 @@ public class EmailService {
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.host", domiCorreo);
-        props.setProperty("mail.smtp.port", "465");
+        props.setProperty("mail.smtp.port", "465");//465-26
         props.setProperty("mail.smtp.auth", "true");
         props.setProperty("mail.smtp.user", emisor);
         props.setProperty("mail.smtp.password", password);
