@@ -163,9 +163,6 @@ public class FacturaSRIController {
             @RequestParam(required = false) MultipartFile file) {
 
         try {
-            System.out.println(receptores);
-            System.out.println(asunto);
-            System.out.println(mensaje);
 
             if (emisor.isEmpty()) {
                 emisor = "facturacion@epmapatulcan.gob.ec";
