@@ -113,7 +113,7 @@ WHERE
 FROM Rubroxfac rf 
 JOIN Facturas f ON f.idfactura = rf.idfactura_facturas 
 JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
-WHERE (date(f.fechacobro) BETWEEN $P{desde} AND $P{hasta} and f.horacobro between $P{hdesde} and $P{hhasta} ) AND f.feccrea <= $P{tope} AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=$P{desde} or f.fechaanulacion IS NULL) 
+WHERE (date(f.fechacobro) BETWEEN $P{desde} AND $P{hasta} and f.horacobro between $P{hdesde} and $P{hhasta} )  and rf.idrubro_rubros not in(79, 5, 165) AND f.feccrea <= $P{tope} AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=$P{desde} or f.fechaanulacion IS NULL) 
 GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 		</queryString>
 		<field name="idrubro" class="java.lang.Integer">
@@ -152,7 +152,7 @@ GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 FROM Rubroxfac rf 
 JOIN Facturas f ON f.idfactura = rf.idfactura_facturas 
 JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
-WHERE (date(f.fechacobro) BETWEEN $P{desde} AND $P{hasta} and f.horacobro between $P{hdesde} and $P{hhasta} ) AND f.feccrea > $P{tope} AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=$P{desde} or f.fechaanulacion IS NULL) 
+WHERE (date(f.fechacobro) BETWEEN $P{desde} AND $P{hasta} and f.horacobro between $P{hdesde} and $P{hhasta} ) and rf.idrubro_rubros not in(79, 5, 165) AND f.feccrea > $P{tope} AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=$P{desde} or f.fechaanulacion IS NULL) 
 GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 		</queryString>
 		<field name="idrubro" class="java.lang.Integer">
@@ -179,47 +179,69 @@ GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 		</variable>
 	</subDataset>
 	<subDataset name="FacFPCobros" uuid="7a0b6bcd-59e4-45b5-adf9-85de4e17f077">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="desde" class="java.util.Date"/>
 		<parameter name="hasta" class="java.util.Date"/>
 		<parameter name="hdesde" class="java.sql.Time"/>
 		<parameter name="hhasta" class="java.sql.Time"/>
+		<parameter name="tope" class="java.lang.String"/>
 		<queryString>
-			<![CDATA[WITH facturas_del_dia AS (
-    SELECT DISTINCT 
-        f.idfactura, 
-        f.swiva, 
+			<![CDATA[-----
+WITH iva_total AS (
+    SELECT 
         f.formapago,
-        fc.descripcion
-    FROM 
-        Facturas f
-        JOIN Formacobro fc ON f.formapago = fc.idformacobro
+        SUM(ROUND(f.swiva::numeric, 2)) AS sumaiva
+    FROM Facturas f
     WHERE 
-        f.fechacobro BETWEEN $P{desde} and $P{hasta}
-        AND f.horacobro BETWEEN $P{hdesde} and $P{hhasta}
+        f.fechacobro BETWEEN $P{desde} AND $P{hasta}
+        AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
+        AND f.estado <> 3
+        AND f.fechaeliminacion IS NULL
+        AND (f.fechaanulacion IS NULL)
+    GROUP BY f.formapago
+),
+
+facturas_filtradas AS (
+    SELECT 
+        f.idfactura, 
+        f.formapago,
+        fc.descripcion, 
+        COALESCE(f.valornotacredito, 0) AS valornotacredito,
+        f.swcondonar
+    FROM Facturas f
+    JOIN Formacobro fc ON f.formapago = fc.idformacobro
+    WHERE 
+        f.fechacobro BETWEEN $P{desde} AND $P{hasta}
+        AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
         AND f.estado <> 3 
         AND f.fechaeliminacion IS NULL 
         AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
 )
 
 SELECT 
-    fd.formapago,
-    fd.descripcion,
-    COUNT(DISTINCT fd.idfactura) AS nfacturas,
-    SUM(CASE 
+    f.formapago,
+    f.descripcion,
+    COUNT(f.idfactura) AS nfacturas,
+    
+    ROUND(SUM(CASE 
         WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 
         THEN 0 
         ELSE rf.valorunitario * rf.cantidad 
-    END) AS subtotal,
-    SUM(DISTINCT fd.swiva) AS sumaIva
-FROM 
-    facturas_del_dia fd
-    JOIN Facturas f ON fd.idfactura = f.idfactura
-    JOIN Rubroxfac rf ON f.idfactura = rf.idfactura_facturas
-    JOIN Rubros r ON r.idrubro = rf.idrubro_rubros
+    END)::numeric, 2) AS subtotal,
+
+    ROUND(it.sumaiva, 2) AS sumaiva,
+
+    ROUND(SUM(f.valornotacredito)::numeric, 2) AS valornotacredito
+
+FROM facturas_filtradas f
+JOIN Rubroxfac rf ON f.idfactura = rf.idfactura_facturas
+JOIN Rubros r ON r.idrubro = rf.idrubro_rubros
+LEFT JOIN iva_total it ON f.formapago = it.formapago
+
 GROUP BY 
-    fd.formapago, fd.descripcion;]]>
+    f.formapago, f.descripcion, it.sumaiva;
+]]>
 		</queryString>
 		<field name="formapago" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.name" value="formapago"/>
@@ -243,6 +265,11 @@ GROUP BY
 			<property name="com.jaspersoft.studio.field.name" value="sumaiva"/>
 			<property name="com.jaspersoft.studio.field.label" value="sumaiva"/>
 		</field>
+		<field name="valornotacredito" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="valornotacredito"/>
+			<property name="com.jaspersoft.studio.field.label" value="valornotacredito"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="facturas"/>
+		</field>
 	</subDataset>
 	<parameter name="desde" class="java.util.Date"/>
 	<parameter name="hasta" class="java.util.Date"/>
@@ -254,7 +281,7 @@ GROUP BY
 		<![CDATA[WITH facturas_validas AS (
     SELECT DISTINCT f.idfactura, f.swiva
     FROM Facturas f
-    WHERE f.fechacobro = $P{desde} 
+    WHERE f.fechacobro  BETWEEN $P{desde} AND $P{hasta}
       AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
       AND f.estado <> 3 
       AND f.fechaeliminacion IS NULL 
@@ -282,7 +309,7 @@ JOIN Facturas f ON f.idfactura = rf.idfactura_facturas
 JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
 
 WHERE 
-    f.fechacobro = $P{desde}
+    f.fechacobro BETWEEN $P{desde} AND $P{hasta}
     AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
     AND f.estado <> 3 
     AND f.fechaeliminacion IS NULL 
@@ -317,14 +344,24 @@ WHERE
 				<imageExpression><![CDATA["logo_epmapat-01.png"]]></imageExpression>
 			</image>
 			<textField>
-				<reportElement x="2" y="119" width="550" height="40" uuid="855edb41-b14a-4d36-9baf-bf9a1a2213c9"/>
+				<reportElement x="2" y="119" width="550" height="21" uuid="855edb41-b14a-4d36-9baf-bf9a1a2213c9"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="15" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["RUBROS COBRADOS " +
-(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{desde}) +
+				<textFieldExpression><![CDATA["RUBROS COBRADOS - GENERAL "
+]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="140" width="550" height="21" uuid="6f693028-fc6d-4d07-8ce6-5b15ee79e074"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{desde}) + " " +
+(new java.text.SimpleDateFormat("HH:mm")).format($P{hdesde}) + 
 " - " +
-(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta})]]></textFieldExpression>
+(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta}) + " " +
+(new java.text.SimpleDateFormat("HH:mm")).format($P{hhasta})
+]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -346,7 +383,7 @@ WHERE
 					<property name="com.jaspersoft.studio.components.autoresize.proportional" value="true"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="RubrosAntiguos" uuid="6cc5647f-8d03-4447-ba50-a500fd0d807b">
+					<datasetRun subDataset="RubrosAntiguos" uuid="eb6141c9-d29a-4b96-a517-a1acfc5cbdcd">
 						<datasetParameter name="desde">
 							<datasetParameterExpression><![CDATA[$P{desde}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -458,7 +495,7 @@ WHERE
 					<property name="com.jaspersoft.studio.components.autoresize.proportional" value="true"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="RubrosAcuales" uuid="2052be0b-4ee3-4b9e-9b2f-2e9a7dc98f00">
+					<datasetRun subDataset="RubrosAcuales" uuid="ffd89625-2e36-4fe7-92f1-e762ee7ff058">
 						<datasetParameter name="desde">
 							<datasetParameterExpression><![CDATA[$P{desde}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -522,7 +559,7 @@ WHERE
 							<jr:columnFooter style="Table 1_CH" height="15" rowSpan="1"/>
 							<jr:detailCell style="Table 1_TD" height="15">
 								<textField>
-									<reportElement x="0" y="0" width="132" height="15" uuid="52531530-a30a-4e9c-b02a-63dffb809eca"/>
+									<reportElement stretchType="ElementGroupHeight" x="0" y="0" width="132" height="15" uuid="52531530-a30a-4e9c-b02a-63dffb809eca"/>
 									<box leftPadding="5" rightPadding="5"/>
 									<textElement verticalAlignment="Middle"/>
 									<textFieldExpression><![CDATA[$F{nombre_rubro}]]></textFieldExpression>
@@ -669,7 +706,7 @@ WHERE
 				<text><![CDATA[Total]]></text>
 			</staticText>
 			<componentElement>
-				<reportElement style="Table_CH" x="290" y="3" width="265" height="30" uuid="c7e8575c-c108-48c1-8322-e69ecf25376a">
+				<reportElement x="210" y="0" width="347" height="30" uuid="c7e8575c-c108-48c1-8322-e69ecf25376a">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 2_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 2_CH"/>
@@ -743,7 +780,7 @@ WHERE
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="9"/>
 								</textElement>
-								<text><![CDATA[Total]]></text>
+								<text><![CDATA[Total N.C.]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table 2_TD" height="15">
@@ -753,7 +790,29 @@ WHERE
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $F{subtotal}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{valornotacredito}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="82" uuid="dbfc6355-f619-420c-a476-a887a0a8a0c1">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
+						<jr:columnHeader style="Table 2_CH" height="15" rowSpan="1">
+							<staticText>
+								<reportElement x="0" y="0" width="82" height="15" uuid="eb375063-90cc-4d3a-b1cc-bd048e3d54f3"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="9"/>
+								</textElement>
+								<text><![CDATA[Total C.]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 2_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="82" height="15" uuid="23afe0f2-11ee-4713-80a2-123b11efe733"/>
+								<box leftPadding="3" rightPadding="3"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f",$F{sumaiva} +$F{subtotal}-$F{valornotacredito}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

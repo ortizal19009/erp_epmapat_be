@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -191,41 +191,61 @@ GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 		<parameter name="hhasta" class="java.sql.Time"/>
 		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
-			<![CDATA[WITH facturas_del_dia AS (
-    SELECT DISTINCT 
-        f.idfactura, 
-        f.swiva, 
+			<![CDATA[-----
+WITH iva_total AS (
+    SELECT 
         f.formapago,
-        fc.descripcion
-    FROM 
-        Facturas f
-        JOIN Formacobro fc ON f.formapago = fc.idformacobro
+        SUM(ROUND(f.swiva::numeric, 2)) AS sumaiva
+    FROM Facturas f
     WHERE 
-        f.fechacobro BETWEEN $P{desde} and $P{hasta}
-        AND f.horacobro BETWEEN $P{hdesde} and $P{hhasta}
-        AND f.estado <> 3 
-           AND f.usuariocobro = $P{usuariocobro}
+        f.fechacobro BETWEEN $P{desde} AND $P{hasta}
+        AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
+        AND f.estado <> 3 and f.usuariocobro = $P{usuariocobro}
+        AND f.fechaeliminacion IS NULL
+        AND (f.fechaanulacion IS NULL)
+    GROUP BY f.formapago
+),
+
+facturas_filtradas AS (
+    SELECT 
+        f.idfactura, 
+        f.formapago,
+        fc.descripcion, 
+        COALESCE(f.valornotacredito, 0) AS valornotacredito,
+        f.swcondonar
+    FROM Facturas f
+    JOIN Formacobro fc ON f.formapago = fc.idformacobro
+    WHERE 
+        f.fechacobro BETWEEN $P{desde} AND $P{hasta}
+        AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
+        AND f.estado <> 3  and f.usuariocobro = $P{usuariocobro}
         AND f.fechaeliminacion IS NULL 
         AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
 )
 
 SELECT 
-    fd.formapago,
-    fd.descripcion,
-    COUNT(DISTINCT fd.idfactura) AS nfacturas,
-    SUM(CASE 
+    f.formapago,
+    f.descripcion,
+    COUNT(f.idfactura) AS nfacturas,
+    
+    ROUND(SUM(CASE 
         WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 
         THEN 0 
         ELSE rf.valorunitario * rf.cantidad 
-    END) AS subtotal,
-    SUM(DISTINCT fd.swiva) AS sumaIva
-FROM 
-    facturas_del_dia fd
-    JOIN Facturas f ON fd.idfactura = f.idfactura
-    JOIN Rubroxfac rf ON f.idfactura = rf.idfactura_facturas
-    JOIN Rubros r ON r.idrubro = rf.idrubro_rubros
+    END)::numeric, 2) AS subtotal,
+
+    ROUND(it.sumaiva, 2) AS sumaiva,
+
+    ROUND(SUM(f.valornotacredito)::numeric, 2) AS valornotacredito
+
+FROM facturas_filtradas f
+JOIN Rubroxfac rf ON f.idfactura = rf.idfactura_facturas
+JOIN Rubros r ON r.idrubro = rf.idrubro_rubros
+LEFT JOIN iva_total it ON f.formapago = it.formapago
+
 GROUP BY 
-    fd.formapago, fd.descripcion;]]>
+    f.formapago, f.descripcion, it.sumaiva;
+]]>
 		</queryString>
 		<field name="formapago" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.name" value="formapago"/>
@@ -249,6 +269,10 @@ GROUP BY
 			<property name="com.jaspersoft.studio.field.name" value="sumaiva"/>
 			<property name="com.jaspersoft.studio.field.label" value="sumaiva"/>
 		</field>
+		<field name="valornotacredito" class="java.lang.Double">
+			<property name="com.jaspersoft.studio.field.name" value="valornotacredito"/>
+			<property name="com.jaspersoft.studio.field.label" value="valornotacredito"/>
+		</field>
 	</subDataset>
 	<parameter name="desde" class="java.util.Date"/>
 	<parameter name="hasta" class="java.util.Date"/>
@@ -261,10 +285,9 @@ GROUP BY
 		<![CDATA[WITH facturas_validas AS (
     SELECT DISTINCT f.idfactura, f.swiva
     FROM Facturas f
-    WHERE f.fechacobro = $P{desde} 
+    WHERE f.fechacobro  BETWEEN $P{desde} AND $P{hasta}
       AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
-      AND f.estado <> 3 
-      AND f.usuariocobro = $P{usuariocobro}
+      AND f.estado <> 3 and f.usuariocobro = $P{usuariocobro}
       AND f.fechaeliminacion IS NULL 
       AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
 )
@@ -290,10 +313,9 @@ JOIN Facturas f ON f.idfactura = rf.idfactura_facturas
 JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
 
 WHERE 
-    f.fechacobro = $P{desde}
+    f.fechacobro BETWEEN $P{desde} AND $P{hasta}
     AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
-    AND f.estado <> 3 
-   AND f.usuariocobro = $P{usuariocobro}
+    AND f.estado <> 3 and f.usuariocobro = $P{usuariocobro}
     AND f.fechaeliminacion IS NULL 
     AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde});]]>
 	</queryString>
@@ -326,14 +348,23 @@ WHERE
 				<imageExpression><![CDATA["logo_epmapat-01.png"]]></imageExpression>
 			</image>
 			<textField>
-				<reportElement x="2" y="119" width="550" height="40" uuid="855edb41-b14a-4d36-9baf-bf9a1a2213c9"/>
+				<reportElement x="2" y="119" width="550" height="21" uuid="855edb41-b14a-4d36-9baf-bf9a1a2213c9"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="15" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["RUBROS COBRADOS " +
-(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{desde}) +
+				<textFieldExpression><![CDATA["RUBROS COBRADOS - INDIVIDUAL " ]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="140" width="550" height="21" uuid="76e83cea-0b32-4942-8204-6a8504749e84"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{desde}) + " " +
+(new java.text.SimpleDateFormat("HH:mm")).format($P{hdesde}) + 
 " - " +
-(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta})]]></textFieldExpression>
+(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta}) + " " +
+(new java.text.SimpleDateFormat("HH:mm")).format($P{hhasta})
+]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -684,14 +715,14 @@ WHERE
 				<text><![CDATA[Total]]></text>
 			</staticText>
 			<componentElement>
-				<reportElement style="Table_CH" x="290" y="3" width="265" height="30" uuid="c7e8575c-c108-48c1-8322-e69ecf25376a">
+				<reportElement style="Table_CH" x="220" y="2" width="337" height="30" uuid="c7e8575c-c108-48c1-8322-e69ecf25376a">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 2_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 2_CH"/>
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table 2_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="FacFPCobros" uuid="5850e201-5479-49c7-b4f6-694f13e59565">
+					<datasetRun subDataset="FacFPCobros" uuid="529a5273-f59c-47d0-ab32-64f394c0247b">
 						<datasetParameter name="desde">
 							<datasetParameterExpression><![CDATA[$P{desde}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -761,7 +792,7 @@ WHERE
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="9"/>
 								</textElement>
-								<text><![CDATA[Total]]></text>
+								<text><![CDATA[Total N.C.]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table 2_TD" height="15">
@@ -771,7 +802,29 @@ WHERE
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $F{subtotal}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{valornotacredito}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="72" uuid="b1a5d3dd-8108-4778-9b8c-bd542835f6c9">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
+						<jr:columnHeader style="Table 2_CH" height="15" rowSpan="1">
+							<staticText>
+								<reportElement x="0" y="0" width="72" height="15" uuid="b974dcd5-8eba-48f3-af33-4698bafef07a"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="9"/>
+								</textElement>
+								<text><![CDATA[Total C.]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 2_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="72" height="15" uuid="2efb03e2-dc5b-45fe-a504-b5b671221a32"/>
+								<box leftPadding="3" rightPadding="3"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f",$F{sumaiva} + $F{subtotal}-$F{valornotacredito}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -780,7 +833,7 @@ WHERE
 		</band>
 	</columnFooter>
 	<pageFooter>
-		<band height="116" splitType="Stretch">
+		<band height="94" splitType="Stretch">
 			<frame>
 				<reportElement mode="Opaque" x="0" y="64" width="555" height="24" forecolor="#D0B48E" backcolor="#0D5FA6" uuid="a216eed8-a487-4f27-9209-5676941f74f3"/>
 				<textField evaluationTime="Report">
@@ -806,7 +859,7 @@ WHERE
 				</textField>
 			</frame>
 			<componentElement>
-				<reportElement x="0" y="1" width="290" height="60" uuid="1d199c7c-116d-462b-bdf9-ed1b0526a32d">
+				<reportElement x="0" y="1" width="290" height="39" uuid="1d199c7c-116d-462b-bdf9-ed1b0526a32d">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
@@ -861,6 +914,50 @@ WHERE
 						<jr:detailCell style="Table_TD" height="15">
 							<textField>
 								<reportElement x="0" y="0" width="200" height="15" uuid="7bd338c6-9009-4bab-8294-a22871a539bb"/>
+								<box leftPadding="5" rightPadding="5"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{nomusu}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<componentElement>
+				<reportElement x="304" y="10" width="251" height="19" uuid="96b38854-3d81-4aea-bee6-bf9ca9367ef8">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
+					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
+					<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="Usuario" uuid="f5412b21-80c6-42dc-b935-62254575bd2d">
+						<datasetParameter name="idusuario">
+							<datasetParameterExpression><![CDATA[$P{usuariocobro}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="90" uuid="df32cf52-f0f7-4861-9111-f93fb3929817">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<jr:detailCell style="Table_TD" height="15">
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="f58ddb07-f62d-459c-adae-2625ccd93bba">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<box leftPadding="5"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Usuario Cobro]]></text>
+							</staticText>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="150" uuid="3230d959-bd1f-4896-8d82-23173c9388e5">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+						<jr:detailCell style="Table_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="150" height="15" uuid="15a78373-4e28-4d50-b226-18e07217a070"/>
 								<box leftPadding="5" rightPadding="5"/>
 								<textElement verticalAlignment="Middle">
 									<font size="8"/>
