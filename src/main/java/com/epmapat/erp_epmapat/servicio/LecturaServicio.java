@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
@@ -199,14 +200,27 @@ public class LecturaServicio {
 			BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7)
 	};
 
-	public Object calcularValores(Long cuenta, Long idfactura, int m3, int categoria, boolean swMunicipio,
+	public BigDecimal calcularValores(Long cuenta, Long idfactura, int m3, int categoria, boolean swMunicipio,
 			boolean swAdultoMayor) {
-		System.out.println("AGUA POTABLE: " + aguaPotable(m3, categoria, swMunicipio, swAdultoMayor));
-		System.out.println("ALCANTARILLADO: " + alcantarillado(m3, categoria, swMunicipio, swAdultoMayor));
-		System.out.println("SANEAMIENTO: " + saneamiento(m3, categoria, swMunicipio, swAdultoMayor));
-		System.out
-				.println("CONSERVACION DE FUENTES: " + conservacionFuentes(m3, categoria, swMunicipio, swAdultoMayor));
-		return null;
+		BigDecimal aguapotable = aguaPotable(m3, categoria, swMunicipio, swAdultoMayor);
+		BigDecimal alcantarillado = alcantarillado(m3, categoria, swMunicipio, swAdultoMayor);
+		BigDecimal saneamiento = saneamiento(m3, categoria, swMunicipio, swAdultoMayor);
+		BigDecimal conservacionFuentes = conservacionFuentes(m3, categoria, swMunicipio, swAdultoMayor);
+
+		System.out.println("======================================");
+		System.out.println("AGUA POTABLE: " + aguapotable);
+		System.out.println("ALCANTARILLADO: " + alcantarillado);
+		System.out.println("SANEAMIENTO: " + saneamiento);
+		System.out.println("CONSERVACION DE FUENTES: " + conservacionFuentes);
+		System.out.println("======================================");
+
+		BigDecimal total = aguapotable
+				.add(alcantarillado)
+				.add(saneamiento)
+				.add(conservacionFuentes);
+
+		System.out.println("TOTAL: " + total);
+		return total.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	/* AGUA POTABLE */
@@ -267,10 +281,9 @@ public class LecturaServicio {
 		return aguapotable.setScale(2, RoundingMode.HALF_UP);
 	}
 
-	/* ALCANTARILLADO */
 	public BigDecimal alcantarillado(int m3, int categoria, boolean swMunicipio, boolean swAdultoMayor) {
 		BigDecimal valor = BigDecimal.ZERO;
-		BigDecimal fijo, variable, porcentaje;
+		BigDecimal fijo, variable, porcentaje = BigDecimal.ONE;
 		int index = Math.min(m3, porcResidencial.length - 1);
 
 		switch (categoria) {
@@ -311,7 +324,11 @@ public class LecturaServicio {
 				}
 				break;
 		}
-		valor.add(hidrosuccionador(m3, categoria, swMunicipio, swAdultoMayor));
+
+		BigDecimal hidro = hidrosuccionador(m3, categoria, swMunicipio, swAdultoMayor, porcentaje);
+		System.out.println("HIDRO SUCCIONADOR: " + hidro);
+		valor = valor.add(hidro);
+
 		return valor.setScale(2, RoundingMode.HALF_UP);
 	}
 
@@ -384,8 +401,9 @@ public class LecturaServicio {
 	}
 
 	/* HIDROSUCCIONADOR */
-	public BigDecimal hidrosuccionador(int m3, int categoria, boolean swMunicipio, boolean swAdultoMayor) {
-		BigDecimal valor = BigDecimal.valueOf(0.50);
+	public BigDecimal hidrosuccionador(int m3, int categoria, boolean swMunicipio, boolean swAdultoMayor,
+			BigDecimal porcentaje) {
+		BigDecimal valor = BigDecimal.valueOf(0.50).multiply(porcentaje);
 		switch (categoria) {
 			case 4: // OFICIAL
 				if (swMunicipio) {

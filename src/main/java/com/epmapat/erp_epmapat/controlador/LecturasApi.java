@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
@@ -192,6 +193,7 @@ public class LecturasApi {
 	public ResponseEntity<List<Lecturas>> getByIdEmisiones(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.findByIdEmisiones(idemision));
 	}
+
 	@GetMapping("reporte/emision")
 	public ResponseEntity<List<RepFacEliminadasByEmision>> getByIdEmisionesR(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.findByIdEmisionesR(idemision));
@@ -235,5 +237,11 @@ public class LecturasApi {
 	@GetMapping("/reportes/rubrozero")
 	public ResponseEntity<List<CountRubrosByEmision>> getCuentaRubrosByEmision(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.getCuentaRubrosByEmision(idemision));
+	}
+
+	@PostMapping("/valoresEmisiones")
+	public ResponseEntity<BigDecimal> getValoresEmision(EmisionOfCuentaDTO datos) {
+		return ResponseEntity.ok(lecServicio.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
+				datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor()));
 	}
 }
