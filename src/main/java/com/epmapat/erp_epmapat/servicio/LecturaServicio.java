@@ -235,6 +235,7 @@ public class LecturaServicio {
 		switch (categoria) {
 			case 1: // RESIDENCIAL
 				porcentajeAnual = porcResidencial[index];
+				System.out.println("Porcentaje anual: " + porcentajeAnual);
 				apFijo = BigDecimal.valueOf(3.94).multiply(porcentajeAnual); // 4.04 - 0.10
 				apVariable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.14)).multiply(porcentajeAnual);
 				aguapotable = apFijo.add(apVariable);
