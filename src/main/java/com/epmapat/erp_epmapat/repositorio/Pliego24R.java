@@ -21,4 +21,7 @@ public interface Pliego24R  extends JpaRepository<Pliego24, Long> {
    @Query(value = "SELECT * FROM pliego24 WHERE idcategoria=?1 and desde<=?2 and hasta>=?2", nativeQuery=true)
 	public List<Pliego24> findBloque(Long idcategoria, Long m3);
 
+   @Query(value = "SELECT * FROM pliego24 WHERE idcategoria=?1 and desde<=?2 and hasta>=?2 LIMIT 1", nativeQuery=true)
+public Pliego24 _findBloque(int idcategoria, int m3);
+
 }

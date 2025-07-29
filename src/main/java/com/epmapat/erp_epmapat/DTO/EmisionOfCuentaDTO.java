@@ -1,5 +1,7 @@
 package com.epmapat.erp_epmapat.DTO;
 
+import com.epmapat.erp_epmapat.modelo.Pliego24;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,4 +16,5 @@ public class EmisionOfCuentaDTO {
     int categoria;
     boolean swMunicipio;
     boolean swAdultoMayor;
+    Pliego24 pliego24;
 }

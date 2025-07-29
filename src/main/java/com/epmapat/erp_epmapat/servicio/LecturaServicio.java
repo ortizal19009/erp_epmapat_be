@@ -19,13 +19,17 @@ import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
+import com.epmapat.erp_epmapat.modelo.Pliego24;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
+import com.epmapat.erp_epmapat.repositorio.Pliego24R;
 
 @Service
 public class LecturaServicio {
 
 	@Autowired
 	private LecturasR dao;
+	@Autowired
+	private Pliego24R dao_pliego;
 
 	// Lectura por Planilla
 	public Lecturas findOnefactura(Long idfactura) {
@@ -181,7 +185,7 @@ public class LecturaServicio {
 	 */
 	private static final BigDecimal[] porcResidencial = {
 			BigDecimal.valueOf(0.777), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78),
-			BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.778), BigDecimal.valueOf(0.778), BigDecimal.valueOf(0.778),
+			BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.778), BigDecimal.valueOf(0.778),
 			BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.68),
 			BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.68),
 			BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.68),
@@ -202,10 +206,21 @@ public class LecturaServicio {
 
 	public BigDecimal calcularValores(Long cuenta, Long idfactura, int m3, int categoria, boolean swMunicipio,
 			boolean swAdultoMayor) {
-		BigDecimal aguapotable = aguaPotable(m3, categoria, swMunicipio, swAdultoMayor);
-		BigDecimal alcantarillado = alcantarillado(m3, categoria, swMunicipio, swAdultoMayor);
-		BigDecimal saneamiento = saneamiento(m3, categoria, swMunicipio, swAdultoMayor);
-		BigDecimal conservacionFuentes = conservacionFuentes(m3, categoria, swMunicipio, swAdultoMayor);
+
+		EmisionOfCuentaDTO valoresEmision = new EmisionOfCuentaDTO();
+		valoresEmision.setCuenta(cuenta);
+		valoresEmision.setIdfactura(idfactura);
+		valoresEmision.setM3(m3);
+		valoresEmision.setCategoria(categoria);
+		valoresEmision.setSwMunicipio(swMunicipio);
+		valoresEmision.setSwAdultoMayor(swAdultoMayor);
+		Pliego24 pliego = dao_pliego._findBloque(categoria, m3);
+		valoresEmision.setPliego24(pliego);
+
+		BigDecimal aguapotable = aguaPotable(valoresEmision);
+		BigDecimal alcantarillado = alcantarillado(valoresEmision);
+		BigDecimal saneamiento = saneamiento(valoresEmision);
+		BigDecimal conservacionFuentes = conservacionFuentes(valoresEmision);
 
 		System.out.println("======================================");
 		System.out.println("AGUA POTABLE: " + aguapotable);
@@ -224,55 +239,60 @@ public class LecturaServicio {
 	}
 
 	/* AGUA POTABLE */
-	public BigDecimal aguaPotable(int m3, int categoria, boolean swMunicipio, boolean swAdultoMayor) {
+	public BigDecimal aguaPotable(EmisionOfCuentaDTO valoresEmision) {
 		BigDecimal aguapotable = BigDecimal.ZERO;
 		BigDecimal apFijo = BigDecimal.ZERO;
 		BigDecimal apVariable = BigDecimal.ZERO;
-		BigDecimal porcentajeAnual = BigDecimal.ZERO;
+		BigDecimal porcentaje = BigDecimal.ZERO;
 
-		int index = Math.min(m3, porcResidencial.length - 1);
+		int index = Math.min(valoresEmision.getM3(), porcResidencial.length - 1);
 
-		switch (categoria) {
+		switch (valoresEmision.getCategoria()) {
 			case 1: // RESIDENCIAL
-				porcentajeAnual = porcResidencial[index];
-				System.out.println("Porcentaje anual: " + porcentajeAnual);
-				apFijo = BigDecimal.valueOf(3.94).multiply(porcentajeAnual); // 4.04 - 0.10
-				apVariable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.14)).multiply(porcentajeAnual);
+				porcentaje = porcResidencial[index];
+				System.out.println("Porcentaje anual: " + porcentaje + " => " + valoresEmision.getPliego24().getPorc());
+				apFijo = BigDecimal.valueOf(3.94).multiply(porcentaje); // 4.04 - 0.10
+				apVariable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.14))
+						.multiply(valoresEmision.getPliego24().getPorc());
 				aguapotable = apFijo.add(apVariable);
 				break;
 
 			case 2: // COMERCIAL
-				porcentajeAnual = BigDecimal.valueOf(0.85);
-				apFijo = BigDecimal.valueOf(6.15).multiply(porcentajeAnual); // 6.25 - 0.10
-				apVariable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.35)).multiply(porcentajeAnual);
+				porcentaje = valoresEmision.getPliego24().getPorc();
+				apFijo = BigDecimal.valueOf(6.15).multiply(porcentaje); // 6.25 - 0.10
+				apVariable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.35))
+						.multiply(porcentaje);
 				aguapotable = apFijo.add(apVariable);
 				break;
 
 			case 3: // INDUSTRIAL
-				porcentajeAnual = BigDecimal.valueOf(0.90);
-				apFijo = BigDecimal.valueOf(12.90).multiply(porcentajeAnual); // 13.00 - 0.10
-				apVariable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.70)).multiply(porcentajeAnual);
+				porcentaje = valoresEmision.getPliego24().getPorc();
+				apFijo = BigDecimal.valueOf(12.90).multiply(porcentaje); // 13.00 - 0.10
+				apVariable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.70))
+						.multiply(porcentaje);
 				aguapotable = apFijo.add(apVariable);
 				break;
 
 			case 4: // OFICIAL
-				porcentajeAnual = BigDecimal.valueOf(0.75);
+				porcentaje = valoresEmision.getPliego24().getPorc();
 				apFijo = BigDecimal.valueOf(14.90); // 15.00 - 0.10
-				apVariable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.80)).multiply(porcentajeAnual);
+				apVariable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.80))
+						.multiply(porcentaje);
 				aguapotable = apFijo.add(apVariable);
 
-				if (swMunicipio) {
+				if (valoresEmision.isSwMunicipio()) {
 					aguapotable = aguapotable.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 				}
 				break;
 
 			case 9: // ESPECIAL
-				porcentajeAnual = porcResidencial[index];
-				apFijo = BigDecimal.valueOf(3.94).multiply(porcentajeAnual); // 4.04 - 0.10
-				apVariable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.14)).multiply(porcentajeAnual);
+				porcentaje = valoresEmision.getPliego24().getPorc();
+				apFijo = BigDecimal.valueOf(3.94).multiply(porcentaje); // 4.04 - 0.10
+				apVariable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.14))
+						.multiply(porcentaje);
 				aguapotable = apFijo.add(apVariable);
 
-				if (swAdultoMayor && m3 <= 70) {
+				if (valoresEmision.isSwAdultoMayor() && valoresEmision.getM3() <= 70) {
 					return aguapotable.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 				} else {
 					return aguapotable.setScale(2, RoundingMode.HALF_UP);
@@ -282,51 +302,56 @@ public class LecturaServicio {
 		return aguapotable.setScale(2, RoundingMode.HALF_UP);
 	}
 
-	public BigDecimal alcantarillado(int m3, int categoria, boolean swMunicipio, boolean swAdultoMayor) {
+	public BigDecimal alcantarillado(EmisionOfCuentaDTO valoresEmision) {
 		BigDecimal valor = BigDecimal.ZERO;
 		BigDecimal fijo, variable, porcentaje = BigDecimal.ONE;
-		int index = Math.min(m3, porcResidencial.length - 1);
+		int index = Math.min(valoresEmision.getM3(), porcResidencial.length - 1);
 
-		switch (categoria) {
+		switch (valoresEmision.getCategoria()) {
 			case 1: // RESIDENCIAL
 			case 9: // ESPECIAL
-				porcentaje = porcResidencial[index];
+				porcentaje = valoresEmision.getPliego24().getPorc();
 				fijo = BigDecimal.valueOf(3.32).multiply(porcentaje); // 3.82 - 0.50
-				variable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.06)).multiply(porcentaje); // 0.12 / 2
+				variable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.06))
+						.multiply(porcentaje); // 0.12 / 2
 				valor = fijo.add(variable);
 
-				if (categoria == 9 && swAdultoMayor && m3 <= 70) {
+				if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor()
+						&& valoresEmision.getM3() <= 70) {
 					valor = valor.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 				}
 				break;
 
 			case 2: // COMERCIAL
-				porcentaje = BigDecimal.valueOf(0.85);
+				porcentaje = valoresEmision.getPliego24().getPorc();
 				fijo = BigDecimal.valueOf(5.25).multiply(porcentaje); // 5.75 - 0.50
-				variable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.15)).multiply(porcentaje); // 0.3 / 2
+				variable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.15))
+						.multiply(porcentaje); // 0.3 / 2
 				valor = fijo.add(variable);
 				break;
 
 			case 3: // INDUSTRIAL
-				porcentaje = BigDecimal.valueOf(0.90);
+				porcentaje = valoresEmision.getPliego24().getPorc();
 				fijo = BigDecimal.valueOf(11.50).multiply(porcentaje); // 12.00 - 0.50
-				variable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.25)).multiply(porcentaje); // 0.5 / 2
+				variable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.25))
+						.multiply(porcentaje); // 0.5 / 2
 				valor = fijo.add(variable);
 				break;
 
 			case 4: // OFICIAL
-				porcentaje = BigDecimal.valueOf(0.75);
+				porcentaje = valoresEmision.getPliego24().getPorc();
 				fijo = BigDecimal.valueOf(14.50); // ya sin multiplicar por porcentaje
-				variable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.35)).multiply(porcentaje); // 0.70 / 2
+				variable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.35))
+						.multiply(porcentaje); // 0.70 / 2
 				valor = fijo.add(variable);
 
-				if (swMunicipio) {
+				if (valoresEmision.isSwMunicipio()) {
 					valor = valor.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 				}
 				break;
 		}
 
-		BigDecimal hidro = hidrosuccionador(m3, categoria, swMunicipio, swAdultoMayor, porcentaje);
+		BigDecimal hidro = hidrosuccionador(valoresEmision);
 		System.out.println("HIDRO SUCCIONADOR: " + hidro);
 		valor = valor.add(hidro);
 
@@ -334,20 +359,22 @@ public class LecturaServicio {
 	}
 
 	/* SANEAMIENTO */
-	public BigDecimal saneamiento(int m3, int categoria, boolean swMunicipio, boolean swAdultoMayor) {
+	public BigDecimal saneamiento(EmisionOfCuentaDTO valoresEmision) {
 		BigDecimal valor = BigDecimal.ZERO;
 		BigDecimal variable, porcentaje;
-		int index = Math.min(m3, porcResidencial.length - 1);
+		int index = Math.min(valoresEmision.getM3(), porcResidencial.length - 1);
 
-		switch (categoria) {
+		switch (valoresEmision.getCategoria()) {
 			case 1: // RESIDENCIAL
 			case 9: // ESPECIAL
 				porcentaje = porcResidencial[index];
 				// fijo = BigDecimal.valueOf(3.32).multiply(porcentaje); // 3.82 - 0.50
-				variable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.06)).multiply(porcentaje); // 0.12 / 2
+				variable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.06))
+						.multiply(porcentaje); // 0.12 / 2
 				valor = variable;
 
-				if (categoria == 9 && swAdultoMayor && m3 <= 70) {
+				if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor()
+						&& valoresEmision.getM3() <= 70) {
 					valor = valor.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 				}
 				break;
@@ -355,21 +382,24 @@ public class LecturaServicio {
 			case 2: // COMERCIAL
 				porcentaje = BigDecimal.valueOf(0.85);
 				// fijo = BigDecimal.valueOf(5.25).multiply(porcentaje); // 5.75 - 0.50
-				variable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.15)).multiply(porcentaje); // 0.3 / 2
+				variable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.15))
+						.multiply(porcentaje); // 0.3 / 2
 				valor = variable;
 				break;
 
 			case 3: // INDUSTRIAL
 				porcentaje = BigDecimal.valueOf(0.90);
 				// fijo = BigDecimal.valueOf(11.50).multiply(porcentaje); // 12.00 - 0.50
-				variable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.25)).multiply(porcentaje); // 0.5 / 2
+				variable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.25))
+						.multiply(porcentaje); // 0.5 / 2
 				valor = variable;
 				break;
 
 			case 4: // OFICIAL
 				porcentaje = BigDecimal.valueOf(0.75);
 				// fijo = BigDecimal.valueOf(14.50); // ya sin multiplicar por porcentaje
-				variable = BigDecimal.valueOf(m3).multiply(BigDecimal.valueOf(0.35)).multiply(porcentaje); // 0.70 / 2
+				variable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(BigDecimal.valueOf(0.35))
+						.multiply(porcentaje); // 0.70 / 2
 				valor = variable;
 				break;
 		}
@@ -378,16 +408,16 @@ public class LecturaServicio {
 	}
 
 	/* CONSERVACIÓN DE FUENTES */
-	public BigDecimal conservacionFuentes(int m3, int categoria, boolean swMunicipio, boolean swAdultoMayor) {
+	public BigDecimal conservacionFuentes(EmisionOfCuentaDTO valoresEmision) {
 		BigDecimal valor = BigDecimal.valueOf(0.10);
-		switch (categoria) {
+		switch (valoresEmision.getCategoria()) {
 			case 4: // OFICIAL
-				if (swMunicipio) {
+				if (valoresEmision.isSwMunicipio()) {
 					valor = valor.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 				}
 				break;
 			case 9: // ESPECIAL
-				if (swAdultoMayor && m3 <= 70) {
+				if (valoresEmision.isSwAdultoMayor() && valoresEmision.getM3() <= 70) {
 					valor = valor.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 				}
 				break;
@@ -402,17 +432,16 @@ public class LecturaServicio {
 	}
 
 	/* HIDROSUCCIONADOR */
-	public BigDecimal hidrosuccionador(int m3, int categoria, boolean swMunicipio, boolean swAdultoMayor,
-			BigDecimal porcentaje) {
-		BigDecimal valor = BigDecimal.valueOf(0.50).multiply(porcentaje);
-		switch (categoria) {
+	public BigDecimal hidrosuccionador(EmisionOfCuentaDTO valoresEmision) {
+		BigDecimal valor = BigDecimal.valueOf(0.50).multiply(valoresEmision.getPliego24().getPorc());
+		switch (valoresEmision.getCategoria()) {
 			case 4: // OFICIAL
-				if (swMunicipio) {
+				if (valoresEmision.isSwMunicipio()) {
 					valor = valor.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 				}
 				break;
 			case 9: // ESPECIAL
-				if (swAdultoMayor && m3 <= 70) {
+				if (valoresEmision.isSwAdultoMayor() && valoresEmision.getM3() <= 70) {
 					valor = valor.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 				}
 				break;
