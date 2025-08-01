@@ -80,6 +80,8 @@ public class AguaTramiteApi {
       y.setFeccrea(x.getFeccrea());
       y.setUsumodi(x.getUsumodi());
       y.setFecmodi(x.getFecmodi());
+      y.setIddocumento_documentos(x.getIddocumento_documentos());
+      y.setNrodocumento(x.getNrodocumento());
       AguaTramite updateAguaTramite = aguatServicio.save(y);
       return ResponseEntity.ok(updateAguaTramite);
    }
