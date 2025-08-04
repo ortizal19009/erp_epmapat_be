@@ -88,7 +88,7 @@ public class CajasApi {
 		cajaServicio.deleteById(idcaja);
 		return ResponseEntity.ok(!(cajaServicio.findById(idcaja) != null));
 	}
-	@GetMapping("usuario/{idusuario}")
+	@GetMapping("/usuario/{idusuario}")
 	public ResponseEntity<Cajas> getByIdUsuario(@PathVariable("idusuario") Long idusuario){
 		Cajas caja = cajaServicio.findCajaByIdUsuario(idusuario);
 		if(caja != null) {
