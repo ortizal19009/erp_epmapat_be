@@ -177,6 +177,11 @@ public class FacturasApi {
 		return facServicio.findFacSincobroByCuetna(cuenta);
 	}
 
+		@GetMapping("/byCuenta")
+	public List<FacSinCobrar> findByCuenta(@RequestParam Long cuenta) {
+		return facServicio.findByCuenta(cuenta);
+	}
+
 	@GetMapping("/sincobrar/cuenta")
 	public List<FacSinCobrar> findSincobroByCuetna(@RequestParam Long cuenta) {
 		return facServicio.findSincobroByCuetna(cuenta);

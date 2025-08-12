@@ -128,6 +128,10 @@ public class FacturaServicio {
 		return dao.findFacSincobroByCuetna(cuenta);
 	}
 
+	public List<FacSinCobrar> findByCuenta(Long cuenta) {
+		return dao.findByCuenta(cuenta);
+	}
+
 	public List<FacSinCobrar> findSincobroByCuetna(Long cuenta) {
 		return dao.findSincobroByCuetna(cuenta);
 	}
