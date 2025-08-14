@@ -239,8 +239,8 @@ public class LecturaServicio {
 				.add(saneamiento)
 				.add(conservacionFuentes);
 
-		System.out.println("TOTAL: " + total);
-		return total;
+		System.out.println("TOTAL: " + total.setScale(2, RoundingMode.HALF_UP));
+		return total.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	/* AGUA POTABLE */
@@ -254,18 +254,59 @@ public class LecturaServicio {
 		switch (valoresEmision.getCategoria()) {
 			case 1: // RESIDENCIAL
 			case 9:
+				BigDecimal tarifa50 = new BigDecimal("0.5");
 				porcentaje = porcResidencial[index];
-				apFijo = valoresEmision.getCategorias().getFijoagua()
-						.subtract(BigDecimal.valueOf(0.10))
+				apFijo = valoresEmision.getCategorias().getFijoagua().subtract(BigDecimal.valueOf(0.10))
 						.multiply(porcentaje);
-				apVariable = BigDecimal.valueOf(valoresEmision.getM3()).multiply(valoresEmision.getPliego24().getAgua())
-						.multiply(valoresEmision.getPliego24().getPorc());
+				apVariable = BigDecimal.valueOf(valoresEmision.getM3())
+						.multiply(valoresEmision.getPliego24().getAgua())
+						.multiply(porcentaje);
 				aguapotable = apFijo.add(apVariable.setScale(2, RoundingMode.HALF_UP)).setScale(2,
 						RoundingMode.HALF_UP);
-				if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor()
-						&& valoresEmision.getM3() <= 70) {
-					aguapotable = aguapotable.divide(BigDecimal.valueOf(2).setScale(2, RoundingMode.HALF_UP));
-				}
+
+				/* if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor()) {
+					int baseAdultoMayor = 34;
+					System.out.println("Es un adulto mayor con " + valoresEmision.getM3() + " M3");
+
+					if (valoresEmision.getM3() > baseAdultoMayor) {
+						System.out.println("ADULTO MAYOR CON EXEDENTE");
+						aguapotable.multiply(tarifa50);
+
+					} else {
+						System.out.println("ADULTO MAYOR AL 50%");
+						// todo el consumo al 50%
+						aguapotable.divide(BigDecimal.valueOf(2));
+					}
+
+				} else if (valoresEmision.getCategoria() == 9 && !valoresEmision.isSwAdultoMayor()) {
+					// toda la categoría 9 no adulto mayor al 50%
+					System.out.println("DISCAPACIDAD");
+					porcentaje = porcResidencial[index];
+					apFijo = valoresEmision.getCategorias().getFijoagua().subtract(BigDecimal.valueOf(0.10))
+							.multiply(porcentaje);
+					apVariable = BigDecimal.valueOf(valoresEmision.getM3())
+							.multiply(valoresEmision.getPliego24().getAgua())
+							.multiply(porcentaje);
+					aguapotable = apFijo.add(apVariable.setScale(2, RoundingMode.HALF_UP)).setScale(2,
+							RoundingMode.HALF_UP);
+
+				} else if (valoresEmision.getM3() > 70) {
+					System.out.println("COMERCIAL");
+					// consumo alto, aplica tarifa comercial
+					aguapotable.multiply(tarifa50);
+
+				} else {
+
+					System.out.println("RESIDENCIAL");
+					porcentaje = porcResidencial[index];
+					apFijo = valoresEmision.getCategorias().getFijoagua().subtract(BigDecimal.valueOf(0.10))
+							.multiply(porcentaje);
+					apVariable = BigDecimal.valueOf(valoresEmision.getM3())
+							.multiply(valoresEmision.getPliego24().getAgua())
+							.multiply(valoresEmision.getPliego24().getPorc());
+					aguapotable = apFijo.add(apVariable.setScale(2, RoundingMode.HALF_UP)).setScale(2,
+							RoundingMode.HALF_UP);
+				} */
 				break;
 
 			case 2: // COMERCIAL
@@ -294,6 +335,11 @@ public class LecturaServicio {
 		}
 
 		return aguapotable;
+	}
+
+	// Método auxiliar para calcular el consumo de agua con opcional descuento
+	private BigDecimal calcularConsumo(BigDecimal m3, BigDecimal tarifaAgua, BigDecimal porc, BigDecimal factor) {
+		return m3.multiply(tarifaAgua).multiply(porc).multiply(factor);
 	}
 
 	/* ALCANTARILLADO */
@@ -365,17 +411,17 @@ public class LecturaServicio {
 				// fijo = BigDecimal.valueOf(3.32).multiply(porcentaje); // 3.82 - 0.50
 				variable = BigDecimal.valueOf(valoresEmision.getM3())
 						.multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
-						.multiply(porcentaje);
+						.multiply(porcentaje.setScale(2, RoundingMode.HALF_UP));
 				// 0.12 / 2
-				valor = variable;
+				valor = variable.setScale(2, RoundingMode.HALF_UP);
 
 				if (valoresEmision.getCategoria() == 9) {
 					if (valoresEmision.isSwAdultoMayor()
 							&& valoresEmision.getM3() <= 70) {
-						valor = valor.divide(BigDecimal.valueOf(2));
+						valor = valor.divide(BigDecimal.valueOf(2)).setScale(2, RoundingMode.HALF_UP);
 
 					} else {
-						valor = variable;
+						valor = variable.setScale(2, RoundingMode.HALF_UP);
 					}
 				}
 				break;
