@@ -38,4 +38,7 @@ public interface CategoriaR extends JpaRepository<Categorias, Long> {
 
 	@Query(value = "SELECT SUM(l.totaltarifa) FROM facturas f, lecturas l, rutasxemision r, emisiones e where l.idfactura = f.idfactura and r.idemision_emisiones = e.idemision and r.idrutaxemision = l.idrutaxemision_rutasxemision and e.idemision =195 and l.idcategoria = 1", nativeQuery = true)
 	BigDecimal sumTotalTarifa();
+
+	@Query(value = "SELECT * FROM categorias where idcategoria = ?1", nativeQuery = true)
+	Categorias getCategoriaById(int idcategoria);
 }

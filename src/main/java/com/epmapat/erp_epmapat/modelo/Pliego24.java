@@ -13,7 +13,6 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "pliego24")
-
 public class Pliego24 {
 
    @Id

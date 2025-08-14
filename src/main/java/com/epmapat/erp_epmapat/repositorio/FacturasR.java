@@ -93,7 +93,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<FacSinCobrar> findFacSincobroByCuetna(Long cuenta);
 
 	/* OPCION SOLO PARA REALIZAR EL CAMBIO DE PROPIETARIO */
-	@Query(value = "select f.idfactura, f.idmodulo, f.totaltarifa AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f where f.idabonado= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null ORDER BY f.idabonado asc, f.idfactura desc", nativeQuery = true)
+	@Query(value = "select f.idfactura, f.idmodulo, f.totaltarifa AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f where f.idabonado= ?1 and (( f.estado = 1 or f.estado = 2) and f.fechacobro is null) and f.fechaeliminacion is null and fechaconvenio is null ORDER BY f.idabonado asc, f.idfactura desc", nativeQuery = true)
 	public List<FacSinCobrar> findByCuenta(Long cuenta);
 
 	@Query(value = "select f.idfactura, f.idmodulo, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar, m.descripcion as modulo from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas join modulos m on f.idmodulo = m.idmodulo where f.totaltarifa > 0 and f.idabonado= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165  group by f.idfactura, m.descripcion ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
