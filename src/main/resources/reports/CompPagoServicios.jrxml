@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -488,7 +488,7 @@ where
 				<textElement verticalAlignment="Middle" rotation="None">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[ new java.text.SimpleDateFormat("yyyy-MM-dd").format($F{fechacobro}) ]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd").format($F{fechacobro})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="80" y="140" width="100" height="20" uuid="ce86168c-0c87-413e-8826-381e53b01208"/>

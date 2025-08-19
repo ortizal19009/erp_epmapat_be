@@ -267,7 +267,7 @@ ORDER BY
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="15" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["FACTURAS COBRADAS - INDIVIDUAL " ]]></textFieldExpression>
+				<textFieldExpression><![CDATA["FACTURAS COBRADAS - INDIVIDUAL "]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="2" y="140" width="550" height="21" uuid="6fc6d20a-dca2-43f8-ba31-1cedf7532e27"/>
@@ -278,8 +278,7 @@ ORDER BY
 (new java.text.SimpleDateFormat("HH:mm")).format($P{hdesde}) + 
 " - " +
 (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta}) + " " +
-(new java.text.SimpleDateFormat("HH:mm")).format($P{hhasta})
-]]></textFieldExpression>
+(new java.text.SimpleDateFormat("HH:mm")).format($P{hhasta})]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -437,8 +436,8 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$F{idfactura}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="50" y="0" width="162" height="15" uuid="a775c6ea-4085-49d6-8bf9-93e6a56c88d5">
+			<textField textAdjust="StretchHeight">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="50" y="0" width="162" height="15" uuid="a775c6ea-4085-49d6-8bf9-93e6a56c88d5">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c1e6a9ac-578c-4b63-bbad-e8bec4a03c3d"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>

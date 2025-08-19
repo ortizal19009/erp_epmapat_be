@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Ref_Facturas_Fecha" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="82302411-e9f0-4911-9602-9b45590b7c95">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
+	<subDataset name="RefFacturasFecha" uuid="c9de6746-a913-4655-85ee-994f71293982">
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
+		<parameter name="desde" class="java.util.Date"/>
+		<parameter name="hasta" class="java.util.Date"/>
+		<queryString language="SQL">
+			<![CDATA[SELECT
+                ln.idabonado_abonados AS cuenta,
+                c.nombre,
+                fa.fechaeliminacion AS fecelimina,
+                ln.idfactura AS nuevaplanilla,
+                ea.emision as emisionanterior,
+                en.emision as emisionnueva,
+                (SELECT SUM(rfn.valorunitario * rfn.cantidad)
+                FROM rubroxfac rfn
+                WHERE rfn.idfactura_facturas = ln.idfactura and not rfn.idrubro_rubros = 5) AS valornuevo,
+                la.idfactura AS anteriorplanilla,
+                (SELECT SUM(rfa.valorunitario * rfa.cantidad)
+                FROM rubroxfac rfa
+                WHERE rfa.idfactura_facturas = la.idfactura and not rfa.idrubro_rubros = 5) AS valoranterior,
+                la.observaciones
+            FROM emisionindividual e
+            INNER JOIN lecturas ln ON e.idlecturanueva = ln.idlectura
+            INNER JOIN emisiones en on en.idemision = ln.idemision
+            INNER JOIN abonados a ON ln.idabonado_abonados = a.idabonado
+            INNER JOIN clientes c ON a.idresponsable = c.idcliente
+            INNER JOIN facturas fn ON ln.idfactura = fn.idfactura
+            INNER JOIN lecturas la ON e.idlecturaanterior = la.idlectura
+            INNER JOIN emisiones ea on ea.idemision = ln.idemision
+            INNER JOIN facturas fa ON la.idfactura = fa.idfactura
+            WHERE fa.fechaeliminacion BETWEEN  $P{desde}  AND $P{hasta}
+            GROUP BY
+                ln.idabonado_abonados,
+                c.nombre,
+                fa.fechaeliminacion,
+                ln.idfactura,
+                la.idfactura,
+                la.observaciones,
+                ea.emision,
+                en.emision
+            ORDER BY ln.idabonado_abonados ASC]]>
+		</queryString>
+		<field name="cuenta" class="java.lang.Long"/>
+		<field name="nombre" class="java.lang.String"/>
+		<field name="fecelimina" class="java.util.Date"/>
+		<field name="nuevaplanilla" class="java.lang.Long"/>
+		<field name="emisionanterior" class="java.lang.Long"/>
+		<field name="emisionnueva" class="java.lang.Long"/>
+		<field name="valornuevo" class="java.math.BigDecimal"/>
+		<field name="anteriorplanilla" class="java.lang.Long"/>
+		<field name="valoranterior" class="java.math.BigDecimal"/>
+		<field name="observaciones" class="java.lang.String"/>
+	</subDataset>
+	<parameter name="desde" class="java.util.Date"/>
+	<parameter name="hasta" class="java.util.Date"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+                ln.idabonado_abonados AS cuenta,
+                c.nombre,
+                fa.fechaeliminacion AS fecelimina,
+                ln.idfactura AS nuevaplanilla,
+                ea.emision as emisionanterior,
+                en.emision as emisionnueva,
+                (SELECT SUM(rfn.valorunitario * rfn.cantidad)
+                FROM rubroxfac rfn
+                WHERE rfn.idfactura_facturas = ln.idfactura and not rfn.idrubro_rubros = 5) AS valornuevo,
+                la.idfactura AS anteriorplanilla,
+                (SELECT SUM(rfa.valorunitario * rfa.cantidad)
+                FROM rubroxfac rfa
+                WHERE rfa.idfactura_facturas = la.idfactura and not rfa.idrubro_rubros = 5) AS valoranterior,
+                la.observaciones
+            FROM emisionindividual e
+            INNER JOIN lecturas ln ON e.idlecturanueva = ln.idlectura
+            INNER JOIN emisiones en on en.idemision = ln.idemision
+            INNER JOIN abonados a ON ln.idabonado_abonados = a.idabonado
+            INNER JOIN clientes c ON a.idresponsable = c.idcliente
+            INNER JOIN facturas fn ON ln.idfactura = fn.idfactura
+            INNER JOIN lecturas la ON e.idlecturaanterior = la.idlectura
+            INNER JOIN emisiones ea on ea.idemision = ln.idemision
+            INNER JOIN facturas fa ON la.idfactura = fa.idfactura
+            WHERE fa.fechaeliminacion BETWEEN  $P{desde}  AND $P{hasta}
+            GROUP BY
+                ln.idabonado_abonados,
+                c.nombre,
+                fa.fechaeliminacion,
+                ln.idfactura,
+                la.idfactura,
+                la.observaciones,
+                ea.emision,
+                en.emision
+            ORDER BY ln.idabonado_abonados ASC]]>
+	</queryString>
+	<field name="cuenta" class="java.lang.Long"/>
+	<field name="nombre" class="java.lang.String"/>
+	<field name="fecelimina" class="java.util.Date"/>
+	<field name="nuevaplanilla" class="java.lang.Long"/>
+	<field name="emisionanterior" class="java.lang.Long"/>
+	<field name="emisionnueva" class="java.lang.Long"/>
+	<field name="valornuevo" class="java.math.BigDecimal"/>
+	<field name="anteriorplanilla" class="java.lang.Long"/>
+	<field name="valoranterior" class="java.math.BigDecimal"/>
+	<field name="observaciones" class="java.lang.String"/>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="72">
+			<frame>
+				<reportElement mode="Opaque" x="-20" y="-20" width="595" height="92" backcolor="#006699" uuid="8f423c95-47da-456f-bb10-1fe1bf49f5b2"/>
+				<staticText>
+					<reportElement x="20" y="20" width="234" height="43" forecolor="#FFFFFF" uuid="0116ea50-29dd-4da5-8ca0-69f04efa3e2e"/>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[REFACTURACIONES FACTURAS FECHAS]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="380" y="70" width="100" height="20" forecolor="#FFFFFF" uuid="25bd40bb-1940-4c50-8645-5ac93fe73b57"/>
+					<textFieldExpression><![CDATA[$P{desde}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="490" y="70" width="100" height="20" forecolor="#FFFFFF" uuid="31d0114a-877f-4c73-8f9e-73cd42de5abd"/>
+					<textFieldExpression><![CDATA[$P{hasta}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="13"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="18">
+			<staticText>
+				<reportElement x="0" y="0" width="50" height="18" uuid="465b7dc9-eef7-43a1-940f-8476f1cac63a">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b9e7905b-5599-4aff-9081-600bb384123d"/>
+				</reportElement>
+				<text><![CDATA[CUENTA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="50" y="0" width="65" height="18" uuid="4df18377-c935-47a5-8a85-4b2aa842ac6e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="93af430b-0e8d-41da-a03a-e5f2fa2f7385"/>
+				</reportElement>
+				<text><![CDATA[NOMBRE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="115" y="0" width="55" height="18" uuid="0918c15a-1538-4332-904b-8e1df1bdc85d">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="fbc92c92-f892-45a8-821a-b4f015fdfa77"/>
+				</reportElement>
+				<text><![CDATA[FEC.ELIM]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="335" y="0" width="55" height="18" uuid="af5433c6-3e16-4ac5-ad88-456e0ccb076b">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="2a0d51e0-a3f9-42a7-b5f2-feb05d9df100"/>
+				</reportElement>
+				<text><![CDATA[N PLAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="225" y="0" width="55" height="18" uuid="8c8c30fd-182d-4088-bce6-08d498d1089b">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="29c45248-f55a-44cc-af9c-1c9833117a1a"/>
+				</reportElement>
+				<text><![CDATA[EMI ANT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="390" y="-2" width="55" height="18" uuid="ba840cde-f75a-410f-ba9a-6408461fce9d">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c9642f84-bdd0-4e91-91b8-f5a6979c8ede"/>
+				</reportElement>
+				<text><![CDATA[EMI NUE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="445" y="-2" width="55" height="18" uuid="89c0c870-56b7-49d6-a163-2101f2624297">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="e108de6a-ce6a-4507-9f50-d910129b564a"/>
+				</reportElement>
+				<text><![CDATA[VAL NUE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="170" y="0" width="55" height="18" uuid="dfbb12a5-d7a4-45a2-8721-7b17fa742867">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="460f93cc-ce12-4e7c-a5cb-f88ce2c38e61"/>
+				</reportElement>
+				<text><![CDATA[A PLAN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="0" width="55" height="18" uuid="391c8627-4dac-48ec-9fcb-aef20a5c5401">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="e0d02ade-fde6-479c-9bdb-81e04aeec323"/>
+				</reportElement>
+				<text><![CDATA[VAL ANT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="500" y="0" width="55" height="18" uuid="bfa615aa-27fc-4fb6-b6b8-caad43d91aeb">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="743c2acc-394b-4015-a6ac-b3a1b9faf603"/>
+				</reportElement>
+				<text><![CDATA[OBSERV]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="33">
+			<textField>
+				<reportElement x="0" y="0" width="50" height="30" uuid="95952762-a396-4006-8e03-65a01d1b415d">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b9e7905b-5599-4aff-9081-600bb384123d"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{cuenta}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="50" y="0" width="65" height="30" uuid="833f61c1-cf70-4a04-8f4d-18eaddf13cf8">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="93af430b-0e8d-41da-a03a-e5f2fa2f7385"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{nombre}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="115" y="0" width="55" height="30" uuid="5a0ce8d3-87bb-4588-aafb-f958f60fa458">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="fbc92c92-f892-45a8-821a-b4f015fdfa77"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd/MM/yyyy").format($F{fecelimina})
+]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="335" y="0" width="55" height="30" uuid="03890138-5956-45dc-ab5a-cb33241fb9ae">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="2a0d51e0-a3f9-42a7-b5f2-feb05d9df100"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{nuevaplanilla}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="225" y="0" width="55" height="30" uuid="d4030309-d8ee-4c38-b681-e28f947363de">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="29c45248-f55a-44cc-af9c-1c9833117a1a"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{emisionanterior}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="390" y="-2" width="55" height="30" uuid="822e19cc-5ee6-4792-9121-18a62e261a3e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c9642f84-bdd0-4e91-91b8-f5a6979c8ede"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{emisionnueva}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="445" y="-2" width="55" height="30" uuid="dbd79d65-26e0-4532-be96-29a1152830a1">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="e108de6a-ce6a-4507-9f50-d910129b564a"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{valornuevo} != null ? $F{valornuevo}.setScale(2, java.math.RoundingMode.DOWN) : null
+]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="170" y="0" width="55" height="30" uuid="4b692dfd-7879-461c-8790-105096324441">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="460f93cc-ce12-4e7c-a5cb-f88ce2c38e61"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{anteriorplanilla}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="0" width="55" height="30" uuid="bc869458-4e99-4215-a67e-e43a05176d35">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="e0d02ade-fde6-479c-9bdb-81e04aeec323"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{valoranterior} != null ? $F{valoranterior}.setScale(2, java.math.RoundingMode.DOWN) : null
+]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="500" y="0" width="55" height="30" uuid="08328806-5833-44db-aba0-101f9f0ad845">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="743c2acc-394b-4015-a6ac-b3a1b9faf603"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{observaciones}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="17">
+			<textField>
+				<reportElement mode="Opaque" x="0" y="4" width="515" height="13" backcolor="#E6E6E6" uuid="956781d5-4e4b-4a1a-9a40-df7589faf8f1"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement mode="Opaque" x="515" y="4" width="40" height="13" backcolor="#E6E6E6" uuid="839093b7-917d-4358-a8d4-68303220a5d8"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement x="0" y="4" width="100" height="13" uuid="96644aa6-8c54-43c9-9ea2-0baba27db60e"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

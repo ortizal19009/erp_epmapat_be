@@ -244,8 +244,7 @@ JOIN Rubros r ON r.idrubro = rf.idrubro_rubros
 LEFT JOIN iva_total it ON f.formapago = it.formapago
 
 GROUP BY 
-    f.formapago, f.descripcion, it.sumaiva;
-]]>
+    f.formapago, f.descripcion, it.sumaiva;]]>
 		</queryString>
 		<field name="formapago" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.name" value="formapago"/>
@@ -352,7 +351,7 @@ WHERE
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="15" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["RUBROS COBRADOS - INDIVIDUAL " ]]></textFieldExpression>
+				<textFieldExpression><![CDATA["RUBROS COBRADOS - INDIVIDUAL "]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="2" y="140" width="550" height="21" uuid="76e83cea-0b32-4942-8204-6a8504749e84"/>
@@ -363,8 +362,7 @@ WHERE
 (new java.text.SimpleDateFormat("HH:mm")).format($P{hdesde}) + 
 " - " +
 (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta}) + " " +
-(new java.text.SimpleDateFormat("HH:mm")).format($P{hhasta})
-]]></textFieldExpression>
+(new java.text.SimpleDateFormat("HH:mm")).format($P{hhasta})]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -452,8 +450,8 @@ WHERE
 							</jr:columnHeader>
 							<jr:columnFooter style="Table 1_CH" height="15" rowSpan="1"/>
 							<jr:detailCell style="Table 1_TD" height="15">
-								<textField>
-									<reportElement x="0" y="0" width="135" height="15" uuid="0481028f-2498-473d-9c3f-454165d78c01"/>
+								<textField textAdjust="StretchHeight">
+									<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="0" y="0" width="135" height="15" uuid="0481028f-2498-473d-9c3f-454165d78c01"/>
 									<box leftPadding="5" rightPadding="5"/>
 									<textElement verticalAlignment="Middle"/>
 									<textFieldExpression><![CDATA[$F{nombre_rubro}]]></textFieldExpression>
@@ -567,8 +565,8 @@ WHERE
 							</jr:columnHeader>
 							<jr:columnFooter style="Table 1_CH" height="15" rowSpan="1"/>
 							<jr:detailCell style="Table 1_TD" height="15">
-								<textField>
-									<reportElement x="0" y="0" width="132" height="15" uuid="52531530-a30a-4e9c-b02a-63dffb809eca"/>
+								<textField textAdjust="StretchHeight">
+									<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="0" y="0" width="132" height="15" uuid="52531530-a30a-4e9c-b02a-63dffb809eca"/>
 									<box leftPadding="5" rightPadding="5"/>
 									<textElement verticalAlignment="Middle"/>
 									<textFieldExpression><![CDATA[$F{nombre_rubro}]]></textFieldExpression>
