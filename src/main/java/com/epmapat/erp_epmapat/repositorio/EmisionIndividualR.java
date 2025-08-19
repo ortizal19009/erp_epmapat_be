@@ -153,6 +153,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         INNER JOIN emisiones ea on ea.idemision = ln.idemision
                         INNER JOIN facturas fa ON la.idfactura = fa.idfactura
                         WHERE fa.fechaeliminacion BETWEEN :fechaInicio AND :fechaFin
+
                         GROUP BY
                             ln.idabonado_abonados,
                             c.nombre,
@@ -184,7 +185,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         	rfa.idrubro_rubros = ra.idrubro
                         where
                         	fa.fechaeliminacion BETWEEN :fechaInicio AND :fechaFin
-                        	and not rfa.idrubro_rubros = 5
+                        	and rfa.idrubro_rubros not in (5, 165)
                         group by
                         	ra.idrubro,
                         	ra.descripcion;
@@ -211,7 +212,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         	rfa.idrubro_rubros = ra.idrubro
                         where
                         	fa.fechaeliminacion BETWEEN :fechaInicio AND :fechaFin
-                        	and not rfa.idrubro_rubros = 5
+                        	and rfa.idrubro_rubros not in (5, 165)
                         group by
                         	ra.idrubro,
                         	ra.descripcion;
@@ -244,6 +245,8 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         where
                         	l.idemision = ?1
                         	and not f.fechaeliminacion is null
+                                and rf.idrubro_rubros not in (5,165)
+
                         group by
                         	l.idfactura, c.nombre, f.fechaeliminacion, f.razoneliminacion, l.idabonado_abonados,u.nomusu
                         """, nativeQuery = true)
@@ -273,6 +276,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         where
                                 f.fechaeliminacion between ?1 and ?2
                                 and not f.fechaeliminacion is null
+                                and rf.idrubro_rubros not in (5,165)
                         group by
                                 l.idfactura, c.nombre, f.fechaeliminacion, f.razoneliminacion, l.idabonado_abonados,u.nomusu
                         """, nativeQuery = true)
