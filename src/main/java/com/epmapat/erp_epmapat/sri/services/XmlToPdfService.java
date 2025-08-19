@@ -86,6 +86,7 @@ public class XmlToPdfService {
             inputSource.setEncoding("UTF-8");
             Document document = builder.parse(inputSource);
             String numeroAutorizacion = getNodeText(document, "numeroAutorizacion");
+            String fechaAutorizacion = getNodeText(document, "fechaAutorizacion");
             // Extraer nodo <comprobante> si existe
             NodeList comprobanteNodes = document.getElementsByTagName("comprobante");
             if (comprobanteNodes.getLength() > 0) {
@@ -103,7 +104,6 @@ public class XmlToPdfService {
             String razonSocial = getNodeText(document, "razonSocial");
             String ruc = getNodeText(document, "ruc");
 
-            String fechaAutorizacion = getNodeText(document, "fechaAutorizacion");
             String totalSinImpuestos = getNodeText(document, "totalSinImpuestos");
             String importeTotal = getNodeText(document, "importeTotal");
             String direccionMatriz = getNodeText(document, "dirMatriz");
@@ -122,7 +122,7 @@ public class XmlToPdfService {
             String formaPago = tabla15r.getNombre(getNodeText(document, "formaPago"));
             String totalDescuento = getNodeText(document, "totalDescuento");
             String propina = getNodeText(document, "propina");
-
+            // String referencia = getNodeText(document, "referencia");
             // Procesar items
             NodeList items = document.getElementsByTagName("detalle");
             List<Map<String, String>> itemsList = new ArrayList<>();
@@ -220,8 +220,7 @@ public class XmlToPdfService {
             parameters.put("TotalIVA12", totalIVA12);
             parameters.put("TotalICE", totalICE);
             parameters.put("TotalIRBPNR", totalIRBPNR);
-            parameters.put("Referencia", "--------");
-
+            // parameters.put("Referencia", "3333");
 
             // Compilar y llenar reporte
             InputStream reportStream = getClass().getResourceAsStream("/reports/factura_template.jrxml");
@@ -424,7 +423,6 @@ public class XmlToPdfService {
             throw new RuntimeException("Error al generar PDF", e);
         }
     }
-
 
     // Helper methods for XML parsing
     private String getNodeText(Document doc, String tagName) {

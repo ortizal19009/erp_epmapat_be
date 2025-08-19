@@ -3,6 +3,7 @@ package com.epmapat.erp_epmapat.controlador;
 import java.io.IOException;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,6 +12,7 @@ import com.epmapat.erp_epmapat.servicio.BackupService;
 
 @RestController
 @RequestMapping("/api/backup")
+@CrossOrigin("*")
 public class BackupController {
 
     private final BackupService backupService;
