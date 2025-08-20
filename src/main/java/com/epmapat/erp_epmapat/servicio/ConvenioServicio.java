@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.ConvenioOneData;
 import com.epmapat.erp_epmapat.interfaces.EstadoConvenios;
 import com.epmapat.erp_epmapat.modelo.Convenios;
 import com.epmapat.erp_epmapat.repositorio.ConveniosR;
@@ -66,19 +67,25 @@ public class ConvenioServicio {
         dao.deleteById(id);
     }
 
-    public List<Convenios> findByReferencia(Long referencia){
+    public List<Convenios> findByReferencia(Long referencia) {
         return dao.findByReferencia(referencia);
     }
-    public List<EstadoConvenios> getEstadoByConvenios(){
+
+    public List<EstadoConvenios> getEstadoByConvenios() {
         return dao.getEstadoByConvenios();
     }
-    public Page<EstadoConvenios> getByFacPendientes(Long d, Long h, int page, int size){
+
+    public Page<EstadoConvenios> getByFacPendientes(Long d, Long h, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return dao.getByFacPendientes(d, h, pageable);
     }
-    public List<EstadoConvenios> gePendienteByConvenio(Long idconvenio){
+
+    public List<EstadoConvenios> gePendienteByConvenio(Long idconvenio) {
         return dao.gePendienteByConvenio(idconvenio);
     }
-    
+
+    public List<ConvenioOneData> findDatosConvenio(Long idconvenio) {
+        return dao.findDatosConvenio(idconvenio);
+    }
 
 }

@@ -18,6 +18,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.ConvenioOneData;
 import com.epmapat.erp_epmapat.interfaces.EstadoConvenios;
 import com.epmapat.erp_epmapat.modelo.Convenios;
 import com.epmapat.erp_epmapat.servicio.ConvenioServicio;
@@ -115,6 +116,11 @@ public class ConveniosApi {
    @GetMapping("/pendiente")
    public ResponseEntity<List<EstadoConvenios>> gePendienteByConvenio(@RequestParam Long idconvenio) {
       return ResponseEntity.ok(convServicio.gePendienteByConvenio(idconvenio));
+   }
+
+   @GetMapping("/datosOne")
+   public ResponseEntity<List<ConvenioOneData>> getDatosConvenio(@RequestParam Long idconvenio) {
+      return ResponseEntity.ok(convServicio.findDatosConvenio(idconvenio));
    }
 
 }

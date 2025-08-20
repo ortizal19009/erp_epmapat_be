@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.epmapat.erp_epmapat.interfaces.ConvenioOneData;
 import com.epmapat.erp_epmapat.interfaces.EstadoConvenios;
 import com.epmapat.erp_epmapat.modelo.Convenios;
 
@@ -106,55 +107,69 @@ public interface ConveniosR extends JpaRepository<Convenios, Serializable> {
       """, nativeQuery = true)
   Page<EstadoConvenios> getByFacPendientes(Long d, Long h, Pageable pageable);
 
-@Query(value = """
-    SELECT * FROM (
-        SELECT
-            cv.idconvenio,
-            cv.nroconvenio,
-            c.nombre,
-            cv.idabonado,
-            cv.feccrea,
-            cv.estado,
-            COUNT(DISTINCT fc.idfactura_facturas) AS facAntiguas,
-            COUNT(DISTINCT ct.idcuota) AS facNuevas,
-            COUNT(DISTINCT CASE
-                             WHEN f.pagado = 1 OR f.fechacobro IS NOT NULL
-                             THEN ct.idcuota
-                           END) AS facPagadas,
-            (COUNT(DISTINCT ct.idcuota) - COUNT(DISTINCT CASE
+  @Query(value = """
+      SELECT * FROM (
+          SELECT
+              cv.idconvenio,
+              cv.nroconvenio,
+              c.nombre,
+              cv.idabonado,
+              cv.feccrea,
+              cv.estado,
+              COUNT(DISTINCT fc.idfactura_facturas) AS facAntiguas,
+              COUNT(DISTINCT ct.idcuota) AS facNuevas,
+              COUNT(DISTINCT CASE
                                WHEN f.pagado = 1 OR f.fechacobro IS NOT NULL
                                THEN ct.idcuota
-                             END)) AS facPendientes
-        FROM convenios cv
-        LEFT JOIN facxconvenio fc ON cv.idconvenio = fc.idconvenio_convenios
-        LEFT JOIN cuotas ct ON cv.idconvenio = ct.idconvenio_convenios
-        LEFT JOIN facturas f ON ct.idfactura = f.idfactura
-        LEFT JOIN abonados a ON cv.idabonado = a.idabonado
-        LEFT JOIN clientes c ON a.idresponsable = c.idcliente
-        WHERE cv.idconvenio = ?1
-        GROUP BY cv.idconvenio, cv.nroconvenio, cv.idabonado, cv.feccrea, cv.estado, c.nombre
-        HAVING (COUNT(DISTINCT ct.idcuota) - COUNT(DISTINCT CASE
-                 WHEN f.pagado = 1 OR f.fechacobro IS NOT NULL THEN ct.idcuota
-               END)) > 0
-    ) AS sub
-    ORDER BY facPendientes DESC
-    """, countQuery = """
-    SELECT COUNT(*) FROM (
-        SELECT 1
-        FROM convenios cv
-        LEFT JOIN facxconvenio fc ON cv.idconvenio = fc.idconvenio_convenios
-        LEFT JOIN cuotas ct ON cv.idconvenio = ct.idconvenio_convenios
-        LEFT JOIN facturas f ON ct.idfactura = f.idfactura
-        LEFT JOIN abonados a ON cv.idabonado = a.idabonado
-        LEFT JOIN clientes c ON a.idresponsable = c.idcliente
-        WHERE cv.idconvenio = ?1
-        GROUP BY cv.idconvenio, cv.nroconvenio, cv.idabonado, cv.feccrea, cv.estado, c.nombre
-        HAVING (COUNT(DISTINCT ct.idcuota) - COUNT(DISTINCT CASE
-                 WHEN f.pagado = 1 OR f.fechacobro IS NOT NULL THEN ct.idcuota
-               END)) > 0
-    ) AS sub_count
-    """, nativeQuery = true)
-List<EstadoConvenios> gePendienteByConvenio(Long idconvenio);
+                             END) AS facPagadas,
+              (COUNT(DISTINCT ct.idcuota) - COUNT(DISTINCT CASE
+                                 WHEN f.pagado = 1 OR f.fechacobro IS NOT NULL
+                                 THEN ct.idcuota
+                               END)) AS facPendientes
+          FROM convenios cv
+          LEFT JOIN facxconvenio fc ON cv.idconvenio = fc.idconvenio_convenios
+          LEFT JOIN cuotas ct ON cv.idconvenio = ct.idconvenio_convenios
+          LEFT JOIN facturas f ON ct.idfactura = f.idfactura
+          LEFT JOIN abonados a ON cv.idabonado = a.idabonado
+          LEFT JOIN clientes c ON a.idresponsable = c.idcliente
+          WHERE cv.idconvenio = ?1
+          GROUP BY cv.idconvenio, cv.nroconvenio, cv.idabonado, cv.feccrea, cv.estado, c.nombre
+          HAVING (COUNT(DISTINCT ct.idcuota) - COUNT(DISTINCT CASE
+                   WHEN f.pagado = 1 OR f.fechacobro IS NOT NULL THEN ct.idcuota
+                 END)) > 0
+      ) AS sub
+      ORDER BY facPendientes DESC
+      """, countQuery = """
+      SELECT COUNT(*) FROM (
+          SELECT 1
+          FROM convenios cv
+          LEFT JOIN facxconvenio fc ON cv.idconvenio = fc.idconvenio_convenios
+          LEFT JOIN cuotas ct ON cv.idconvenio = ct.idconvenio_convenios
+          LEFT JOIN facturas f ON ct.idfactura = f.idfactura
+          LEFT JOIN abonados a ON cv.idabonado = a.idabonado
+          LEFT JOIN clientes c ON a.idresponsable = c.idcliente
+          WHERE cv.idconvenio = ?1
+          GROUP BY cv.idconvenio, cv.nroconvenio, cv.idabonado, cv.feccrea, cv.estado, c.nombre
+          HAVING (COUNT(DISTINCT ct.idcuota) - COUNT(DISTINCT CASE
+                   WHEN f.pagado = 1 OR f.fechacobro IS NOT NULL THEN ct.idcuota
+                 END)) > 0
+      ) AS sub_count
+      """, nativeQuery = true)
+  List<EstadoConvenios> gePendienteByConvenio(Long idconvenio);
 
+  @Query(value = """
+          SELECT
+          ct.idconvenio_convenios as idconvenio,
+          c.nroconvenio,
+          COUNT(*) AS cuotas,
+          COUNT(*) FILTER (WHERE f.pagado = 1) AS pagado,
+          COUNT(*) FILTER (WHERE f.pagado = 0) AS nopagado
+      FROM cuotas ct
+      JOIN facturas f ON ct.idfactura = f.idfactura
+      JOIN convenios c ON c.idconvenio = ct.idconvenio_convenios
+      WHERE ct.idconvenio_convenios = ?1
+      GROUP BY ct.idconvenio_convenios, c.nroconvenio;
+          """, nativeQuery = true)
+  List<ConvenioOneData> findDatosConvenio(Long idconvenio);
 
 }
