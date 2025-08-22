@@ -219,14 +219,16 @@ public class LecturaServicio {
 		valoresEmision.setSwMunicipio(swMunicipio);
 		valoresEmision.setSwAdultoMayor(swAdultoMayor);
 
-		if (categoria == 1 && m3 > 70) {
+		if ((categoria == 1 || (categoria == 9 && swAdultoMayor == true)) && m3 > 70) {
+			System.out.println("Cambio de categoria a de adulto mayor especial a recidencial");
+
 			valoresEmision.setCategoria(2);
 		}
-
 		Pliego24 pliego = dao_pliego._findBloque(valoresEmision.getCategoria(), m3);
 		valoresEmision.setPliego24(pliego);
 		Categorias _categoria = dao_categoria.getCategoriaById(valoresEmision.getCategoria());
 		valoresEmision.setCategorias(_categoria);
+
 		BigDecimal aguapotable = aguaPotable(valoresEmision);
 		BigDecimal alcantarillado = alcantarillado(valoresEmision);
 		BigDecimal saneamiento = saneamiento(valoresEmision);
@@ -235,13 +237,17 @@ public class LecturaServicio {
 		System.out.println("Id BLOQUE " + pliego.getIdpliego());
 		System.out.println("======================================");
 		System.out.println("----------- M3 " + m3 + " -----------");
-		System.out.println("----------- CATEGORIA: " + categoria + " -----------");
+		System.out.println("----------- CATEGORIA: " + _categoria.getDescripcion() + " -----------");
 		System.out.println("AGUA POTABLE: " + aguapotable.setScale(2, RoundingMode.HALF_UP));
 		System.out.println("ALCANTARILLADO: " + alcantarillado.setScale(2, RoundingMode.HALF_UP));
 		System.out.println("SANEAMIENTO: " + saneamiento.setScale(2, RoundingMode.HALF_UP));
 		System.out.println("CONSERVACION DE FUENTES: " + conservacionFuentes.setScale(2, RoundingMode.HALF_UP));
 		System.out.println("======================================");
-
+		if (categoria == 9 && swAdultoMayor == true && m3 > 34 && m3 <= 70) {
+			System.out.println("Calcular exedente adulto mayor mas de 34 m3");
+			m3 = 34;
+			excedente(valoresEmision);
+		}
 		BigDecimal total = aguapotable
 				.add(alcantarillado)
 				.add(saneamiento)
@@ -326,7 +332,7 @@ public class LecturaServicio {
 			valor = valor.divide(BigDecimal.valueOf(2));
 		}
 		if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() == true
-				&& valoresEmision.getM3() < 70) {
+				&& valoresEmision.getM3() < 34) {
 			valor = valor.divide(BigDecimal.valueOf(2));
 		}
 
@@ -373,13 +379,13 @@ public class LecturaServicio {
 				valor = valor.divide(BigDecimal.valueOf(2));
 			}
 		}
-			if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() == false) {
-				valor = valor.divide(BigDecimal.valueOf(2));
-			}
-			if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() == true
-					&& valoresEmision.getM3() < 70) {
-				valor = valor.divide(BigDecimal.valueOf(2));
-			}
+		if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() == false) {
+			valor = valor.divide(BigDecimal.valueOf(2));
+		}
+		if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() == true
+				&& valoresEmision.getM3() < 70) {
+			valor = valor.divide(BigDecimal.valueOf(2));
+		}
 
 		return valor.setScale(2, RoundingMode.HALF_UP);
 	}
@@ -419,6 +425,31 @@ public class LecturaServicio {
 		return valor;
 	}
 
+	/* EXCEDENTE */
+	public BigDecimal excedente(EmisionOfCuentaDTO valoresEmision) {
+		BigDecimal valor = BigDecimal.ZERO;
+		valoresEmision.setCategoria(1);
+		Pliego24 pliego = dao_pliego._findBloque(valoresEmision.getCategoria(), valoresEmision.getM3());
+		valoresEmision.setPliego24(pliego);
+		Categorias _categoria = dao_categoria.getCategoriaById(valoresEmision.getCategoria());
+		valoresEmision.setCategorias(_categoria);
+
+		BigDecimal aguapotable = aguaPotable(valoresEmision);
+		BigDecimal alcantarillado = alcantarillado(valoresEmision);
+		BigDecimal saneamiento = saneamiento(valoresEmision);
+		BigDecimal conservacionFuentes = conservacionFuentes(valoresEmision);
+
+		System.out.println("=============EXCEDENTE================");
+		System.out.println("----------- M3 " + valoresEmision.getM3() + " -----------");
+		System.out.println("----------- CATEGORIA: " + _categoria.getDescripcion() + " -----------");
+		System.out.println("AGUA POTABLE: " + aguapotable.setScale(2, RoundingMode.HALF_UP));
+		System.out.println("ALCANTARILLADO: " + alcantarillado.setScale(2, RoundingMode.HALF_UP));
+		System.out.println("SANEAMIENTO: " + saneamiento.setScale(2, RoundingMode.HALF_UP));
+		System.out.println("CONSERVACION DE FUENTES: " + conservacionFuentes.setScale(2, RoundingMode.HALF_UP));
+		System.out.println("=============EXCEDENTE================");
+
+		return valor;
+	}
 	/* MULTAS */
 
 }

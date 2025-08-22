@@ -87,7 +87,7 @@ public interface ConveniosR extends JpaRepository<Convenios, Serializable> {
           GROUP BY cv.idconvenio, cv.nroconvenio, cv.idabonado, cv.feccrea, cv.estado, c.nombre
           HAVING (COUNT(DISTINCT ct.idcuota) - COUNT(DISTINCT CASE
                    WHEN f.pagado = 1 OR f.fechacobro IS NOT NULL THEN ct.idcuota
-                 END)) BETWEEN ?1 AND ?2
+                 END)) BETWEEN :desde AND :hasta
       ) AS sub
       ORDER BY facPendientes DESC
       """, countQuery = """
@@ -105,7 +105,9 @@ public interface ConveniosR extends JpaRepository<Convenios, Serializable> {
                  END)) > 0
       ) AS sub_count
       """, nativeQuery = true)
-  Page<EstadoConvenios> getByFacPendientes(Long d, Long h, Pageable pageable);
+  Page<EstadoConvenios> getByFacPendientes(@Param("desde") Long desde,
+      @Param("hasta") Long hasta,
+      Pageable pageable);
 
   @Query(value = """
       SELECT * FROM (
