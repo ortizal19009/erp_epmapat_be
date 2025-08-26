@@ -54,5 +54,6 @@ public class Definir {
     private String clave_firma;
     private String email; 
     private String clave_email;
+    private BigDecimal rbu;
 
 }

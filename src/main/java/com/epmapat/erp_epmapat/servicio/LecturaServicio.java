@@ -19,11 +19,15 @@ import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Categorias;
+import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.modelo.Pliego24;
+import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.CategoriaR;
+import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
 import com.epmapat.erp_epmapat.repositorio.Pliego24R;
+import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
 
 @Service
 public class LecturaServicio {
@@ -34,6 +38,10 @@ public class LecturaServicio {
 	private Pliego24R dao_pliego;
 	@Autowired
 	private CategoriaR dao_categoria;
+	@Autowired
+	private FacturasR dao_facturas;
+	@Autowired
+	private DefinirR dao_definir;
 
 	// Lectura por Planilla
 	public Lecturas findOnefactura(Long idfactura) {
@@ -210,6 +218,7 @@ public class LecturaServicio {
 
 	public BigDecimal calcularValores(Long cuenta, Long idfactura, int m3, int categoria, boolean swMunicipio,
 			boolean swAdultoMayor) {
+		BigDecimal multa = multas(cuenta);
 
 		EmisionOfCuentaDTO valoresEmision = new EmisionOfCuentaDTO();
 		valoresEmision.setCuenta(cuenta);
@@ -218,6 +227,11 @@ public class LecturaServicio {
 		valoresEmision.setCategoria(categoria);
 		valoresEmision.setSwMunicipio(swMunicipio);
 		valoresEmision.setSwAdultoMayor(swAdultoMayor);
+
+		BigDecimal aguapotable = BigDecimal.ZERO;
+		BigDecimal alcantarillado = BigDecimal.ZERO;
+		BigDecimal saneamiento = BigDecimal.ZERO;
+		BigDecimal conservacionFuentes = BigDecimal.ZERO;
 
 		if ((categoria == 1 || (categoria == 9 && swAdultoMayor == true)) && m3 > 70) {
 			System.out.println("Cambio de categoria a de adulto mayor especial a recidencial");
@@ -229,13 +243,12 @@ public class LecturaServicio {
 		Categorias _categoria = dao_categoria.getCategoriaById(valoresEmision.getCategoria());
 		valoresEmision.setCategorias(_categoria);
 		BigDecimal excedente = BigDecimal.ZERO;
-
-		BigDecimal aguapotable = aguaPotable(valoresEmision);
-		BigDecimal alcantarillado = alcantarillado(valoresEmision);
-		BigDecimal saneamiento = saneamiento(valoresEmision);
-		BigDecimal conservacionFuentes = conservacionFuentes(valoresEmision);
-		System.out.println("Porcentaje BLOQUE " + pliego.getPorc());
-		System.out.println("Id BLOQUE " + pliego.getIdpliego());
+		if (valoresEmision.isSwAguapotable() == false) {
+			aguapotable = aguaPotable(valoresEmision);
+			saneamiento = saneamiento(valoresEmision);
+		}
+		alcantarillado = alcantarillado(valoresEmision);
+		conservacionFuentes = conservacionFuentes(valoresEmision);
 		System.out.println("======================================");
 		System.out.println("----------- M3 " + m3 + " -----------");
 		System.out.println("----------- CATEGORIA: " + _categoria.getDescripcion() + " -----------");
@@ -245,10 +258,11 @@ public class LecturaServicio {
 		System.out.println("CONSERVACION DE FUENTES: " + conservacionFuentes.setScale(2, RoundingMode.HALF_UP));
 		System.out.println("======================================");
 		if (categoria == 9 && swAdultoMayor == true && m3 > 34 && m3 <= 70) {
-			System.out.println("Calcular exedente adulto mayor mas de 34 m3");
-			// m3 = 34;
 			excedente = excedente(valoresEmision);
 			System.out.println("EXCEDENTE A PAGAR " + excedente);
+		}
+		if (multa.compareTo(BigDecimal.ZERO) > 0) {
+			System.out.println("MULTA " + multa);
 		}
 		BigDecimal total = aguapotable
 				.add(alcantarillado)
@@ -268,7 +282,6 @@ public class LecturaServicio {
 		// Determinar porcentaje según categoría
 		if (valoresEmision.getCategoria() == 1 || valoresEmision.getCategoria() == 9) {
 			// Residencial
-			System.out.println("CALCULO DE RESIDENCIAL O DISCAPACITADOS");
 			int index = Math.min(valoresEmision.getM3(), porcResidencial.length - 1);
 			porcentaje = porcResidencial[index];
 		} else {
@@ -279,31 +292,18 @@ public class LecturaServicio {
 		apFijo = valoresEmision.getCategorias().getFijoagua()
 				.subtract(BigDecimal.valueOf(0.10))
 				.multiply(porcentaje);
-		System.out.println("Valor fijo: " + apFijo);
 		// Cálculo común de variable
 		porcentaje = valoresEmision.getPliego24().getPorc();
 
 		apVariable = BigDecimal.valueOf(valoresEmision.getM3())
 				.multiply(valoresEmision.getPliego24().getAgua())
 				.multiply(porcentaje);
-		System.out.println("Valor variable: " + apVariable);
 		// Total
 		aguapotable = apFijo.add(apVariable);
 		// Regla especial para Oficial (categoria 4)
 		if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
 			aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
 		}
-		/*
-		 * if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() ==
-		 * false) {
-		 * aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
-		 * }
-		 * if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() ==
-		 * true
-		 * && valoresEmision.getM3() <= 34) {
-		 * aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
-		 * }
-		 */
 
 		if (valoresEmision.getCategoria() == 9) {
 			aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
@@ -339,20 +339,6 @@ public class LecturaServicio {
 			valor = valor.divide(BigDecimal.valueOf(2));
 		}
 
-		if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
-			valor = valor.divide(BigDecimal.valueOf(2));
-		}
-		/*
-		 * if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() ==
-		 * false) {
-		 * valor = valor.divide(BigDecimal.valueOf(2));
-		 * }
-		 * if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() ==
-		 * true
-		 * && valoresEmision.getM3() <= 34) {
-		 * valor = valor.divide(BigDecimal.valueOf(2));
-		 * }
-		 */
 		if (valoresEmision.getCategoria() == 9) {
 			valor = valor.divide(BigDecimal.valueOf(2));
 		}
@@ -368,49 +354,17 @@ public class LecturaServicio {
 	/* SANEAMIENTO */
 	public BigDecimal saneamiento(EmisionOfCuentaDTO valoresEmision) {
 		BigDecimal valor = BigDecimal.ZERO;
-		BigDecimal porcentaje = BigDecimal.ONE;
+		BigDecimal porcentaje = BigDecimal.ZERO;
+		porcentaje = valoresEmision.getPliego24().getPorc();
 
-		int index = Math.min(valoresEmision.getM3(), porcResidencial.length - 1);
+		// Cálculo común de variable
+		valor = BigDecimal.valueOf(valoresEmision.getM3())
+				.multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
+				.multiply(porcentaje);
 
-		if (valoresEmision.getCategoria() == 1 || valoresEmision.getCategoria() == 9) {
-			// RESIDENCIAL o ESPECIAL
-			porcentaje = porcResidencial[index];
-			valor = BigDecimal.valueOf(valoresEmision.getM3())
-					.multiply(valoresEmision.getPliego24().getSaneamiento()
-							.divide(BigDecimal.valueOf(2)))
-					.multiply(porcentaje);
-
-		} else if (valoresEmision.getCategoria() == 2 || valoresEmision.getCategoria() == 3) {
-			// COMERCIAL o INDUSTRIAL
-			porcentaje = valoresEmision.getPliego24().getPorc();
-			valor = BigDecimal.valueOf(valoresEmision.getM3())
-					.multiply(valoresEmision.getPliego24().getSaneamiento()
-							.divide(BigDecimal.valueOf(2)))
-					.multiply(porcentaje);
-
-		} else if (valoresEmision.getCategoria() == 4) {
-			// OFICIAL
-			porcentaje = valoresEmision.getPliego24().getPorc();
-			valor = BigDecimal.valueOf(valoresEmision.getM3())
-					.multiply(valoresEmision.getPliego24().getSaneamiento()
-							.divide(BigDecimal.valueOf(2), 4, RoundingMode.HALF_UP))
-					.multiply(porcentaje);
-
-			if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
-				valor = valor.divide(BigDecimal.valueOf(2));
-			}
+		if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
+			valor = valor.divide(BigDecimal.valueOf(2));
 		}
-		/*
-		 * if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() ==
-		 * false) {
-		 * valor = valor.divide(BigDecimal.valueOf(2));
-		 * }
-		 * if (valoresEmision.getCategoria() == 9 && valoresEmision.isSwAdultoMayor() ==
-		 * true
-		 * && valoresEmision.getM3() <= 34) {
-		 * valor = valor.divide(BigDecimal.valueOf(2));
-		 * }
-		 */
 
 		if (valoresEmision.getCategoria() == 9) {
 			valor = valor.divide(BigDecimal.valueOf(2));
@@ -494,6 +448,22 @@ public class LecturaServicio {
 
 		return excedente;
 	}
+
 	/* MULTAS */
+	public BigDecimal multas(Long cuentas) {
+		List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuentas);
+		long nroPendientes = idfacturas.size();
+		BigDecimal multa = BigDecimal.ZERO;
+
+		if (nroPendientes > 2) {
+			Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último registro
+			if (definir != null) {
+				BigDecimal rbu = definir.getRbu();
+				multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.01)));
+			}
+		}
+
+		return multa;
+	}
 
 }

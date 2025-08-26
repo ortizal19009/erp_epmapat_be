@@ -42,6 +42,7 @@ public class DefinirApi {
         y.setFirma(x.getFirma());
         y.setClave_firma(x.getClave_firma());
         y.setEmail(x.getEmail());
+        y.setRbu(x.getRbu());
 
         if (x.getClave_email() == y.getClave_email()) {
             y.setClave_email(x.getClave_email());
