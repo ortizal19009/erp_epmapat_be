@@ -629,4 +629,8 @@ public class FacturaServicio {
 		// return newFactura;
 	}
 
+	public List<FacSinCobrar> getIdsFromFacturasSincobrar(){
+		return dao.getIdsFromFacturasSincobrar();
+	}
+
 }

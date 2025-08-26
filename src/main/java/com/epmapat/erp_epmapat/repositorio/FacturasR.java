@@ -537,6 +537,27 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<FacturasSinCobroInter> findSincobroDatos(Long cuenta);
 
 	/*
+	 * obtener todas las facturas que estan sin cobrar para calcularles el interes
+	 * mensualmente y guardarlas en tmpintresxfac
+	 */
+	@Query(value = """
+			select
+				f.idfactura
+			from
+				facturas f
+			where
+				f.totaltarifa > 0
+				and (
+				(f.estado = 1
+					or f.estado = 2)
+				and (f.fechacobro is null)
+					or f.estado = 3)
+				and f.fechaconvenio is null
+				and f.fechaeliminacion is null
+			""", nativeQuery = true)
+	public List<FacSinCobrar> getIdsFromFacturasSincobrar();
+
+	/*
 	 * 
 	 * select
 	 * a.idabonado ,
