@@ -45,6 +45,11 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = " select * from rubroxfac rf where rf.idfactura_facturas = ?1 and rf.idrubro_rubros = ?2", nativeQuery = true)
 	List<Rubroxfac> getOneFxR(Long idfactura, Long idrubro);
 
+	@Query("SELECT r FROM Rubroxfac r " +
+			"WHERE r.idfactura_facturas.idfactura = :idFactura " +
+			"AND r.idrubro_rubros.idrubro = :idRubro")
+	Rubroxfac findOneFxR(@Param("idFactura") Long idfactura, @Param("idRubro") Long idrubro);
+
 	/*
 	 * @Query(value =
 	 * "select * from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where f.fechacobro = ?1 group by rf.idrubro_rubros"

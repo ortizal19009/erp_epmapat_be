@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import javax.swing.text.Position.Bias;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +24,14 @@ import com.epmapat.erp_epmapat.modelo.Categorias;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.modelo.Pliego24;
+import com.epmapat.erp_epmapat.modelo.Rubros;
+import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.CategoriaR;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
 import com.epmapat.erp_epmapat.repositorio.Pliego24R;
+import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
 import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
 
 @Service
@@ -42,6 +47,8 @@ public class LecturaServicio {
 	private FacturasR dao_facturas;
 	@Autowired
 	private DefinirR dao_definir;
+	@Autowired
+	private RubroxfacR dao_rubroxfac;
 
 	// Lectura por Planilla
 	public Lecturas findOnefactura(Long idfactura) {
@@ -219,55 +226,82 @@ public class LecturaServicio {
 	public BigDecimal calcularValores(Long cuenta, Long idfactura, int m3, int categoria, boolean swMunicipio,
 			boolean swAdultoMayor) {
 		BigDecimal multa = multas(cuenta);
+		BigDecimal total = BigDecimal.ZERO;
+		Facturas factura = dao_facturas.findById(idfactura).orElseThrow();
+		Rubroxfac rubroxfac = new Rubroxfac();
+		Rubros rubro = new Rubros();
+		System.out.println(factura.getIdfactura());
+		if (factura != null) {
+			EmisionOfCuentaDTO valoresEmision = new EmisionOfCuentaDTO();
+			valoresEmision.setCuenta(cuenta);
+			valoresEmision.setIdfactura(idfactura);
+			valoresEmision.setM3(m3);
+			valoresEmision.setCategoria(categoria);
+			valoresEmision.setSwMunicipio(swMunicipio);
+			valoresEmision.setSwAdultoMayor(swAdultoMayor);
+			valoresEmision.setFactura(factura);
 
-		EmisionOfCuentaDTO valoresEmision = new EmisionOfCuentaDTO();
-		valoresEmision.setCuenta(cuenta);
-		valoresEmision.setIdfactura(idfactura);
-		valoresEmision.setM3(m3);
-		valoresEmision.setCategoria(categoria);
-		valoresEmision.setSwMunicipio(swMunicipio);
-		valoresEmision.setSwAdultoMayor(swAdultoMayor);
+			BigDecimal aguapotable = BigDecimal.ZERO;
+			BigDecimal alcantarillado = BigDecimal.ZERO;
+			BigDecimal saneamiento = BigDecimal.ZERO;
+			BigDecimal conservacionFuentes = BigDecimal.ZERO;
 
-		BigDecimal aguapotable = BigDecimal.ZERO;
-		BigDecimal alcantarillado = BigDecimal.ZERO;
-		BigDecimal saneamiento = BigDecimal.ZERO;
-		BigDecimal conservacionFuentes = BigDecimal.ZERO;
+			if ((categoria == 1 || (categoria == 9 && swAdultoMayor == true)) && m3 > 70) {
+				System.out.println("Cambio de categoria a de adulto mayor especial a recidencial");
 
-		if ((categoria == 1 || (categoria == 9 && swAdultoMayor == true)) && m3 > 70) {
-			System.out.println("Cambio de categoria a de adulto mayor especial a recidencial");
+				valoresEmision.setCategoria(2);
+			}
+			Pliego24 pliego = dao_pliego._findBloque(valoresEmision.getCategoria(), m3);
+			valoresEmision.setPliego24(pliego);
+			Categorias _categoria = dao_categoria.getCategoriaById(valoresEmision.getCategoria());
+			valoresEmision.setCategorias(_categoria);
+			BigDecimal excedente = BigDecimal.ZERO;
+			if (valoresEmision.isSwAguapotable() == false) {
+				aguapotable = aguaPotable(valoresEmision);
+				saneamiento = saneamiento(valoresEmision);
+			}
+			alcantarillado = alcantarillado(valoresEmision);
+			conservacionFuentes = conservacionFuentes(valoresEmision);
+			System.out.println("======================================");
+			System.out.println("----------- M3 " + m3 + " -----------");
+			System.out.println("----------- CATEGORIA: " + _categoria.getDescripcion() + " -----------");
+			/* GUARDAR AGUA POTABLE */
+			System.out.println("AGUA POTABLE: " + aguapotable.setScale(2, RoundingMode.HALF_UP));
 
-			valoresEmision.setCategoria(2);
+			System.out.println("ALCANTARILLADO: " + alcantarillado.setScale(2, RoundingMode.HALF_UP));
+
+			System.out.println("SANEAMIENTO: " + saneamiento.setScale(2, RoundingMode.HALF_UP));
+
+			System.out.println("CONSERVACION DE FUENTES: " + conservacionFuentes.setScale(2, RoundingMode.HALF_UP));
+
+			System.out.println("======================================");
+			if (categoria == 9 && swAdultoMayor == true && m3 > 34 && m3 <= 70) {
+				excedente = excedente(valoresEmision);
+				System.out.println("EXCEDENTE A PAGAR " + excedente);
+				rubro.setIdrubro(1005L);
+				rubroxfac.setIdrubro_rubros(rubro);
+				rubroxfac.setCantidad(1F);
+				rubroxfac.setIdfactura_facturas(factura);
+				rubroxfac.setValorunitario(excedente.setScale(2, RoundingMode.HALF_UP));
+				saveRxf(rubroxfac);
+			}
+			if (multa.compareTo(BigDecimal.ZERO) > 0) {
+				System.out.println("MULTA " + multa);
+				rubro.setIdrubro(5L);
+				rubroxfac.setIdrubro_rubros(rubro);
+				rubroxfac.setCantidad(1F);
+				rubroxfac.setIdfactura_facturas(factura);
+				rubroxfac.setValorunitario(multa.setScale(2, RoundingMode.HALF_UP));
+				saveRxf(rubroxfac);
+			}
+			total = aguapotable
+					.add(alcantarillado)
+					.add(saneamiento)
+					.add(conservacionFuentes).add(excedente).add(multa);
+			factura.setTotaltarifa(total);
+			factura.setValorbase(total);
+			dao_facturas.save(factura);
 		}
-		Pliego24 pliego = dao_pliego._findBloque(valoresEmision.getCategoria(), m3);
-		valoresEmision.setPliego24(pliego);
-		Categorias _categoria = dao_categoria.getCategoriaById(valoresEmision.getCategoria());
-		valoresEmision.setCategorias(_categoria);
-		BigDecimal excedente = BigDecimal.ZERO;
-		if (valoresEmision.isSwAguapotable() == false) {
-			aguapotable = aguaPotable(valoresEmision);
-			saneamiento = saneamiento(valoresEmision);
-		}
-		alcantarillado = alcantarillado(valoresEmision);
-		conservacionFuentes = conservacionFuentes(valoresEmision);
-		System.out.println("======================================");
-		System.out.println("----------- M3 " + m3 + " -----------");
-		System.out.println("----------- CATEGORIA: " + _categoria.getDescripcion() + " -----------");
-		System.out.println("AGUA POTABLE: " + aguapotable.setScale(2, RoundingMode.HALF_UP));
-		System.out.println("ALCANTARILLADO: " + alcantarillado.setScale(2, RoundingMode.HALF_UP));
-		System.out.println("SANEAMIENTO: " + saneamiento.setScale(2, RoundingMode.HALF_UP));
-		System.out.println("CONSERVACION DE FUENTES: " + conservacionFuentes.setScale(2, RoundingMode.HALF_UP));
-		System.out.println("======================================");
-		if (categoria == 9 && swAdultoMayor == true && m3 > 34 && m3 <= 70) {
-			excedente = excedente(valoresEmision);
-			System.out.println("EXCEDENTE A PAGAR " + excedente);
-		}
-		if (multa.compareTo(BigDecimal.ZERO) > 0) {
-			System.out.println("MULTA " + multa);
-		}
-		BigDecimal total = aguapotable
-				.add(alcantarillado)
-				.add(saneamiento)
-				.add(conservacionFuentes).add(excedente);
 
 		System.out.println("TOTAL: " + total.setScale(2, RoundingMode.HALF_UP));
 		return total.setScale(2, RoundingMode.HALF_UP);
@@ -279,6 +313,8 @@ public class LecturaServicio {
 		BigDecimal apFijo;
 		BigDecimal apVariable;
 		BigDecimal porcentaje;
+		Rubroxfac rubroxfac = new Rubroxfac();
+		Rubros rubro = new Rubros();
 		// Determinar porcentaje según categoría
 		if (valoresEmision.getCategoria() == 1 || valoresEmision.getCategoria() == 9) {
 			// Residencial
@@ -308,6 +344,13 @@ public class LecturaServicio {
 		if (valoresEmision.getCategoria() == 9) {
 			aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
 		}
+
+		rubro.setIdrubro(1001L);
+		rubroxfac.setIdrubro_rubros(rubro);
+		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
+		rubroxfac.setCantidad(1F);
+		rubroxfac.setValorunitario(aguapotable.setScale(2, RoundingMode.HALF_UP));
+		saveRxf(rubroxfac);
 		return aguapotable;
 	}
 
@@ -316,7 +359,8 @@ public class LecturaServicio {
 		BigDecimal valor = BigDecimal.ZERO;
 		BigDecimal fijo, variable;
 		BigDecimal porcentaje;
-
+		Rubroxfac rubroxfac = new Rubroxfac();
+		Rubros rubro = new Rubros();
 		// Hidrosuccionador siempre se suma al final
 		BigDecimal hidro = hidrosuccionador(valoresEmision);
 		porcentaje = valoresEmision.getPliego24().getPorc();
@@ -347,7 +391,12 @@ public class LecturaServicio {
 		valor = valor.add(hidro);
 
 		System.out.println("HIDRO SUCCIONADOR: " + hidro);
-
+		rubro.setIdrubro(1002L);
+		rubroxfac.setIdrubro_rubros(rubro);
+		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
+		rubroxfac.setCantidad(1F);
+		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
+		saveRxf(rubroxfac);
 		return valor;
 	}
 
@@ -355,6 +404,8 @@ public class LecturaServicio {
 	public BigDecimal saneamiento(EmisionOfCuentaDTO valoresEmision) {
 		BigDecimal valor = BigDecimal.ZERO;
 		BigDecimal porcentaje = BigDecimal.ZERO;
+		Rubroxfac rubroxfac = new Rubroxfac();
+		Rubros rubro = new Rubros();
 		porcentaje = valoresEmision.getPliego24().getPorc();
 
 		// Cálculo común de variable
@@ -370,12 +421,29 @@ public class LecturaServicio {
 			valor = valor.divide(BigDecimal.valueOf(2));
 		}
 
+		rubro.setIdrubro(1003L);
+		rubroxfac.setIdrubro_rubros(rubro);
+		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
+		rubroxfac.setCantidad(1F);
+		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
+		saveRxf(rubroxfac);
+
 		return valor.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	/* CONSERVACIÓN DE FUENTES */
 	public BigDecimal conservacionFuentes(EmisionOfCuentaDTO valoresEmision) {
 		BigDecimal valor = BigDecimal.valueOf(0.10);
+		Rubroxfac rubroxfac = new Rubroxfac();
+		Rubros rubro = new Rubros();
+
+		rubro.setIdrubro(1004L);
+		rubroxfac.setIdrubro_rubros(rubro);
+		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
+		rubroxfac.setCantidad(1F);
+		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
+		saveRxf(rubroxfac);
+
 		return valor;
 	}
 
@@ -454,16 +522,38 @@ public class LecturaServicio {
 		List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuentas);
 		long nroPendientes = idfacturas.size();
 		BigDecimal multa = BigDecimal.ZERO;
-
-		if (nroPendientes > 2) {
-			Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último registro
-			if (definir != null) {
-				BigDecimal rbu = definir.getRbu();
-				multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.01)));
-			}
+		if (nroPendientes == 3) {
+			multa = BigDecimal.valueOf(2);
 		}
+		/*
+		 * if (nroPendientes > 2) {
+		 * Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último
+		 * registro
+		 * if (definir != null) {
+		 * BigDecimal rbu = definir.getRbu();
+		 * multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.01)));
+		 * }
+		 * }
+		 */
 
 		return multa;
+	}
+
+	private Rubroxfac saveRxf(Rubroxfac rxf) {
+		Rubroxfac swrxf = dao_rubroxfac.findOneFxR(
+				rxf.getIdfactura_facturas().getIdfactura(),
+				rxf.getIdrubro_rubros().getIdrubro());
+
+		if (swrxf != null) {
+			// ✅ actualizar valores en el registro existente
+			swrxf.setValorunitario(rxf.getValorunitario());
+			swrxf.setCantidad(rxf.getCantidad());
+			// si hay más campos que deben actualizarse, también agrégalos aquí
+			return dao_rubroxfac.save(swrxf);
+		} else {
+			// ✅ guardar nuevo registro
+			return dao_rubroxfac.save(rxf);
+		}
 	}
 
 }

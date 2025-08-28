@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.DTO;
 
 import com.epmapat.erp_epmapat.modelo.Categorias;
+import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.Pliego24;
 
 import lombok.Data;
@@ -20,5 +21,6 @@ public class EmisionOfCuentaDTO {
     boolean swAguapotable;
     Pliego24 pliego24;
     Categorias categorias;
+    Facturas factura;
 }
 
