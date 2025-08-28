@@ -242,6 +242,6 @@ public class LecturasApi {
 	@PostMapping("/valoresEmisiones")
 	public ResponseEntity<BigDecimal> getValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
 		return ResponseEntity.ok(lecServicio.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
-				datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor()));
+				datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
 	}
 }
