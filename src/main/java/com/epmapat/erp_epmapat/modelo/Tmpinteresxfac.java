@@ -1,7 +1,6 @@
 package com.epmapat.erp_epmapat.modelo;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import javax.persistence.*;

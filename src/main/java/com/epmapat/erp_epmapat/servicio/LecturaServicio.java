@@ -248,8 +248,6 @@ public class LecturaServicio {
 			BigDecimal conservacionFuentes = BigDecimal.ZERO;
 
 			if ((categoria == 1 || (categoria == 9 && swAdultoMayor == true)) && m3 > 70) {
-				System.out.println("Cambio de categoria a de adulto mayor especial a recidencial");
-
 				valoresEmision.setCategoria(2);
 			}
 			Pliego24 pliego = dao_pliego._findBloque(valoresEmision.getCategoria(), m3);
@@ -263,22 +261,8 @@ public class LecturaServicio {
 			}
 			alcantarillado = alcantarillado(valoresEmision).setScale(2, RoundingMode.HALF_UP);
 			conservacionFuentes = conservacionFuentes(valoresEmision).setScale(2, RoundingMode.HALF_UP);
-			System.out.println("======================================");
-			System.out.println("----------- M3 " + m3 + " -----------");
-			System.out.println("----------- CATEGORIA: " + _categoria.getDescripcion() + " -----------");
-			/* GUARDAR AGUA POTABLE */
-			System.out.println("AGUA POTABLE: " + aguapotable.setScale(2, RoundingMode.HALF_UP));
-
-			System.out.println("ALCANTARILLADO: " + alcantarillado.setScale(2, RoundingMode.HALF_UP));
-
-			System.out.println("SANEAMIENTO: " + saneamiento.setScale(2, RoundingMode.HALF_UP));
-
-			System.out.println("CONSERVACION DE FUENTES: " + conservacionFuentes.setScale(2, RoundingMode.HALF_UP));
-
-			System.out.println("======================================");
 			if (categoria == 9 && swAdultoMayor == true && m3 > 34 && m3 <= 70) {
 				excedente = excedente(valoresEmision);
-				System.out.println("EXCEDENTE A PAGAR " + excedente);
 				rubro.setIdrubro(1005L);
 				rubroxfac.setIdrubro_rubros(rubro);
 				rubroxfac.setCantidad(1F);
@@ -305,7 +289,6 @@ public class LecturaServicio {
 			dao_facturas.save(factura);
 		}
 
-		System.out.println("TOTAL: " + total.setScale(2, RoundingMode.HALF_UP));
 		return total.setScale(2, RoundingMode.HALF_UP);
 	}
 
@@ -562,69 +545,34 @@ public class LecturaServicio {
 	public BigDecimal hidrosuccionador(EmisionOfCuentaDTO valoresEmision) {
 		BigDecimal valor = BigDecimal.ZERO;
 		BigDecimal porcentaje = BigDecimal.ZERO;
-
 		porcentaje = valoresEmision.getPliego24().getPorc();
 		valor = BigDecimal.valueOf(0.50).multiply(porcentaje);
-
-		/*
-		 * if (valoresEmision.getCategoria() == 1 || valoresEmision.getCategoria() == 9)
-		 * {
-		 * // RESIDENCIAL o ESPECIAL
-		 * 
-		 * 
-		 * } else if (valoresEmision.getCategoria() == 2 ||
-		 * valoresEmision.getCategoria() == 3) {
-		 * // COMERCIAL o INDUSTRIAL
-		 * porcentaje = valoresEmision.getPliego24().getPorc();
-		 * valor = BigDecimal.valueOf(0.50).multiply(porcentaje);
-		 * 
-		 * } else if (valoresEmision.getCategoria() == 4) {
-		 * // OFICIAL
-		 * porcentaje = valoresEmision.getPliego24().getPorc();
-		 * valor = BigDecimal.valueOf(0.50).multiply(porcentaje);
-		 * if (valoresEmision.isSwMunicipio()) {
-		 * valor = valor.divide(BigDecimal.valueOf(2));
-		 * }
-		 * }
-		 */
-
 		return valor;
 	}
 
 	/* EXCEDENTE */
 	public BigDecimal excedente(EmisionOfCuentaDTO valoresExcedente1) {
 		valoresExcedente1.setCategoria(1);
-		System.out.println("Categoria: " + valoresExcedente1.getCategoria());
 		BigDecimal valor = BigDecimal.ZERO;
 		valoresExcedente1.setCategoria(1);
 		Pliego24 pliego = dao_pliego._findBloque(valoresExcedente1.getCategoria(), valoresExcedente1.getM3());
 		valoresExcedente1.setPliego24(pliego);
 		Categorias _categoria = dao_categoria.getCategoriaById(valoresExcedente1.getCategoria());
 		valoresExcedente1.setCategorias(_categoria);
-
 		BigDecimal apex1 = exaguaPotable(valoresExcedente1);
 		BigDecimal aex1 = exalcantarillado(valoresExcedente1);
 		BigDecimal sex1 = exsaneamiento(valoresExcedente1);
 		BigDecimal cex1 = conservacionFuentes(valoresExcedente1);
-
 		BigDecimal suma1 = apex1.add(aex1).add(sex1).add(cex1);
-
 		EmisionOfCuentaDTO valoresExcedente2 = new EmisionOfCuentaDTO();
 		valoresExcedente2 = valoresExcedente1;
 		valoresExcedente2.setM3(valoresExcedente1.getM3() - 1);
-
 		BigDecimal apex2 = exaguaPotable(valoresExcedente2);
 		BigDecimal aex2 = exalcantarillado(valoresExcedente2);
 		BigDecimal sex2 = exsaneamiento(valoresExcedente2);
 		BigDecimal cex2 = conservacionFuentes(valoresExcedente2);
-
 		BigDecimal suma2 = apex2.add(aex2).add(sex2).add(cex2);
 		BigDecimal excedente = suma1.subtract(suma2);
-		System.out.println("=============EXCEDENTE================");
-		System.out.println("suma 1: " + suma1 + " suma 2: " + suma2);
-		System.out.println("EXCEDENTE: " + excedente);
-		System.out.println("=============EXCEDENTE================");
-
 		return excedente;
 	}
 
