@@ -21,6 +21,7 @@ import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
+import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
@@ -244,4 +245,10 @@ public class LecturasApi {
 		return ResponseEntity.ok(lecServicio.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
 				datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
 	}
+
+	@GetMapping("/swalcantarillado")
+	public List<EmisionesInterface> getSWalcatarillados(@RequestParam Long idemision) {
+		return lecServicio.getSWalcatarillados(idemision);
+	}
+
 }

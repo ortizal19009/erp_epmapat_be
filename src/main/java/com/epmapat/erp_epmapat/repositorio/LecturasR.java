@@ -9,8 +9,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.scheduling.annotation.Async;
 
+import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
+import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
@@ -100,40 +102,41 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	List<Lecturas> findByIdEmisiones(Long idemision);
 
 	@Query(value = "select\r\n" + //
-				"\trf.idfactura_facturas as planilla,\r\n" + //
-				"\tl.idlectura,\r\n" + //
-				"\te.emision ,\r\n" + //
-				"\tl.idabonado_abonados as cuenta,\r\n" + //
-				"\tc.nombre,\r\n" + //
-				"\tr.descripcion as ruta, \r\n" + //
-				"\tsum(rf.cantidad * rf.valorunitario) as suma\r\n" + //
-				"from\r\n" + //
-				"\temisiones e\r\n" + //
-				"join lecturas l on\r\n" + //
-				"\te.idemision = l.idemision\r\n" + //
-				"join facturas f on\r\n" + //
-				"\tl.idfactura = f.idfactura\r\n" + //
-				"join clientes c on\r\n" + //
-				"\tf.idcliente = c.idcliente\r\n" + //
-				"join abonados a on\r\n" + //
-				"\tl.idabonado_abonados = a.idabonado\r\n" + //
-				"join rutas r on\r\n" + //
-				"\ta.idruta_rutas = r.idruta\r\n" + //
-				"join rubroxfac rf on \r\n" + //
-				"\tl.idfactura = rf.idfactura_facturas\r\n" + //
-				"where\r\n" + //
-				"\tnot f.fechaeliminacion is null\r\n" + //
-				"\tand l.idemision = ?1\r\n" + //
-				"group by\r\n" + //
-				"\trf.idfactura_facturas,\r\n" + //
-				"\tl.idlectura,\r\n" + //
-				"\te.emision ,\r\n" + //
-				"\tl.idabonado_abonados,\r\n" + //
-				"\tc.nombre,\r\n" + //
-				"\tr.descripcion\r\n" + //
-				"order by\r\n" + //
-				"\tl.idabonado_abonados", nativeQuery = true)
+			"\trf.idfactura_facturas as planilla,\r\n" + //
+			"\tl.idlectura,\r\n" + //
+			"\te.emision ,\r\n" + //
+			"\tl.idabonado_abonados as cuenta,\r\n" + //
+			"\tc.nombre,\r\n" + //
+			"\tr.descripcion as ruta, \r\n" + //
+			"\tsum(rf.cantidad * rf.valorunitario) as suma\r\n" + //
+			"from\r\n" + //
+			"\temisiones e\r\n" + //
+			"join lecturas l on\r\n" + //
+			"\te.idemision = l.idemision\r\n" + //
+			"join facturas f on\r\n" + //
+			"\tl.idfactura = f.idfactura\r\n" + //
+			"join clientes c on\r\n" + //
+			"\tf.idcliente = c.idcliente\r\n" + //
+			"join abonados a on\r\n" + //
+			"\tl.idabonado_abonados = a.idabonado\r\n" + //
+			"join rutas r on\r\n" + //
+			"\ta.idruta_rutas = r.idruta\r\n" + //
+			"join rubroxfac rf on \r\n" + //
+			"\tl.idfactura = rf.idfactura_facturas\r\n" + //
+			"where\r\n" + //
+			"\tnot f.fechaeliminacion is null\r\n" + //
+			"\tand l.idemision = ?1\r\n" + //
+			"group by\r\n" + //
+			"\trf.idfactura_facturas,\r\n" + //
+			"\tl.idlectura,\r\n" + //
+			"\te.emision ,\r\n" + //
+			"\tl.idabonado_abonados,\r\n" + //
+			"\tc.nombre,\r\n" + //
+			"\tr.descripcion\r\n" + //
+			"order by\r\n" + //
+			"\tl.idabonado_abonados", nativeQuery = true)
 	List<RepFacEliminadasByEmision> findByIdEmisionesR(Long idemision);
+
 	/* REPORTES DE LOS RUBROS DE LA EMISION INICIAL */
 	@Async
 	@Query(value = " WITH max_fechaemision AS ( "
@@ -147,7 +150,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			+ "FROM lecturas l join rubroxfac rf on l.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro "
 			+ "join abonados a on l.idabonado_abonados = a.idabonado "
 			+ "WHERE l.idemision = ?1 and not rf.idrubro_rubros = 5 and rf.valorunitario > 0 " + //
-								" "
+			" "
 			+ "AND l.fechaemision = (SELECT fechaemision FROM max_fechaemision) "
 			+ "group by rf.idrubro_rubros , r.descripcion ; ", nativeQuery = true)
 	CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision);
@@ -189,7 +192,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			+ "where l.idemision = ?1 and not rf.idrubro_rubros = 5 and rf.valorunitario > 0 and not l.observaciones is null "
 			+ "group by rf.idrubro_rubros , r.descripcion ", nativeQuery = true)
 	public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(Long idemision);
-	
+
 	@Query(value = "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total , count(l.idabonado_abonados) as abonados "
 			+ "from emisionindividual ei "
 			+ "join lecturas l on ei.idlecturaanterior = l.idlectura "
@@ -223,17 +226,58 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			+ "group by l.idcategoria, c.descripcion ", nativeQuery = true)
 	public List<ConsumoxCat_int> getConsumoxCategoria(Long idemision);
 
-@Query(value = "WITH abonados_con_emision AS ( SELECT DISTINCT " +
-	" l.idabonado_abonados FROM lecturas l " +
-	" WHERE l.idemision=?1) " +
-" SELECT a.idabonado_abonados,l.idfactura, l.lecturaanterior, l.lecturaactual, COUNT(rf.idrubro_rubros) AS rubros_count" +
-" FROM abonados_con_emision a" +
-" LEFT JOIN lecturas l" +
-" ON a.idabonado_abonados = l.idabonado_abonados AND l.idemision = ?1" +
-" LEFT JOIN rubroxfac rf" +
-" ON rf.idfactura_facturas = l.idfactura" +
-" GROUP BY a.idabonado_abonados,l.idfactura, l.lecturaanterior, l.lecturaactual " +
-"HAVING COUNT(rf.idrubro_rubros) = 0 ", nativeQuery = true)
-public List<CountRubrosByEmision>getCuentaRubrosByEmision(long idemision );
+	@Query(value = "WITH abonados_con_emision AS ( SELECT DISTINCT " +
+			" l.idabonado_abonados FROM lecturas l " +
+			" WHERE l.idemision=?1) " +
+			" SELECT a.idabonado_abonados,l.idfactura, l.lecturaanterior, l.lecturaactual, COUNT(rf.idrubro_rubros) AS rubros_count"
+			+
+			" FROM abonados_con_emision a" +
+			" LEFT JOIN lecturas l" +
+			" ON a.idabonado_abonados = l.idabonado_abonados AND l.idemision = ?1" +
+			" LEFT JOIN rubroxfac rf" +
+			" ON rf.idfactura_facturas = l.idfactura" +
+			" GROUP BY a.idabonado_abonados,l.idfactura, l.lecturaanterior, l.lecturaactual " +
+			"HAVING COUNT(rf.idrubro_rubros) = 0 ", nativeQuery = true)
+	public List<CountRubrosByEmision> getCuentaRubrosByEmision(long idemision);
+
+	@Query(value = """
+					SELECT
+			    l.idfactura,
+			    SUM(l.lecturaactual - l.lecturaanterior) AS m3,
+			    a.idabonado as cuenta,
+			    l.idcategoria as categoria,
+			    a.swalcantarillado as swAguapotable ,
+			    a.municipio as swMunicipio ,
+			    a.adultomayor  as swAdultoMayor
+			FROM lecturas l
+			JOIN abonados a
+			    ON l.idabonado_abonados = a.idabonado
+			WHERE l.idemision = ?1
+			  AND a.swalcantarillado = TRUE
+			GROUP BY l.idfactura, a.idabonado, l.idcategoria
+			ORDER BY l.idfactura;
+					""", nativeQuery = true)
+	public List<EmisionesInterface> getSWalcatarillados(Long idemision);
+
+	@Query(value = """
+			SELECT
+			    l.idfactura,
+			    SUM(l.lecturaactual - l.lecturaanterior) AS m3,
+			    a.idabonado as cuenta,
+			    l.idcategoria AS categoria,
+			    a.swalcantarillado AS swAguapotable,
+			    a.municipio AS swMunicipio,
+			    a.adultomayor AS swAdultoMayor
+			FROM lecturas l
+			JOIN abonados a ON l.idabonado_abonados = a.idabonado
+			LEFT JOIN rubroxfac rf ON l.idfactura = rf.idfactura_facturas
+			WHERE l.idemision = ?1
+			GROUP BY
+			    l.idfactura, a.idabonado, l.idcategoria,
+			    a.swalcantarillado, a.municipio, a.adultomayor
+			HAVING SUM(l.lecturaactual - l.lecturaanterior) >= 0
+			   AND COUNT(rf.idrubro_rubros) = 0
+			""", nativeQuery = true)
+	List<EmisionesInterface> GetCuentasCeros(Long idemision);
 
 }
