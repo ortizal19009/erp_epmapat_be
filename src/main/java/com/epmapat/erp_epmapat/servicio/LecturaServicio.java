@@ -271,8 +271,7 @@ public class LecturaServicio {
 				saveRxf(rubroxfac);
 			}
 			if (multa.compareTo(BigDecimal.ZERO) > 0) {
-				System.out.println("MULTA " + multa);
-				rubro.setIdrubro(5L);
+				rubro.setIdrubro(6L);
 				rubroxfac.setIdrubro_rubros(rubro);
 				rubroxfac.setCantidad(1F);
 				rubroxfac.setIdfactura_facturas(factura);
