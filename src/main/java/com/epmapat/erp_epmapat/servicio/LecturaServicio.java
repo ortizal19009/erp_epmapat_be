@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import javax.swing.text.Position.Bias;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.modelo.Pliego24;
 import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
-import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.CategoriaR;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
@@ -614,7 +612,7 @@ public class LecturaServicio {
 	}
 
 public List<EmisionesInterface> getSWalcatarillados(Long idemision) {
-    List<EmisionesInterface> emiI = dao.GetCuentasCeros(idemision);
+    List<EmisionesInterface> emiI = dao.getSWalcatarillados(idemision);
 
     emiI.forEach(e -> {
         calcularValores(
