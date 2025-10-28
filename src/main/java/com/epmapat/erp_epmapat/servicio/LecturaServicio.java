@@ -586,7 +586,7 @@ public class LecturaServicio {
 			Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último
 			if (definir != null) {
 				BigDecimal rbu = definir.getRbu();
-				multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.01)));
+				multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.005)));
 			}
 		}
 
