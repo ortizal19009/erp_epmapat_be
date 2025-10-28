@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +26,7 @@ import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.modelo.Pliego24;
 import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
+import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.CategoriaR;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
@@ -576,19 +576,19 @@ public class LecturaServicio {
 		List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuentas);
 		long nroPendientes = idfacturas.size();
 		BigDecimal multa = BigDecimal.ZERO;
-		if (nroPendientes == 3) {
-			multa = BigDecimal.valueOf(2);
-		}
 		/*
-		 * if (nroPendientes > 2) {
-		 * Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último
-		 * registro
-		 * if (definir != null) {
-		 * BigDecimal rbu = definir.getRbu();
-		 * multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.01)));
-		 * }
+		 * if (nroPendientes == 3) {
+		 * multa = BigDecimal.valueOf(2);
 		 * }
 		 */
+
+		if (nroPendientes > 2) {
+			Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último
+			if (definir != null) {
+				BigDecimal rbu = definir.getRbu();
+				multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.01)));
+			}
+		}
 
 		return multa;
 	}
@@ -611,22 +611,21 @@ public class LecturaServicio {
 		}
 	}
 
-public List<EmisionesInterface> getSWalcatarillados(Long idemision) {
-    List<EmisionesInterface> emiI = dao.getSWalcatarillados(idemision);
+	public List<EmisionesInterface> getSWalcatarillados(Long idemision) {
+		List<EmisionesInterface> emiI = dao.getSWalcatarillados(idemision);
 
-    emiI.forEach(e -> {
-        calcularValores(
-            e.getCuenta(),
-            e.getIdfactura(),
-            e.getM3(),  // Mejor si es Integer
-            e.getCategoria(),
-            e.getSwMunicipio(),
-            e.getSwAdultoMayor(),
-            e.getSwAguapotable()
-        );
-    });
+		emiI.forEach(e -> {
+			calcularValores(
+					e.getCuenta(),
+					e.getIdfactura(),
+					e.getM3(), // Mejor si es Integer
+					e.getCategoria(),
+					e.getSwMunicipio(),
+					e.getSwAdultoMayor(),
+					e.getSwAguapotable());
+		});
 
-    return emiI; // devolvemos la lista ya procesada
-}
+		return emiI; // devolvemos la lista ya procesada
+	}
 
 }

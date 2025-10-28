@@ -2,11 +2,11 @@ package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ public class TmpinteresxfacService {
         LocalDateTime date = LocalDateTime.now();
 
         for (FacSinCobrar item : facturas) {
-            Tmpinteresxfac tmpFac = tmpinteresxfacR.findByIdfactura(item.getIdfactura());
+            Tmpinteresxfac tmpFac = tmpinteresxfacR.findByIdfactura(item.getIdfactura()).orElseThrow(()-> new RuntimeException("Interes no encontrado"));
             BigDecimal interes = toBigDecimal(interesServicio.facturaid(item.getIdfactura()));
 
             if (tmpFac != null) {
@@ -76,5 +76,13 @@ public class TmpinteresxfacService {
             return new BigDecimal(value.toString());
         }
     }
+
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public BigDecimal findByIdFactura(Long idfactura){
+        return tmpinteresxfacR.findByIdfactura(idfactura)
+                .map(Tmpinteresxfac::getInteresapagar)
+                .orElse(BigDecimal.ZERO); // <-- 0.00 si no hay registro
+    }
+
 
 }

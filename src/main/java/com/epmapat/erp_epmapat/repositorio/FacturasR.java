@@ -131,7 +131,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Long> findSinCobroAbo(Long idabonado);
 
-		@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
+	@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Long> coutPendientes(Long idabonado);
 
 	// Planillas Sin cobrar por modulo y Abonado (para Convenios)
@@ -580,5 +580,52 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * group by
 	 * a.idabonado
 	 */
+	@Query(value = """
+			SELECT
+			     f.idfactura,
+			     f.nrofactura,
+			     f.fechacobro,
+			     u.nomusu,
+			     f.idabonado,
+			     c.nombre,
+			     c.cedula,
+			     c.email,
+			     c.direccion,
+			     c.telefono,
+			     t.codigo
+			 FROM facturas f
+			 JOIN usuarios u ON f.usuariocobro = u.idusuario
+			 JOIN clientes c ON f.idcliente = c.idcliente
+			 JOIN tpidentifica t ON c.idtpidentifica_tpidentifica = t.idtpidentifica
+			 WHERE f.idfactura = ?1
+			 AND f.pagado <> 0
+			""", nativeQuery = true)
+	Fecfactura forFecfactura(Long idfactura);
+
+	@Query(value = """
+			    SELECT
+			      f.idfactura                               AS id,
+			      SUM(rf.cantidad * rf.valorunitario)       AS suma,
+			      f.formapago                               AS formaPago,
+			      CASE
+			        WHEN f.formapago = 4 THEN f.fechatransferencia
+			        ELSE e.feccrea
+			      END                                       AS fecCrea,
+			      f.fechatransferencia                      AS fecTransfer
+			    FROM facturas f
+			    JOIN rubroxfac  rf ON rf.idfactura_facturas = f.idfactura
+			    JOIN lecturas   l  ON l.idfactura           = f.idfactura
+			    JOIN emisiones  e  ON e.idemision           = l.idemision
+			    WHERE f.totaltarifa > 0
+			      AND (
+			            (f.estado IN (1,2) AND f.fechacobro IS NULL)
+			            OR f.estado = 3
+			          )
+			      AND f.fechaconvenio   IS NULL
+			      AND f.fechaeliminacion IS NULL
+			    GROUP BY
+			      f.idfactura, f.formapago, e.feccrea, f.fechatransferencia
+			""", nativeQuery = true)
+	List<FacLite> getSinCobrarLite();
 
 }
