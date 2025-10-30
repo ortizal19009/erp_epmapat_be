@@ -52,6 +52,7 @@ public class VentanasApi {
       y.setColor1(x.getColor1());
       y.setColor2(x.getColor2());
       y.setIdusuario(x.getIdusuario());
+      y.setPermissions(x.getPermissions());
 
       Ventanas actualizar = venServicio.save(y);
       return ResponseEntity.ok(actualizar);

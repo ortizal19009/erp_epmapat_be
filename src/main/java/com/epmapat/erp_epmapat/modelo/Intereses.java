@@ -6,99 +6,39 @@ import java.util.Date;
 
 import javax.persistence.*;
 
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
+import lombok.*;
 
-@Entity
-@Table(name = "intereses")
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity(name = "Interes") // <-- fuerza el nombre de entidad usado en JPQL
+@Table(name = "intereses", uniqueConstraints = @UniqueConstraint(columnNames = { "anio",
+		"mes" }), indexes = @Index(name = "idx_intereses_anio_mes", columnList = "anio,mes"))
 public class Intereses {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idinteres;
+
+	@Column(nullable = false)
 	private Long anio;
-	private Long mes;
-	private BigDecimal porcentaje; 
+
+	@Column(nullable = false)
+	private Long mes; // 1..12
+
+	@Column(nullable = false, precision = 18, scale = 6)
+	private BigDecimal porcentaje; // % mensual
+
 	private Long usucrea;
-	/* @Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)*/
-	@Column(name = "feccrea") 
+
+	@Column(name = "feccrea")
 	private LocalDate feccrea;
+
 	private Long usumodi;
+
 	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
 	@Column(name = "fecmodi")
 	private Date fecmodi;
 
-	public Intereses() {
-		super();
-	}
-
-	public Intereses(Long idinteres, Long anio, Long mes, BigDecimal porcentaje, Long usucrea, LocalDate feccrea, Long usumodi,
-			Date fecmodi) {
-		super();
-		this.idinteres = idinteres;
-		this.anio = anio;
-		this.mes = mes;
-		this.porcentaje = porcentaje;
-		this.usucrea = usucrea;
-		this.feccrea = feccrea;
-		this.usumodi = usumodi;
-		this.fecmodi = fecmodi;
-	}
-
-	public Long getIdinteres() {
-		return idinteres;
-	}
-	
-	public void setIdinteres(Long idinteres) {
-		this.idinteres = idinteres;
-	}
-	
-	public Long getAnio() {
-		return anio;
-	}
-	
-	public void setAnio(Long anio) {
-		this.anio = anio;
-	}
-	
-	public Long getMes() {
-		return mes;
-	}
-	public void setMes(Long mes) {
-		this.mes = mes;
-	}
-	public BigDecimal getPorcentaje() {
-		return porcentaje;
-	}
-	public void setPorcentaje(BigDecimal porcentaje) {
-		this.porcentaje = porcentaje;
-	}
-	public Long getUsucrea() {
-		return usucrea;
-	}
-	public void setUsucrea(Long usucrea) {
-		this.usucrea = usucrea;
-	}
-	public LocalDate getFeccrea() {
-		return feccrea;
-	}
-	public void setFeccrea(LocalDate feccrea) {
-		this.feccrea = feccrea;
-	}
-	public Long getUsumodi() {
-		return usumodi;
-	}
-	public void setUsumodi(Long usumodi) {
-		this.usumodi = usumodi;
-	}
-	public Date getFecmodi() {
-		return fecmodi;
-	}
-	public void setFecmodi(Date fecmodi) {
-		this.fecmodi = fecmodi;
-	}
-	
 }

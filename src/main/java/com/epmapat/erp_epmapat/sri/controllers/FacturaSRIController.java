@@ -15,6 +15,8 @@ import com.epmapat.erp_epmapat.sri.services.FacturaSRIService;
 import com.epmapat.erp_epmapat.sri.services.XmlSignerService;
 import com.epmapat.erp_epmapat.sri.services.XmlToPdfService;
 
+import groovyjarjarantlr4.v4.parse.ANTLRParser.ruleEntry_return;
+
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 import java.util.HashMap;
@@ -178,6 +180,7 @@ public class FacturaSRIController {
             response.put("success", resultado);
             response.put("message", resultado ? "Correo enviado exitosamente" : "Error al enviar el correo");
             response.put("timestamp", new Date());
+            System.out.println(resultado);
 
             return ResponseEntity.ok(response);
 
