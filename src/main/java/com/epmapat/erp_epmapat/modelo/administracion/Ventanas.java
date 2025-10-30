@@ -10,16 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-<<<<<<< HEAD
-
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Table(name = "ventanas")
-=======
->>>>>>> 037932502e158643f0676143beb0dd3ec0c70316
 
 @Entity
 @Getter
