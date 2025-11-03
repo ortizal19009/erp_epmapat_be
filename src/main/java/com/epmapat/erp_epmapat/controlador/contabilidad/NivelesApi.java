@@ -13,7 +13,7 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.NivelServicio;
 
 @RestController
 @RequestMapping("/niveles")
-@CrossOrigin("*")
+
 
 public class NivelesApi {
 

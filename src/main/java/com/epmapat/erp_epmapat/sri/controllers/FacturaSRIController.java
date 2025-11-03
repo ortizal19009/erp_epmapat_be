@@ -38,7 +38,7 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/sri")
-@CrossOrigin("*")
+
 public class FacturaSRIController {
     @Autowired
     private FacturaR dao;
@@ -180,8 +180,6 @@ public class FacturaSRIController {
             response.put("success", resultado);
             response.put("message", resultado ? "Correo enviado exitosamente" : "Error al enviar el correo");
             response.put("timestamp", new Date());
-            System.out.println(resultado);
-
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {

@@ -20,7 +20,7 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.AsientoServicio;
 
 @RestController
 @RequestMapping("/asientos")
-@CrossOrigin("*")
+
 
 public class AsientosApi {
 

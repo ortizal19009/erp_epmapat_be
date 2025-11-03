@@ -134,7 +134,6 @@ public class RubroxfacServicio {
 				if (dao.existsById(duplicado.getIdrubroxfac())) {
 					dao.deleteById(duplicado.getIdrubroxfac());
 				} else {
-					System.out.println("El registro ya fue eliminado o no existe: " + duplicado.getIdrubroxfac());
 				}
 			});
 

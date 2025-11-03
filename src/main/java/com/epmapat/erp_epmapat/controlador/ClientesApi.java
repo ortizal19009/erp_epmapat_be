@@ -18,7 +18,7 @@ import com.epmapat.erp_epmapat.servicio.ClienteServicio;
 
 @RestController
 @RequestMapping("/clientes")
-@CrossOrigin(origins = "*")
+
 
 public class ClientesApi {
 

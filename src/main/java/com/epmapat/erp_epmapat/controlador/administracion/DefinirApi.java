@@ -15,7 +15,7 @@ import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
 
 @RestController
 @RequestMapping("/definir")
-@CrossOrigin("*")
+
 
 public class DefinirApi {
 

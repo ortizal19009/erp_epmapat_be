@@ -11,7 +11,7 @@ import com.epmapat.erp_epmapat.servicio.Fec_factura_detalles_impuestosService;
 
 @RestController
 @RequestMapping("/facdetallesimpuestos")
-@CrossOrigin("*")
+
 public class Fec_factura_detalles_impuestosApi {
 	@Autowired
 	private Fec_factura_detalles_impuestosService fecfdetimpService;

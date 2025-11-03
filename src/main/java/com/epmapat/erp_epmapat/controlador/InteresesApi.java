@@ -10,7 +10,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +30,7 @@ import com.epmapat.erp_epmapat.servicio.InteresServicio;
 
 @RestController
 @RequestMapping("/intereses")
-@CrossOrigin(origins = "*")
+
 public class InteresesApi {
 
 	@Autowired

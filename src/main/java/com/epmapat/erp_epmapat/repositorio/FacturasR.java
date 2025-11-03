@@ -86,8 +86,87 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	// Planillas sin cobrar por cliente valor a pagar calculado por la suma de los
 	// rubros
-	@Query(value = "select f.idfactura, f.idmodulo, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165  group by f.idfactura ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
-	public List<FacSinCobrar> findFacSincobro(Long idcliente);
+	// @Query(value = "select f.idfactura, f.idmodulo, SUM(CASE WHEN f.swcondonar =
+	// true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END
+	// ) AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado ,
+	// f.pagado, f.swcondonar from facturas f join rubroxfac rf on f.idfactura =
+	// rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and ((
+	// (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 )
+	// and f.fechaeliminacion is null and fechaconvenio is null and not
+	// rf.idrubro_rubros = 165 group by f.idfactura , f.idmodulo, f.idcliente,
+	// f.idabonado, f.feccrea, f.formapago, f.estado, f.pagado, f.swcondonar ORDER
+	// BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
+	@Query(value = """
+			    SELECT
+			      f.idfactura,
+			      f.idmodulo,
+			      -- Subtotal (solo rubros válidos) redondeado a 2 decimales
+			      ROUND(CAST(
+			        SUM(
+			          CASE
+			            WHEN rf.idrubro_rubros = 165 THEN 0
+			            WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 THEN 0
+			            ELSE CAST(COALESCE(rf.valorunitario, 0) AS NUMERIC)
+			               * CAST(COALESCE(rf.cantidad, 0) AS NUMERIC)
+			          END
+			        ) AS NUMERIC
+			      ), 2) AS total,
+
+			      -- Interés redondeado
+			      ROUND(CAST(COALESCE(MAX(ti.interesapagar), 0) AS NUMERIC), 2) AS interes,
+
+			      -- Total a pagar (subtotal + interés), ambos redondeados a 2 decimales
+			      ROUND(
+			        CAST(
+			          ROUND(CAST(
+			            SUM(
+			              CASE
+			                WHEN rf.idrubro_rubros = 165 THEN 0
+			                WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 THEN 0
+			                ELSE CAST(COALESCE(rf.valorunitario, 0) AS NUMERIC)
+			                   * CAST(COALESCE(rf.cantidad, 0) AS NUMERIC)
+			              END
+			            ) AS NUMERIC
+			          ), 2)
+			          + ROUND(CAST(COALESCE(MAX(ti.interesapagar), 0) AS NUMERIC), 2)
+			          AS NUMERIC
+			        ), 2
+			      ) AS total_pagar,
+
+			      f.idcliente,
+			      f.idabonado,
+			      f.feccrea,
+			      f.formapago,
+			      f.estado,
+			      f.pagado,
+			      f.swcondonar,
+				  m.descripcion as modulo
+
+			    FROM facturas f
+			    LEFT JOIN rubroxfac rf
+			      ON rf.idfactura_facturas = f.idfactura
+			    LEFT JOIN tmpinteresxfac ti
+			      ON ti.idfactura = f.idfactura
+				LEFT JOIN modulos m ON f.idmodulo = m.idmodulo
+
+			    WHERE
+			      f.totaltarifa > 0
+			      AND f.idcliente = ?1
+			      AND (
+			        ((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL)
+			        OR f.estado = 3
+			      )
+			      AND f.fechaeliminacion IS NULL
+			      AND f.fechaconvenio IS NULL
+
+			    GROUP BY
+			      f.idfactura, f.idmodulo, f.idcliente, f.idabonado,
+			      f.formapago, f.feccrea, f.estado, f.pagado, f.swcondonar,m.descripcion
+
+			    ORDER BY
+			      f.idabonado ASC, f.feccrea ASC
+			""", nativeQuery = true)
+	List<FacSinCobrar> findFacSincobro(Long idcliente);
 
 	@Query(value = "select f.idfactura, f.idmodulo, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idabonado= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165  group by f.idfactura ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
 	public List<FacSinCobrar> findFacSincobroByCuetna(Long cuenta);

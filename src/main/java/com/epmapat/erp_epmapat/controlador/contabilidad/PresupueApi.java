@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +21,7 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.PresupueServicio;
 //OJO: No debería existir: Hay PreingresosApi y PregastosApi y las llamadas desde el front end se hacen con la ruta preingreso o pregasto, nunca con presupue
 @RestController
 @RequestMapping("/presupue")
-@CrossOrigin(origins = "*")
+
 
 public class PresupueApi {
 

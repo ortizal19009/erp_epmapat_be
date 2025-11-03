@@ -23,7 +23,9 @@ public interface FacSinCobrar {
 	Long getPagado();
 
 	Boolean getSwcondonar();
-	
+
 	String getModulo();
+
+	BigDecimal getInteres();
 
 }

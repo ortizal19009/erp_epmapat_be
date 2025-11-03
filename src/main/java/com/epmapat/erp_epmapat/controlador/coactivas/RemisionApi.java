@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +20,7 @@ import com.epmapat.erp_epmapat.servicio.coactivas.RemisionServicio;
 
 @RestController
 @RequestMapping("/remisiones")
-@CrossOrigin("*")
+
 public class RemisionApi {
     @Autowired
     private RemisionServicio remisionServicio;
