@@ -1162,7 +1162,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement>
 					<font size="6" isItalic="true"/>
 				</textElement>
-				<text><![CDATA[(Nota: Su comprobante de pago electrónico estara disponible en un lapso de 4 a 48 horas.) 
+				<text><![CDATA[
 Para mas información visita: www.epmapatulcan.gob.ec]]></text>
 			</staticText>
 		</band>

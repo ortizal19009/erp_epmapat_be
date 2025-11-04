@@ -5,12 +5,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.sql.DataSource;
 
@@ -32,6 +36,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.epmapat.erp_epmapat.jasperReports.DTO.JasperDTO;
 import com.epmapat.erp_epmapat.jasperReports.services.BuildReports;
 
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.SimplePdfExporterConfiguration;
+
 @RestController
 @RequestMapping("/jasperReports")
 
@@ -40,118 +50,6 @@ public class BuildReportsApi {
     private BuildReports buildReports;
     @Autowired
     private DataSource dataSource;
-
-    @PostMapping("/__reportes")
-    public ResponseEntity<Resource> __generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
-        try {
-            // Creamos un nuevo DTO donde meteremos valores ya convertidos
-            JasperDTO dto = new JasperDTO();
-            dto.setReportName(jasperDTO.getReportName());
-
-            // Formato para parsear cadenas “yyyy-MM-dd” a java.sql.Date
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-            // Recorremos cada par <clave, valor> que nos llegó en el JSON
-            for (Entry<String, Object> entry : jasperDTO.getParameters().entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-                  // Si la clave es “desde” o “hasta”, asumimos que viene como String “yyyy-MM-dd”
-                if ("desde".equals(key) || "hasta".equals(key) || "tope".equals(key)) {
-                    try {
-                        // Primero intentamos parsear como fecha con hora (formato completo)
-                        String[] dateFormats = {
-                                "yyyy-MM-dd HH:mm:ss", // Formato con hora completa
-                                "yyyy-MM-dd HH:mm", // Formato con hora y minutos
-                                "yyyy-MM-dd" // Formato solo fecha
-                        };
-
-                        java.util.Date parsed = null;
-                        ParseException lastException = null;
-                        // Intentamos con cada formato hasta que uno funcione
-                        for (String format : dateFormats) {
-                            try {
-                                SimpleDateFormat tempFormat = new SimpleDateFormat(format);
-                                tempFormat.setLenient(false); // Validación estricta
-                                parsed = tempFormat.parse(value.toString());
-                                break; // Si tiene éxito, salimos del bucle
-                            } catch (ParseException e) {
-                                lastException = e;
-                            }
-                        }
-
-                        if (parsed == null) {
-                            throw new IllegalArgumentException(
-                                    "La fecha '" + value + "' no tiene un formato válido. " +
-                                            "Formatos aceptados: yyyy-MM-dd, yyyy-MM-dd HH:mm, yyyy-MM-dd HH:mm:ss",
-                                    lastException);
-                        }
-
-                        // Almacenamos como java.sql.Timestamp si tiene hora, o java.sql.Date si es solo
-                        // fecha
-                        if (value.toString().trim().length() > 10) { // Tiene hora
-                            dto.getParameters().put(key, new java.sql.Timestamp(parsed.getTime()));
-                        } else {
-                            dto.getParameters().put(key, new java.sql.Date(parsed.getTime()));
-                        }
-
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException("Error procesando fecha '" + value + "'", e);
-                    }
-                } else {
-                    /*
-                     * Para cualquier otro parámetro numérico (por ejemplo un id), puede venir como:
-                     * • Integer (189)
-                     * • Long (189L)
-                     * • String ("189")
-                     *
-                     * Lo normal para Jasper es que, si la consulta SQL espera un LONG,
-                     * debemos convertirlo a Long en todos los casos.
-                     */
-                    if (value instanceof Integer) {
-                        // de Integer a Long
-                        // dto.getParameters().put(key, ((Integer) value).longValue());
-                        dto.getParameters().put(key, (value));
-
-                    } else if (value instanceof Long) {
-                        dto.getParameters().put(key, (Long) value);
-                    } else if (value instanceof String) {
-                        // intentamos parsear el String a Long
-                        try {
-                            dto.getParameters().put(key, Long.valueOf((String) value));
-                        } catch (NumberFormatException ex) {
-                            throw new IllegalArgumentException("El parámetro '" + key +
-                                    "' con valor '" + value + "' no es un Long válido", ex);
-                        }
-                    } else {
-                        // Si fuese otro tipo (por ejemplo List<?> u Object), lo dejamos tal cual,
-                        // o bien podrías lanzar un error indicando tipo no esperado.
-                        dto.getParameters().put(key, value);
-                    }
-                }
-            }
-
-            // Ahora invocamos a buildReport pasándole la conexión y el dto ya “limpio”
-            ByteArrayOutputStream pdfStream;
-            try (Connection conn = dataSource.getConnection()) {
-                pdfStream = buildReports.buildReport(dto, conn);
-            }
-
-            // Envolvemos el resultado en un Resource para devolverlo al cliente
-            InputStreamResource resource = new InputStreamResource(
-                    new ByteArrayInputStream(pdfStream.toByteArray()));
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=" + jasperDTO.getReportName() + ".pdf")
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .contentLength(pdfStream.size())
-                    .body(resource);
-
-        } catch (Exception e) {
-            // Aquí podrías registrar el error con un logger y devolver 500
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
 
     @GetMapping("/reportes")
     public ResponseEntity<String> reportesGetNotAllowed() {
@@ -309,4 +207,260 @@ public class BuildReportsApi {
             Process process = new ProcessBuilder(comando).start();
         }
     }
+
+    /* MergeComprobantes */
+    @PostMapping(value = "/_comprobantes/merge", produces = "application/pdf")
+    public ResponseEntity<byte[]> _mergeComprobantes(@RequestBody MergeReq req) {
+        if (req == null || req.getItems() == null || req.getItems().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Opcional: ordenar por id
+        // req.getItems().sort(Comparator.comparing(MergeItem::getIdfactura));
+
+        var merger = new org.apache.pdfbox.multipdf.PDFMergerUtility();
+        java.util.List<java.io.InputStream> fuentes = new java.util.ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+                var out = new java.io.ByteArrayOutputStream()) {
+
+            for (MergeItem it : req.getItems()) {
+                if (it.getIdfactura() == null)
+                    continue;
+
+                String reportName;
+                if (it.getIdmodulo() != null || it.getIdAbonado() != null) {
+                    reportName = pickReportName(it.getIdAbonado(), it.getIdmodulo());
+                } else {
+                    // Usa la consulta si no te mandan esos datos desde el front
+                    reportName = pickReportNameFromDb(conn, it.getIdfactura());
+                }
+
+                JasperDTO dto = new JasperDTO();
+                dto.setReportName(reportName);
+
+                Map<String, Object> params = new HashMap<>();
+                // Si tu reporte espera Integer:
+                params.put("idfactura", it.getIdfactura().intValue());
+                dto.setParameters(params);
+
+                ByteArrayOutputStream os = buildReports.buildReport(dto, conn);
+                ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
+                fuentes.add(is);
+                merger.addSource(is);
+            }
+
+            if (fuentes.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            }
+
+            merger.setDestinationStream(out);
+            merger.mergeDocuments(org.apache.pdfbox.io.MemoryUsageSetting.setupTempFileOnly());
+
+            byte[] unido = out.toByteArray();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=comprobantes_merged.pdf")
+                    .contentLength(unido.length)
+                    .body(unido);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } finally {
+            for (var is : fuentes)
+                try {
+                    is.close();
+                } catch (Exception ignore) {
+                }
+        }
+    }
+
+    public static class MergeReq {
+        private java.util.List<MergeItem> items;
+
+        public java.util.List<MergeItem> getItems() {
+            return items;
+        }
+
+        public void setItems(java.util.List<MergeItem> items) {
+            this.items = items;
+        }
+    }
+
+    /**
+     * Item con la info MÍNIMA para escoger el reporte sin ir a BD.
+     * Si no quieres enviar estos campos desde el front, puedes omitirlos
+     * y consultar en BD (ver comentario más abajo).
+     */
+    public static class MergeItem {
+        private Long idfactura;
+        private Integer idmodulo; // opcional
+        private Integer idAbonado; // opcional
+
+        public Long getIdfactura() {
+            return idfactura;
+        }
+
+        public void setIdfactura(Long idfactura) {
+            this.idfactura = idfactura;
+        }
+
+        public Integer getIdmodulo() {
+            return idmodulo;
+        }
+
+        public void setIdmodulo(Integer idmodulo) {
+            this.idmodulo = idmodulo;
+        }
+
+        public Integer getIdAbonado() {
+            return idAbonado;
+        }
+
+        public void setIdAbonado(Integer idAbonado) {
+            this.idAbonado = idAbonado;
+        }
+    }
+
+    private String pickReportName(Integer idAbonado, Integer idmodulo) {
+        if (idAbonado != null && idAbonado > 0
+                && (Integer.valueOf(3).equals(idmodulo) || Integer.valueOf(4).equals(idmodulo))) {
+            return "CompPagoConsumoAgua";
+        } else if (Integer.valueOf(27).equals(idmodulo)) {
+            return "CompPagoConvenios";
+        } else {
+            return "CompPagoServicios";
+        }
+    }
+
+    private String pickReportNameFromDb(Connection conn, Long idfactura) throws SQLException {
+        String sql = "SELECT a.idabonado AS idAbonado, f.idmodulo AS idmodulo " +
+                "FROM facturas f JOIN abonados a ON f.idabonado = a.idabonado " +
+                "WHERE f.idfactura = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, idfactura);
+            try (ResultSet rs = ps.executeQuery()) {
+                Integer idAbonado = null, idmodulo = null;
+                if (rs.next()) {
+                    idAbonado = rs.getInt("idAbonado");
+                    if (rs.wasNull())
+                        idAbonado = null;
+                    idmodulo = rs.getInt("idmodulo");
+                    if (rs.wasNull())
+                        idmodulo = null;
+                }
+                return pickReportName(idAbonado, idmodulo);
+            }
+        }
+    }
+
+    @PostMapping(value = "/__comprobantes/merge", produces = "application/pdf")
+    public ResponseEntity<byte[]> __mergeComprobantes(@RequestBody MergeReq req) {
+        if (req == null || req.getItems() == null || req.getItems().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        try (Connection conn = dataSource.getConnection();
+                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            List<JasperPrint> prints = new ArrayList<>(req.getItems().size());
+
+            for (MergeItem it : req.getItems()) {
+                if (it.getIdfactura() == null)
+                    continue;
+
+                String reportName = (it.getIdmodulo() != null || it.getIdAbonado() != null)
+                        ? pickReportName(it.getIdAbonado(), it.getIdmodulo())
+                        : pickReportNameFromDb(conn, it.getIdfactura());
+
+                Map<String, Object> params = new HashMap<>();
+                params.put("idfactura", it.getIdfactura().intValue());
+
+                // (Opcional) Virtualizer si esperas muchas páginas:
+                // JRSwapFile swap = new JRSwapFile(System.getProperty("java.io.tmpdir"), 1024,
+                // 1024);
+                // JRSwapFileVirtualizer virt = new JRSwapFileVirtualizer(100, swap, true);
+                // params.put(JRParameter.REPORT_VIRTUALIZER, virt);
+
+                JasperPrint print = buildReports.buildPrint(reportName, params, conn);
+                prints.add(print);
+            }
+
+            if (prints.isEmpty())
+                return ResponseEntity.badRequest().build();
+
+            JRPdfExporter exporter = new JRPdfExporter();
+            exporter.setExporterInput(SimpleExporterInput.getInstance(prints));
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
+            SimplePdfExporterConfiguration cfg = new SimplePdfExporterConfiguration();
+            cfg.setCompressed(true);
+            exporter.setConfiguration(cfg);
+            exporter.exportReport();
+
+            byte[] unido = out.toByteArray();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=comprobantes_merged.pdf")
+                    .contentLength(unido.length)
+                    .body(unido);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @PostMapping(value = "/comprobantes/merge", produces = "application/pdf")
+public ResponseEntity<byte[]> mergeComprobantes(@RequestBody MergeReq req) {
+  if (req == null || req.getItems() == null || req.getItems().isEmpty()) {
+    return ResponseEntity.badRequest().build();
+  }
+
+  try (Connection conn = dataSource.getConnection();
+       ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+    List<JasperPrint> prints = new ArrayList<>(req.getItems().size());
+
+    for (MergeItem it : req.getItems()) {
+      if (it.getIdfactura() == null) continue;
+
+      String reportName =
+          (it.getIdmodulo()!=null || it.getIdAbonado()!=null)
+          ? pickReportName(it.getIdAbonado(), it.getIdmodulo())
+          : pickReportNameFromDb(conn, it.getIdfactura());
+
+      Map<String,Object> params = new HashMap<>();
+      params.put("idfactura", it.getIdfactura().intValue());
+
+      JasperPrint jp = buildReports.fillFromCompiled(reportName, params, conn);
+      prints.add(jp);
+    }
+
+    if (prints.isEmpty()) return ResponseEntity.badRequest().build();
+
+    // Exportar TODOS los JasperPrint a UN solo PDF
+    JRPdfExporter exporter = new JRPdfExporter();
+    exporter.setExporterInput(SimpleExporterInput.getInstance(prints));
+    exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
+
+    SimplePdfExporterConfiguration cfg = new SimplePdfExporterConfiguration();
+    cfg.setCompressed(true);                 // PDF comprimido
+    // cfg.setMetadataTitle("Comprobantes EP"); // opcional
+    exporter.setConfiguration(cfg);
+
+    exporter.exportReport();
+    byte[] pdf = out.toByteArray();
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE)
+        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=comprobantes_merged.pdf")
+        .contentLength(pdf.length)
+        .body(pdf);
+
+  } catch (Exception e) {
+    e.printStackTrace();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+  }
+}
 }
