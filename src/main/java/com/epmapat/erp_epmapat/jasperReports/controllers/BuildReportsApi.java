@@ -410,57 +410,57 @@ public class BuildReportsApi {
         }
     }
 
-
     @PostMapping(value = "/comprobantes/merge", produces = "application/pdf")
-public ResponseEntity<byte[]> mergeComprobantes(@RequestBody MergeReq req) {
-  if (req == null || req.getItems() == null || req.getItems().isEmpty()) {
-    return ResponseEntity.badRequest().build();
-  }
+    public ResponseEntity<byte[]> mergeComprobantes(@RequestBody MergeReq req) {
+        if (req == null || req.getItems() == null || req.getItems().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
 
-  try (Connection conn = dataSource.getConnection();
-       ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        try (Connection conn = dataSource.getConnection();
+                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
-    List<JasperPrint> prints = new ArrayList<>(req.getItems().size());
+            List<JasperPrint> prints = new ArrayList<>(req.getItems().size());
 
-    for (MergeItem it : req.getItems()) {
-      if (it.getIdfactura() == null) continue;
+            for (MergeItem it : req.getItems()) {
+                if (it.getIdfactura() == null)
+                    continue;
 
-      String reportName =
-          (it.getIdmodulo()!=null || it.getIdAbonado()!=null)
-          ? pickReportName(it.getIdAbonado(), it.getIdmodulo())
-          : pickReportNameFromDb(conn, it.getIdfactura());
+                String reportName = (it.getIdmodulo() != null || it.getIdAbonado() != null)
+                        ? pickReportName(it.getIdAbonado(), it.getIdmodulo())
+                        : pickReportNameFromDb(conn, it.getIdfactura());
 
-      Map<String,Object> params = new HashMap<>();
-      params.put("idfactura", it.getIdfactura().intValue());
+                Map<String, Object> params = new HashMap<>();
+                params.put("idfactura", it.getIdfactura().intValue());
 
-      JasperPrint jp = buildReports.fillFromCompiled(reportName, params, conn);
-      prints.add(jp);
+                JasperPrint jp = buildReports.fillFromCompiled(reportName, params, conn);
+                prints.add(jp);
+            }
+
+            if (prints.isEmpty())
+                return ResponseEntity.badRequest().build();
+
+            // Exportar TODOS los JasperPrint a UN solo PDF
+            JRPdfExporter exporter = new JRPdfExporter();
+            exporter.setExporterInput(SimpleExporterInput.getInstance(prints));
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
+
+            SimplePdfExporterConfiguration cfg = new SimplePdfExporterConfiguration();
+            cfg.setCompressed(true); // PDF comprimido
+            // cfg.setMetadataTitle("Comprobantes EP"); // opcional
+            exporter.setConfiguration(cfg);
+
+            exporter.exportReport();
+            byte[] pdf = out.toByteArray();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=comprobantes_merged.pdf")
+                    .contentLength(pdf.length)
+                    .body(pdf);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
-
-    if (prints.isEmpty()) return ResponseEntity.badRequest().build();
-
-    // Exportar TODOS los JasperPrint a UN solo PDF
-    JRPdfExporter exporter = new JRPdfExporter();
-    exporter.setExporterInput(SimpleExporterInput.getInstance(prints));
-    exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
-
-    SimplePdfExporterConfiguration cfg = new SimplePdfExporterConfiguration();
-    cfg.setCompressed(true);                 // PDF comprimido
-    // cfg.setMetadataTitle("Comprobantes EP"); // opcional
-    exporter.setConfiguration(cfg);
-
-    exporter.exportReport();
-    byte[] pdf = out.toByteArray();
-
-    return ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE)
-        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=comprobantes_merged.pdf")
-        .contentLength(pdf.length)
-        .body(pdf);
-
-  } catch (Exception e) {
-    e.printStackTrace();
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-  }
-}
 }
