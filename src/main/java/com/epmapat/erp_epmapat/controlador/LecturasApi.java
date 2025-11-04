@@ -26,18 +26,19 @@ import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
+import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizado;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.bind.annotation.RequestParam;
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/lecturas")
-
-
 public class LecturasApi {
 
-	@Autowired
-	LecturaServicio lecServicio;
-
+	private final LecturaServicio lecServicio;
+	private final EmisionServicioOptimizado emisionServicioOptimizado;
 	// Busca por Planilla (Es una a una)
 	@GetMapping("/onePlanilla/{idfactura}")
 	public Lecturas getOnefactura(@PathVariable Long idfactura) {
@@ -241,7 +242,7 @@ public class LecturasApi {
 
 	@PostMapping("/valoresEmisiones")
 	public ResponseEntity<BigDecimal> getValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
-		return ResponseEntity.ok(lecServicio.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
+		return ResponseEntity.ok(emisionServicioOptimizado.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
 				datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
 	}
 

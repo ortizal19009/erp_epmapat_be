@@ -459,8 +459,6 @@ public class LecturaServicio {
 		BigDecimal valor = BigDecimal.ZERO;
 		BigDecimal fijo, variable;
 		BigDecimal porcentaje;
-		Rubroxfac rubroxfac = new Rubroxfac();
-		Rubros rubro = new Rubros();
 		// Hidrosuccionador siempre se suma al final
 		porcentaje = valoresEmision.getPliego24().getPorc();
 		if (!valoresEmision.isSwAguapotable()) {
@@ -499,12 +497,8 @@ public class LecturaServicio {
 	public BigDecimal exsaneamiento(EmisionOfCuentaDTO valoresEmision) {
 		BigDecimal valor = BigDecimal.ZERO;
 		BigDecimal porcentaje = BigDecimal.ZERO;
-		Rubroxfac rubroxfac = new Rubroxfac();
-		Rubros rubro = new Rubros();
 		if (!valoresEmision.isSwAguapotable()) {
-
 			porcentaje = valoresEmision.getPliego24().getPorc();
-
 			// Cálculo común de variable
 			valor = BigDecimal.valueOf(valoresEmision.getM3())
 					.multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
@@ -548,7 +542,6 @@ public class LecturaServicio {
 	/* EXCEDENTE */
 	public BigDecimal excedente(EmisionOfCuentaDTO valoresExcedente1) {
 		valoresExcedente1.setCategoria(1);
-		BigDecimal valor = BigDecimal.ZERO;
 		valoresExcedente1.setCategoria(1);
 		Pliego24 pliego = dao_pliego._findBloque(valoresExcedente1.getCategoria(), valoresExcedente1.getM3());
 		valoresExcedente1.setPliego24(pliego);
@@ -628,4 +621,5 @@ public class LecturaServicio {
 		return emiI; // devolvemos la lista ya procesada
 	}
 
+	
 }
