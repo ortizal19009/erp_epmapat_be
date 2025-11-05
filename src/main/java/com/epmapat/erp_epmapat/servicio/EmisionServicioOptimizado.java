@@ -95,7 +95,6 @@ public class EmisionServicioOptimizado {
             boolean swAguapotable) {
 
         Facturas factura = dao_facturas.findById(idfactura).orElseThrow();
-        System.out.println("Calculando desde la version optimizada");
         // Construimos el contexto (categoría efectiva, pliego y categoría ya
         // consultados)
         EmisionOfCuentaDTO ctx = buildContext(cuenta, idfactura, m3, categoria, swMunicipio, swAdultoMayor,

@@ -707,4 +707,69 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			""", nativeQuery = true)
 	List<FacLite> getSinCobrarLite();
 
+	@Query(value = """
+						WITH abonados_ruta AS (
+			  SELECT a.idabonado AS cuenta, c.nombre, c.cedula
+			  FROM rutas r
+			  JOIN abonados a ON r.idruta = a.idruta_rutas
+			  JOIN clientes c ON c.idcliente = a.idresponsable
+			  WHERE r.idruta = ?1
+			),
+			facturas_filtradas AS (
+			  -- Aíslamos facturas válidas por abonado SIN duplicarlas
+			  SELECT DISTINCT
+			         a.idabonado,
+			         f.idfactura
+			  FROM rutas r
+			  JOIN abonados a ON r.idruta = a.idruta_rutas
+			  JOIN lecturas l ON a.idabonado = l.idabonado_abonados
+			  JOIN facturas f ON f.idfactura = l.idfactura
+			  WHERE r.idruta = ?1
+			    AND ( ((f.estado IN (1, 2)) AND f.fechacobro IS NULL)
+			          OR f.estado = 3 )
+			    AND f.fechaconvenio  IS NULL
+			    AND f.fechaeliminacion IS NULL
+			    AND f.totaltarifa > 0
+			),
+			rubros_por_factura AS (
+			  SELECT
+			    rf.idfactura_facturas AS idfactura,
+			    SUM(rf.cantidad * rf.valorunitario) AS subtotal
+			  FROM rubroxfac rf
+			  GROUP BY rf.idfactura_facturas
+			),
+			intereses_por_factura AS (
+			  SELECT
+			    t.idfactura,
+			    SUM(t.interesapagar) AS intereses
+			  FROM tmpinteresxfac t
+			  GROUP BY t.idfactura
+			)
+			SELECT
+			  ar.cuenta,
+			  ar.nombre,
+			  ar.cedula,
+
+			  -- Conteo de facturas (0 si no tiene)
+			  COUNT(ff.idfactura) AS num_facturas,
+
+			  -- FORMATO CONTABLE (texto)
+			  to_char(CEIL(COALESCE(SUM(rpf.subtotal), 0) * 100) / 100,
+			          'FM999G999G999G990D00')                        AS subtotal,
+			  to_char(CEIL(COALESCE(SUM(ipf.intereses), 0) * 100) / 100,
+			          'FM999G999G999G990D00')                        AS intereses,
+			  to_char(CEIL((COALESCE(SUM(rpf.subtotal), 0)
+			              + COALESCE(SUM(ipf.intereses), 0)) * 100) / 100,
+			          'FM999G999G999G990D00')                        AS total
+
+			FROM abonados_ruta ar
+			LEFT JOIN facturas_filtradas     ff  ON ff.idabonado = ar.cuenta
+			LEFT JOIN rubros_por_factura     rpf ON rpf.idfactura = ff.idfactura
+			LEFT JOIN intereses_por_factura  ipf ON ipf.idfactura = ff.idfactura
+			GROUP BY ar.cuenta, ar.nombre, ar.cedula
+			ORDER BY ar.cuenta ASC;
+
+						""", nativeQuery = true)
+	List<FacturasSinCobroInter> findDeudasOfAbonadosByRutas(Long idruta);
+
 }

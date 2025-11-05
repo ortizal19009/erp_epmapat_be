@@ -24,7 +24,9 @@ import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.AbonadoI;
 import com.epmapat.erp_epmapat.interfaces.EstadisticasAbonados;
+import com.epmapat.erp_epmapat.interfaces.FacturasSinCobroInter;
 import com.epmapat.erp_epmapat.modelo.Abonados;
+import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 
 @RestController
@@ -39,6 +41,8 @@ public class AbonadosApi {
 	 * @Autowired
 	 * private ServiciosS serviciosS;
 	 */
+	@Autowired
+	private FacturasR facturaR;
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
@@ -207,6 +211,12 @@ public class AbonadosApi {
 	public ResponseEntity<List<ValorFactDTO>> getTotatesAbonadosByRuta(@RequestParam Long idruta) {
 		return ResponseEntity.ok(aboServicio.getCuentasByRutas(idruta));
 	}
+
+	@GetMapping("/deudasByRuta")
+	public ResponseEntity<List<FacturasSinCobroInter>> getDeudasOfAbonadosByRutas(@RequestParam Long idruta) {
+		return ResponseEntity.ok(facturaR.findDeudasOfAbonadosByRutas(idruta));
+	}
+
 
 	@GetMapping("/ncuentasByCategoria")
 	public List<EstadisticasAbonados> getCuentasByCategoria() {
