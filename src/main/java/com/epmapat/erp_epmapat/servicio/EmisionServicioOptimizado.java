@@ -4,8 +4,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -157,14 +161,27 @@ public class EmisionServicioOptimizado {
 
     // ----------------- Persistencia optimizada de rubros -----------------
 
-    private void upsertRubros(List<Rubroxfac> nuevos) {
-        if (nuevos.isEmpty())
-            return;
-        Long idfac = nuevos.get(0).getIdfactura_facturas().getIdfactura();
-        List<Long> ids = List.of(1001L, 1002L, 1003L, 1004L, 1005L, 6L);
-        dao_rubroxfac.deleteByFacturaAndRubros(idfac, ids);
-        dao_rubroxfac.saveAll(nuevos);
+@Transactional
+private void upsertRubros(List<Rubroxfac> nuevos) {
+    if (nuevos == null || nuevos.isEmpty()) return;
+
+    final Long idfac = nuevos.get(0).getIdfactura_facturas().getIdfactura();
+
+    // De-duplicar la entrada: si vienen repetidos en memoria, nos quedamos con el último
+    Map<Long, Rubroxfac> dedup = new LinkedHashMap<>();
+    for (Rubroxfac r : nuevos) {
+        Long idrubro = r.getIdrubro_rubros().getIdrubro();
+        dedup.put(idrubro, r); // el último gana
     }
+    Set<Long> rubrosAReemplazar = dedup.keySet();
+
+    // 1) Borrar TODOS los existentes de esa factura para esos rubros (incluye duplicados)
+    dao_rubroxfac.deleteByFacturaAndRubroIn(idfac, rubrosAReemplazar);
+
+    // 2) Insertar únicamente los nuevos (de-duplicados)
+    dao_rubroxfac.saveAll(dedup.values());
+}
+
 
     private Rubroxfac buildRubro(Facturas factura, Long idrubro, BigDecimal valor) {
         Rubroxfac r = new Rubroxfac();
@@ -175,6 +192,37 @@ public class EmisionServicioOptimizado {
         r.setCantidad(1F);
         r.setValorunitario(scale2(valor));
         return r;
+    }
+
+    // ----------------- Asegurar pliego existente -----------------
+    private void ensurePliego(EmisionOfCuentaDTO v) {
+        if (v == null)
+            return;
+
+        Integer cat = v.getCategoria();
+        boolean esResidencial = Objects.equals(cat, 1) || Objects.equals(cat, 9);
+
+        // Si NO es residencial y no tiene pliego, intentamos cargarlo desde BD
+        if (!esResidencial && v.getPliego24() == null) {
+            Pliego24 p = dao_pliego._findBloque(cat, v.getM3());
+            if (p == null) {
+                // Evita NPE más adelante con un dummy
+                p = new Pliego24();
+                p.setPorc(BigDecimal.ONE); // 100%
+                p.setAgua(BigDecimal.ZERO);
+                p.setSaneamiento(BigDecimal.ZERO);
+            }
+            v.setPliego24(p);
+        }
+
+        // Si es residencial y el pliego no existe, igual inicializamos por seguridad
+        if (v.getPliego24() == null) {
+            Pliego24 p = new Pliego24();
+            p.setPorc(BigDecimal.ONE);
+            p.setAgua(BigDecimal.ZERO);
+            p.setSaneamiento(BigDecimal.ZERO);
+            v.setPliego24(p);
+        }
     }
 
     // ----------------- Construcción del contexto -----------------
@@ -207,19 +255,37 @@ public class EmisionServicioOptimizado {
         return v;
     }
 
+    private static final BigDecimal DEFAULT_PORC = BigDecimal.ZERO; // decide tu valor por defecto
+
     // ----------------- Cálculos puros (sin efectos colaterales) -----------------
-
     private BigDecimal getPorcentaje(EmisionOfCuentaDTO v) {
-        if (v.getCategoria() == 1 || v.getCategoria() == 9) {
-            int i = Math.min(v.getM3(), PORC_RESIDENCIAL.length - 1);
-            return PORC_RESIDENCIAL[i];
+        if (v == null)
+            return DEFAULT_PORC;
+
+        Integer cat = v.getCategoria();
+        Integer m3 = v.getM3();
+
+        int consumo = (m3 == null || m3 < 0) ? 0 : m3;
+
+        if (Objects.equals(cat, 1) || Objects.equals(cat, 9)) {
+            int idx = Math.min(consumo, PORC_RESIDENCIAL.length - 1);
+            BigDecimal porc = PORC_RESIDENCIAL[idx];
+            return porc != null ? porc : DEFAULT_PORC;
         }
-        return v.getPliego24().getPorc();
-    }
 
+        Pliego24 pliego = v.getPliego24();
+        if (pliego == null || pliego.getPorc() == null) {
+            return DEFAULT_PORC;
+        }
+
+        return pliego.getPorc();
+    } // 👈 AQUÍ SE CIERRA CORRECTAMENTE EL MÉTODO getPorcentaje
+
+    // 🔹 Método baseAguaPotable separado
     private BigDecimal baseAguaPotable(EmisionOfCuentaDTO v) {
-        BigDecimal porcResidOPliego = getPorcentaje(v);
+        ensurePliego(v); // 👈 evita NullPointerException
 
+        BigDecimal porcResidOPliego = getPorcentaje(v);
         BigDecimal apFijo = v.getCategorias().getFijoagua()
                 .subtract(TEN_CENTS)
                 .multiply(porcResidOPliego);
@@ -239,7 +305,10 @@ public class EmisionServicioOptimizado {
         return total;
     }
 
+    // 🔹 Método baseAlcantarillado separado
     private BigDecimal baseAlcantarillado(EmisionOfCuentaDTO v) {
+        ensurePliego(v); // 👈 agregado
+
         if (v.isSwAguapotable())
             return ZERO;
 
@@ -265,6 +334,8 @@ public class EmisionServicioOptimizado {
     }
 
     private BigDecimal baseSaneamiento(EmisionOfCuentaDTO v) {
+        ensurePliego(v); // 👈 agregado
+
         if (v.isSwAguapotable())
             return ZERO;
 

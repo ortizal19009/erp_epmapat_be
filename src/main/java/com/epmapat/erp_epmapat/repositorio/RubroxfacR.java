@@ -2,9 +2,11 @@ package com.epmapat.erp_epmapat.repositorio;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -253,4 +255,34 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Transactional
 	@Query("DELETE FROM Rubroxfac r WHERE r.idfactura_facturas.idfactura = :idfac AND r.idrubro_rubros.idrubro IN :ids")
 	void deleteByFacturaAndRubros(@Param("idfac") Long idfac, @Param("ids") List<Long> ids);
+
+	@Query("""
+			  select r from Rubroxfac r
+			  where r.idfactura_facturas.idfactura = :idfac
+			    and r.idrubro_rubros.idrubro in :rubros
+			""")
+	List<Rubroxfac> findByFacturaAndRubroIn(@Param("idfac") Long idfac,
+			@Param("rubros") Collection<Long> rubros);
+
+	@Modifying
+	@Query("""
+			  delete from Rubroxfac r
+			  where r.idfactura_facturas.idfactura = :idfac
+			    and r.idrubro_rubros.idrubro in :grupo
+			    and r.idrubro_rubros.idrubro not in :vigentes
+			""")
+	void deleteGrupoNoVigentes(@Param("idfac") Long idfac,
+			@Param("grupo") Collection<Long> grupo,
+			@Param("vigentes") Collection<Long> vigentes);
+			
+			    @Modifying
+    @Query("""
+        DELETE FROM Rubroxfac r
+        WHERE r.idfactura_facturas.idfactura = :idfac
+          AND r.idrubro_rubros.idrubro IN :rubros
+    """)
+    void deleteByFacturaAndRubroIn(@Param("idfac") Long idfac,
+                                   @Param("rubros") Set<Long> rubros);
+}
+
 }

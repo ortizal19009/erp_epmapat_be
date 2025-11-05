@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.scheduling.annotation.Async;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
@@ -279,5 +280,34 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			   AND COUNT(rf.idrubro_rubros) = 0
 			""", nativeQuery = true)
 	List<EmisionesInterface> GetCuentasCeros(Long idemision);
+
+	@Query(value = """
+			  SELECT
+			    l.idabonado_abonados AS cuenta,
+			    f.idfactura,
+			    MAX(l.lecturaactual - l.lecturaanterior)        AS m3,
+			    l.idcategoria                                    AS categoria,
+			    a.swalcantarillado                               AS swAguapotable,
+			    a.municipio                                      AS swMunicipio,
+			    a.adultomayor                                    AS swAdultomayor,
+			    COUNT(DISTINCT rf.idrubroxfac)                   AS totalRubros
+			  FROM lecturas l
+			  JOIN facturas  f  ON l.idfactura = f.idfactura
+			  JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas
+			  JOIN abonados  a  ON l.idabonado_abonados = a.idabonado
+			  WHERE l.idemision = :idemision
+			  GROUP BY
+			    l.idabonado_abonados,
+			    f.idfactura,
+			    a.swalcantarillado,
+			    a.municipio,
+			    a.adultomayor,
+			    l.idcategoria
+			HAVING COUNT(DISTINCT rf.idrubroxfac) > :top
+			ORDER BY l.idabonado_abonados DESC
+			  """, nativeQuery = true)
+	List<EmisionesInterface> getDuplicadosToRecalculate(
+			@Param("idemision") Long idemision,
+			@Param("top") Long top);
 
 }

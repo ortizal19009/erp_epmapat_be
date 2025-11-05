@@ -22,5 +22,5 @@ public class EmisionOfCuentaDTO {
     Pliego24 pliego24;
     Categorias categorias;
     Facturas factura;
+    Long totalRubros;
 }
-

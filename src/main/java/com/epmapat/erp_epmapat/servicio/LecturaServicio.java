@@ -621,5 +621,8 @@ public class LecturaServicio {
 		return emiI; // devolvemos la lista ya procesada
 	}
 
-	
+	public List<EmisionesInterface> getDuplicadosToRecalculate(Long idemision, Long top) {
+		return dao.getDuplicadosToRecalculate(idemision, top);
+	}
+
 }
