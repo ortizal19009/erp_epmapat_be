@@ -16,17 +16,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Ifinan;
 import com.epmapat.erp_epmapat.servicio.IfinanServicio;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/ifinan")
-
-
 public class IfinanApi {
 
     @Autowired
     IfinanServicio ifinanServicio;
-
-    @GetMapping
+    
     public List<Ifinan> getIfinan(@Param(value = "codifinan") String codifinan,
             @Param(value = "nomifinan") String nomifinan) {
         if (codifinan != null) {
