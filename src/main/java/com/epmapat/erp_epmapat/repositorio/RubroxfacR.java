@@ -284,5 +284,3 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
     void deleteByFacturaAndRubroIn(@Param("idfac") Long idfac,
                                    @Param("rubros") Set<Long> rubros);
 }
-
-}
