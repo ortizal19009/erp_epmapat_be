@@ -174,7 +174,7 @@ public class FacturasApi {
 		return facServicio.findFacSincobroByCuetna(cuenta);
 	}
 
-		@GetMapping("/byCuenta")
+	@GetMapping("/byCuenta")
 	public List<FacSinCobrar> findByCuenta(@RequestParam Long cuenta) {
 		return facServicio.findByCuenta(cuenta);
 	}
@@ -673,6 +673,11 @@ public class FacturasApi {
 	@GetMapping("/sincobrar/total/datos")
 	public ValorFactDTO getTotalesByAbonadoDatos(@RequestParam Long cuenta) {
 		return facServicio.getTotalesByAbonadoDatos(cuenta);
+	}
+
+	@GetMapping("/multas")
+	public ResponseEntity<Facturas> updateMultaFactura(@RequestParam Long idfactura) {
+		return ResponseEntity.ok(facServicio.eliminarRubro6YRecalcularTotal(idfactura));
 	}
 
 }

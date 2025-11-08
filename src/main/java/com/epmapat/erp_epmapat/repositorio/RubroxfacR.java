@@ -274,13 +274,25 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	void deleteGrupoNoVigentes(@Param("idfac") Long idfac,
 			@Param("grupo") Collection<Long> grupo,
 			@Param("vigentes") Collection<Long> vigentes);
-			
-			    @Modifying
-    @Query("""
-        DELETE FROM Rubroxfac r
-        WHERE r.idfactura_facturas.idfactura = :idfac
-          AND r.idrubro_rubros.idrubro IN :rubros
-    """)
-    void deleteByFacturaAndRubroIn(@Param("idfac") Long idfac,
-                                   @Param("rubros") Set<Long> rubros);
+
+	@Modifying
+	@Query("""
+			    DELETE FROM Rubroxfac r
+			    WHERE r.idfactura_facturas.idfactura = :idfac
+			      AND r.idrubro_rubros.idrubro IN :rubros
+			""")
+	void deleteByFacturaAndRubroIn(@Param("idfac") Long idfac,
+			@Param("rubros") Set<Long> rubros);
+
+	// Traer rubros por id de factura (evita el derived con guion bajo)
+	@Query("SELECT r FROM Rubroxfac r WHERE r.idfactura_facturas.idfactura = :idfactura")
+	List<Rubroxfac> findAllByFacturaId(@Param("idfactura") Long idfactura);
+
+	// Borrar todos los rubros con idrubro = :idrubro de una factura dada
+	@Modifying
+	@Query("DELETE FROM Rubroxfac r " +
+			"WHERE r.idfactura_facturas.idfactura = :idfactura " +
+			"AND r.idrubro_rubros.idrubro = :idrubro")
+	void deleteByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
+			@Param("idrubro") Long idrubro);
 }

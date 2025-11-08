@@ -1,19 +1,20 @@
 package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.management.RuntimeErrorException;
+import javax.transaction.Transactional;
 
 import com.epmapat.erp_epmapat.DTO.RemiDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
-import com.epmapat.erp_epmapat.controlador.AbonadosApi;
-import com.epmapat.erp_epmapat.controlador.AboxSuspensionC;
 import com.epmapat.erp_epmapat.interfaces.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,22 +26,11 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Facturas;
-import com.epmapat.erp_epmapat.repositorio.AbonadosR;
-import com.epmapat.erp_epmapat.repositorio.AboxSuspensionR;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
+import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
 
 @Service
 public class FacturaServicio {
-
-	private final AboxSuspensionR aboxSuspensionR;
-
-	private final AboxSuspensionC aboxSuspensionC;
-
-	private final AbonadosR abonadosR;
-
-	private final AbonadoServicio abonadoServicio;
-
-	private final AbonadosApi abonadosApi;
 
 	@Autowired
 	private FacturasR dao;
@@ -50,15 +40,8 @@ public class FacturaServicio {
 	@Autowired
 	@Lazy
 	private AbonadoServicio abonadosServicio;
-
-	FacturaServicio(AbonadosApi abonadosApi, AbonadoServicio abonadoServicio, AbonadosR abonadosR,
-			AboxSuspensionC aboxSuspensionC, AboxSuspensionR aboxSuspensionR) {
-		this.abonadosApi = abonadosApi;
-		this.abonadoServicio = abonadoServicio;
-		this.abonadosR = abonadosR;
-		this.aboxSuspensionC = aboxSuspensionC;
-		this.aboxSuspensionR = aboxSuspensionR;
-	}
+	@Autowired
+	private RubroxfacR rubroxfacR;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -629,8 +612,28 @@ public class FacturaServicio {
 		// return newFactura;
 	}
 
-	public List<FacSinCobrar> getIdsFromFacturasSincobrar(){
+	public List<FacSinCobrar> getIdsFromFacturasSincobrar() {
 		return dao.getIdsFromFacturasSincobrar();
+	}
+
+	@Transactional
+	public Facturas eliminarRubro6YRecalcularTotal(Long idfactura) {
+		Facturas factura = dao.findById(idfactura)
+				.orElseThrow(() -> new RuntimeException("Factura no encontrada con ID: " + idfactura));
+
+		rubroxfacR.deleteByFacturaIdAndRubroId(idfactura, 6L);
+
+		BigDecimal nuevoTotal = rubroxfacR.findAllByFacturaId(idfactura).stream()
+				.map(r -> {
+					BigDecimal vu = r.getValorunitario() != null ? r.getValorunitario() : BigDecimal.ZERO;
+					BigDecimal cant = r.getCantidad() != null ? BigDecimal.valueOf(r.getCantidad()) : BigDecimal.ONE;
+					return vu.multiply(cant);
+				})
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		factura.setTotaltarifa(nuevoTotal);
+		factura.setValorbase(nuevoTotal);
+		return dao.save(factura);
 	}
 
 }
