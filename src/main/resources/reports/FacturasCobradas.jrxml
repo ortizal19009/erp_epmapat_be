@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
@@ -74,49 +74,40 @@ WHERE
 		</field>
 	</subDataset>
 	<subDataset name="TotalesRubros" uuid="2f366369-a234-4e6b-ae93-8dbfbdd187b0">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ServerErp"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="desde" class="java.util.Date"/>
 		<parameter name="hasta" class="java.util.Date"/>
-		<parameter name="hdesde" class="java.sql.Time"/>
-		<parameter name="hhasta" class="java.sql.Time"/>
 		<queryString>
 			<![CDATA[WITH facturas_validas AS (
     SELECT DISTINCT f.idfactura, f.swiva
-    FROM Facturas f
-    WHERE f.fechacobro BETWEEN $P{desde} AND $P{hasta}
-      AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
-      AND f.estado <> 3 
-      AND f.fechaeliminacion IS NULL 
-      AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
+    FROM facturas f
+    WHERE 
+        (f.fechacobro::timestamp + f.horacobro)
+            BETWEEN CAST($P{desde} AS timestamp)
+                AND CAST($P{hasta} AS timestamp)
+        AND f.estado <> 3 
+        AND f.fechaeliminacion IS NULL 
+        AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= CAST($P{desde} AS timestamp))
 )
-
 SELECT 
-    COUNT(DISTINCT f.idfactura) AS nfacturas, 
-
-ROUND(
-    SUM(
-        CASE 
-            WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 
-            THEN 0 
-            ELSE (rf.valorunitario * rf.cantidad)::numeric 
-        END
-    ), 2
-) AS subtotal,
-
-
-    (SELECT SUM(ROUND(swiva::numeric, 2)) FROM facturas_validas) AS sumaIva
-
-FROM Rubroxfac rf 
-JOIN Facturas f ON f.idfactura = rf.idfactura_facturas 
-JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
-
+    COUNT(DISTINCT f.idfactura) AS nfacturas,
+    ROUND(
+        SUM(
+            CASE 
+                WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 
+                    THEN 0 
+                ELSE (rf.valorunitario * rf.cantidad)::numeric 
+            END
+        ), 2
+    ) AS subtotal,
+    (SELECT COALESCE(SUM(ROUND(fv.swiva::numeric, 2)), 0) FROM facturas_validas fv) AS sumaiva
+FROM facturas f
+JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas
+JOIN rubros r     ON r.idrubro   = rf.idrubro_rubros
 WHERE 
-    f.fechacobro BETWEEN $P{desde} AND $P{hasta}
-    AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
-    AND f.estado <> 3 
-    AND f.fechaeliminacion IS NULL 
-    AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde});]]>
+    f.idfactura IN (SELECT idfactura FROM facturas_validas);
+]]>
 		</queryString>
 		<field name="nfacturas" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.name" value="nfacturas"/>
@@ -137,54 +128,46 @@ WHERE
 	<parameter name="desde" class="java.util.Date"/>
 	<parameter name="hasta" class="java.util.Date"/>
 	<parameter name="idusuario" class="java.lang.Integer"/>
-	<parameter name="hdesde" class="java.sql.Time"/>
-	<parameter name="hhasta" class="java.sql.Time"/>
 	<queryString language="SQL">
 		<![CDATA[WITH recaudo_unico AS (
-    SELECT DISTINCT ON (fr.idfactura)
-        fr.idfactura,
-        fr.idrecaudacion
-    FROM facxrecauda fr
-    ORDER BY fr.idfactura, fr.idrecaudacion DESC 
+  SELECT DISTINCT ON (fr.idfactura)
+         fr.idfactura,
+         fr.idrecaudacion
+  FROM facxrecauda fr
+  ORDER BY fr.idfactura, fr.idrecaudacion DESC
 )
-
 SELECT
-    f.idfactura,
-    c.nombre,
-    f.nrofactura,
-    f.fechacobro,
-    f.horacobro,
-    fc.descripcion AS formacobro,
-    m.descripcion AS modulo, 
-    ROUND(SUM(rf.cantidad * rf.valorunitario)::numeric, 2) AS valor,  -- <-- cambio aquí
-    f.swiva, 
-    f.interescobrado,
-    u.nomusu
-FROM
-    recaudo_unico fr
-    INNER JOIN facturas f ON fr.idfactura = f.idfactura
-    INNER JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
-    INNER JOIN clientes c ON c.idcliente = f.idcliente
-    INNER JOIN formacobro fc ON f.formapago = fc.idformacobro
-    INNER JOIN usuarios u ON f.usuariocobro = u.idusuario
-    INNER JOIN modulos m ON f.idmodulo = m.idmodulo
+  f.idfactura,
+  f.nrofactura,
+  f.fechacobro,
+  f.horacobro,
+  f.swiva,
+  ROUND(SUM(rf.cantidad * rf.valorunitario)::numeric, 2) AS valor,
+  COALESCE(f.interescobrado, 0) AS interescobrado,
+  c.nombre,
+  c.cedula,
+  u.nomusu,
+  m.descripcion AS modulo,
+  fc.descripcion AS formacobro
+FROM recaudo_unico fr
+JOIN facturas   f  ON fr.idfactura = f.idfactura
+JOIN rubroxfac  rf ON rf.idfactura_facturas = f.idfactura
+JOIN clientes   c  ON c.idcliente = f.idcliente
+JOIN formacobro fc ON f.formapago = fc.idformacobro
+JOIN usuarios   u  ON f.usuariocobro = u.idusuario
+JOIN modulos    m  ON f.idmodulo = m.idmodulo
 WHERE
-    f.fechacobro BETWEEN $P{desde} AND $P{hasta}
-    AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
-    AND rf.idrubro_rubros NOT IN (5, 165)
+  -- Fecha + hora combinadas, usa parámetros Timestamp
+  (f.fechacobro::timestamp + f.horacobro)
+    BETWEEN CAST($P{desde} AS timestamp)
+        AND CAST($P{hasta} AS timestamp)
+  AND rf.idrubro_rubros NOT IN (5, 165)
 GROUP BY
-    f.idfactura,
-    c.nombre,
-    f.nrofactura,
-    f.fechacobro,
-    f.horacobro,
-    fc.descripcion,
-    u.nomusu, 
-    m.descripcion,
-    f.swiva,
-    f.interescobrado
+  f.idfactura, f.nrofactura, f.fechacobro, f.horacobro, f.swiva,
+  f.interescobrado, c.nombre, c.cedula, u.nomusu, m.descripcion, fc.descripcion
 ORDER BY
-    f.nrofactura ASC;]]>
+  f.nrofactura ASC;
+]]>
 	</queryString>
 	<field name="idfactura" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.name" value="idfactura"/>

@@ -117,11 +117,8 @@ public class BuildReportsApi {
                 SimpleDateFormat sdf = new SimpleDateFormat(format);
                 sdf.setLenient(false);
                 Date parsed = sdf.parse(value.trim());
-                if (format.contains("HH")) {
-                    return new java.sql.Timestamp(parsed.getTime());
-                } else {
-                    return new java.sql.Date(parsed.getTime());
-                }
+                // 🔹 SIEMPRE devolver Timestamp, no Date
+                return new java.sql.Timestamp(parsed.getTime());
             } catch (ParseException ignored) {
             }
         }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapatServer"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ServerErp"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -61,7 +61,7 @@
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
 		<parameter name="idusuario" class="java.lang.Integer"/>
-		<queryString language="plsql">
+		<queryString>
 			<![CDATA[SELECT nomusu
 FROM usuarios
 WHERE 
@@ -78,8 +78,6 @@ WHERE
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="desde" class="java.sql.Timestamp"/>
 		<parameter name="hasta" class="java.sql.Timestamp"/>
-		<parameter name="hdesde" class="java.sql.Time"/>
-		<parameter name="hhasta" class="java.sql.Time"/>
 		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
 			<![CDATA[WITH facturas_validas AS (
@@ -120,8 +118,7 @@ WHERE
     AND f.estado <> 3
     AND f.usuariocobro = $P{usuariocobro}
     AND f.fechaeliminacion IS NULL
-    AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde});
-]]>
+    AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde});]]>
 		</queryString>
 		<field name="nfacturas" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.name" value="nfacturas"/>
@@ -142,8 +139,6 @@ WHERE
 	<parameter name="desde" class="java.sql.Timestamp"/>
 	<parameter name="hasta" class="java.sql.Timestamp"/>
 	<parameter name="idusuario" class="java.lang.Integer"/>
-	<parameter name="hdesde" class="java.sql.Time" isForPrompting="false"/>
-	<parameter name="hhasta" class="java.sql.Time" isForPrompting="false"/>
 	<parameter name="usuariocobro" class="java.lang.Integer"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT
@@ -175,8 +170,7 @@ GROUP BY
   f.idfactura, f.nrofactura, f.fechacobro, f.horacobro, f.swiva,
   f.interescobrado, c.nombre, c.cedula, u.nomusu, m.descripcion, fc.descripcion
 ORDER BY
-  f.nrofactura ASC;
-]]>
+  f.nrofactura ASC;]]>
 	</queryString>
 	<field name="idfactura" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.name" value="idfactura"/>
@@ -261,11 +255,10 @@ ORDER BY
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{desde}) + " " +
-(new java.text.SimpleDateFormat("HH:mm")).format($P{hdesde}) + 
-" - " +
-(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta}) + " " +
-(new java.text.SimpleDateFormat("HH:mm")).format($P{hhasta})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format($P{desde})
++ " - " +
+(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format($P{hasta})
+]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -428,14 +421,14 @@ ORDER BY
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c1e6a9ac-578c-4b63-bbad-e8bec4a03c3d"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
-				<box leftPadding="3" rightPadding="3">
+				<box leftPadding="1" rightPadding="1">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{nombre}]]></textFieldExpression>
 			</textField>
@@ -456,7 +449,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{nrofactura}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="Table_CH" x="295" y="0" width="55" height="15" backcolor="#FFFFFF" uuid="f20c6347-fe6d-4643-be92-0c5fcd1f094e">
+				<reportElement style="Table_CH" x="295" y="0" width="55" height="15" backcolor="rgba(255, 255, 255, 0.0)" uuid="f20c6347-fe6d-4643-be92-0c5fcd1f094e">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="64b08e91-4131-464c-8d68-6db6c3be29c9"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -476,14 +469,14 @@ ORDER BY
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b4c5147a-0c69-476a-912d-1b2fa36465c4"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
-				<box leftPadding="3" rightPadding="3">
+				<box leftPadding="0" rightPadding="0">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd-MMMM", new java.util.Locale("es", "EC")).format($F{fechacobro})]]></textFieldExpression>
 			</textField>
@@ -508,13 +501,13 @@ ORDER BY
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="42b34650-21f6-46b1-96c2-752a3a3b6824"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
-				<box leftPadding="3" rightPadding="3">
+				<box leftPadding="1" rightPadding="1">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement verticalAlignment="Middle">
+				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{nomusu}]]></textFieldExpression>
@@ -725,12 +718,6 @@ ORDER BY
 						</datasetParameter>
 						<datasetParameter name="hasta">
 							<datasetParameterExpression><![CDATA[$P{hasta}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="hdesde">
-							<datasetParameterExpression><![CDATA[$P{hdesde}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="hhasta">
-							<datasetParameterExpression><![CDATA[$P{hhasta}]]></datasetParameterExpression>
 						</datasetParameter>
 						<datasetParameter name="usuariocobro">
 							<datasetParameterExpression><![CDATA[$P{usuariocobro}]]></datasetParameterExpression>
