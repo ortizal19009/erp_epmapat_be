@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ServerErp"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -83,9 +83,8 @@ WHERE
     SELECT DISTINCT f.idfactura, f.swiva
     FROM facturas f
     WHERE 
-        (f.fechacobro::timestamp + f.horacobro)
-            BETWEEN CAST($P{desde} AS timestamp)
-                AND CAST($P{hasta} AS timestamp)
+        f.fechacobro
+            BETWEEN $P{desde} AND $P{hasta}
         AND f.estado <> 3 
         AND f.fechaeliminacion IS NULL 
         AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= CAST($P{desde} AS timestamp))
@@ -106,8 +105,7 @@ FROM facturas f
 JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas
 JOIN rubros r     ON r.idrubro   = rf.idrubro_rubros
 WHERE 
-    f.idfactura IN (SELECT idfactura FROM facturas_validas);
-]]>
+    f.idfactura IN (SELECT idfactura FROM facturas_validas);]]>
 		</queryString>
 		<field name="nfacturas" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.name" value="nfacturas"/>
@@ -157,17 +155,13 @@ JOIN formacobro fc ON f.formapago = fc.idformacobro
 JOIN usuarios   u  ON f.usuariocobro = u.idusuario
 JOIN modulos    m  ON f.idmodulo = m.idmodulo
 WHERE
-  -- Fecha + hora combinadas, usa parámetros Timestamp
-  (f.fechacobro::timestamp + f.horacobro)
-    BETWEEN CAST($P{desde} AS timestamp)
-        AND CAST($P{hasta} AS timestamp)
-  AND rf.idrubro_rubros NOT IN (5, 165)
+f.fechacobro BETWEEN $P{desde}
+        AND $P{hasta}  AND rf.idrubro_rubros NOT IN (5, 165)
 GROUP BY
   f.idfactura, f.nrofactura, f.fechacobro, f.horacobro, f.swiva,
   f.interescobrado, c.nombre, c.cedula, u.nomusu, m.descripcion, fc.descripcion
 ORDER BY
-  f.nrofactura ASC;
-]]>
+  f.nrofactura ASC;]]>
 	</queryString>
 	<field name="idfactura" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.name" value="idfactura"/>
@@ -253,10 +247,8 @@ ORDER BY
 					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{desde}) + " " +
-(new java.text.SimpleDateFormat("HH:mm")).format($P{hdesde}) + 
 " - " +
-(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta}) + " " +
-(new java.text.SimpleDateFormat("HH:mm")).format($P{hhasta})]]></textFieldExpression>
+(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta})]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -419,7 +411,7 @@ ORDER BY
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c1e6a9ac-578c-4b63-bbad-e8bec4a03c3d"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
-				<box leftPadding="3" rightPadding="3">
+				<box leftPadding="1" rightPadding="1">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -467,14 +459,14 @@ ORDER BY
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b4c5147a-0c69-476a-912d-1b2fa36465c4"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
-				<box leftPadding="3" rightPadding="3">
+				<box leftPadding="1" rightPadding="1">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd-MMMM-yyyy", new java.util.Locale("es", "EC")).format($F{fechacobro})]]></textFieldExpression>
 			</textField>
@@ -659,7 +651,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{total_facturas}]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement mode="Transparent" x="365" y="14" width="190" height="50" backcolor="rgba(255, 255, 255, 0.0)" uuid="de0c0b35-13cd-4a2f-b097-f152a54f8d55">
+				<reportElement mode="Opaque" x="365" y="14" width="190" height="50" backcolor="#FFFFFF" uuid="de0c0b35-13cd-4a2f-b097-f152a54f8d55">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
@@ -672,12 +664,6 @@ ORDER BY
 						</datasetParameter>
 						<datasetParameter name="hasta">
 							<datasetParameterExpression><![CDATA[$P{hasta}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="hdesde">
-							<datasetParameterExpression><![CDATA[$P{hdesde}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="hhasta">
-							<datasetParameterExpression><![CDATA[$P{hhasta}]]></datasetParameterExpression>
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>

@@ -76,17 +76,18 @@ WHERE
 	<subDataset name="TotalesRubros" uuid="2f366369-a234-4e6b-ae93-8dbfbdd187b0">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<parameter name="desde" class="java.sql.Timestamp"/>
-		<parameter name="hasta" class="java.sql.Timestamp"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="722"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="267"/>
+		<parameter name="desde" class="java.util.Date"/>
+		<parameter name="hasta" class="java.util.Date"/>
 		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
 			<![CDATA[WITH facturas_validas AS (
     SELECT DISTINCT f.idfactura, f.swiva
     FROM facturas f
-    WHERE     f.fechacobro BETWEEN $P{desde}
-            AND $P{hasta} 
+    WHERE       f.usuariocobro = $P{usuariocobro}
+   AND fechacompensacion between $P{desde} AND $P{hasta}
       AND f.estado <> 3 
-      AND f.usuariocobro = $P{usuariocobro}
       AND f.fechaeliminacion IS NULL
       AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
 )
@@ -111,9 +112,9 @@ JOIN facturas f ON f.idfactura = rf.idfactura_facturas
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros
 
 WHERE
-    f.fechacobro BETWEEN $P{desde} AND $P{hasta} 
+  f.usuariocobro = $P{usuariocobro}
+   AND fechacompensacion between $P{desde} AND $P{hasta}
     AND f.estado <> 3
-    AND f.usuariocobro = $P{usuariocobro}
     AND f.fechaeliminacion IS NULL
     AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde});]]>
 		</queryString>
@@ -158,8 +159,8 @@ JOIN formacobro fc ON f.formapago    = fc.idformacobro
 JOIN usuarios   u  ON f.usuariocobro = u.idusuario
 JOIN modulos    m  ON f.idmodulo     = m.idmodulo
 WHERE
-  f.usuariocobro =$P{usuariocobro} 
-  AND f.fechacobro BETWEEN $P{desde} AND $P{hasta} 
+  f.usuariocobro = $P{usuariocobro}
+   AND fechacompensacion between $P{desde} AND $P{hasta}
   AND rf.idrubro_rubros NOT IN (5, 165)
 GROUP BY
   f.idfactura, f.nrofactura, f.fechacobro, f.horacobro, f.swiva,
