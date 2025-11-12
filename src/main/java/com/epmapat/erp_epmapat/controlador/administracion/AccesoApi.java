@@ -12,8 +12,6 @@ import com.epmapat.erp_epmapat.servicio.administracion.AccesoServicio;
 
 @RestController
 @RequestMapping("/acceso")
-
-
 public class AccesoApi {
 
    @Autowired

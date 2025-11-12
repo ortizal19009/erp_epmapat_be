@@ -13,8 +13,6 @@ import com.epmapat.erp_epmapat.servicio.administracion.ColorServicio;
 
 @RestController
 @RequestMapping("/colores")
-
-
 public class ColoresApi {
 
    @Autowired
