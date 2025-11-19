@@ -1,10 +1,12 @@
 package com.epmapat.erp_epmapat.controlador;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,7 +25,6 @@ import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/fec_factura")
-
 
 public class Fec_facturaApi {
 
@@ -104,5 +105,15 @@ public class Fec_facturaApi {
    public fecFacturaDatos getDatosFecFactura(@RequestParam Long idfactura) {
       fecFacturaDatos fecFactura = fecfacServicio.getNroFactura(idfactura);
       return fecFactura;
+   }
+
+   @GetMapping("/createFacElectro")
+   public ResponseEntity<Map<String, Object>> generarFecFactura(@RequestParam Long idfactura) {
+      return ResponseEntity.ok(fecfacServicio.generarFecFactura(idfactura));
+   }
+
+   @GetMapping("/{idfactura}")
+   public ResponseEntity<Optional<Fec_factura>> findByIdFactura(@PathVariable Long idfactura) {
+      return ResponseEntity.ok(fecfacServicio.findById(idfactura));
    }
 }
