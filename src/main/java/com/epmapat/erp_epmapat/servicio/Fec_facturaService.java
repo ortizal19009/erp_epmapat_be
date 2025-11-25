@@ -88,11 +88,16 @@ public class Fec_facturaService {
 
    // CREAR LAS FACTURAS
    public Map<String, Object> generarFecFactura(Long idfactura) {
+      System.out.println("idfactura: " + idfactura);
       Map<String, Object> response = new HashMap<>();
       Fecfactura factura = facturasR.forFecfactura(idfactura);
       Fec_factura fecFactura = new Fec_factura();
       DefinirProjection definir = definirR.findDefinirWithoutFirma(1L);
       String concepto = "OTROS SERVICIOS";
+      if (factura.getNrofactura() == null || factura.getNrofactura().isEmpty()) {
+         response.put("message", "No se encontro el numero de factura" + idfactura);
+         return response;
+      }
       String[] partes = separarCodigo(factura.getNrofactura());
       String establecimiento = partes[0]; // 001
       String puntoEmision = partes[1]; // 013
@@ -221,6 +226,7 @@ public class Fec_facturaService {
       // 4) Ambiente (1 dígito: 1=Pruebas, 2=Producción)
       String ambiente = requireDigits(definir.getTipoambiente() == null ? null : definir.getTipoambiente().toString(),
             "Tipo de ambiente");
+      System.out.println("ambiente: " + ambiente);
       if (!(ambiente.equals("1") || ambiente.equals("2"))) {
          throw new IllegalArgumentException("El ambiente debe ser '1' (pruebas) o '2' (producción)");
       }
