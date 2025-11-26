@@ -333,4 +333,8 @@ public class Fec_facturaService {
       }
    }
 
+   public void delete(Long id) {
+      dao.deleteById(id);
+   }
+
 }

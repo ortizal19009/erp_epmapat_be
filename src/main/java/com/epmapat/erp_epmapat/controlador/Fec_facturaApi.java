@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Fec_factura;
@@ -30,6 +34,11 @@ public class Fec_facturaApi {
 
    @Autowired
    private Fec_facturaService fecfacServicio;
+   @Autowired
+   private RestTemplate restTemplate;
+
+   @Value("${eureka.service-url}")
+   private String eurekaServiceUrl;
 
    @GetMapping
    public List<Fec_factura> getAll() {
@@ -116,5 +125,37 @@ public class Fec_facturaApi {
    @GetMapping("/{idfactura}")
    public ResponseEntity<Optional<Fec_factura>> findByIdFactura(@PathVariable Long idfactura) {
       return ResponseEntity.ok(fecfacServicio.findById(idfactura));
+   }
+
+   @PutMapping("/setxml")
+   public ResponseEntity<Fec_factura> setXmlToFactura(@RequestParam Long idfactura, @RequestBody Fec_factura ff) {
+      Fec_factura factura = fecfacServicio.findById(idfactura)
+            .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
+
+      try {
+         System.out.println("idfactura_ Api: " + idfactura);
+         String url = "http://192.168.0.165:8080/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
+         String xml = restTemplate.getForObject(url, String.class);
+
+         factura.setXmlautorizado(xml);
+         factura.setEstado("A");
+         fecfacServicio.save(factura);
+
+         return ResponseEntity.ok(factura);
+      } catch (HttpServerErrorException e) {
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+               .body(factura);
+      } catch (Exception e) {
+         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+               .body(factura);
+      }
+   }
+
+   @DeleteMapping("/{idfactura}")
+   public ResponseEntity<Fec_factura> deleteFec_factura(@PathVariable Long idfactura) {
+      Fec_factura factura = fecfacServicio.findById(idfactura)
+            .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
+      fecfacServicio.delete(idfactura);
+      return ResponseEntity.ok(factura);
    }
 }
