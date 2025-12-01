@@ -10,4 +10,6 @@ import com.epmapat.erp_epmapat.modelo.Tmpinteresxfac;
 
 public interface TmpinteresxfacR extends JpaRepository<Tmpinteresxfac, Long> {
     Optional<Tmpinteresxfac> findByIdfactura(Long idfactura);
-    List<Tmpinteresxfac> findAllByIdfacturaIn(Collection<Long> ids);}
+
+    List<Tmpinteresxfac> findAllByIdfacturaIn(Collection<Long> ids);
+}
