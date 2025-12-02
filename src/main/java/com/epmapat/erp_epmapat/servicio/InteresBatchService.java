@@ -58,7 +58,6 @@ public class InteresBatchService {
     // ====== API pública ======
 
     /** Ejecuta el recálculo masivo con reglas por defecto. */
-    @Transactional
     public Map<String, Object> recalcularIntereses(LocalDate fechaCorte) {
         return recalcularIntereses(fechaCorte, ReglaBatch.porDefecto());
     }
