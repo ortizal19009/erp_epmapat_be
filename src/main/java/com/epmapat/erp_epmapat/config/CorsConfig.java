@@ -1,7 +1,6 @@
 // src/main/java/com/epmapat/erp_epmapat/config/CorsConfig.java
 package com.epmapat.erp_epmapat.config;
 
-import java.util.List;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +9,42 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
+public class CorsConfig {
+
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilter() {
+
+        CorsConfiguration cfg = new CorsConfiguration();
+
+        // Permite cualquier origen
+        cfg.addAllowedOriginPattern("*");
+
+        // Permite cualquier método HTTP
+        cfg.addAllowedMethod(CorsConfiguration.ALL);
+
+        // Permite cualquier header
+        cfg.addAllowedHeader(CorsConfiguration.ALL);
+
+        // Expone todos los headers si se desea
+        cfg.addExposedHeader("*");
+
+        // NO permitir credenciales cuando usas "*"
+        cfg.setAllowCredentials(false);
+
+        // Sin límite de tiempo (algún valor extremadamente alto)
+        cfg.setMaxAge(86400 * 365L); // 1 año
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+        bean.setOrder(Integer.MIN_VALUE);
+        return bean;
+    }
+}
+
+
+/* @Configuration
 public class CorsConfig {
 
   @Bean
@@ -35,3 +70,4 @@ public class CorsConfig {
     return bean;
   }
 }
+ */
