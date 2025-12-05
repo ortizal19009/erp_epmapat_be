@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.epmapat.erp_epmapat.DTO.CredencialesRequest;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.CVClientes;
 import com.epmapat.erp_epmapat.modelo.Clientes;
@@ -179,4 +180,12 @@ public class ClientesApi {
 		Page<CVClientes> result = cliServicio.getCVOfClientes(fecha, name.toLowerCase(), page, size);
 		return ResponseEntity.ok(result);
 	}
+	    @PutMapping("/{id}/credenciales")
+    public ResponseEntity<Void> actualizarCredenciales(
+            @PathVariable("id") Long id,
+            @RequestBody CredencialesRequest req) throws Exception {
+
+        cliServicio.actualizarCredenciales(id, req.getUsername(), req.getPassword());
+        return ResponseEntity.noContent().build();
+    }
 }

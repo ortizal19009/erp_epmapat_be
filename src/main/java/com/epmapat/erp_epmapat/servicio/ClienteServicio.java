@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.config.AESUtil;
 import com.epmapat.erp_epmapat.interfaces.CVClientes;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 import com.epmapat.erp_epmapat.repositorio.ClientesR;
@@ -87,5 +88,15 @@ public class ClienteServicio {
 			return dao.getCVOfNCliente(fecha, name, pageable);
 		}
 	}
+	
+	    public void actualizarCredenciales(Long idcliente, String username, String password) throws Exception {
+        Clientes c = dao.findById(idcliente)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        c.setUsername(username);
+        c.setPassword(AESUtil.cifrar(password)); // usando tu AESUtil
+
+        dao.save(c);
+    }
 
 }
