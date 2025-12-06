@@ -118,7 +118,6 @@ public class ClientesApi {
 	public ResponseEntity<Long> getTotalClientes() {
 		return ResponseEntity.ok(cliServicio.totalclientes());
 	}
-
 	public boolean validadorDeCedula(String cedula) {
 		boolean cedulaCorrecta = false;
 
