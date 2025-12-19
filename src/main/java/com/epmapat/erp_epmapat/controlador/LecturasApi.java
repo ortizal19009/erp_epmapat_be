@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -265,6 +264,11 @@ public class LecturasApi {
 	public ResponseEntity<List<EmisionesInterface>> getDuplicatosToEmision(@RequestParam Long idemision,
 			@RequestParam Long top) {
 		return ResponseEntity.ok(lecServicio.getDuplicadosToRecalculate(idemision, top));
+	}
+
+	@GetMapping("/preview/lecturas/{idcliente}")
+	public List<Lecturas> previewLecturas(@PathVariable Long idcliente) {
+		return lecServicio.findPendientesByCliente(idcliente);
 	}
 
 }

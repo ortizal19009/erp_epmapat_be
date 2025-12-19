@@ -4,10 +4,13 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import com.epmapat.erp_epmapat.interfaces.*;
 
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -759,5 +762,18 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			ORDER BY ar.cuenta ASC
 			""", nativeQuery = true)
 	List<FacturasSinCobroInter> findDeudasOfAbonadosByRutas(Long idruta);
+
+	@Modifying
+	@Transactional
+	@Query(value = """
+			  UPDATE facturas
+			  SET idcliente = :masterId
+			  WHERE idcliente = :dupId
+			""", nativeQuery = true)
+	void reasignarCliente(@Param("dupId") Long dupId,
+			@Param("masterId") Long masterId);
+
+	@Query(value = "select * from facturas f where f.idcliente = ?1 and f.pagado = 0", nativeQuery = true)
+	public List<Facturas> findSincobroToMerge(Long idcliente);
 
 }

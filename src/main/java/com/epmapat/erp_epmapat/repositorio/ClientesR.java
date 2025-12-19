@@ -14,6 +14,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.interfaces.CVClientes;
+import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoGrupoView;
+import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoView;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 
 public interface ClientesR extends JpaRepository<Clientes, Long> {
@@ -194,5 +196,64 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 				) as sub
 			""", nativeQuery = true)
 	Page<CVClientes> getCVOfNCliente(LocalDate fecha, String nombre, Pageable pageable);
+
+	/* DUPLICADOS DE CLIENTES */
+	@Query(value = """
+			  SELECT
+			    c.idcliente,
+			    c.cedula,
+			    c.nombre,
+			    c.direccion,
+			    c.telefono,
+			    c.email,
+			    c.activo,
+			    COUNT(*) OVER (PARTITION BY c.cedula) AS repeticiones
+			  FROM clientes c
+			  WHERE c.activo = true
+			    AND c.cedula IN (
+			      SELECT c2.cedula
+			      FROM clientes c2
+			      WHERE c2.activo = true
+			      GROUP BY c2.cedula
+			      HAVING COUNT(*) > 1
+			    )
+			  ORDER BY c.cedula, c.idcliente
+			""", countQuery = """
+			  SELECT COUNT(*)
+			  FROM clientes c
+			  WHERE c.activo = true
+			    AND c.cedula IN (
+			      SELECT c2.cedula
+			      FROM clientes c2
+			      WHERE c2.activo = true
+			      GROUP BY c2.cedula
+			      HAVING COUNT(*) > 1
+			    )
+			""", nativeQuery = true)
+	Page<ClienteDuplicadoView> findDuplicados(Pageable pageable);
+
+	@Query(value = """
+			  SELECT
+			    c.cedula AS cedula,
+			    CAST(COUNT(*) AS INTEGER) AS total,
+			    STRING_AGG(c.nombre, ' | ' ORDER BY c.idcliente) AS nombres
+			  FROM clientes c
+			  WHERE c.activo = true
+			    AND COALESCE(TRIM(c.cedula), '') <> ''
+			  GROUP BY c.cedula
+			  HAVING COUNT(*) > 1
+			  ORDER BY c.cedula
+			""", countQuery = """
+			  SELECT COUNT(*)
+			  FROM (
+			    SELECT c.cedula
+			    FROM clientes c
+			    WHERE c.activo = true
+			      AND COALESCE(TRIM(c.cedula), '') <> ''
+			    GROUP BY c.cedula
+			    HAVING COUNT(*) > 1
+			  ) x
+			""", nativeQuery = true)
+	Page<ClienteDuplicadoGrupoView> findDuplicadosAgrupados(Pageable pageable);
 
 }

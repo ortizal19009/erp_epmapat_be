@@ -9,8 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.DTO.ClienteDuplicadoDTO;
 import com.epmapat.erp_epmapat.config.AESUtil;
 import com.epmapat.erp_epmapat.interfaces.CVClientes;
+import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoGrupoView;
+import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoView;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 import com.epmapat.erp_epmapat.repositorio.ClientesR;
 
@@ -88,15 +91,22 @@ public class ClienteServicio {
 			return dao.getCVOfNCliente(fecha, name, pageable);
 		}
 	}
-	
-	    public void actualizarCredenciales(Long idcliente, String username, String password) throws Exception {
-        Clientes c = dao.findById(idcliente)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-        c.setUsername(username);
-        c.setPassword(AESUtil.cifrar(password)); // usando tu AESUtil
+	public void actualizarCredenciales(Long idcliente, String username, String password) throws Exception {
+		Clientes c = dao.findById(idcliente)
+				.orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-        dao.save(c);
-    }
+		c.setUsername(username);
+		c.setPassword(AESUtil.cifrar(password)); // usando tu AESUtil
+
+		dao.save(c);
+	}
+
+	public Page<ClienteDuplicadoView> listarDuplicados(Pageable pageable) {
+		return dao.findDuplicados(pageable);
+	}
+	public Page<ClienteDuplicadoGrupoView> findDuplicadosAgrupados(Pageable pageable){
+		return dao.findDuplicadosAgrupados(pageable);
+	}
 
 }

@@ -625,4 +625,8 @@ public class LecturaServicio {
 		return dao.getDuplicadosToRecalculate(idemision, top);
 	}
 
+	public List<Lecturas> findPendientesByCliente(Long idcliente) {
+		return dao.findPendientesByCliente(idcliente);
+	}
+
 }

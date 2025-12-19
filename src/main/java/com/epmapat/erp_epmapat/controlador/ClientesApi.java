@@ -5,26 +5,32 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties.Authentication;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.epmapat.erp_epmapat.DTO.ClienteMergeRequest;
 import com.epmapat.erp_epmapat.DTO.CredencialesRequest;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.CVClientes;
+import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoGrupoView;
+import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoView;
 import com.epmapat.erp_epmapat.modelo.Clientes;
+import com.epmapat.erp_epmapat.servicio.ClienteMergeService;
 import com.epmapat.erp_epmapat.servicio.ClienteServicio;
 
 @RestController
 @RequestMapping("/clientes")
-
-
 public class ClientesApi {
 
 	@Autowired
 	private ClienteServicio cliServicio;
+	@Autowired
+	private ClienteMergeService cliMergeServicio;
 
 	@GetMapping
 	public List<Clientes> getAllClientes(@Param(value = "identificacion") String identificacion,
@@ -180,12 +186,42 @@ public class ClientesApi {
 		Page<CVClientes> result = cliServicio.getCVOfClientes(fecha, name.toLowerCase(), page, size);
 		return ResponseEntity.ok(result);
 	}
-	    @PutMapping("/{id}/credenciales")
-    public ResponseEntity<Void> actualizarCredenciales(
-            @PathVariable("id") Long id,
-            @RequestBody CredencialesRequest req) throws Exception {
 
-        cliServicio.actualizarCredenciales(id, req.getUsername(), req.getPassword());
-        return ResponseEntity.noContent().build();
-    }
+	@PutMapping("/{id}/credenciales")
+	public ResponseEntity<Void> actualizarCredenciales(
+			@PathVariable("id") Long id,
+			@RequestBody CredencialesRequest req) throws Exception {
+
+		cliServicio.actualizarCredenciales(id, req.getUsername(), req.getPassword());
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/duplicados")
+	public Page<ClienteDuplicadoView> listarDuplicados(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		return cliServicio.listarDuplicados(PageRequest.of(page, size));
+	}
+
+	@GetMapping("/duplicados-agrupado")
+	public Page<ClienteDuplicadoGrupoView> listarGrupos(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		return cliServicio.findDuplicadosAgrupados(PageRequest.of(page, size));
+	}
+
+	@PostMapping("/merge")
+	public ResponseEntity<Void> mergeClientes(
+			@RequestBody ClienteMergeRequest req,
+			Authentication auth) {
+
+		String usuario = auth.getUsername();
+		cliMergeServicio.merge(
+				req.getMasterId(),
+				req.getDuplicateIds(),
+				usuario);
+
+		return ResponseEntity.ok().build();
+	}
+
 }

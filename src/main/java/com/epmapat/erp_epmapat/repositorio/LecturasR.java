@@ -5,12 +5,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.scheduling.annotation.Async;
 
-import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
@@ -309,5 +311,31 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	List<EmisionesInterface> getDuplicadosToRecalculate(
 			@Param("idemision") Long idemision,
 			@Param("top") Long top);
+
+	// 1️⃣ Listar lecturas pendientes para preview
+	@Query(value = """
+			  SELECT l.*
+			  FROM lecturas l
+			  JOIN facturas f ON l.idfactura = f.idfactura
+			  WHERE l.idresponsable = :idcliente
+			    AND f.pagado = 0
+			""", nativeQuery = true)
+	List<Lecturas> findPendientesByCliente(@Param("idcliente") Long idcliente);
+
+	// 2️⃣ Reasignar lecturas al cliente master (MERGE)
+	@Modifying
+	@Transactional
+	@Query(value = """
+			  UPDATE lecturas
+			  SET idresponsable = :masterId
+			  WHERE idresponsable = :dupId
+			    AND idfactura IN (
+			        SELECT f.idfactura
+			        FROM facturas f
+			        WHERE f.pagado = 0
+			    )
+			""", nativeQuery = true)
+	void reasignarCliente(@Param("dupId") Long dupId,
+			@Param("masterId") Long masterId);
 
 }
