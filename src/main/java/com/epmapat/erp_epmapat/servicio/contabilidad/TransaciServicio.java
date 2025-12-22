@@ -73,7 +73,7 @@ public class TransaciServicio {
 		return saldo;
 	}
 
-	//Busca Transacciones por número y fechas de los Asientos
+	// Busca Transacciones por número y fechas de los Asientos
 	public List<Transaci> tranAsientos(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
 		return dao.tranAsientos(desdeNum, hastaNum, desdeFecha, hastaFecha);
 	}
@@ -106,15 +106,15 @@ public class TransaciServicio {
 		return tflujo;
 	}
 
-
-	// public ResponseEntity<List<Transaci>> getByTipAsi(@RequestParam("tipasi") Long tipasi) {
-	// 	return ResponseEntity.ok(dao.findByTipAsi(tipasi));
+	// public ResponseEntity<List<Transaci>> getByTipAsi(@RequestParam("tipasi")
+	// Long tipasi) {
+	// return ResponseEntity.ok(dao.findByTipAsi(tipasi));
 	// }
-	public List<Transaci> getByTipAsi( Long tipasi) {
+	public List<Transaci> getByTipAsi(Long tipasi) {
 		return dao.findByTipAsi(tipasi);
 	}
+
 	public List<Transaci> aperInicial(String codcue) {
-		// TODO Auto-generated method stub
 		return dao.aperInicial(codcue);
 	}
 }

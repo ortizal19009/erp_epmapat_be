@@ -203,11 +203,23 @@ public class ClientesApi {
 		return cliServicio.listarDuplicados(PageRequest.of(page, size));
 	}
 
-	@GetMapping("/duplicados-agrupado")
+	// @GetMapping("/duplicados-agrupado")
 	public Page<ClienteDuplicadoGrupoView> listarGrupos(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size) {
 		return cliServicio.findDuplicadosAgrupados(PageRequest.of(page, size));
+	}
+
+	@GetMapping("/duplicados-agrupado")
+	public ResponseEntity<Page<ClienteDuplicadoGrupoView>> duplicadosFiltrados(
+			@RequestParam(defaultValue = "") String q,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		if (q.isEmpty()) {
+			return ResponseEntity.ok(cliServicio.findDuplicadosAgrupados(PageRequest.of(page, size)));
+		}
+
+		return ResponseEntity.ok(cliServicio.listarDuplicadosFiltrados(q, page, size));
 	}
 
 	@PostMapping("/merge")
@@ -215,11 +227,11 @@ public class ClientesApi {
 			@RequestBody ClienteMergeRequest req,
 			Authentication auth) {
 
-		String usuario = auth.getUsername();
+		// Long usuario = auth.getUsername();
 		cliMergeServicio.merge(
 				req.getMasterId(),
 				req.getDuplicateIds(),
-				usuario);
+				req.getUsuario());
 
 		return ResponseEntity.ok().build();
 	}

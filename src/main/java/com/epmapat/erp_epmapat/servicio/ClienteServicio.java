@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import com.epmapat.erp_epmapat.DTO.ClienteDuplicadoDTO;
 import com.epmapat.erp_epmapat.config.AESUtil;
 import com.epmapat.erp_epmapat.interfaces.CVClientes;
 import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoGrupoView;
@@ -105,8 +104,23 @@ public class ClienteServicio {
 	public Page<ClienteDuplicadoView> listarDuplicados(Pageable pageable) {
 		return dao.findDuplicados(pageable);
 	}
-	public Page<ClienteDuplicadoGrupoView> findDuplicadosAgrupados(Pageable pageable){
+
+	public Page<ClienteDuplicadoGrupoView> findDuplicadosAgrupados(Pageable pageable) {
 		return dao.findDuplicadosAgrupados(pageable);
+	}
+
+	public Page<ClienteDuplicadoGrupoView> listarDuplicadosFiltrados(String q, int page, int size) {
+
+		// normaliza
+		String filtro = (q == null) ? "" : q.trim();
+
+		// pageable
+		Pageable pageable = PageRequest.of(
+				Math.max(page, 0),
+				Math.max(size, 1),
+				Sort.by(Sort.Direction.ASC, "cedula"));
+
+		return dao.findDuplicadosAgrupadosFiltrado(filtro, pageable);
 	}
 
 }

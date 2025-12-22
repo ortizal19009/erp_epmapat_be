@@ -256,4 +256,40 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 			""", nativeQuery = true)
 	Page<ClienteDuplicadoGrupoView> findDuplicadosAgrupados(Pageable pageable);
 
+	@Query(value = """
+			  SELECT
+			    c.cedula AS cedula,
+			    CAST(COUNT(*) AS INTEGER) AS total,
+			    STRING_AGG(c.nombre, ' | ' ORDER BY c.idcliente) AS nombres
+			  FROM clientes c
+			  WHERE c.activo = true
+			    AND COALESCE(TRIM(c.cedula), '') <> ''
+			    AND (
+			      :q IS NULL OR :q = ''
+			      OR c.cedula ILIKE CONCAT('%', :q, '%')
+			      OR c.nombre ILIKE CONCAT('%', :q, '%')
+			    )
+			  GROUP BY c.cedula
+			  HAVING COUNT(*) > 1
+			  ORDER BY c.cedula
+			""", countQuery = """
+			  SELECT COUNT(*)
+			  FROM (
+			    SELECT c.cedula
+			    FROM clientes c
+			    WHERE c.activo = true
+			      AND COALESCE(TRIM(c.cedula), '') <> ''
+			      AND (
+			        :q IS NULL OR :q = ''
+			        OR c.cedula ILIKE CONCAT('%', :q, '%')
+			        OR c.nombre ILIKE CONCAT('%', :q, '%')
+			      )
+			    GROUP BY c.cedula
+			    HAVING COUNT(*) > 1
+			  ) x
+			""", nativeQuery = true)
+	Page<ClienteDuplicadoGrupoView> findDuplicadosAgrupadosFiltrado(
+			String q,
+			Pageable pageable);
+
 }

@@ -35,7 +35,7 @@ public class ClienteMergeAbonado {
     private Long clienteOrigen;
 
     /** Fecha del registro (auditoría) */
-    @Column(name = "fecha_registro", nullable = false)
+    @Column(name = "fecha_merge", nullable = false)
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
     public ClienteMergeAbonado(Long idMerge, Long abonadoId, Long clienteOrigen) {

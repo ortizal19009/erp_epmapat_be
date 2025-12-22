@@ -8,4 +8,5 @@ import lombok.Data;
 public class ClienteMergeRequest {
     private Long masterId;
     private List<Long> duplicateIds;
+    private Long usuario;
 }

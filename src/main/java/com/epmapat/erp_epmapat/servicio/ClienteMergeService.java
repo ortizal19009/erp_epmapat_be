@@ -1,13 +1,14 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
-import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 import com.epmapat.erp_epmapat.modelo.Facturas;
@@ -37,7 +38,7 @@ public class ClienteMergeService {
     private final ClienteMergeLecturaR mergeLecturaRepo;
 
     @Transactional
-    public void merge(Long masterId, List<Long> duplicateIds, String usuario) {
+    public void merge(Long masterId, List<Long> duplicateIds, Long usuario) {
 
         if (duplicateIds == null || duplicateIds.isEmpty()) {
             throw new IllegalArgumentException("No existen clientes duplicados para merge");
@@ -89,21 +90,25 @@ public class ClienteMergeService {
             }
             // LECTURAS
             List<Lecturas> lecturas = lecturasRepo.findPendientesByCliente(dupId);
-
             for (Lecturas l : lecturas) {
-                mergeLecturaRepo.save(
-                        new ClienteMergeLectura(
-                                null,
-                                merge.getIdMerge(),
-                                l.getIdlectura(),
-                                dupId,
-                                LocalDateTime.now()));
+
+                ClienteMergeLectura ml = new ClienteMergeLectura();
+                ml.setIdMerge(merge.getIdMerge());
+                ml.setIdLectura(l.getIdlectura()); // <- usa el getter real
+                ml.setIdClienteOrigen(dupId);
+                mergeLecturaRepo.save(ml);
+                // Reasignar responsable al master (según cómo esté mapeado en tu entity
+                // Lecturas)
+                // l.setIdresponsable(master);
+                lecturasRepo.save(l);
             }
 
             // UPDATE real
             lecturasRepo.reasignarCliente(dupId, masterId);
-
+            LocalDate now = LocalDate.now();
             // Desactivar cliente duplicado
+            duplicado.setUsucrea(usuario);
+            duplicado.setFecmodi(now);
             duplicado.setActivo(false);
             clienteRepo.save(duplicado);
         }

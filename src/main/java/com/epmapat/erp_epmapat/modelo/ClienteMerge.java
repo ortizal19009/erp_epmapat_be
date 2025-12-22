@@ -33,7 +33,7 @@ public class ClienteMerge {
     private LocalDateTime fechaMerge = LocalDateTime.now();
 
     @Column(name = "usuario_merge")
-    private String usuarioMerge;
+    private Long usuarioMerge;
 
     @Column(name = "observacion")
     private String observacion;

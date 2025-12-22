@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,27 +160,29 @@ public class EmisionServicioOptimizado {
 
     // ----------------- Persistencia optimizada de rubros -----------------
 
-@Transactional
-private void upsertRubros(List<Rubroxfac> nuevos) {
-    if (nuevos == null || nuevos.isEmpty()) return;
+    @Transactional
+    private void upsertRubros(List<Rubroxfac> nuevos) {
+        if (nuevos == null || nuevos.isEmpty())
+            return;
 
-    final Long idfac = nuevos.get(0).getIdfactura_facturas().getIdfactura();
+        final Long idfac = nuevos.get(0).getIdfactura_facturas().getIdfactura();
 
-    // De-duplicar la entrada: si vienen repetidos en memoria, nos quedamos con el último
-    Map<Long, Rubroxfac> dedup = new LinkedHashMap<>();
-    for (Rubroxfac r : nuevos) {
-        Long idrubro = r.getIdrubro_rubros().getIdrubro();
-        dedup.put(idrubro, r); // el último gana
+        // De-duplicar la entrada: si vienen repetidos en memoria, nos quedamos con el
+        // último
+        Map<Long, Rubroxfac> dedup = new LinkedHashMap<>();
+        for (Rubroxfac r : nuevos) {
+            Long idrubro = r.getIdrubro_rubros().getIdrubro();
+            dedup.put(idrubro, r); // el último gana
+        }
+        Set<Long> rubrosAReemplazar = dedup.keySet();
+
+        // 1) Borrar TODOS los existentes de esa factura para esos rubros (incluye
+        // duplicados)
+        dao_rubroxfac.deleteByFacturaAndRubroIn(idfac, rubrosAReemplazar);
+
+        // 2) Insertar únicamente los nuevos (de-duplicados)
+        dao_rubroxfac.saveAll(dedup.values());
     }
-    Set<Long> rubrosAReemplazar = dedup.keySet();
-
-    // 1) Borrar TODOS los existentes de esa factura para esos rubros (incluye duplicados)
-    dao_rubroxfac.deleteByFacturaAndRubroIn(idfac, rubrosAReemplazar);
-
-    // 2) Insertar únicamente los nuevos (de-duplicados)
-    dao_rubroxfac.saveAll(dedup.values());
-}
-
 
     private Rubroxfac buildRubro(Facturas factura, Long idrubro, BigDecimal valor) {
         Rubroxfac r = new Rubroxfac();
