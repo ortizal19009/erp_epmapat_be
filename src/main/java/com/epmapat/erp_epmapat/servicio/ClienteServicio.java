@@ -123,4 +123,8 @@ public class ClienteServicio {
 		return dao.findDuplicadosAgrupadosFiltrado(filtro, pageable);
 	}
 
+	public List<Clientes> findAll() {
+		return dao.findAll();
+	}
+
 }

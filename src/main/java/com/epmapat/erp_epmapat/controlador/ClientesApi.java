@@ -236,4 +236,8 @@ public class ClientesApi {
 		return ResponseEntity.ok().build();
 	}
 
+	@GetMapping("/all")
+	public ResponseEntity<List<Clientes>> getAllClientes() {
+		return ResponseEntity.ok(cliServicio.findAll());
+	}
 }

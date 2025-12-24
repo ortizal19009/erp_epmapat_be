@@ -24,7 +24,6 @@ import com.epmapat.erp_epmapat.servicio.administracion.UsuarioServicio;
 @RestController
 @RequestMapping("/usuarios")
 
-
 public class UsuariosApi {
 
    @Autowired
@@ -91,12 +90,12 @@ public class UsuariosApi {
    @PostMapping
    public ResponseEntity<Object> saveUsuario(@RequestBody Usuarios user) {
       Map<String, Object> response = new HashMap<>();
-      Usuarios _user= usuServicio.save(user);
-      if(_user != null ){
+      Usuarios _user = usuServicio.save(user);
+      if (_user != null) {
          response.put("status", ResponseEntity.ok());
          response.put("message", "Usuario creado");
-         
-      }else{
+
+      } else {
          response.put("status", ResponseEntity.ok());
          response.put("message", "Usuario no creado");
       }
@@ -109,4 +108,5 @@ public class UsuariosApi {
       UsuarioI usuario = usuServicio.findDatosById(idusuario);
       return ResponseEntity.ok(usuario);
    }
+
 }

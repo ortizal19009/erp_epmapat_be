@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ServerErp"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -74,49 +74,44 @@ WHERE
 		</field>
 	</subDataset>
 	<subDataset name="TotalesRubros" uuid="2f366369-a234-4e6b-ae93-8dbfbdd187b0">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ServerErp"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="722"/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="267"/>
-		<parameter name="desde" class="java.util.Date"/>
-		<parameter name="hasta" class="java.util.Date"/>
+		<parameter name="desde" class="java.sql.Timestamp"/>
+		<parameter name="hasta" class="java.sql.Timestamp"/>
 		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
 			<![CDATA[WITH facturas_validas AS (
-    SELECT DISTINCT f.idfactura, f.swiva
-    FROM facturas f
-    WHERE       f.usuariocobro = $P{usuariocobro}
-   AND fechacompensacion between $P{desde} AND $P{hasta}
-      AND f.estado <> 3 
-      AND f.fechaeliminacion IS NULL
-      AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
+  SELECT DISTINCT
+      f.idfactura,
+      f.swiva,
+      f.swcondonar
+  FROM facturas f
+  JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
+  WHERE f.usuariocobro = $P{usuariocobro}
+    AND (f.fechacobro::timestamp + COALESCE(f.horacobro, '00:00'::time))
+          BETWEEN $P{desde} AND $P{hasta}
+    AND rf.idrubro_rubros NOT IN (5, 165)
 )
+SELECT
+  COUNT(DISTINCT fv.idfactura) AS nfacturas,
 
-SELECT 
-    COUNT(DISTINCT f.idfactura) AS nfacturas,
+  ROUND(
+    SUM(
+      CASE
+        WHEN fv.swcondonar IS TRUE AND rf.idrubro_rubros = 6 THEN 0
+        ELSE (rf.valorunitario * rf.cantidad)::numeric
+      END
+    ), 2
+  ) AS subtotal,
 
-    ROUND(
-        SUM(
-            CASE 
-                WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6
-                THEN 0
-                ELSE (rf.valorunitario * rf.cantidad)::numeric
-            END
-        ), 2
-    ) AS subtotal,
+  COALESCE(ROUND(SUM(fv.swiva::numeric), 2), 0) AS sumaIva
 
-    (SELECT SUM(ROUND(swiva::numeric, 2)) FROM facturas_validas) AS sumaIva
-
-FROM rubroxfac rf
-JOIN facturas f ON f.idfactura = rf.idfactura_facturas
-JOIN rubros r ON r.idrubro = rf.idrubro_rubros
-
-WHERE
-  f.usuariocobro = $P{usuariocobro}
-   AND fechacompensacion between $P{desde} AND $P{hasta}
-    AND f.estado <> 3
-    AND f.fechaeliminacion IS NULL
-    AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde});]]>
+FROM facturas_validas fv
+JOIN rubroxfac rf ON rf.idfactura_facturas = fv.idfactura
+WHERE rf.idrubro_rubros NOT IN (5, 165);
+]]>
 		</queryString>
 		<field name="nfacturas" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.name" value="nfacturas"/>
@@ -167,8 +162,7 @@ GROUP BY
   f.idfactura, f.nrofactura, f.fechacobro, f.horacobro, f.swiva,
   f.interescobrado, c.nombre, c.cedula, u.nomusu, m.descripcion, fc.descripcion
 ORDER BY
-  f.nrofactura ASC;
-]]>
+  f.nrofactura ASC;]]>
 	</queryString>
 	<field name="idfactura" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.name" value="idfactura"/>
@@ -255,8 +249,7 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")).format($P{desde})
 + " - " +
-(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")).format($P{hasta})
-]]></textFieldExpression>
+(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")).format($P{hasta})]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -525,8 +518,7 @@ ORDER BY
 					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{horacobro} == null ? "" :
-new java.text.SimpleDateFormat("HH:mm").format(new java.util.Date($F{horacobro}.getTime()))
-]]></textFieldExpression>
+new java.text.SimpleDateFormat("HH:mm").format(new java.util.Date($F{horacobro}.getTime()))]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
