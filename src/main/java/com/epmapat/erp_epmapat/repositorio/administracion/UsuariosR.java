@@ -24,7 +24,7 @@ public interface UsuariosR extends JpaRepository<Usuarios, Long> {
    @Query(value = "select u.idusuario as idusuario, u.identificausu as identificacion, u.nomusu as nombre, u.alias as alias, u.estado as estado from usuarios u where idusuario = ?1", nativeQuery = true)
    UsuarioI findDatosById(Long idusuario);
 
-   @Query(value = "select u.nomusu, u.codusu , u.idusuario from usuarios u where u.nomusu = ?1 ", nativeQuery = true)
+   @Query(value = "select u.nomusu, u.codusu , u.idusuario , u.plataform_access from usuarios u where u.nomusu = ?1 ", nativeQuery = true)
    UsuarioI chargeLogin(String nomusu);
 
 }

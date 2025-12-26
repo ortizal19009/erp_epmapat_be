@@ -115,36 +115,58 @@ public class UsuariosApi {
    @PostMapping("/login")
    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
+      // 1️⃣ Buscar usuario
       UsuarioI user = usuServicio.chargeLogin(request.getUsername());
-      String pass = myFun(request.getPassword());
-
       if (user == null) {
-         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales incorrectas");
+         return ResponseEntity
+               .status(HttpStatus.UNAUTHORIZED)
+               .body("Credenciales incorrectas");
       }
 
-      boolean ok = user.getNomusu().equals(request.getUsername())
-            && user.getCodusu().equals(pass);
+      // 2️⃣ Validar contraseña
+      String passEncrypt = myFun(request.getPassword());
+      boolean credencialesOk = user.getNomusu().equals(request.getUsername())
+            && user.getCodusu().equals(passEncrypt);
 
-      if (!ok) {
-         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales incorrectas");
+      if (!credencialesOk) {
+         return ResponseEntity
+               .status(HttpStatus.UNAUTHORIZED)
+               .body("Credenciales incorrectas");
       }
 
-      String platform = request.getPlatform(); // "MOBILE" o "WEB"
-      String access = user.getPlataform_access(); // "MOBILE" / "WEB" / "BOTH"
+      // 3️⃣ Validar plataforma (MOBILE / WEB / BOTH)
+      String platform = request.getPlatform();
+      String access = user.getPlataform_access();
 
-      // ✅ Regla A: permiso de login por plataforma
+      // Normalizar valores
+      platform = (platform == null || platform.isBlank())
+            ? "MOBILE"
+            : platform.trim().toUpperCase();
+
+      access = (access == null || access.isBlank())
+            ? "BOTH"
+            : access.trim().toUpperCase();
+
       boolean allowedPlatform = "BOTH".equals(access) || platform.equals(access);
 
       if (!allowedPlatform) {
-         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-               .body("Usuario no autorizado para " + platform);
+         return ResponseEntity
+               .status(HttpStatus.FORBIDDEN)
+               .body("Usuario no autorizado para plataforma " + platform);
       }
 
-      // ✅ Regla B: módulos habilitados para esa plataforma
+      // 4️⃣ Obtener módulos habilitados por usuario + plataforma
       List<String> modules = usuServicio.getEnabledModules(user.getIdusuario(), platform);
 
-      return ResponseEntity.ok(
-            new LoginResponse("token-jwt-falso", request.getUsername(), request.getUserId(), modules));
+      // 5️⃣ Respuesta exitosa
+      LoginResponse response = new LoginResponse(
+            "token-jwt-falso", // luego JWT real
+            user.getNomusu(), // username
+            user.getIdusuario(), // userId REAL
+            modules // módulos habilitados
+      );
+
+      return ResponseEntity.ok(response);
    }
 
    public static String myFun(String x) {
