@@ -15,6 +15,8 @@ public class UsuarioServicio {
 
    @Autowired
    UsuariosR dao;
+   @Autowired
+   UsrxmodulosServicio usrxmodulosServicio;
 
    // Busca Todos (Excepto el Administrador)
    public List<Usuarios> findAll() {
@@ -39,8 +41,16 @@ public class UsuarioServicio {
       return dao.save(entity);
    }
 
-   public UsuarioI findDatosById(Long idusuario){
+   public UsuarioI findDatosById(Long idusuario) {
       return dao.findDatosById(idusuario);
+   }
+
+   public UsuarioI chargeLogin(String nomusu) {
+      return dao.chargeLogin(nomusu);
+   }
+
+   public List<String> getEnabledModules(Long userId, String platform) {
+      return usrxmodulosServicio.getEnabledModules(userId, platform);
    }
 
 }

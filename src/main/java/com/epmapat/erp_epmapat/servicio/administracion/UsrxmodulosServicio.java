@@ -50,4 +50,9 @@ public class UsrxmodulosServicio {
         }
         return dao.save(um);
     }
+
+    public List<String> getEnabledModules(Long userId, String platform) {
+        return dao.findEnabledModule(userId, platform);
+    }
+
 }

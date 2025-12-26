@@ -6,4 +6,8 @@ public interface UsuarioI {
     String getNombre();
     String getAlias();
     Boolean getEstado();
+        String getNomusu();
+    String getCodusu();
+    String getPlataform_access();
+
 }
