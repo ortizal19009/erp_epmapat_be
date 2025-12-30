@@ -23,8 +23,6 @@ import com.epmapat.erp_epmapat.servicio.RutaServicio;
 
 @RestController
 @RequestMapping("/rutas")
-
-
 public class RutasApi {
 
 	@Autowired

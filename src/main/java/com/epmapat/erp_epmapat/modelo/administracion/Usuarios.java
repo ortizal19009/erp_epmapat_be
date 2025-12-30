@@ -5,10 +5,15 @@ import java.time.ZonedDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.epmapat.erp_epmapat.modelo.rrhh.Personal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,5 +53,8 @@ public class Usuarios {
    private Long toolbarframe;
    private Long toolbarsheet;
    private String plataform_access;
+   @ManyToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "personal_idpersonal")
+   private Personal personal;
 
 }
