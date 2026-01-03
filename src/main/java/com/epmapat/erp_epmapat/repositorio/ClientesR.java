@@ -16,6 +16,7 @@ import org.springframework.data.repository.query.Param;
 import com.epmapat.erp_epmapat.interfaces.CVClientes;
 import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoGrupoView;
 import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoView;
+import com.epmapat.erp_epmapat.interfaces.mobile.ClientesMobile;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 
 public interface ClientesR extends JpaRepository<Clientes, Long> {
@@ -291,5 +292,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 	Page<ClienteDuplicadoGrupoView> findDuplicadosAgrupadosFiltrado(
 			String q,
 			Pageable pageable);
+@Query(value = "SELECT c.idcliente AS idcliente, c.nombre AS nombre, c.cedula AS cedula, c.direccion AS direccion, c.telefono AS telefono, c.email AS email, c.activo AS activo FROM clientes c", nativeQuery = true)
+	List<ClientesMobile> findAllBy();
 
 }

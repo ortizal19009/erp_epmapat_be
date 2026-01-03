@@ -16,6 +16,7 @@ import com.epmapat.erp_epmapat.DTO.EstadisticasAbonadosDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.interfaces.AbonadoI;
 import com.epmapat.erp_epmapat.interfaces.EstadisticasAbonados;
+import com.epmapat.erp_epmapat.interfaces.mobile.AbonadosMobile;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
 // import com.epmapat.erp_epmapat.repositorio.ClientesR;
@@ -192,5 +193,13 @@ public class AbonadoServicio {
 		return dao.findByEstado(estado);
 	}
 
-
+	
+	/*
+	 * =============================================================
+	 * SERVICIOS PARA MOBILE
+	 * =============================================================
+	 */
+	public List<AbonadosMobile> getAllAbonadosMobile() {
+		return dao.getAllAbonadosMobile();
+	}	
 }

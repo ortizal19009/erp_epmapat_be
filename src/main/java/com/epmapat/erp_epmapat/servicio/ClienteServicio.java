@@ -13,6 +13,7 @@ import com.epmapat.erp_epmapat.config.AESUtil;
 import com.epmapat.erp_epmapat.interfaces.CVClientes;
 import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoGrupoView;
 import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoView;
+import com.epmapat.erp_epmapat.interfaces.mobile.ClientesMobile;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 import com.epmapat.erp_epmapat.repositorio.ClientesR;
 
@@ -125,6 +126,9 @@ public class ClienteServicio {
 
 	public List<Clientes> findAll() {
 		return dao.findAll();
+	}
+	public List<ClientesMobile> getAllClientesMobile() {
+		return dao.findAllBy();
 	}
 
 }

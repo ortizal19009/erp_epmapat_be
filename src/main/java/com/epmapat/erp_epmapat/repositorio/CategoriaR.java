@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import com.epmapat.erp_epmapat.interfaces.mobile.CategoriasMobile;
 import com.epmapat.erp_epmapat.modelo.Categorias;
 
 public interface CategoriaR extends JpaRepository<Categorias, Long> {
@@ -41,4 +42,12 @@ public interface CategoriaR extends JpaRepository<Categorias, Long> {
 
 	@Query(value = "SELECT * FROM categorias where idcategoria = ?1", nativeQuery = true)
 	Categorias getCategoriaById(int idcategoria);
+
+	/*
+	 * =============================================================
+	 * QUERYS PARA MOBILE
+	 * =============================================================
+	 */
+	@Query(value = "SELECT c.idcategoria , c.descripcion FROM categorias c", nativeQuery = true)
+	List<CategoriasMobile> findAllCategorias();
 }

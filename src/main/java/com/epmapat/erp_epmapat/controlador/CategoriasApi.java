@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.mobile.CategoriasMobile;
 import com.epmapat.erp_epmapat.modelo.Categorias;
 import com.epmapat.erp_epmapat.servicio.CategoriaServicio;
 
@@ -92,5 +93,8 @@ public class CategoriasApi {
 		cateServicio.deleteById(idcategoria);
 		return ResponseEntity.ok(Boolean.TRUE);
 	}
-
-}
+	@GetMapping("/categoriasmobile")
+	public List<CategoriasMobile> findAllCategoriasMobile() {
+		return cateServicio.findAllCategorias();
+	}
+}	

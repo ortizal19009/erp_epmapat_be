@@ -199,5 +199,10 @@ public class UsuariosApi {
    public ResponseEntity<String> ping() {
       return ResponseEntity.ok("OK");
    }
+   @GetMapping("/cargo")
+   public ResponseEntity<List<UsuarioI>> getByCargo(@RequestParam Long idcargo) {
+      List<UsuarioI> usuario = usuServicio.findByCargo(idcargo);
+      return ResponseEntity.ok(usuario);
+   }
 
 }

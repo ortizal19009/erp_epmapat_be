@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.interfaces.mobile.CategoriasMobile;
 import com.epmapat.erp_epmapat.modelo.Categorias;
 import com.epmapat.erp_epmapat.repositorio.CategoriaR;
 
@@ -17,23 +18,22 @@ public class CategoriaServicio {
 	@Autowired
 	private CategoriaR dao;
 
-	//Categorias habilitadas
+	// Categorias habilitadas
 	public List<String> listaCategorias() {
 		return dao.listaCategorias();
-	 }
+	}
 
-
-	@SuppressWarnings("null")
+	
 	public List<Categorias> findAll(Sort sort) {
 		return dao.findAll(sort);
 	}
 
-	@SuppressWarnings("null")
+	
 	public <S extends Categorias> S save(S entity) {
 		return dao.save(entity);
 	}
 
-	@SuppressWarnings("null")
+
 	public Optional<Categorias> findById(Long id) {
 		return dao.findById(id);
 	}
@@ -50,8 +50,17 @@ public class CategoriaServicio {
 		return dao.findByDescri(descripcion);
 	}
 
-	//Suma totaltarifa
+	// Suma totaltarifa
 	public BigDecimal sumTotalTarifa() {
 		return dao.sumTotalTarifa();
+	}
+
+	/*
+	 * =============================================================
+	 * SERVICIOS PARA MOBILE
+	 * =============================================================
+	 */
+	public List<CategoriasMobile> findAllCategorias() {
+		return dao.findAllCategorias();
 	}
 }

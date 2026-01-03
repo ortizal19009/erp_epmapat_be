@@ -25,6 +25,7 @@ import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.AbonadoI;
 import com.epmapat.erp_epmapat.interfaces.EstadisticasAbonados;
 import com.epmapat.erp_epmapat.interfaces.FacturasSinCobroInter;
+import com.epmapat.erp_epmapat.interfaces.mobile.AbonadosMobile;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
@@ -231,5 +232,15 @@ public class AbonadosApi {
 	@GetMapping("/estado/{estado}")
 	public ResponseEntity<List<Abonados>> getAbonadosByEstado(@PathVariable Long estado) {
 		return ResponseEntity.ok(aboServicio.findByEstado(estado));
+	}
+
+		/*
+	 * =============================================================
+	 * QUERYS PARA MOBILE
+	 * =============================================================
+	 */
+	@GetMapping("/allabonadosmobile")
+	public List<AbonadosMobile> getAllAbonadosMobile() {
+		return aboServicio.getAllAbonadosMobile();		
 	}
 }

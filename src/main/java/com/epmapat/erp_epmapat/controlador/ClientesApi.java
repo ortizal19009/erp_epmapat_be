@@ -19,6 +19,7 @@ import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.CVClientes;
 import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoGrupoView;
 import com.epmapat.erp_epmapat.interfaces.ClienteDuplicadoView;
+import com.epmapat.erp_epmapat.interfaces.mobile.ClientesMobile;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 import com.epmapat.erp_epmapat.servicio.ClienteMergeService;
 import com.epmapat.erp_epmapat.servicio.ClienteServicio;
@@ -239,5 +240,9 @@ public class ClientesApi {
 	@GetMapping("/all")
 	public ResponseEntity<List<Clientes>> getAllClientes() {
 		return ResponseEntity.ok(cliServicio.findAll());
+	}
+	@GetMapping("/all-mobile")
+	public ResponseEntity<List<ClientesMobile>> getAllClientesMobile() {
+		return ResponseEntity.ok(cliServicio.getAllClientesMobile());
 	}
 }

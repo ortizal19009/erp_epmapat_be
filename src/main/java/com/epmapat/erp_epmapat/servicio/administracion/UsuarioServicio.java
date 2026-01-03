@@ -52,5 +52,8 @@ public class UsuarioServicio {
    public List<String> getEnabledModules(Long userId, String platform) {
       return usrxmodulosServicio.getEnabledModules(userId, platform);
    }
+   public List<UsuarioI> findByCargo(Long idcargo) {
+      return dao.findByCargoUsuario(idcargo);
+   }
 
 }
