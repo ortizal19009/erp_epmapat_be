@@ -16,4 +16,8 @@ public class ErpmodulosServicio {
     public List<Erpmodulos> findAll() {
         return dao.findAll();
     }
+
+    public List<Erpmodulos> findByPlatform(String platform) {
+        return dao.findByPlatform(platform);
+    }
 }

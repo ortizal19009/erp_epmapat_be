@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,5 +22,10 @@ public class ErpmodulosApi {
     @GetMapping
     public ResponseEntity<List<Erpmodulos>> getAll() {
         return ResponseEntity.ok(emServicio.findAll());
+    }
+
+    @GetMapping("/platform/{platform}")
+    public ResponseEntity<List<Erpmodulos>> findByPlatform(@PathVariable String platform) {
+        return ResponseEntity.ok(emServicio.findByPlatform(platform));
     }
 }
