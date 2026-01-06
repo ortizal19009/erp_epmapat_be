@@ -19,12 +19,12 @@ public class UsrxmodulosServicio {
     @Autowired
     private UsrxmodulosR dao;
 
-    public List<ErpModulosI> findModulosEnabledByUser(Long idusuario) {
-        return dao.findModulosEnabledByUser(idusuario);
+    public List<ErpModulosI> findModulosEnabledByUser(Long idusuario, String platform) {
+        return dao.findModulosEnabledByUser(idusuario, platform);
     }
 
-    public List<Usrxmodulos> FindByUser(Long iduser) {
-        return dao.FindByUser(iduser);
+    public List<Usrxmodulos> FindByUser(Long iduser, String platform) {
+        return dao.findByUser(iduser, platform);
     }
 
     @Transactional
@@ -53,6 +53,11 @@ public class UsrxmodulosServicio {
 
     public List<String> getEnabledModules(Long userId, String platform) {
         return dao.findEnabledModule(userId, platform);
+    }
+
+    public List<Usrxmodulos> findByUserPlatform(Long iduser, String platform) {
+        System.out.println("findByUserPlatform" + iduser + " " + platform);
+        return dao.findByUserPlatform(iduser, platform);
     }
 
 }

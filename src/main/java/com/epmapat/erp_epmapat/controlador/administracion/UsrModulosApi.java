@@ -23,17 +23,24 @@ public class UsrModulosApi {
     private UsrxmodulosServicio umServicio;
 
     @GetMapping("/access")
-    public ResponseEntity<List<ErpModulosI>> getModulosEnabledByUser(@RequestParam Long idusuario) {
-        return ResponseEntity.ok(umServicio.findModulosEnabledByUser(idusuario));
+    public ResponseEntity<List<ErpModulosI>> getModulosEnabledByUser(@RequestParam Long idusuario,
+            @RequestParam String plataform) {
+        return ResponseEntity.ok(umServicio.findModulosEnabledByUser(idusuario, plataform));
     }
 
-    @GetMapping
-    public ResponseEntity<List<Usrxmodulos>> getAllByUser(@RequestParam Long idusuario) {
-        return ResponseEntity.ok(umServicio.FindByUser(idusuario));
+    // @GetMapping
+    public ResponseEntity<List<Usrxmodulos>> getAllByUser(@RequestParam Long idusuario, @RequestParam String platform) {
+        return ResponseEntity.ok(umServicio.FindByUser(idusuario, platform));
     }
 
     @PostMapping
     public ResponseEntity<Usrxmodulos> save(@RequestBody Usrxmodulos usrxmodulos) {
         return ResponseEntity.ok(umServicio.save(usrxmodulos));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Usrxmodulos>> findByUserPlatform(@RequestParam Long idusuario,
+            @RequestParam String platform) {
+        return ResponseEntity.ok(umServicio.findByUserPlatform(idusuario, platform));
     }
 }
