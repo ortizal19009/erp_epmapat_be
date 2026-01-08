@@ -3,7 +3,6 @@ package com.epmapat.erp_epmapat.controlador;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,4 +51,8 @@ public class UsrxrutasApi {
      * usrxrutaService.delete(id);
      * }
      */
+    @GetMapping("/usuario/{idusuario}/emision/{idemision}")
+    public List<Usrxrutas> findByUsuarioAndEmision(@PathVariable Long idusuario, @PathVariable Long idemision) {
+        return usrxrutaService.findByUsuarioAndEmision(idusuario, idemision);
+    }
 }

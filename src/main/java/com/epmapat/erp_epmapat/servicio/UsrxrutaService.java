@@ -6,14 +6,14 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.Usrxrutas;
-import com.epmapat.erp_epmapat.repositorio.UsrxrutaRepository;
+import com.epmapat.erp_epmapat.repositorio.UsrxrutasR;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
 public class UsrxrutaService {
-    private final UsrxrutaRepository usrxrutaRepository;
+    private final UsrxrutasR usrxrutaRepository;
 
     public List<Usrxrutas> findAll() {
         return usrxrutaRepository.findAll();
@@ -29,5 +29,9 @@ public class UsrxrutaService {
 
     public void delete(Usrxrutas usrxrutas) {
         usrxrutaRepository.delete(usrxrutas);
+    }
+
+    public List<Usrxrutas> findByUsuarioAndEmision(Long idusuario, Long idemision) {
+        return usrxrutaRepository.findByUsuarioAndEmision(idusuario, idemision);
     }
 }
