@@ -1,8 +1,8 @@
 package com.epmapat.erp_epmapat.modelo;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import java.util.List;
 import lombok.*;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -32,5 +32,5 @@ public class Usrxrutas {
 
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
-    private JsonNode rutas;
+    private List<Rutas> rutas;
 }

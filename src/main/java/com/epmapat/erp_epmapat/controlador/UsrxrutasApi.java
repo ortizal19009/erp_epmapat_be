@@ -34,8 +34,8 @@ public class UsrxrutasApi {
     }
 
     @PostMapping
-    public Usrxrutas save(@RequestBody Usrxrutas usrxrutas) {
-        return usrxrutaService.save(usrxrutas);
+    public Usrxrutas save(@RequestBody Usrxrutas request) {
+        return usrxrutaService.saveOrUpdate(request);
     }
 
     @PutMapping("/{id}")
@@ -52,7 +52,12 @@ public class UsrxrutasApi {
      * }
      */
     @GetMapping("/usuario/{idusuario}/emision/{idemision}")
-    public List<Usrxrutas> findByUsuarioAndEmision(@PathVariable Long idusuario, @PathVariable Long idemision) {
+    public Optional<Usrxrutas> findByUsuarioAndEmision(@PathVariable Long idusuario, @PathVariable Long idemision) {
         return usrxrutaService.findByUsuarioAndEmision(idusuario, idemision);
+    }
+
+    @GetMapping("/emision/{idemision}")
+    public List<Usrxrutas> findByEmision(@PathVariable Long idemision) {
+        return usrxrutaService.findByEmision(idemision);
     }
 }
