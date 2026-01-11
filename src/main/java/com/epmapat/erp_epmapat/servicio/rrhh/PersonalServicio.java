@@ -20,4 +20,8 @@ public class PersonalServicio {
     public Personal save(Personal p) {
         return dao.save(p);
     }
+
+    public Personal findById(Long id) {
+        return dao.findById(id).orElseThrow(() -> new RuntimeException("Personal no encontrado con id: " + id));
+    }
 }

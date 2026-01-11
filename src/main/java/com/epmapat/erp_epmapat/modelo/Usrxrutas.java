@@ -1,7 +1,8 @@
 package com.epmapat.erp_epmapat.modelo;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+
 import java.util.List;
 import lombok.*;
 import org.hibernate.annotations.Type;
@@ -15,7 +16,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "usrxrutas")
-@TypeDef(name = "jsonb", typeClass = JsonNodeType.class)
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Usrxrutas {
 
     @Id

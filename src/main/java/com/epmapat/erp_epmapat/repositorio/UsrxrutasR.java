@@ -1,19 +1,73 @@
 package com.epmapat.erp_epmapat.repositorio;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.epmapat.erp_epmapat.modelo.Usrxrutas;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.epmapat.erp_epmapat.modelo.Usrxrutas;
+import java.util.List;
+import java.util.Optional;
 
 public interface UsrxrutasR extends JpaRepository<Usrxrutas, Long> {
-    @Query("SELECT u FROM Usrxrutas u WHERE u.idusuario_usuarios.idusuario = :idusuario AND u.idemision_emisiones.idemision = :idemision")
-    Optional<Usrxrutas> findByUsuarioAndEmision(@Param("idusuario") Long idusuario, @Param("idemision") Long idemision);
 
-    @Query("SELECT u FROM Usrxrutas u WHERE u.idemision_emisiones.idemision = :idemision")
+    @Query("""
+        SELECT u
+        FROM Usrxrutas u
+        WHERE u.idusuario_usuarios.idusuario = :idusuario
+          AND u.idemision_emisiones.idemision = :idemision
+    """)
+    Optional<Usrxrutas> findByUsuarioAndEmision(
+            @Param("idusuario") Long idusuario,
+            @Param("idemision") Long idemision
+    );
+
+    @Query("""
+        SELECT u
+        FROM Usrxrutas u
+        WHERE u.idemision_emisiones.idemision = :idemision
+    """)
     List<Usrxrutas> findByEmision(@Param("idemision") Long idemision);
 
+    @Query("""
+        SELECT u
+        FROM Usrxrutas u
+        WHERE u.idusuario_usuarios.idusuario = :idusuario
+    """)
+    List<Usrxrutas> findByUsuario(@Param("idusuario") Long idusuario);
+
+    @Query("""
+        SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END
+        FROM Usrxrutas u
+        WHERE u.idusuario_usuarios.idusuario = :idusuario
+          AND u.idemision_emisiones.idemision = :idemision
+    """)
+    boolean existsByUsuarioAndEmision(
+            @Param("idusuario") Long idusuario,
+            @Param("idemision") Long idemision
+    );
+
+    // ✅ Rutas ocupadas en una emisión por OTROS usuarios
+    // Nota: uso ANY(CAST(:idrutas AS bigint[])) para que Hibernate lo bindeé correctamente en Postgres.
+    @Query(value = """
+        SELECT DISTINCT (r->>'idruta')::bigint AS idruta
+        FROM usrxrutas u
+        CROSS JOIN LATERAL jsonb_array_elements(u.rutas) r
+        WHERE u.idemision_emisiones = :idemision
+          AND u.idusuario_usuarios <> :idusuario
+          AND (r->>'idruta')::bigint = ANY(CAST(:idrutas AS bigint[]))
+    """, nativeQuery = true)
+    List<Long> findRutasOcupadasEnEmisionPorOtros(
+            @Param("idemision") Long idemision,
+            @Param("idusuario") Long idusuario,
+            @Param("idrutas") Long[] idrutas
+    );
+
+    // ✅ Todas las rutas ocupadas en una emisión (para pintar UI)
+    @Query(value = """
+        SELECT DISTINCT (r->>'idruta')::bigint AS idruta
+        FROM usrxrutas u
+        CROSS JOIN LATERAL jsonb_array_elements(u.rutas) r
+        WHERE u.idemision_emisiones = :idemision
+    """, nativeQuery = true)
+    List<Long> findRutasOcupadasEnEmision(@Param("idemision") Long idemision);
 }

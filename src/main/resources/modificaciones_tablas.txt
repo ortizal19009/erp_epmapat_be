@@ -1,0 +1,25 @@
+--=======================================
+--CAMBIOS PARA LA NUEVA ACTUALIZACION
+--=======================================
+CREATE TABLE public.usrxrutas (
+	idusrxruta int GENERATED ALWAYS AS IDENTITY NOT NULL,
+	idusuario_usuarios int NULL,
+	idemision_emisiones int NULL,
+	rutas jsonb NULL,
+	CONSTRAINT usrxrutas_pk PRIMARY KEY (idusrxruta)
+);
+
+ALTER TABLE public.usrxrutas ADD CONSTRAINT usrxrutas_emisiones_fk FOREIGN KEY (idemision_emisiones) REFERENCES public.emisiones(idemision);
+ALTER TABLE public.usrxrutas ADD CONSTRAINT usrxrutas_usuarios_fk FOREIGN KEY (idusuario_usuarios) REFERENCES public.usuarios(idusuario);
+--CREAR PRIMARY KEY EN LA TABLA PERSONAL
+ALTER TABLE public.personal ADD CONSTRAINT personal_unique UNIQUE (idpersonal);
+--EN USUARIOS AUMENTAR ESTAS 2 COLUMNAS
+ALTER TABLE public.usuarios ADD plataform_access varchar NULL;
+COMMENT ON COLUMN public.usuarios.plataform_access IS 'MOBILE-WEB-BOTH';
+ALTER TABLE public.usuarios ADD personal_idpersonal int NULL;
+ALTER TABLE public.usuarios ADD CONSTRAINT usuarios_personal_fk FOREIGN KEY (personal_idpersonal) REFERENCES public.personal_idpersonal(idpersonal);
+--EN LA TABLA ERPMOODULOS CREAR UNA COLUMNAS
+ALTER TABLE public.erpmodulos ADD platform varchar NULL;
+COMMENT ON COLUMN public.erpmodulos.platform IS 'MOBILE-WEB-BOTH';
+--EN USWXMODULOS AÑADIR LA OPCION 
+platform - STRING

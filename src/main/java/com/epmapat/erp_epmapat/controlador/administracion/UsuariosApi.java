@@ -22,7 +22,9 @@ import com.epmapat.erp_epmapat.DTO.LoginResponse;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.UsuarioI;
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
+import com.epmapat.erp_epmapat.modelo.rrhh.Personal;
 import com.epmapat.erp_epmapat.servicio.administracion.UsuarioServicio;
+import com.epmapat.erp_epmapat.servicio.rrhh.PersonalServicio;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -31,6 +33,8 @@ public class UsuariosApi {
 
    @Autowired
    UsuarioServicio usuServicio;
+   @Autowired
+   PersonalServicio personalServicio;
 
    @GetMapping
    public List<Usuarios> getAll() {
@@ -66,9 +70,10 @@ public class UsuariosApi {
 
    @PutMapping("/{idusuario}")
    public ResponseEntity<Usuarios> update(@PathVariable Long idusuario, @RequestBody Usuarios x) {
+
       Usuarios y = usuServicio.findById(idusuario)
-            .orElseThrow(() -> new ResourceNotFoundExcepciones(
-                  ("No existe Usuario con Id: " + idusuario)));
+            .orElseThrow(() -> new ResourceNotFoundExcepciones("No existe Usuario con Id: " + idusuario));
+
       y.setIdentificausu(x.getIdentificausu());
       y.setNomusu(x.getNomusu());
       y.setCodusu(x.getCodusu());
@@ -76,7 +81,10 @@ public class UsuariosApi {
       y.setFhasta(x.getFhasta());
       y.setEstado(x.getEstado());
       y.setEmail(x.getEmail());
-      y.setFeccrea(x.getFeccrea());
+
+      // ⚠️ no tocar feccrea en update
+      // y.setFeccrea(x.getFeccrea());
+
       y.setUsumodi(x.getUsumodi());
       y.setFecmodi(x.getFecmodi());
       y.setOtrapestania(x.getOtrapestania());
@@ -85,6 +93,19 @@ public class UsuariosApi {
       y.setPerfil(x.getPerfil());
       y.setToolbarframe(x.getToolbarframe());
       y.setToolbarsheet(x.getToolbarsheet());
+      y.setPlataform_access(x.getPlataform_access());
+
+      // ✅ ACTUALIZAR RELACIÓN PERSONAL
+      if (x.getPersonal() == null) {
+         // si mandan null, desvinculas
+         y.setPersonal(null);
+      } else if (x.getPersonal().getIdpersonal() != null) {
+         Long idpersonal = x.getPersonal().getIdpersonal();
+
+         Personal per = personalServicio.findById(idpersonal);
+
+         y.setPersonal(per);
+      }
 
       Usuarios actualizar = usuServicio.save(y);
       return ResponseEntity.ok(actualizar);

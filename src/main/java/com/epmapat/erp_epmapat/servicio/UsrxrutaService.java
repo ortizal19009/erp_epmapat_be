@@ -1,81 +1,170 @@
 package com.epmapat.erp_epmapat.servicio;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.transaction.Transactional;
+import javax.persistence.EntityNotFoundException;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.epmapat.erp_epmapat.DTO.RutaDTO;
+import com.epmapat.erp_epmapat.excepciones.RutasOcupadasException;
+import com.epmapat.erp_epmapat.interfaces.UsrxrutasService;
+import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.modelo.Rutas;
 import com.epmapat.erp_epmapat.modelo.Usrxrutas;
+import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
+import com.epmapat.erp_epmapat.repositorio.EmisionesR;
 import com.epmapat.erp_epmapat.repositorio.UsrxrutasR;
+import com.epmapat.erp_epmapat.repositorio.administracion.UsuariosR;
 
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Service
-public class UsrxrutaService {
-    private final UsrxrutasR usrxrutaRepository;
+@RequiredArgsConstructor
+@Transactional
+public class UsrxrutaService implements UsrxrutasService {
 
-    public List<Usrxrutas> findAll() {
-        return usrxrutaRepository.findAll();
+    private final UsrxrutasR usrxrutasRepository;
+    private final UsuariosR usuariosRepository;
+    private final EmisionesR emisionesRepository;
+
+    @Override
+    public Usrxrutas crear(Usrxrutas entity) {
+
+        Long idusuario = entity.getIdusuario_usuarios() != null ? entity.getIdusuario_usuarios().getIdusuario() : null;
+        Long idemision = entity.getIdemision_emisiones() != null ? entity.getIdemision_emisiones().getIdemision() : null;
+
+        if (idusuario == null || idemision == null) {
+            throw new IllegalArgumentException("Debe enviar idusuario_usuarios e idemision_emisiones.");
+        }
+
+        Usuarios usuario = usuariosRepository.findById(idusuario)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no existe: " + idusuario));
+
+        Emisiones emision = emisionesRepository.findById(idemision)
+                .orElseThrow(() -> new EntityNotFoundException("Emisión no existe: " + idemision));
+
+        // extraer idrutas
+        List<Rutas> rutas = entity.getRutas() != null ? entity.getRutas() : List.of();
+        Long[] idrutas = rutas.stream()
+                .map(Rutas::getIdruta)
+                .toArray(Long[]::new);
+
+        // validar ocupadas por otros
+        if (idrutas.length > 0) {
+            List<Long> ocupadas = usrxrutasRepository
+                    .findRutasOcupadasEnEmisionPorOtros(idemision, idusuario, idrutas);
+
+            if (!ocupadas.isEmpty()) {
+                throw new RutasOcupadasException("Existen rutas ya asignadas a otro lector.", ocupadas);
+            }
+        }
+
+        // upsert por usuario+emision
+        Optional<Usrxrutas> existente = usrxrutasRepository.findByUsuarioAndEmision(idusuario, idemision);
+        if (existente.isPresent()) {
+            Usrxrutas reg = existente.get();
+            reg.setRutas(entity.getRutas());
+            return usrxrutasRepository.save(reg);
+        }
+
+        entity.setIdusuario_usuarios(usuario);
+        entity.setIdemision_emisiones(emision);
+        return usrxrutasRepository.save(entity);
     }
 
-    public Optional<Usrxrutas> findById(Long id) {
-        return usrxrutaRepository.findById(id);
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> rutasOcupadasEnEmision(Long idemision) {
+        return usrxrutasRepository.findRutasOcupadasEnEmision(idemision);
     }
 
-    public Usrxrutas save(Usrxrutas usrxrutas) {
-        return usrxrutaRepository.save(usrxrutas);
-    }
+    @Override
+    public Usrxrutas actualizar(Long id, Usrxrutas entity) {
 
-    public void delete(Usrxrutas usrxrutas) {
-        usrxrutaRepository.delete(usrxrutas);
-    }
+        Usrxrutas actual = usrxrutasRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Registro no existe: " + id));
 
-    public Optional<Usrxrutas> findByUsuarioAndEmision(Long idusuario, Long idemision) {
-        return usrxrutaRepository.findByUsuarioAndEmision(idusuario, idemision);
-    }
+        // actualizar usuario/emision si vienen
+        if (entity.getIdusuario_usuarios() != null && entity.getIdusuario_usuarios().getIdusuario() != null) {
+            Long idusuario = entity.getIdusuario_usuarios().getIdusuario();
+            Usuarios usuario = usuariosRepository.findById(idusuario)
+                    .orElseThrow(() -> new EntityNotFoundException("Usuario no existe: " + idusuario));
+            actual.setIdusuario_usuarios(usuario);
+        }
 
-    public List<Usrxrutas> findByEmision(Long idemision) {
-        return usrxrutaRepository.findByEmision(idemision);
-    }
+        if (entity.getIdemision_emisiones() != null && entity.getIdemision_emisiones().getIdemision() != null) {
+            Long idemision = entity.getIdemision_emisiones().getIdemision();
+            Emisiones emision = emisionesRepository.findById(idemision)
+                    .orElseThrow(() -> new EntityNotFoundException("Emisión no existe: " + idemision));
+            actual.setIdemision_emisiones(emision);
+        }
 
-    @Transactional
-    public Usrxrutas saveOrUpdate(Usrxrutas request) {
+        // si cambian rutas: validar ocupadas por otros
+        if (entity.getRutas() != null) {
+            Long idusuarioActual = actual.getIdusuario_usuarios().getIdusuario();
+            Long idemisionActual = actual.getIdemision_emisiones().getIdemision();
 
-        Optional<Usrxrutas> optional = usrxrutaRepository
-                .findByUsuarioAndEmision(
-                        request.getIdusuario_usuarios().getIdusuario(),
-                        request.getIdemision_emisiones().getIdemision());
+            Long[] idrutas = entity.getRutas().stream().map(Rutas::getIdruta).toArray(Long[]::new);
 
-        if (optional.isPresent()) {
-            Usrxrutas existente = optional.get();
+            if (idrutas.length > 0) {
+                List<Long> ocupadas = usrxrutasRepository
+                        .findRutasOcupadasEnEmisionPorOtros(idemisionActual, idusuarioActual, idrutas);
 
-            List<RutaDTO> actuales = existente.getRutas();
-            List<RutaDTO> nuevas = request.getRutas();
-
-            if (actuales == null)
-                actuales = new ArrayList<>();
-            if (nuevas != null) {
-                for (RutaDTO rn : nuevas) {
-                    boolean existe = actuales.stream()
-                            .anyMatch(ra -> ra.getIdruta().equals(rn.getIdruta()));
-
-                    if (!existe) {
-                        actuales.add(rn);
-                    }
+                if (!ocupadas.isEmpty()) {
+                    throw new RutasOcupadasException("Existen rutas ya asignadas a otro lector.", ocupadas);
                 }
             }
 
-            existente.setRutas(actuales);
-            return usrxrutaRepository.save(existente);
+            actual.setRutas(entity.getRutas());
         }
 
-        return usrxrutaRepository.save(request);
+        return usrxrutasRepository.save(actual);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Usrxrutas obtenerPorId(Long id) {
+        return usrxrutasRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Registro no existe: " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Usrxrutas> listar() {
+        return usrxrutasRepository.findAll();
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        if (!usrxrutasRepository.existsById(id)) {
+            throw new EntityNotFoundException("Registro no existe: " + id);
+        }
+        usrxrutasRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Usrxrutas> listarPorUsuario(Long idusuario) {
+        return usrxrutasRepository.findByUsuario(idusuario);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Usrxrutas> listarPorEmision(Long idemision) {
+        return usrxrutasRepository.findByEmision(idemision);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Usrxrutas> findByUsuarioAndEmision(Long idusuario, Long idemision) {
+        return usrxrutasRepository.findByUsuarioAndEmision(idusuario, idemision);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Usrxrutas> findByEmision(Long idemision) {
+        return usrxrutasRepository.findByEmision(idemision);
+    }
 }
