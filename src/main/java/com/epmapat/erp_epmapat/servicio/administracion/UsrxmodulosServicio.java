@@ -56,7 +56,6 @@ public class UsrxmodulosServicio {
     }
 
     public List<Usrxmodulos> findByUserPlatform(Long iduser, String platform) {
-        System.out.println("findByUserPlatform" + iduser + " " + platform);
         return dao.findByUserPlatform(iduser, platform);
     }
 

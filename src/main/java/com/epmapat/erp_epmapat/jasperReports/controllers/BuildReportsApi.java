@@ -59,8 +59,6 @@ public class BuildReportsApi {
 
     @PostMapping("/reportes")
     public ResponseEntity<Resource> generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
-        System.out.println("Generando reporte: " + jasperDTO.getReportName());
-        System.out.println("Parámetros recibidos: " + jasperDTO.getParameters());
         try {
             JasperDTO dto = new JasperDTO();
             dto.setReportName(jasperDTO.getReportName());

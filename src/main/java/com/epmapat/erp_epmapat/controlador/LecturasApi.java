@@ -243,7 +243,6 @@ public class LecturasApi {
 
 	@PostMapping("/valoresEmisiones")
 	public ResponseEntity<BigDecimal> getValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
-		System.out.println("Datos: " + datos);
 		return ResponseEntity
 				.ok(emisionServicioOptimizado.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
 						datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
@@ -270,6 +269,12 @@ public class LecturasApi {
 	@GetMapping("/preview/lecturas/{idcliente}")
 	public List<Lecturas> previewLecturas(@PathVariable Long idcliente) {
 		return lecServicio.findPendientesByCliente(idcliente);
+	}
+
+	@GetMapping("/simular")
+	public ResponseEntity<Object> simularValores(@RequestParam int m3, @RequestParam int categoria,
+			@RequestParam boolean swAdultoMayor, @RequestParam boolean swAguapotable) {
+		return ResponseEntity.ok(emisionServicioOptimizado.simularValores(m3, categoria, swAdultoMayor, swAguapotable));
 	}
 
 }

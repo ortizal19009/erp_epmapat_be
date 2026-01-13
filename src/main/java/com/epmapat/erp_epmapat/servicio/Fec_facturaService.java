@@ -2,7 +2,6 @@ package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -88,7 +87,6 @@ public class Fec_facturaService {
 
    // CREAR LAS FACTURAS
    public Map<String, Object> generarFecFactura(Long idfactura) {
-      System.out.println("idfactura: " + idfactura);
       Map<String, Object> response = new HashMap<>();
       Fecfactura factura = facturasR.forFecfactura(idfactura);
       Fec_factura fecFactura = new Fec_factura();
@@ -226,7 +224,6 @@ public class Fec_facturaService {
       // 4) Ambiente (1 dígito: 1=Pruebas, 2=Producción)
       String ambiente = requireDigits(definir.getTipoambiente() == null ? null : definir.getTipoambiente().toString(),
             "Tipo de ambiente");
-      System.out.println("ambiente: " + ambiente);
       if (!(ambiente.equals("1") || ambiente.equals("2"))) {
          throw new IllegalArgumentException("El ambiente debe ser '1' (pruebas) o '2' (producción)");
       }
@@ -261,7 +258,6 @@ public class Fec_facturaService {
       char dv = calcularDigitoVerificadorModulo11(base48);
 
       // 10) Clave completa (49 dígitos)
-      System.out.println("CLAVE COMPLETA: " + base48 + dv);
       return base48 + dv;
    }
 

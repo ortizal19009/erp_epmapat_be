@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,23 +110,27 @@ public class EmisionServicioOptimizado {
         BigDecimal ap = baseAguaPotable(ctx);
         BigDecimal al = baseAlcantarillado(ctx);
         BigDecimal sa = baseSaneamiento(ctx);
-        BigDecimal cf = calcConservacionFuentes();
-
+        BigDecimal cf = calcConservacionFuentes(ctx.getCategoria());
+        BigDecimal cfepmapat = calcConservacionFuentesEpmapat(ctx.getCategoria());
         BigDecimal rb = calcRecoleccionBasura(ctx);
+        BigDecimal rbepmapat = recaudacionBasura();
 
         BigDecimal ex = ZERO;
         if (ctx.getCategoria() == 9 && swAdultoMayor && m3 > 34 && m3 <= 70) {
             ex = calcExcedente(ctx);
         }
 
-        BigDecimal total = ap.add(al).add(sa).add(cf).add(ex).add(multa);
+        BigDecimal total = ap.add(al).add(sa).add(cf).add(ex).add(multa).add(rb).add(rbepmapat).add(cfepmapat);
 
         // --- Persistimos en lote (una sola vez) ---
         List<Rubroxfac> rubros = new ArrayList<>(6);
         rubros.add(buildRubro(factura, 1001L, ap));
         rubros.add(buildRubro(factura, 1002L, al));
         rubros.add(buildRubro(factura, 1003L, sa));
-        rubros.add(buildRubro(factura, 1004L, cf));
+        rubros.add(buildRubro(factura, 1006L, cf));
+        rubros.add(buildRubro(factura, 1007L, cfepmapat));
+        rubros.add(buildRubro(factura, 1008L, rb));
+        rubros.add(buildRubro(factura, 1009L, rbepmapat));
         if (ex.compareTo(ZERO) > 0)
             rubros.add(buildRubro(factura, 1005L, ex));
         if (multa.compareTo(ZERO) > 0)
@@ -139,6 +144,50 @@ public class EmisionServicioOptimizado {
         dao_facturas.save(factura);
 
         return scale2(total);
+    }
+
+    @Transactional
+    public Object simularValores(int m3,
+            int categoria,
+            boolean swAdultoMayor,
+            boolean swAguapotable) {
+
+        Map<String, Object> respuesta = new HashMap<>();
+
+        // --- Cálculos puros ---
+        // BigDecimal multa = multas(cuenta);
+
+        EmisionOfCuentaDTO ctx = buildContext_simulador(m3, categoria, swAdultoMayor,
+                swAguapotable);
+        BigDecimal ap = baseAguaPotable(ctx);
+        BigDecimal al = baseAlcantarillado(ctx);
+        BigDecimal sa = baseSaneamiento(ctx);
+        BigDecimal cf = calcConservacionFuentes(ctx.getCategoria());
+        BigDecimal cfepmapat = calcConservacionFuentesEpmapat(ctx.getCategoria());
+        BigDecimal rb = calcRecoleccionBasura(ctx);
+        BigDecimal rbepmapat = recaudacionBasura();
+
+        BigDecimal ex = ZERO;
+        if (ctx.getCategoria() == 9 && swAdultoMayor && m3 > 34 && m3 <= 70) {
+            ex = calcExcedente(ctx);
+        }
+
+        BigDecimal total = ap.add(al).add(sa).add(cf).add(ex).add(rb).add(rbepmapat).add(cfepmapat);
+
+        // --- Persistimos en lote (una sola vez) ---
+        respuesta.put("Agua Potable", ap);
+        respuesta.put("Alcantarillado", al);
+        respuesta.put("Saneamiento", sa);
+        respuesta.put("Conservacion Fuentes", cf);
+        respuesta.put("Conservacion Fuentes Epmapat", cfepmapat);
+        respuesta.put("Recoleccion Basura", rb);
+        respuesta.put("Recaudacion Basura", rbepmapat);
+        if (ex.compareTo(ZERO) > 0)
+            respuesta.put("Excedente", ex);
+        respuesta.put("Total", total.setScale(2, RoundingMode.HALF_UP));
+
+        return respuesta;
+
     }
 
     // ----------------- Batch externo (si lo necesitas) -----------------
@@ -258,6 +307,29 @@ public class EmisionServicioOptimizado {
         return v;
     }
 
+    private EmisionOfCuentaDTO buildContext_simulador(int m3, int categoria, boolean swAdultoMayor,
+            boolean swAguapotable) {
+        EmisionOfCuentaDTO v = new EmisionOfCuentaDTO();
+        v.setM3(m3);
+        v.setSwAdultoMayor(swAdultoMayor);
+        v.setSwAguapotable(swAguapotable);
+        v.setCategoria(categoria);
+
+        int catEfectiva = categoria;
+        if ((categoria == 1 || (categoria == 9 && swAdultoMayor)) && m3 > 70) {
+            catEfectiva = 2;
+        }
+        v.setCategoria(catEfectiva);
+
+        Pliego24 pliego = dao_pliego._findBloque(catEfectiva, m3);
+        v.setPliego24(pliego);
+
+        Categorias cat = dao_categoria.getCategoriaById(catEfectiva);
+        v.setCategorias(cat);
+
+        return v;
+    }
+
     private static final BigDecimal DEFAULT_PORC = BigDecimal.ZERO; // decide tu valor por defecto
 
     // ----------------- Cálculos puros (sin efectos colaterales) -----------------
@@ -300,8 +372,6 @@ public class EmisionServicioOptimizado {
 
         BigDecimal total = apFijo.add(apVar);
 
-        if (v.getCategoria() == 4 && v.isSwMunicipio())
-            total = total.multiply(HALF);
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
@@ -327,8 +397,6 @@ public class EmisionServicioOptimizado {
 
         BigDecimal total = fijo.add(variable);
 
-        if (v.getCategoria() == 4 && v.isSwMunicipio())
-            total = total.multiply(HALF);
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
@@ -347,8 +415,6 @@ public class EmisionServicioOptimizado {
                 .multiply(v.getPliego24().getSaneamiento().multiply(HALF))
                 .multiply(porc);
 
-        if (v.getCategoria() == 4 && v.isSwMunicipio())
-            total = total.multiply(HALF);
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
@@ -360,21 +426,35 @@ public class EmisionServicioOptimizado {
      * CONSERVACION DE FUENTES
      * ============================================================
      */
-    private BigDecimal calcConservacionFuentes() {
+    /*
+     * private BigDecimal calcConservacionFuentes() {
+     * 
+     * return ZERO;
+     * }
+     */
 
-        return ZERO;
+    private BigDecimal calcConservacionFuentes(int categoria) {
+        if (categoria == 9) {
+            return new BigDecimal("0.15"); // por ejemplo subsidio
+        }
+        return new BigDecimal("0.30");
     }
 
-    private BigDecimal conservacionFuentesCaptacion(Long categoria) {
-        if (categoria == 1 || categoria == 9)
-            return TEN_CENTS;
-        return ZERO;
-    }
+    private BigDecimal calcConservacionFuentesEpmapat(int categoria) {
 
-    private BigDecimal conservacionFuentesEpmapat(Long categoria) {
-        if (categoria == 1 || categoria == 9)
-            return TEN_CENTS;
-        return ZERO;
+        if (categoria == 1) {
+            return new BigDecimal("0.20");
+        } else if (categoria == 2) {
+            return new BigDecimal("0.35");
+        } else if (categoria == 3) {
+            return new BigDecimal("0.50");
+        } else if (categoria == 4) {
+            return new BigDecimal("1.00");
+        } else if (categoria == 9) {
+            return new BigDecimal("0.10"); // por ejemplo subsidio
+        }
+
+        return BigDecimal.ZERO;
     }
 
     /*
@@ -384,6 +464,10 @@ public class EmisionServicioOptimizado {
      */
     private BigDecimal hidrosuccionador(EmisionOfCuentaDTO v, BigDecimal porc) {
         return FIFTY_CENTS.multiply(porc);
+    }
+
+    private BigDecimal recaudacionBasura() {
+        return new BigDecimal("0.50");
     }
 
     /*
@@ -398,9 +482,11 @@ public class EmisionServicioOptimizado {
         EmisionOfCuentaDTO v2 = copyForExcedente(base, base.getM3() - 1);
 
         BigDecimal s1 = baseAguaPotable(v1).add(baseAlcantarillado(v1)).add(baseSaneamiento(v1))
-                .add(calcConservacionFuentes());
+                .add(calcConservacionFuentes(base.getCategoria()))
+                .add(calcConservacionFuentesEpmapat(base.getCategoria()));
         BigDecimal s2 = baseAguaPotable(v2).add(baseAlcantarillado(v2)).add(baseSaneamiento(v2))
-                .add(calcConservacionFuentes());
+                .add(calcConservacionFuentes(base.getCategoria()))
+                .add(calcConservacionFuentesEpmapat(base.getCategoria()));
 
         return s1.subtract(s2);
     }
@@ -455,8 +541,6 @@ public class EmisionServicioOptimizado {
         // Redondeo final monetario
         total = total.setScale(2, RoundingMode.HALF_UP);
 
-        System.out.println("Total Recolección Basura: " + total);
-
         return total;
     }
 
@@ -468,7 +552,7 @@ public class EmisionServicioOptimizado {
         v.setIdfactura(from.getIdfactura());
         v.setFactura(from.getFactura());
         v.setM3(Math.max(0, m3Nuevo));
-        v.setSwMunicipio(from.isSwMunicipio());
+        // v.setSwMunicipio(from.isSwMunicipio());
         v.setSwAdultoMayor(from.isSwAdultoMayor());
         v.setSwAguapotable(from.isSwAguapotable());
         v.setCategoria(1);

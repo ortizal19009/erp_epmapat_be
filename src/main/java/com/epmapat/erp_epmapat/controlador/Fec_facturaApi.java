@@ -118,7 +118,6 @@ public class Fec_facturaApi {
 
    @GetMapping("/createFacElectro")
    public ResponseEntity<Map<String, Object>> generarFecFactura(@RequestParam Long idfactura) {
-      System.out.println("idfactura_ Api: " + idfactura);
       return ResponseEntity.ok(fecfacServicio.generarFecFactura(idfactura));
    }
 
@@ -133,7 +132,6 @@ public class Fec_facturaApi {
             .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
 
       try {
-         System.out.println("idfactura_ Api: " + idfactura);
          String url = "http://192.168.0.165:8080/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
          String xml = restTemplate.getForObject(url, String.class);
 
