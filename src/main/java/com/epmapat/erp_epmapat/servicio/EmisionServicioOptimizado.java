@@ -375,7 +375,7 @@ public class EmisionServicioOptimizado {
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
-        return total;
+        return total.setScale(2, RoundingMode.HALF_UP);
     }
 
     // 🔹 Método baseAlcantarillado separado
@@ -401,7 +401,7 @@ public class EmisionServicioOptimizado {
             total = total.multiply(HALF);
 
         // + hidro al final
-        return total.add(hidrosuccionador(v, porc));
+        return total.add(hidrosuccionador(v, porc)).setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal baseSaneamiento(EmisionOfCuentaDTO v) {
@@ -418,7 +418,7 @@ public class EmisionServicioOptimizado {
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
-        return total;
+        return total.setScale(2, RoundingMode.HALF_UP);
     }
 
     /*
@@ -435,23 +435,23 @@ public class EmisionServicioOptimizado {
 
     private BigDecimal calcConservacionFuentes(int categoria) {
         if (categoria == 9) {
-            return new BigDecimal("0.15"); // por ejemplo subsidio
+            return new BigDecimal("0.15").setScale(2, RoundingMode.HALF_UP); // por ejemplo subsidio
         }
-        return new BigDecimal("0.30");
+        return new BigDecimal("0.30").setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calcConservacionFuentesEpmapat(int categoria) {
 
         if (categoria == 1) {
-            return new BigDecimal("0.20");
+            return new BigDecimal("0.20").setScale(2, RoundingMode.HALF_UP);
         } else if (categoria == 2) {
-            return new BigDecimal("0.35");
+            return new BigDecimal("0.35").setScale(2, RoundingMode.HALF_UP);
         } else if (categoria == 3) {
-            return new BigDecimal("0.50");
+            return new BigDecimal("0.50").setScale(2, RoundingMode.HALF_UP);
         } else if (categoria == 4) {
-            return new BigDecimal("1.00");
+            return new BigDecimal("1.00").setScale(2, RoundingMode.HALF_UP);
         } else if (categoria == 9) {
-            return new BigDecimal("0.10"); // por ejemplo subsidio
+            return new BigDecimal("0.10").setScale(2, RoundingMode.HALF_UP); // por ejemplo subsidio
         }
 
         return BigDecimal.ZERO;
@@ -467,7 +467,7 @@ public class EmisionServicioOptimizado {
     }
 
     private BigDecimal recaudacionBasura() {
-        return new BigDecimal("0.50");
+        return new BigDecimal("0.50").setScale(2, RoundingMode.HALF_UP);
     }
 
     /*
@@ -488,7 +488,7 @@ public class EmisionServicioOptimizado {
                 .add(calcConservacionFuentes(base.getCategoria()))
                 .add(calcConservacionFuentesEpmapat(base.getCategoria()));
 
-        return s1.subtract(s2);
+        return s1.subtract(s2).setScale(2, RoundingMode.HALF_UP);
     }
 
     /*
