@@ -519,7 +519,7 @@ public class EmisionServicioOptimizado {
         } else if (cat == 4) {
             sumco = new BigDecimal("0.1429");
         } else if (cat == 9) {
-            sumco = new BigDecimal("0.49294");
+            sumco = new BigDecimal("0.2464");
         } else {
             sumco = BigDecimal.ZERO; // o lanza excepción si debe ser obligatorio
             // throw new IllegalArgumentException("Categoría no soportada: " + cat);
@@ -534,10 +534,12 @@ public class EmisionServicioOptimizado {
         BigDecimal total = parteFija.multiply(parteVariable);
 
         // Si cat == 9, mitad (BigDecimal divide, no "/")
-        if (cat == 9) {
-            total = total.divide(new BigDecimal("2"), 10, RoundingMode.HALF_UP); // escala alta intermedia
-        }
-
+        /*
+         * if (cat == 9) {
+         * total = total.divide(new BigDecimal("2"), 10, RoundingMode.HALF_UP); //
+         * escala alta intermedia
+         * }
+         */
         // Redondeo final monetario
         total = total.setScale(2, RoundingMode.HALF_UP);
 
