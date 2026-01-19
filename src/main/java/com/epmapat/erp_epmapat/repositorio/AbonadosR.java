@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -113,6 +115,38 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 			""", nativeQuery = true)
 	void reasignarCliente(@Param("dupId") Long dupId,
 			@Param("masterId") Long masterId);
+
+	@Query("""
+			    SELECT a
+			    FROM Abonados a
+			    WHERE
+			        (:idruta IS NULL OR a.idruta_rutas.idruta = :idruta)
+			    AND (:estado IS NULL OR a.estado = :estado)
+			    AND (
+			        :responsable IS NULL OR
+			        LOWER(a.idresponsable.nombre) LIKE LOWER(CONCAT('%', :responsable, '%'))
+			    )
+				AND (
+			        :cedula IS NULL OR
+			        LOWER(a.idresponsable.cedula) LIKE CONCAT('%', :cedula, '%')
+			    )
+			AND (
+			        :cuenta IS NULL OR
+			        a.idabonado = :cuenta
+			    )
+			AND (
+			        :ruta IS NULL OR
+			        LOWER(a.idruta_rutas.descripcion) LIKE CONCAT('%', :ruta, '%')
+			    )
+			""")
+	Page<Abonados> buscarConFiltros(
+			@Param("idruta") Long idruta,
+			@Param("responsable") String responsable,
+			@Param("estado") Long estado,
+			@Param("cedula") String cedula,
+			@Param("cuenta") Long cuenta,
+			@Param("ruta") String ruta,
+			Pageable pageable);
 
 	/*
 	 * =============================================================

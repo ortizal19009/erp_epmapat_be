@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -193,7 +195,24 @@ public class AbonadoServicio {
 		return dao.findByEstado(estado);
 	}
 
-	
+	public Page<Abonados> buscar(
+			Long idruta,
+			String responsable,
+			Long estado,
+			String cedula,
+			Long cuenta,
+			String ruta,
+			Pageable pageable) {
+		return dao.buscarConFiltros(
+				idruta,
+				responsable,
+				estado,
+				cedula,
+				cuenta,
+				ruta,
+				pageable);
+	}
+
 	/*
 	 * =============================================================
 	 * SERVICIOS PARA MOBILE
@@ -201,5 +220,5 @@ public class AbonadoServicio {
 	 */
 	public List<AbonadosMobile> getAllAbonadosMobile() {
 		return dao.getAllAbonadosMobile();
-	}	
+	}
 }

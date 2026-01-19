@@ -23,3 +23,22 @@ ALTER TABLE public.erpmodulos ADD platform varchar NULL;
 COMMENT ON COLUMN public.erpmodulos.platform IS 'MOBILE-WEB-BOTH';
 --EN USWXMODULOS AÑADIR LA OPCION 
 platform - STRING
+--RECARGOS X CUENTA 
+CREATE TABLE public.recargosxcuenta (
+	idrecargoxcuenta int GENERATED ALWAYS AS IDENTITY NOT NULL,
+	tipo int DEFAULT 1 NOT NULL,
+	idemision_emisiones int NULL,
+	idabonado_abonados int NULL,
+	idrubro_rubros int NULL,
+	observacion varchar NULL,
+	usucrea int NULL,
+	feccrea timestamp NULL,
+	usuresp int NULL,
+	fecha timestamp NULL,
+	usumodi int NULL,
+	fecmodi timestamp NULL,
+	CONSTRAINT recargosxcuenta_pk PRIMARY KEY (idrecargoxcuenta)
+);
+ALTER TABLE public.recargosxcuenta ADD CONSTRAINT recargosxcuenta_abonados_fk FOREIGN KEY (idabonado_abonados) REFERENCES public.abonados(idabonado);
+ALTER TABLE public.recargosxcuenta ADD CONSTRAINT recargosxcuenta_emisiones_fk FOREIGN KEY (idemision_emisiones) REFERENCES public.emisiones(idemision);
+ALTER TABLE public.recargosxcuenta ADD CONSTRAINT recargosxcuenta_rubros_fk FOREIGN KEY (idrubro_rubros) REFERENCES public.rubros(idrubro);

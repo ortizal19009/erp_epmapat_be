@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -218,7 +221,6 @@ public class AbonadosApi {
 		return ResponseEntity.ok(facturaR.findDeudasOfAbonadosByRutas(idruta));
 	}
 
-
 	@GetMapping("/ncuentasByCategoria")
 	public List<EstadisticasAbonados> getCuentasByCategoria() {
 		return aboServicio.getCuentasByCategoria();
@@ -234,13 +236,26 @@ public class AbonadosApi {
 		return ResponseEntity.ok(aboServicio.findByEstado(estado));
 	}
 
-		/*
+	@GetMapping("/buscar")
+	public Page<Abonados> buscar(
+			@RequestParam(required = false) Long idruta,
+			@RequestParam(required = false) String responsable,
+			@RequestParam(required = false) Long estado,
+			@RequestParam(required = false) String cedula,
+			@RequestParam(required = false) Long cuenta,
+			@RequestParam(required = false) String ruta,
+			@PageableDefault(size = 20) Pageable pageable) {
+				System.out.println("Ruta recibida: " + ruta);
+		return aboServicio.buscar(idruta, responsable, estado, cedula, cuenta, ruta, pageable);
+	}
+
+	/*
 	 * =============================================================
 	 * QUERYS PARA MOBILE
 	 * =============================================================
 	 */
 	@GetMapping("/allabonadosmobile")
 	public List<AbonadosMobile> getAllAbonadosMobile() {
-		return aboServicio.getAllAbonadosMobile();		
+		return aboServicio.getAllAbonadosMobile();
 	}
 }
