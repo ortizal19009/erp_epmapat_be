@@ -136,7 +136,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 			    )
 			AND (
 			        :ruta IS NULL OR
-			        LOWER(a.idruta_rutas.descripcion) LIKE CONCAT('%', :ruta, '%')
+			        LOWER(a.idruta_rutas.descripcion) = :ruta
 			    )
 			""")
 	Page<Abonados> buscarConFiltros(

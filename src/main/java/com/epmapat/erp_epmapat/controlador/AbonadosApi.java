@@ -245,7 +245,7 @@ public class AbonadosApi {
 			@RequestParam(required = false) Long cuenta,
 			@RequestParam(required = false) String ruta,
 			@PageableDefault(size = 20) Pageable pageable) {
-				System.out.println("Ruta recibida: " + ruta);
+
 		return aboServicio.buscar(idruta, responsable, estado, cedula, cuenta, ruta, pageable);
 	}
 

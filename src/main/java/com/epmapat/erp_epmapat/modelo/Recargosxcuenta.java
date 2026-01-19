@@ -33,14 +33,14 @@ public class Recargosxcuenta {
     @JoinColumn(name = "idemision_emisiones")
     private Emisiones idemision_emisiones;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idrubros_rubros")
-    private Rubros idrubros_rubros;
-    private int tipo; 
-    private String observacion; 
-    private Long usucrea; 
+    @JoinColumn(name = "idrubro_rubros")
+    private Rubros idrubro_rubros;
+    private int tipo;
+    private String observacion;
+    private Long usucrea;
     private Timestamp feccrea;
     private Long usumodi;
     private Timestamp fecmodi;
-    private Long usuresp; 
+    private Long usuresp;
     private Timestamp fecha;
 }
