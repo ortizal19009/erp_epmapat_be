@@ -242,17 +242,31 @@ public class LecturasApi {
 	}
 
 	@PostMapping("/valoresEmisiones")
-	public ResponseEntity<BigDecimal> getValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
-		return ResponseEntity
-				.ok(emisionServicioOptimizado.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
-						datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
+	public ResponseEntity<BigDecimal> calcularValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
+		return ResponseEntity.ok(
+				emisionServicioOptimizado.calcularValores(
+						datos.getIdemision(), // ✅ NUEVO
+						datos.getCuenta(),
+						datos.getIdfactura(),
+						datos.getM3(),
+						datos.getCategoria(),
+						datos.isSwMunicipio(),
+						datos.isSwAdultoMayor(),
+						datos.isSwAguapotable()));
 	}
 
-	@PutMapping("/valores_Emisiones")
-	public ResponseEntity<BigDecimal> getValores_Emision(@RequestBody EmisionOfCuentaDTO datos) {
-		return ResponseEntity
-				.ok(emisionServicioOptimizado.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
-						datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
+	@PutMapping("/valores_emisiones")
+	public ResponseEntity<BigDecimal> recalcularValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
+		return ResponseEntity.ok(
+				emisionServicioOptimizado.calcularValores(
+						datos.getIdemision(), // ✅ NUEVO
+						datos.getCuenta(),
+						datos.getIdfactura(),
+						datos.getM3(),
+						datos.getCategoria(),
+						datos.isSwMunicipio(),
+						datos.isSwAdultoMayor(),
+						datos.isSwAguapotable()));
 	}
 
 	@GetMapping("/swalcantarillado")

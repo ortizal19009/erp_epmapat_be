@@ -12,6 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EmisionOfCuentaDTO {
+    Long idemision;
     Long cuenta;
     Long idfactura;
     int m3;

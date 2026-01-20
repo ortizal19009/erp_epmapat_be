@@ -58,4 +58,14 @@ public interface RecargosxcuentaR extends JpaRepository<Recargosxcuenta, Long> {
     boolean existsTipo2EnAnio(@Param("idabonado") Long idabonado,
             @Param("fecha") Timestamp fecha);
 
+    @Query(value = """
+                select *
+                from recargosxcuenta
+                where idemision_emisiones = :idemision
+                  and idabonado_abonados = :cuenta
+            """, nativeQuery = true)
+    List<Recargosxcuenta> findByEmisionAndAbonado(
+            @Param("idemision") Long idemision,
+            @Param("cuenta") Long cuenta);
+
 }

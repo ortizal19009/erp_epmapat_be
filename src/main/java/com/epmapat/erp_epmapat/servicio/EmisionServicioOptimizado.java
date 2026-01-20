@@ -19,6 +19,7 @@ import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
 import com.epmapat.erp_epmapat.modelo.Categorias;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.Pliego24;
+import com.epmapat.erp_epmapat.modelo.Recargosxcuenta;
 import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
@@ -26,6 +27,7 @@ import com.epmapat.erp_epmapat.repositorio.CategoriaR;
 import com.epmapat.erp_epmapat.repositorio.EmisionesR;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.repositorio.Pliego24R;
+import com.epmapat.erp_epmapat.repositorio.RecargosxcuentaR;
 import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
 import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
 
@@ -39,19 +41,25 @@ public class EmisionServicioOptimizado {
     private final DefinirR dao_definir;
     private final EmisionesR dao;
 
+    // ✅ Recargos (solo al guardar / calcularValores)
+    private final RecargosxcuentaR dao_recargos;
+
     public EmisionServicioOptimizado(
             FacturasR dao_facturas,
             Pliego24R dao_pliego,
             CategoriaR dao_categoria,
             RubroxfacR dao_rubroxfac,
             DefinirR dao_definir,
-            EmisionesR dao) {
+            EmisionesR dao,
+            RecargosxcuentaR dao_recargos) {
+
         this.dao_facturas = dao_facturas;
         this.dao_pliego = dao_pliego;
         this.dao_categoria = dao_categoria;
         this.dao_rubroxfac = dao_rubroxfac;
         this.dao_definir = dao_definir;
         this.dao = dao;
+        this.dao_recargos = dao_recargos;
     }
 
     // ----------------- Constantes y utilidades numéricas -----------------
@@ -62,8 +70,17 @@ public class EmisionServicioOptimizado {
     private static final BigDecimal FIFTY_CENTS = new BigDecimal("0.50");
     private static final BigDecimal ZERO = BigDecimal.ZERO;
 
+    // ==========================
+    // RECARGOS FIJOS (SIN BD)
+    // ==========================
+    private static final Long RUBRO_NOTIFICACION_ID = 2154L;
+    private static final BigDecimal RUBRO_NOTIFICACION_VALOR = new BigDecimal("0.50");
+
+    private static final Long RUBRO_INSPECCION_ID = 2155L;
+    private static final BigDecimal RUBRO_INSPECCION_VALOR = new BigDecimal("5.00");
+
     private static BigDecimal scale2(BigDecimal x) {
-        return x.setScale(2, RM);
+        return (x == null ? ZERO : x).setScale(2, RM);
     }
 
     // Tabla de porcentajes residencial (índice por m3, saturado al final)
@@ -88,11 +105,14 @@ public class EmisionServicioOptimizado {
             BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7)
     };
 
-    // ----------------- Servicio principal -----------------
+    // =====================================================================
+    // ✅ MÉTODO REAL: CALCULA + GUARDA + APLICA RECARGOS (requiere idemision)
+    // =====================================================================
 
     @Transactional
     public BigDecimal calcularValores(
-            Long cuenta,
+            Long idemision,
+            Long cuenta, // idabonado
             Long idfactura,
             int m3,
             int categoria,
@@ -100,13 +120,17 @@ public class EmisionServicioOptimizado {
             boolean swAdultoMayor,
             boolean swAguapotable) {
 
+        // ---------------------------
+        // 1) Cargar factura y contexto
+        // ---------------------------
         Facturas factura = dao_facturas.findById(idfactura).orElseThrow();
 
-        // Construimos contexto
         EmisionOfCuentaDTO ctx = buildContext(
                 cuenta, idfactura, m3, categoria, swMunicipio, swAdultoMayor, swAguapotable, factura);
 
-        // --- Cálculos puros ---
+        // ---------------------------
+        // 2) Calcular rubros base
+        // ---------------------------
         BigDecimal multa = multas(cuenta);
 
         BigDecimal ap = baseAguaPotable(ctx);
@@ -117,15 +141,30 @@ public class EmisionServicioOptimizado {
         BigDecimal rb = calcRecoleccionBasura(ctx);
         BigDecimal rbepmapat = recaudacionBasura();
 
+        // Excedente (si aplica)
         BigDecimal ex = ZERO;
         if (ctx.getCategoria() == 9 && swAdultoMayor && m3 > 34 && m3 <= 70) {
-            ex = calcExcedente(ctx); // imprime desglose por rubro
+            ex = calcExcedente(ctx);
         }
 
-        BigDecimal total = ap.add(al).add(sa).add(cf).add(ex).add(multa).add(rb).add(rbepmapat).add(cfepmapat);
+        // Total base (SIN recargos todavía)
+        BigDecimal total = ap.add(al)
+                .add(sa)
+                .add(cf)
+                .add(rb)
+                .add(rbepmapat)
+                .add(cfepmapat);
 
-        // --- Persistimos en lote (una sola vez) ---
-        List<Rubroxfac> rubros = new ArrayList<>(10);
+        if (ex.compareTo(ZERO) > 0)
+            total = total.add(ex);
+        if (multa.compareTo(ZERO) > 0)
+            total = total.add(multa);
+
+        // ---------------------------
+        // 3) Armar lista de rubros a guardar
+        // ---------------------------
+        List<Rubroxfac> rubros = new ArrayList<>(30);
+
         rubros.add(buildRubro(factura, 1001L, ap));
         rubros.add(buildRubro(factura, 1002L, al));
         rubros.add(buildRubro(factura, 1003L, sa));
@@ -133,9 +172,69 @@ public class EmisionServicioOptimizado {
         rubros.add(buildRubro(factura, 1007L, cfepmapat));
         rubros.add(buildRubro(factura, 1008L, rb));
         rubros.add(buildRubro(factura, 1009L, rbepmapat));
-        if (ex.compareTo(ZERO) > 0) rubros.add(buildRubro(factura, 1005L, ex));
-        if (multa.compareTo(ZERO) > 0) rubros.add(buildRubro(factura, 6L, multa));
 
+        if (ex.compareTo(ZERO) > 0) {
+            rubros.add(buildRubro(factura, 1005L, ex));
+        }
+        if (multa.compareTo(ZERO) > 0) {
+            rubros.add(buildRubro(factura, 6L, multa));
+        }
+
+        // ---------------------------
+        // 4) Recargos por emisión + abonado (SOLO guardar)
+        // ---------------------------
+        System.out.println("🔎 Buscar recargos -> idemision=" + idemision + " idabonado(cuenta)=" + cuenta);
+
+        List<Recargosxcuenta> recargos = dao_recargos.findByEmisionAndAbonado(idemision, cuenta);
+
+        System.out.println("🧾 Recargos encontrados = " + (recargos == null ? "null" : recargos.size()));
+
+        if (recargos != null && !recargos.isEmpty()) {
+            for (Recargosxcuenta rc : recargos) {
+                if (rc == null)
+                    continue;
+
+                Long idrubro = null;
+
+                // Si el registro guarda relación a Rubros
+                if (rc.getIdrubro_rubros() != null && rc.getIdrubro_rubros().getIdrubro() != null) {
+                    idrubro = rc.getIdrubro_rubros().getIdrubro();
+                }
+
+                // Si NO tienes idrubro en recargos, podrías mapear por tipo
+                if (idrubro == null) {
+                    if (rc.getTipo() == 1)
+                        idrubro = RUBRO_NOTIFICACION_ID; // 2154
+                    if (rc.getTipo() == 2)
+                        idrubro = RUBRO_INSPECCION_ID; // 2155
+                }
+
+                if (idrubro == null)
+                    continue;
+
+                // ✅ valores fijos (sin BD)
+                BigDecimal valor = null;
+                if (Objects.equals(idrubro, RUBRO_NOTIFICACION_ID))
+                    valor = RUBRO_NOTIFICACION_VALOR; // 0.50
+                if (Objects.equals(idrubro, RUBRO_INSPECCION_ID))
+                    valor = RUBRO_INSPECCION_VALOR; // 5.00
+
+                // Si cae aquí, es porque tu recargo trae otro rubro que no estás cubriendo
+                if (valor == null) {
+                    System.out.println("⚠️ Recargo con rubro no mapeado idrubro=" + idrubro + " (NO se aplica)");
+                    continue;
+                }
+
+                rubros.add(buildRubro(factura, idrubro, valor));
+                total = total.add(valor);
+
+                System.out.println("✅ Recargo aplicado -> rubro=" + idrubro + " valor=" + valor);
+            }
+        }
+
+        // ---------------------------
+        // 5) Guardar rubros y factura
+        // ---------------------------
         upsertRubros(rubros);
 
         factura.setTotaltarifa(scale2(total));
@@ -146,7 +245,11 @@ public class EmisionServicioOptimizado {
         return scale2(total);
     }
 
-    @Transactional
+    // =====================================================================
+    // ✅ SIMULADOR: SOLO CALCULA (NO idemision, NO guarda, NO recargos)
+    // =====================================================================
+
+    @Transactional(readOnly = true)
     public Object simularValores(
             int m3,
             int categoria,
@@ -167,7 +270,7 @@ public class EmisionServicioOptimizado {
 
         BigDecimal ex = ZERO;
         if (ctx.getCategoria() == 9 && swAdultoMayor && m3 > 34 && m3 <= 70) {
-            ex = calcExcedente(ctx); // imprime desglose por rubro
+            ex = calcExcedente(ctx);
         }
 
         BigDecimal total = ap.add(al).add(sa).add(cf).add(ex).add(rb).add(rbepmapat).add(cfepmapat);
@@ -179,7 +282,8 @@ public class EmisionServicioOptimizado {
         respuesta.put("Conservacion Fuentes Epmapat", cfepmapat);
         respuesta.put("Recoleccion Basura", rb);
         respuesta.put("Recaudacion Basura", rbepmapat);
-        if (ex.compareTo(ZERO) > 0) respuesta.put("Excedente", ex);
+        if (ex.compareTo(ZERO) > 0)
+            respuesta.put("Excedente", ex);
         respuesta.put("Total", total.setScale(2, RM));
 
         return respuesta;
@@ -192,6 +296,7 @@ public class EmisionServicioOptimizado {
         List<EmisionesInterface> emiI = dao.getSwAguapotable(idemision);
         emiI.forEach(e -> {
             calcularValores(
+                    idemision,
                     e.getCuenta(),
                     e.getIdfactura(),
                     e.getM3(),
@@ -203,15 +308,95 @@ public class EmisionServicioOptimizado {
         return emiI;
     }
 
+    // =====================================================================
+    // ✅ RECARGOS (solo para guardar)
+    // - Consulta tabla recargosxcuenta
+    // - Aplica valores FIJOS (sin tabla rubros)
+    // =====================================================================
+
+    private BigDecimal aplicarRecargosDeCuenta(
+            Long idemision,
+            Long idabonado,
+            Facturas factura,
+            List<Rubroxfac> rubrosFactura,
+            BigDecimal totalActual) {
+
+        if (idemision == null || idabonado == null)
+            return totalActual;
+
+        // ✅ Pendientes por emision + abonado
+        List<Recargosxcuenta> recargos = dao_recargos.findByEmisionAndAbonado(idemision, idabonado);
+        if (recargos == null || recargos.isEmpty())
+            return totalActual;
+
+        // ✅ para evitar duplicar el mismo rubro varias veces
+        Map<Long, BigDecimal> rubrosAInsertar = new LinkedHashMap<>();
+
+        for (Recargosxcuenta r : recargos) {
+            if (r == null)
+                continue;
+
+            // 1) Detectar rubro por tipo o por idrubro guardado
+            Long idrubro = null;
+
+            if (r.getIdrubro_rubros() != null && r.getIdrubro_rubros().getIdrubro() != null) {
+                idrubro = r.getIdrubro_rubros().getIdrubro();
+            } else {
+                // si no guarda idrubro, usamos tipo: 1 notif, 2 insp
+                if (r.getTipo() == 1)
+                    idrubro = RUBRO_NOTIFICACION_ID;
+                else if (r.getTipo() == 2)
+                    idrubro = RUBRO_INSPECCION_ID;
+            }
+
+            if (idrubro == null)
+                continue;
+
+            // 2) Valor fijo según rubro
+            BigDecimal valor = null;
+            if (Objects.equals(idrubro, RUBRO_NOTIFICACION_ID))
+                valor = RUBRO_NOTIFICACION_VALOR;
+            else if (Objects.equals(idrubro, RUBRO_INSPECCION_ID))
+                valor = RUBRO_INSPECCION_VALOR;
+
+            if (valor == null)
+                continue;
+
+            // ✅ una sola vez por rubro (si quieres multiplicar, aquí sería SUMAR)
+            rubrosAInsertar.put(idrubro, valor);
+        }
+
+        if (rubrosAInsertar.isEmpty())
+            return totalActual;
+
+        BigDecimal total = totalActual;
+
+        for (Map.Entry<Long, BigDecimal> it : rubrosAInsertar.entrySet()) {
+            Long idrubro = it.getKey();
+            BigDecimal valor = it.getValue();
+
+            rubrosFactura.add(buildRubro(factura, idrubro, valor));
+            total = total.add(valor);
+
+            System.out.println("🧾 Recargo aplicado → idemision=" + idemision
+                    + " abonado=" + idabonado
+                    + " rubro=" + idrubro
+                    + " valor=" + valor);
+        }
+
+        return total;
+    }
+
     // ----------------- Persistencia optimizada de rubros -----------------
 
     @Transactional
     private void upsertRubros(List<Rubroxfac> nuevos) {
-        if (nuevos == null || nuevos.isEmpty()) return;
+        if (nuevos == null || nuevos.isEmpty())
+            return;
 
         final Long idfac = nuevos.get(0).getIdfactura_facturas().getIdfactura();
 
-        // De-duplicar la entrada: si vienen repetidos en memoria, nos quedamos con el último
+        // De-duplicar entrada (último gana)
         Map<Long, Rubroxfac> dedup = new LinkedHashMap<>();
         for (Rubroxfac r : nuevos) {
             Long idrubro = r.getIdrubro_rubros().getIdrubro();
@@ -219,10 +404,7 @@ public class EmisionServicioOptimizado {
         }
         Set<Long> rubrosAReemplazar = dedup.keySet();
 
-        // 1) Borrar TODOS los existentes de esa factura para esos rubros (incluye duplicados)
         dao_rubroxfac.deleteByFacturaAndRubroIn(idfac, rubrosAReemplazar);
-
-        // 2) Insertar únicamente los nuevos (de-duplicados)
         dao_rubroxfac.saveAll(dedup.values());
     }
 
@@ -240,12 +422,12 @@ public class EmisionServicioOptimizado {
     // ----------------- Asegurar pliego existente -----------------
 
     private void ensurePliego(EmisionOfCuentaDTO v) {
-        if (v == null) return;
+        if (v == null)
+            return;
 
         Integer cat = v.getCategoria();
         boolean esResidencial = Objects.equals(cat, 1) || Objects.equals(cat, 9);
 
-        // Si NO es residencial y no tiene pliego, intentamos cargarlo desde BD
         if (!esResidencial && v.getPliego24() == null) {
             Pliego24 p = dao_pliego._findBloque(cat, v.getM3());
             if (p == null) {
@@ -257,7 +439,6 @@ public class EmisionServicioOptimizado {
             v.setPliego24(p);
         }
 
-        // Si es residencial y el pliego no existe, igual inicializamos por seguridad
         if (v.getPliego24() == null) {
             Pliego24 p = new Pliego24();
             p.setPorc(BigDecimal.ONE);
@@ -336,11 +517,11 @@ public class EmisionServicioOptimizado {
     // ----------------- Cálculos puros -----------------
 
     private BigDecimal getPorcentaje(EmisionOfCuentaDTO v) {
-        if (v == null) return DEFAULT_PORC;
+        if (v == null)
+            return DEFAULT_PORC;
 
         Integer cat = v.getCategoria();
         Integer m3 = v.getM3();
-
         int consumo = (m3 == null || m3 < 0) ? 0 : m3;
 
         if (Objects.equals(cat, 1) || Objects.equals(cat, 9)) {
@@ -350,9 +531,8 @@ public class EmisionServicioOptimizado {
         }
 
         Pliego24 pliego = v.getPliego24();
-        if (pliego == null || pliego.getPorc() == null) {
+        if (pliego == null || pliego.getPorc() == null)
             return DEFAULT_PORC;
-        }
 
         return pliego.getPorc();
     }
@@ -372,7 +552,8 @@ public class EmisionServicioOptimizado {
 
         BigDecimal total = apFijo.add(apVar);
 
-        if (v.getCategoria() == 9) total = total.multiply(HALF);
+        if (v.getCategoria() == 9)
+            total = total.multiply(HALF);
 
         return total.setScale(2, RM);
     }
@@ -380,7 +561,8 @@ public class EmisionServicioOptimizado {
     private BigDecimal baseAlcantarillado(EmisionOfCuentaDTO v) {
         ensurePliego(v);
 
-        if (v.isSwAguapotable()) return ZERO;
+        if (v.isSwAguapotable())
+            return ZERO;
 
         BigDecimal porc = v.getPliego24().getPorc();
 
@@ -394,7 +576,8 @@ public class EmisionServicioOptimizado {
 
         BigDecimal total = fijo.add(variable);
 
-        if (v.getCategoria() == 9) total = total.multiply(HALF);
+        if (v.getCategoria() == 9)
+            total = total.multiply(HALF);
 
         return total.add(hidrosuccionador(v, porc)).setScale(2, RM);
     }
@@ -402,40 +585,38 @@ public class EmisionServicioOptimizado {
     private BigDecimal baseSaneamiento(EmisionOfCuentaDTO v) {
         ensurePliego(v);
 
-        if (v.isSwAguapotable()) return ZERO;
+        if (v.isSwAguapotable())
+            return ZERO;
 
         BigDecimal porc = v.getPliego24().getPorc();
         BigDecimal total = BigDecimal.valueOf(v.getM3())
                 .multiply(v.getPliego24().getSaneamiento().multiply(HALF))
                 .multiply(porc);
 
-        if (v.getCategoria() == 9) total = total.multiply(HALF);
+        if (v.getCategoria() == 9)
+            total = total.multiply(HALF);
 
         return total.setScale(2, RM);
     }
 
     private BigDecimal calcConservacionFuentes(int categoria) {
-        if (categoria == 9) {
+        if (categoria == 9)
             return new BigDecimal("0.15").setScale(2, RM);
-        }
         return new BigDecimal("0.30").setScale(2, RM);
     }
 
     private BigDecimal calcConservacionFuentesEpmapat(int categoria) {
-
-        if (categoria == 1) {
+        if (categoria == 1)
             return new BigDecimal("0.20").setScale(2, RM);
-        } else if (categoria == 2) {
+        if (categoria == 2)
             return new BigDecimal("0.35").setScale(2, RM);
-        } else if (categoria == 3) {
+        if (categoria == 3)
             return new BigDecimal("0.50").setScale(2, RM);
-        } else if (categoria == 4) {
+        if (categoria == 4)
             return new BigDecimal("1.00").setScale(2, RM);
-        } else if (categoria == 9) {
+        if (categoria == 9)
             return new BigDecimal("0.10").setScale(2, RM);
-        }
-
-        return BigDecimal.ZERO;
+        return ZERO;
     }
 
     private BigDecimal hidrosuccionador(EmisionOfCuentaDTO v, BigDecimal porc) {
@@ -447,12 +628,11 @@ public class EmisionServicioOptimizado {
     }
 
     // ==========================
-    //  EXCEDENTE: DESGLOSE POR RUBRO + TOTAL
+    // EXCEDENTE (se mantiene tu lógica)
     // ==========================
 
     private Map<String, BigDecimal> calcularRubros(EmisionOfCuentaDTO ctx) {
         Map<String, BigDecimal> r = new LinkedHashMap<>();
-
         r.put("Agua Potable", baseAguaPotable(ctx));
         r.put("Alcantarillado", baseAlcantarillado(ctx));
         r.put("Saneamiento", baseSaneamiento(ctx));
@@ -460,24 +640,21 @@ public class EmisionServicioOptimizado {
         r.put("Conservacion Fuentes Epmapat", calcConservacionFuentesEpmapat(ctx.getCategoria()));
         r.put("Recoleccion Basura", calcRecoleccionBasura(ctx));
         r.put("Recaudacion Basura", recaudacionBasura());
-
         return r;
     }
 
     private BigDecimal calcExcedente(EmisionOfCuentaDTO base) {
 
-        // v1 = con m3 actual forzando categoría 1
         EmisionOfCuentaDTO v1 = copyForExcedente(base, base.getM3());
-        // v2 = con m3-1 forzando categoría 1
         EmisionOfCuentaDTO v2 = copyForExcedente(base, base.getM3() - 1);
 
         Map<String, BigDecimal> r1 = calcularRubros(v1);
         Map<String, BigDecimal> r2 = calcularRubros(v2);
 
-        System.out.println("====== EXCEDENTE POR RUBRO ======");
+        System.out.println("====== EXCEDENTE POR RUBRO ======" + base.getCuenta() + " - " + base.getIdemision());
         System.out.println("m3=" + v1.getM3() + " vs m3-1=" + v2.getM3());
 
-        BigDecimal sumaExcedente = BigDecimal.ZERO;
+        BigDecimal sumaExcedente = ZERO;
 
         for (String key : r1.keySet()) {
             BigDecimal val1 = r1.getOrDefault(key, ZERO);
@@ -501,7 +678,6 @@ public class EmisionServicioOptimizado {
         return sumaExcedente.setScale(2, RM);
     }
 
-    // Copia “pura” para excedente (categoría 1, sw's iguales, pliego/categoría recalculados)
     private EmisionOfCuentaDTO copyForExcedente(EmisionOfCuentaDTO from, int m3Nuevo) {
         EmisionOfCuentaDTO v = new EmisionOfCuentaDTO();
         v.setCuenta(from.getCuenta());
@@ -511,7 +687,6 @@ public class EmisionServicioOptimizado {
         v.setSwAdultoMayor(from.isSwAdultoMayor());
         v.setSwAguapotable(from.isSwAguapotable());
 
-        // EXCEDENTE se calcula “como residencial”
         v.setCategoria(1);
 
         Pliego24 pl = dao_pliego._findBloque(1, v.getM3());
@@ -531,31 +706,27 @@ public class EmisionServicioOptimizado {
         BigDecimal CO = new BigDecimal("6.40");
         BigDecimal Lr = new BigDecimal("1.24148665");
         BigDecimal CF = new BigDecimal("0.1");
-        BigDecimal iF = new BigDecimal("0.0749"); // 7.49%
+        BigDecimal iF = new BigDecimal("0.0749");
 
         BigDecimal m3 = BigDecimal.valueOf(v.getM3());
 
         BigDecimal sumco;
         int cat = v.getCategoria();
 
-        if (cat == 1) {
+        if (cat == 1)
             sumco = new BigDecimal("0.49294");
-        } else if (cat == 2) {
+        else if (cat == 2)
             sumco = new BigDecimal("0.9855");
-        } else if (cat == 3) {
+        else if (cat == 3)
             sumco = new BigDecimal("10.3511");
-        } else if (cat == 4) {
+        else if (cat == 4)
             sumco = new BigDecimal("0.1429");
-        } else if (cat == 9) {
+        else if (cat == 9)
             sumco = new BigDecimal("0.2464");
-        } else {
-            sumco = BigDecimal.ZERO;
-        }
+        else
+            sumco = ZERO;
 
-        // (CO * Lr + CF * iF)
         BigDecimal parteFija = CO.multiply(Lr).add(CF.multiply(iF));
-
-        // (Qs * m3 + sumco)
         BigDecimal parteVariable = Qs.multiply(m3).add(sumco);
 
         BigDecimal total = parteFija.multiply(parteVariable);
@@ -567,13 +738,16 @@ public class EmisionServicioOptimizado {
 
     private BigDecimal multas(Long cuenta) {
         List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuenta);
-        if (idfacturas == null) return ZERO;
+        if (idfacturas == null)
+            return ZERO;
 
         long nroPendientes = idfacturas.size();
-        if (nroPendientes <= 2) return ZERO;
+        if (nroPendientes <= 1)
+            return ZERO;
 
         Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
-        if (Objects.isNull(definir) || Objects.isNull(definir.getRbu())) return ZERO;
+        if (Objects.isNull(definir) || Objects.isNull(definir.getRbu()))
+            return ZERO;
 
         return definir.getRbu().multiply(BigDecimal.valueOf(0.005));
     }
