@@ -243,6 +243,7 @@ public class LecturasApi {
 
 	@PostMapping("/valoresEmisiones")
 	public ResponseEntity<BigDecimal> calcularValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
+		System.out.println("Calculando valores para emision: " + datos.getIdemision());
 		return ResponseEntity.ok(
 				emisionServicioOptimizado.calcularValores(
 						datos.getIdemision(), // ✅ NUEVO
@@ -257,6 +258,7 @@ public class LecturasApi {
 
 	@PutMapping("/valores_emisiones")
 	public ResponseEntity<BigDecimal> recalcularValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
+		System.out.println("Recalculando valores para _emision: " + datos.getIdemision());
 		return ResponseEntity.ok(
 				emisionServicioOptimizado.calcularValores(
 						datos.getIdemision(), // ✅ NUEVO
