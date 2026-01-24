@@ -288,9 +288,9 @@ public class LecturasApi {
 	}
 
 	@GetMapping("/simular")
-	public ResponseEntity<Object> simularValores(@RequestParam int m3, @RequestParam int categoria,
+	public ResponseEntity<Object> simularValores(@RequestParam int m3, @RequestParam int categoria, @RequestParam boolean swMunicipio,
 			@RequestParam boolean swAdultoMayor, @RequestParam boolean swAguapotable) {
-		return ResponseEntity.ok(emisionServicioOptimizado.simularValores(m3, categoria, swAdultoMayor, swAguapotable));
+		return ResponseEntity.ok(emisionServicioOptimizado.simularValores(m3, categoria, swMunicipio, swAdultoMayor, swAguapotable));
 	}
 
 }

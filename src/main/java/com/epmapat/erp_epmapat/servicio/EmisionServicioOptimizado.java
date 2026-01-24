@@ -253,12 +253,13 @@ public class EmisionServicioOptimizado {
     public Object simularValores(
             int m3,
             int categoria,
+            boolean swMunicipio,
             boolean swAdultoMayor,
             boolean swAguapotable) {
 
         Map<String, Object> respuesta = new HashMap<>();
 
-        EmisionOfCuentaDTO ctx = buildContext_simulador(m3, categoria, swAdultoMayor, swAguapotable);
+        EmisionOfCuentaDTO ctx = buildContext_simulador(m3, categoria, swMunicipio ,swAdultoMayor, swAguapotable);
 
         BigDecimal ap = baseAguaPotable(ctx);
         BigDecimal al = baseAlcantarillado(ctx);
@@ -307,86 +308,6 @@ public class EmisionServicioOptimizado {
         });
         return emiI;
     }
-
-    // =====================================================================
-    // ✅ RECARGOS (solo para guardar)
-    // - Consulta tabla recargosxcuenta
-    // - Aplica valores FIJOS (sin tabla rubros)
-    // =====================================================================
-
-    private BigDecimal aplicarRecargosDeCuenta(
-            Long idemision,
-            Long idabonado,
-            Facturas factura,
-            List<Rubroxfac> rubrosFactura,
-            BigDecimal totalActual) {
-
-        if (idemision == null || idabonado == null)
-            return totalActual;
-
-        // ✅ Pendientes por emision + abonado
-        List<Recargosxcuenta> recargos = dao_recargos.findByEmisionAndAbonado(idemision, idabonado);
-        if (recargos == null || recargos.isEmpty())
-            return totalActual;
-
-        // ✅ para evitar duplicar el mismo rubro varias veces
-        Map<Long, BigDecimal> rubrosAInsertar = new LinkedHashMap<>();
-
-        for (Recargosxcuenta r : recargos) {
-            if (r == null)
-                continue;
-
-            // 1) Detectar rubro por tipo o por idrubro guardado
-            Long idrubro = null;
-
-            if (r.getIdrubro_rubros() != null && r.getIdrubro_rubros().getIdrubro() != null) {
-                idrubro = r.getIdrubro_rubros().getIdrubro();
-            } else {
-                // si no guarda idrubro, usamos tipo: 1 notif, 2 insp
-                if (r.getTipo() == 1)
-                    idrubro = RUBRO_NOTIFICACION_ID;
-                else if (r.getTipo() == 2)
-                    idrubro = RUBRO_INSPECCION_ID;
-            }
-
-            if (idrubro == null)
-                continue;
-
-            // 2) Valor fijo según rubro
-            BigDecimal valor = null;
-            if (Objects.equals(idrubro, RUBRO_NOTIFICACION_ID))
-                valor = RUBRO_NOTIFICACION_VALOR;
-            else if (Objects.equals(idrubro, RUBRO_INSPECCION_ID))
-                valor = RUBRO_INSPECCION_VALOR;
-
-            if (valor == null)
-                continue;
-
-            // ✅ una sola vez por rubro (si quieres multiplicar, aquí sería SUMAR)
-            rubrosAInsertar.put(idrubro, valor);
-        }
-
-        if (rubrosAInsertar.isEmpty())
-            return totalActual;
-
-        BigDecimal total = totalActual;
-
-        for (Map.Entry<Long, BigDecimal> it : rubrosAInsertar.entrySet()) {
-            Long idrubro = it.getKey();
-            BigDecimal valor = it.getValue();
-
-            rubrosFactura.add(buildRubro(factura, idrubro, valor));
-            total = total.add(valor);
-
-            System.out.println("🧾 Recargo aplicado → idemision=" + idemision
-                    + " abonado=" + idabonado
-                    + " rubro=" + idrubro
-                    + " valor=" + valor);
-        }
-
-        return total;
-    }
-
     // ----------------- Persistencia optimizada de rubros -----------------
 
     @Transactional
@@ -488,11 +409,13 @@ public class EmisionServicioOptimizado {
     private EmisionOfCuentaDTO buildContext_simulador(
             int m3,
             int categoria,
+            boolean swMunicipio,
             boolean swAdultoMayor,
             boolean swAguapotable) {
 
         EmisionOfCuentaDTO v = new EmisionOfCuentaDTO();
         v.setM3(m3);
+        v.setSwMunicipio(swMunicipio);
         v.setSwAdultoMayor(swAdultoMayor);
         v.setSwAguapotable(swAguapotable);
         v.setCategoria(categoria);
@@ -551,7 +474,8 @@ public class EmisionServicioOptimizado {
                 .multiply(porcPliego);
 
         BigDecimal total = apFijo.add(apVar);
-
+        if (v.getCategoria() == 4 && v.isSwMunicipio())
+            total = total.multiply(HALF);
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
@@ -575,7 +499,8 @@ public class EmisionServicioOptimizado {
                 .multiply(porc);
 
         BigDecimal total = fijo.add(variable);
-
+        if (v.getCategoria() == 4 && v.isSwMunicipio())
+            total = total.multiply(HALF);
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
@@ -592,7 +517,8 @@ public class EmisionServicioOptimizado {
         BigDecimal total = BigDecimal.valueOf(v.getM3())
                 .multiply(v.getPliego24().getSaneamiento().multiply(HALF))
                 .multiply(porc);
-
+        if (v.getCategoria() == 4 && v.isSwMunicipio())
+            total = total.multiply(HALF);
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
@@ -651,9 +577,6 @@ public class EmisionServicioOptimizado {
         Map<String, BigDecimal> r1 = calcularRubros(v1);
         Map<String, BigDecimal> r2 = calcularRubros(v2);
 
-        System.out.println("====== EXCEDENTE POR RUBRO ======" + base.getCuenta() + " - " + base.getIdemision());
-        System.out.println("m3=" + v1.getM3() + " vs m3-1=" + v2.getM3());
-
         BigDecimal sumaExcedente = ZERO;
 
         for (String key : r1.keySet()) {
@@ -662,13 +585,6 @@ public class EmisionServicioOptimizado {
 
             BigDecimal exc = val1.subtract(val2).setScale(2, RM);
             sumaExcedente = sumaExcedente.add(exc);
-
-            System.out.println(String.format(
-                    "%-30s | m3=%8s | m3-1=%8s | EXC=%8s",
-                    key,
-                    val1.setScale(2, RM).toPlainString(),
-                    val2.setScale(2, RM).toPlainString(),
-                    exc.toPlainString()));
         }
 
         System.out.println("--------------------------------");
