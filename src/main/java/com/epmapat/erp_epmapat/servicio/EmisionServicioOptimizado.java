@@ -132,6 +132,7 @@ public class EmisionServicioOptimizado {
         // 2) Calcular rubros base
         // ---------------------------
         BigDecimal multa = multas(cuenta);
+        BigDecimal multa_basura = multas_basura(cuenta);
 
         BigDecimal ap = baseAguaPotable(ctx);
         BigDecimal al = baseAlcantarillado(ctx);
@@ -159,6 +160,8 @@ public class EmisionServicioOptimizado {
             total = total.add(ex);
         if (multa.compareTo(ZERO) > 0)
             total = total.add(multa);
+        if (multa_basura.compareTo(ZERO) > 0)
+            total = total.add(multa_basura);
 
         // ---------------------------
         // 3) Armar lista de rubros a guardar
@@ -178,6 +181,9 @@ public class EmisionServicioOptimizado {
         }
         if (multa.compareTo(ZERO) > 0) {
             rubros.add(buildRubro(factura, 6L, multa));
+        }
+        if (multa_basura.compareTo(ZERO) > 0) {
+            rubros.add(buildRubro(factura, 1011L, multa_basura));
         }
 
         // ---------------------------
@@ -259,7 +265,7 @@ public class EmisionServicioOptimizado {
 
         Map<String, Object> respuesta = new HashMap<>();
 
-        EmisionOfCuentaDTO ctx = buildContext_simulador(m3, categoria, swMunicipio ,swAdultoMayor, swAguapotable);
+        EmisionOfCuentaDTO ctx = buildContext_simulador(m3, categoria, swMunicipio, swAdultoMayor, swAguapotable);
 
         BigDecimal ap = baseAguaPotable(ctx);
         BigDecimal al = baseAlcantarillado(ctx);
@@ -666,5 +672,21 @@ public class EmisionServicioOptimizado {
             return ZERO;
 
         return definir.getRbu().multiply(BigDecimal.valueOf(0.005));
+    }
+
+    private BigDecimal multas_basura(Long cuenta) {
+        List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuenta);
+        if (idfacturas == null)
+            return ZERO;
+
+        long nroPendientes = idfacturas.size();
+        if (nroPendientes <= 1)
+            return ZERO;
+
+        Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
+        if (Objects.isNull(definir) || Objects.isNull(definir.getRbu()))
+            return ZERO;
+
+        return definir.getRbu().multiply(BigDecimal.valueOf(0.01));
     }
 }
