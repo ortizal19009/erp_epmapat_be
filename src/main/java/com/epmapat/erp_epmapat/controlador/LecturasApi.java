@@ -26,6 +26,7 @@ import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizado;
+import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizado_anterior;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
 
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class LecturasApi {
 
 	private final LecturaServicio lecServicio;
 	private final EmisionServicioOptimizado emisionServicioOptimizado;
+	private final EmisionServicioOptimizado_anterior emisionServicioOptimizado_anterior;
 
 	// Busca por Planilla (Es una a una)
 	@GetMapping("/onePlanilla/{idfactura}")
@@ -243,7 +245,6 @@ public class LecturasApi {
 
 	@PostMapping("/valoresEmisiones")
 	public ResponseEntity<BigDecimal> calcularValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
-		System.out.println("Calculando valores para emision: " + datos.getIdemision());
 		return ResponseEntity.ok(
 				emisionServicioOptimizado.calcularValores(
 						datos.getIdemision(), // ✅ NUEVO
@@ -256,9 +257,8 @@ public class LecturasApi {
 						datos.isSwAguapotable()));
 	}
 
-	@PutMapping("/valores_emisiones")
-	public ResponseEntity<BigDecimal> recalcularValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
-		System.out.println("Recalculando valores para _emision: " + datos.getIdemision());
+	@PostMapping("/valoresemisionesanteriores")
+	public ResponseEntity<BigDecimal> recalcularValoresEmisionAnterior(@RequestBody EmisionOfCuentaDTO datos) {
 		return ResponseEntity.ok(
 				emisionServicioOptimizado.calcularValores(
 						datos.getIdemision(), // ✅ NUEVO
@@ -288,9 +288,11 @@ public class LecturasApi {
 	}
 
 	@GetMapping("/simular")
-	public ResponseEntity<Object> simularValores(@RequestParam int m3, @RequestParam int categoria, @RequestParam boolean swMunicipio,
+	public ResponseEntity<Object> simularValores(@RequestParam int m3, @RequestParam int categoria,
+			@RequestParam boolean swMunicipio,
 			@RequestParam boolean swAdultoMayor, @RequestParam boolean swAguapotable) {
-		return ResponseEntity.ok(emisionServicioOptimizado.simularValores(m3, categoria, swMunicipio, swAdultoMayor, swAguapotable));
+		return ResponseEntity
+				.ok(emisionServicioOptimizado.simularValores(m3, categoria, swMunicipio, swAdultoMayor, swAguapotable));
 	}
 
 }

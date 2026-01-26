@@ -586,4 +586,4 @@ public class EmisionServicioOptimizado_anterior {
 
         return definir.getRbu().multiply(BigDecimal.valueOf(0.005));
     }
-} 
+}
