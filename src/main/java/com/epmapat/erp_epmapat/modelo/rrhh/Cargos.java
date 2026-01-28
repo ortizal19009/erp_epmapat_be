@@ -1,7 +1,5 @@
 package com.epmapat.erp_epmapat.modelo.rrhh;
 
-import java.math.BigDecimal;
-
 import javax.persistence.*;
 
 import lombok.Getter;
@@ -16,10 +14,10 @@ import lombok.Setter;
 public class Cargos {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idcargo; 
-    private String descripcion; 
-    private Boolean estado; 
+    private Long idcargo;
+    private String descripcion;
+    private Boolean estado;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "iddetcargo_detcargo")
-    private Detcargo iddetcargo_detcargo; 
+    private Detcargo iddetcargo_detcargo;
 }

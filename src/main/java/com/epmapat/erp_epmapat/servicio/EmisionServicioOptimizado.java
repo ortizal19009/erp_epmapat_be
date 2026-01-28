@@ -73,7 +73,7 @@ public class EmisionServicioOptimizado {
     // ==========================
     // RECARGOS FIJOS (SIN BD)
     // ==========================
-    private static final Long RUBRO_NOTIFICACION_ID = 2154L;
+    private static final Long RUBRO_NOTIFICACION_ID = 2156L;
     private static final BigDecimal RUBRO_NOTIFICACION_VALOR = new BigDecimal("0.50");
 
     private static final Long RUBRO_INSPECCION_ID = 2155L;
@@ -132,7 +132,7 @@ public class EmisionServicioOptimizado {
         // 2) Calcular rubros base
         // ---------------------------
         BigDecimal multa = multas(cuenta);
-        BigDecimal multa_basura = multas_basura(cuenta);
+        // BigDecimal multa_basura = multas_basura(cuenta);
 
         BigDecimal ap = baseAguaPotable(ctx);
         BigDecimal al = baseAlcantarillado(ctx);
@@ -160,8 +160,8 @@ public class EmisionServicioOptimizado {
             total = total.add(ex);
         if (multa.compareTo(ZERO) > 0)
             total = total.add(multa);
-        if (multa_basura.compareTo(ZERO) > 0)
-            total = total.add(multa_basura);
+        // if (multa_basura.compareTo(ZERO) > 0)
+        // total = total.add(multa_basura);
 
         // ---------------------------
         // 3) Armar lista de rubros a guardar
@@ -182,19 +182,14 @@ public class EmisionServicioOptimizado {
         if (multa.compareTo(ZERO) > 0) {
             rubros.add(buildRubro(factura, 6L, multa));
         }
-        if (multa_basura.compareTo(ZERO) > 0) {
-            rubros.add(buildRubro(factura, 1011L, multa_basura));
-        }
+        // if (multa_basura.compareTo(ZERO) > 0) {
+        // rubros.add(buildRubro(factura, 1011L, multa_basura));
+        // }
 
         // ---------------------------
         // 4) Recargos por emisión + abonado (SOLO guardar)
         // ---------------------------
-        System.out.println("🔎 Buscar recargos -> idemision=" + idemision + " idabonado(cuenta)=" + cuenta);
-
         List<Recargosxcuenta> recargos = dao_recargos.findByEmisionAndAbonado(idemision, cuenta);
-
-        System.out.println("🧾 Recargos encontrados = " + (recargos == null ? "null" : recargos.size()));
-
         if (recargos != null && !recargos.isEmpty()) {
             for (Recargosxcuenta rc : recargos) {
                 if (rc == null)
@@ -210,7 +205,7 @@ public class EmisionServicioOptimizado {
                 // Si NO tienes idrubro en recargos, podrías mapear por tipo
                 if (idrubro == null) {
                     if (rc.getTipo() == 1)
-                        idrubro = RUBRO_NOTIFICACION_ID; // 2154
+                        idrubro = RUBRO_NOTIFICACION_ID; // 2156
                     if (rc.getTipo() == 2)
                         idrubro = RUBRO_INSPECCION_ID; // 2155
                 }
@@ -227,14 +222,12 @@ public class EmisionServicioOptimizado {
 
                 // Si cae aquí, es porque tu recargo trae otro rubro que no estás cubriendo
                 if (valor == null) {
-                    System.out.println("⚠️ Recargo con rubro no mapeado idrubro=" + idrubro + " (NO se aplica)");
                     continue;
                 }
 
                 rubros.add(buildRubro(factura, idrubro, valor));
                 total = total.add(valor);
 
-                System.out.println("✅ Recargo aplicado -> rubro=" + idrubro + " valor=" + valor);
             }
         }
 
@@ -592,10 +585,6 @@ public class EmisionServicioOptimizado {
             BigDecimal exc = val1.subtract(val2).setScale(2, RM);
             sumaExcedente = sumaExcedente.add(exc);
         }
-
-        System.out.println("--------------------------------");
-        System.out.println("EXCEDENTE TOTAL (SUMA RUBROS): " + sumaExcedente.setScale(2, RM).toPlainString());
-        System.out.println("================================");
 
         return sumaExcedente.setScale(2, RM);
     }
