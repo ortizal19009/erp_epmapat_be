@@ -724,7 +724,7 @@ public class EmisionServicioOptimizado {
             return ZERO;
 
         long nroPendientes = idfacturas.size();
-        if (nroPendientes <= 1)
+        if (nroPendientes < 1)
             return ZERO;
 
         Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
@@ -740,7 +740,7 @@ public class EmisionServicioOptimizado {
             return ZERO;
 
         long nroPendientes = idfacturas.size();
-        if (nroPendientes <= 1)
+        if (nroPendientes < 1)
             return ZERO;
 
         Definir definir = dao_definir.findTopByOrderByIddefinirDesc();

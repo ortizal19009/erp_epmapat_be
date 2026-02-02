@@ -26,8 +26,13 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Facturas;
+import com.epmapat.erp_epmapat.modelo.Rubros;
+import com.epmapat.erp_epmapat.modelo.Rubroxfac;
+import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
+import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
+import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
 
 @Service
 public class FacturaServicio {
@@ -42,6 +47,8 @@ public class FacturaServicio {
 	private AbonadoServicio abonadosServicio;
 	@Autowired
 	private RubroxfacR rubroxfacR;
+	@Autowired
+	private DefinirR dao_definir;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -621,6 +628,22 @@ public class FacturaServicio {
 		Facturas factura = dao.findById(idfactura)
 				.orElseThrow(() -> new RuntimeException("Factura no encontrada con ID: " + idfactura));
 
+		/*
+		 * List<Long> idfacturas = dao.findSinCobroAbo(factura.getIdabonado());
+		 * if (idfacturas == null)
+		 * return ZERO;
+		 * 
+		 * long nroPendientes = idfacturas.size();
+		 * if (nroPendientes < 1)
+		 * return ZERO;
+		 * 
+		 * Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
+		 * if (Objects.isNull(definir) || Objects.isNull(definir.getRbu()))
+		 * return ZERO;
+		 * 
+		 * return definir.getRbu().multiply(BigDecimal.valueOf(0.005));
+		 */
+
 		rubroxfacR.deleteByFacturaIdAndRubroId(idfactura, 6L);
 
 		BigDecimal nuevoTotal = rubroxfacR.findAllByFacturaId(idfactura).stream()
@@ -634,6 +657,99 @@ public class FacturaServicio {
 		factura.setTotaltarifa(nuevoTotal);
 		factura.setValorbase(nuevoTotal);
 		return dao.save(factura);
+	}
+
+	@Transactional
+	public Facturas validarMultasYRecalcularTotal(Long idfactura) {
+
+		Facturas factura = dao.findById(idfactura)
+				.orElseThrow(() -> new RuntimeException("Factura no encontrada con ID: " + idfactura));
+
+		// ✅ 1) Obtén la cuenta (AJUSTA el getter al tuyo real)
+		Long cuenta = factura.getIdabonado();
+		if (cuenta == null) {
+			// Si no hay cuenta, por seguridad eliminamos la multa y recalculamos
+			rubroxfacR.deleteByFacturaIdAndRubroId(idfactura, 6L);
+			return recalcularYGuardarTotales(factura);
+		}
+
+		// ✅ 2) Calcula cuánto debe de multa (0 = no debe)
+		BigDecimal valorMulta = multas(cuenta);
+		boolean debeMulta = valorMulta != null && valorMulta.compareTo(BigDecimal.ZERO) > 0;
+
+		// ✅ 3) Si NO debe multa: borrar rubro 6 si existe
+		if (!debeMulta) {
+			rubroxfacR.deleteByFacturaIdAndRubroId(idfactura, 6L);
+			return recalcularYGuardarTotales(factura);
+		}
+		Rubros rubro = new Rubros();
+		rubro.setIdrubro(6L);
+
+		// ✅ 4) Si SÍ debe multa: crear o actualizar rubro 6
+		Rubroxfac multa = rubroxfacR.findByFacturaIdAndRubroId(idfactura, 6L)
+				.orElseGet(() -> {
+					Rubroxfac nuevo = new Rubroxfac();
+					nuevo.setIdfactura_facturas(factura);
+					nuevo.setIdrubro_rubros(rubro);
+					// si tu entidad Rubroxfac tiene objeto rubro relacionado, setéalo también
+					// nuevo.setIdrubro_rubros(rubrosRepo.getById(6L));
+					nuevo.setCantidad(1F); // multa siempre 1
+					return nuevo;
+				});
+
+		// ✅ valor multa va en valorunitario (cantidad=1)
+		multa.setCantidad(1F);
+		multa.setValorunitario(valorMulta);
+		rubroxfacR.save(multa);
+
+		// ✅ 5) recalcular totales
+		return recalcularYGuardarTotales(factura);
+	}
+
+	/** Recalcula totales en base a rubroxfac */
+	private Facturas recalcularYGuardarTotales(Facturas factura) {
+		Long idfactura = factura.getIdfactura();
+
+		BigDecimal nuevoTotal = rubroxfacR.findAllByFacturaId(idfactura).stream()
+				.filter(Objects::nonNull)
+				.map(r -> {
+					BigDecimal vu = r.getValorunitario() != null ? r.getValorunitario() : BigDecimal.ZERO;
+
+					// si cantidad es Integer/Long/Double ajusta aquí:
+					BigDecimal cant = BigDecimal.ONE;
+					if (r.getCantidad() != null) {
+						// si cantidad es Integer/Long:
+						cant = BigDecimal.valueOf(r.getCantidad());
+						// si cantidad fuese BigDecimal, entonces: cant = r.getCantidad();
+						// si fuese Double: cant = BigDecimal.valueOf(r.getCantidad()).setScale(2,
+						// RoundingMode.HALF_UP);
+					}
+
+					return vu.multiply(cant);
+				})
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		// si aquí además manejas subtotal, base, etc. lo puedes separar
+		factura.setTotaltarifa(nuevoTotal);
+		factura.setValorbase(nuevoTotal);
+
+		return dao.save(factura);
+	}
+
+	private BigDecimal multas(Long cuenta) {
+		if (cuenta == null)
+			return BigDecimal.ZERO;
+
+		List<Long> idfacturas = dao.findSinCobroAbo(cuenta);
+		if (idfacturas == null || idfacturas.isEmpty())
+			return BigDecimal.ZERO;
+
+		Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
+		if (definir == null || definir.getRbu() == null)
+			return BigDecimal.ZERO;
+
+		// 0.5% del RBU
+		return definir.getRbu().multiply(BigDecimal.valueOf(0.005));
 	}
 
 }

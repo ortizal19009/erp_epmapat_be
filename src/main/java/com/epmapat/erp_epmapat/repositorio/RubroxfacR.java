@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.transaction.Transactional;
@@ -285,7 +286,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			@Param("rubros") Set<Long> rubros);
 
 	// Traer rubros por id de factura (evita el derived con guion bajo)
-	@Query("SELECT r FROM Rubroxfac r WHERE r.idfactura_facturas.idfactura = :idfactura")
+/* 	@Query("SELECT r FROM Rubroxfac r WHERE r.idfactura_facturas.idfactura = :idfactura")
 	List<Rubroxfac> findAllByFacturaId(@Param("idfactura") Long idfactura);
 
 	// Borrar todos los rubros con idrubro = :idrubro de una factura dada
@@ -295,4 +296,25 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"AND r.idrubro_rubros.idrubro = :idrubro")
 	void deleteByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
 			@Param("idrubro") Long idrubro);
+
+	@Query("select r from Rubroxfac r where r.idfactura_facturas = :idfactura and r.idrubro_rubros = :idrubro")
+	Optional<Rubroxfac> findByFacturaIdAndRubroId(@Param("idfactura") Long idfactura, @Param("idrubro") Long idrubro); */
+	
+	
+	
+    @Modifying
+    @Query("delete from Rubroxfac rf " +
+           "where rf.idfactura_facturas.idfactura = :idfactura " +
+           "and rf.idrubro_rubros.idrubro = :idrubro")
+    void deleteByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
+                                     @Param("idrubro") Long idrubro);
+
+    @Query("select rf from Rubroxfac rf " +
+           "where rf.idfactura_facturas.idfactura = :idfactura " +
+           "and rf.idrubro_rubros.idrubro = :idrubro")
+    Optional<Rubroxfac> findByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
+                                                  @Param("idrubro") Long idrubro);
+
+    @Query("select rf from Rubroxfac rf where rf.idfactura_facturas.idfactura = :idfactura")
+    List<Rubroxfac> findAllByFacturaId(@Param("idfactura") Long idfactura);
 }

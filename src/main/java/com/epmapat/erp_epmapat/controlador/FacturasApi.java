@@ -677,7 +677,7 @@ public class FacturasApi {
 
 	@GetMapping("/multas")
 	public ResponseEntity<Facturas> updateMultaFactura(@RequestParam Long idfactura) {
-		return ResponseEntity.ok(facServicio.eliminarRubro6YRecalcularTotal(idfactura));
+		return ResponseEntity.ok(facServicio.validarMultasYRecalcularTotal(idfactura));
 	}
 
 }
