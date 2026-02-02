@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +12,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -86,6 +90,7 @@ public class Fec_facturaService {
    }
 
    // CREAR LAS FACTURAS
+   @Transactional
    public Map<String, Object> generarFecFactura(Long idfactura) {
       Map<String, Object> response = new HashMap<>();
       Fecfactura factura = facturasR.forFecfactura(idfactura);
@@ -137,7 +142,7 @@ public class Fec_facturaService {
    }
 
    // CREAR FACTURA DETALLE
-   public void generarFecFacturaDetalles(Long idfactura) {
+   public void _generarFecFacturaDetalles(Long idfactura) {
       Fec_factura_detalles fecFacturaDetalles = new Fec_factura_detalles();
       List<Rubroxfac> rxf = rubroxfacR.findByIdfactura(idfactura);
       fecFacturaDetalles.setIdfactura(idfactura);
@@ -150,11 +155,11 @@ public class Fec_facturaService {
          fecFacturaDetalles.setPreciounitario(item.getValorunitario());
          fecFacturaDetalles.setDescripcion(item.getIdrubro_rubros().getDescripcion());
          fecFacturaDetallesR.save(fecFacturaDetalles);
-         generarFecFacturaDetallesImpuestos(item, Long.valueOf(idfacdetalle));
+         _generarFecFacturaDetallesImpuestos(item, Long.valueOf(idfacdetalle));
       });
    }
 
-   public void generarFecFacturaDetallesImpuestos(Rubroxfac rxf, Long idfecfacturadetalle) {
+   public void _generarFecFacturaDetallesImpuestos(Rubroxfac rxf, Long idfecfacturadetalle) {
       Fec_factura_detalles_impuestos fecFacturaDetallesImpuestos = new Fec_factura_detalles_impuestos();
       String idfacdetalleimpuestos = String.valueOf(rxf.getIdrubro_rubros().getIdrubro() + "" + idfecfacturadetalle);
       fecFacturaDetallesImpuestos.setIdfacturadetalleimpuestos(Long.valueOf(idfacdetalleimpuestos));
@@ -164,6 +169,217 @@ public class Fec_facturaService {
       fecFacturaDetallesImpuestos.setBaseimponible(rxf.getValorunitario());
       fecFacturaDetallesImpuestosR.save(fecFacturaDetallesImpuestos);
 
+   }
+
+   // CREAR FACTURA DETALLE
+   public void __generarFecFacturaDetalles(Long idfactura) {
+
+      List<Rubroxfac> rxf = rubroxfacR.findByIdfactura(idfactura);
+
+      // --- 1) Separar rubros 1006/1007 para consolidar ---
+      Set<Long> rubrosConsolidar = Set.of(1006L, 1007L);
+
+      List<Rubroxfac> aConsolidar = rxf.stream()
+            .filter(x -> x.getIdrubro_rubros() != null
+                  && x.getIdrubro_rubros().getIdrubro() != null
+                  && rubrosConsolidar.contains(x.getIdrubro_rubros().getIdrubro()))
+            .toList();
+
+      List<Rubroxfac> normales = rxf.stream()
+            .filter(x -> x.getIdrubro_rubros() == null
+                  || x.getIdrubro_rubros().getIdrubro() == null
+                  || !rubrosConsolidar.contains(x.getIdrubro_rubros().getIdrubro()))
+            .toList();
+
+      // --- 2) Guardar los rubros normales (sin 1006/1007) ---
+      for (Rubroxfac item : normales) {
+
+         Fec_factura_detalles fecFacturaDetalles = new Fec_factura_detalles(); // ✅ nuevo objeto por item
+         fecFacturaDetalles.setIdfactura(idfactura);
+         fecFacturaDetalles.setDescuento(BigDecimal.ZERO);
+
+         String idfacdetalle = String.valueOf(idfactura + "" + item.getIdrubro_rubros().getIdrubro());
+
+         fecFacturaDetalles.setIdfacturadetalle(Long.valueOf(idfacdetalle));
+         fecFacturaDetalles.setCodigoprincipal(String.valueOf(item.getIdrubro_rubros().getIdrubro()));
+         fecFacturaDetalles.setCantidad(BigDecimal.valueOf(item.getCantidad())); // tu cantidad
+         fecFacturaDetalles.setPreciounitario(item.getValorunitario());
+         fecFacturaDetalles.setDescripcion(item.getIdrubro_rubros().getDescripcion());
+
+         fecFacturaDetallesR.save(fecFacturaDetalles);
+
+         generarFecFacturaDetallesImpuestos(item, Long.valueOf(idfacdetalle));
+      }
+
+      // --- 3) Guardar el consolidado 1006+1007 como 1004 ---
+      if (!aConsolidar.isEmpty()) {
+
+         BigDecimal suma = aConsolidar.stream()
+               .map(Rubroxfac::getValorunitario)
+               .filter(v -> v != null)
+               .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+         Fec_factura_detalles detConsolidado = new Fec_factura_detalles();
+         detConsolidado.setIdfactura(idfactura);
+         detConsolidado.setDescuento(BigDecimal.ZERO);
+
+         // ✅ rubro resultante: 1004
+         Long rubroFinal = 1004L;
+
+         String idfacdetalle = String.valueOf(idfactura + "" + rubroFinal);
+         Long idDetalle = Long.valueOf(idfacdetalle);
+
+         detConsolidado.setIdfacturadetalle(idDetalle);
+         detConsolidado.setCodigoprincipal(String.valueOf(rubroFinal));
+         detConsolidado.setCantidad(BigDecimal.ONE); // ✅ cantidad = 1
+         detConsolidado.setPreciounitario(suma); // ✅ precioUnitario sumado
+         detConsolidado.setDescripcion("Conservación de fuentes"); // ✅
+
+         fecFacturaDetallesR.save(detConsolidado);
+
+         // ✅ impuesto único tomando base imponible = suma
+         generarFecFacturaDetallesImpuestosConsolidado(idDetalle, suma);
+      }
+   }
+
+   @Transactional
+   public void generarFecFacturaDetalles(Long idfactura) {
+
+      List<Rubroxfac> rxf = rubroxfacR.findByIdfactura(idfactura);
+
+      Set<Long> rubrosConsolidar = Set.of(1006L, 1007L);
+
+      List<Rubroxfac> aConsolidar = rxf.stream()
+            .filter(x -> x.getIdrubro_rubros() != null
+                  && x.getIdrubro_rubros().getIdrubro() != null
+                  && rubrosConsolidar.contains(x.getIdrubro_rubros().getIdrubro()))
+            .toList();
+
+      List<Rubroxfac> normales = rxf.stream()
+            .filter(x -> x.getIdrubro_rubros() != null
+                  && x.getIdrubro_rubros().getIdrubro() != null
+                  && !rubrosConsolidar.contains(x.getIdrubro_rubros().getIdrubro()))
+            .toList();
+
+      // ---------------------------
+      // A) Construir y guardar DETALLES
+      // ---------------------------
+      List<Fec_factura_detalles> detallesAGuardar = new ArrayList<>();
+
+      // normales (sin 1006/1007)
+      for (Rubroxfac item : normales) {
+         Long rubro = item.getIdrubro_rubros().getIdrubro();
+         Long idDetalle = Long.valueOf(String.valueOf(idfactura) + rubro);
+
+         Fec_factura_detalles d = new Fec_factura_detalles();
+         d.setIdfactura(idfactura);
+         d.setIdfacturadetalle(idDetalle);
+         d.setCodigoprincipal(String.valueOf(rubro));
+         d.setCantidad(BigDecimal.valueOf(item.getCantidad()));
+         d.setPreciounitario(item.getValorunitario());
+         d.setDescripcion(item.getIdrubro_rubros().getDescripcion());
+         d.setDescuento(BigDecimal.ZERO);
+
+         detallesAGuardar.add(d);
+      }
+
+      // consolidado 1006+1007 -> 1004
+      BigDecimal suma = aConsolidar.stream()
+            .map(Rubroxfac::getValorunitario)
+            .filter(Objects::nonNull)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+      boolean hayConsolidado = suma.compareTo(BigDecimal.ZERO) > 0;
+
+      Long idDetalleConsolidado = null;
+      if (hayConsolidado) {
+         Long rubroFinal = 1004L;
+         idDetalleConsolidado = Long.valueOf(String.valueOf(idfactura) + rubroFinal);
+
+         Fec_factura_detalles d = new Fec_factura_detalles();
+         d.setIdfactura(idfactura);
+         d.setIdfacturadetalle(idDetalleConsolidado);
+         d.setCodigoprincipal(String.valueOf(rubroFinal));
+         d.setCantidad(BigDecimal.ONE);
+         d.setPreciounitario(suma);
+         d.setDescripcion("Conservación de fuentes");
+         d.setDescuento(BigDecimal.ZERO);
+
+         detallesAGuardar.add(d);
+      }
+
+      // ✅ Guardar todos los DETALLES primero
+      fecFacturaDetallesR.saveAll(detallesAGuardar);
+
+      // ✅ Forzar que existan en BD antes de insertar impuestos
+      fecFacturaDetallesR.flush();
+
+      // ---------------------------
+      // B) Ahora sí, construir y guardar IMPUESTOS
+      // ---------------------------
+      List<Fec_factura_detalles_impuestos> impuestos = new ArrayList<>();
+
+      // impuestos de normales
+      for (Rubroxfac item : normales) {
+         Long rubro = item.getIdrubro_rubros().getIdrubro();
+         Long idDetalle = Long.valueOf(String.valueOf(idfactura) + rubro);
+
+         impuestos.add(crearImpuesto(idDetalle, rubro, item.getValorunitario()));
+      }
+
+      // impuesto único consolidado (1004)
+      if (hayConsolidado) {
+         impuestos.add(crearImpuesto(idDetalleConsolidado, 1004L, suma));
+      }
+
+      fecFacturaDetallesImpuestosR.saveAll(impuestos);
+   }
+
+   private Fec_factura_detalles_impuestos crearImpuesto(Long idDetalle, Long rubro, BigDecimal base) {
+      Fec_factura_detalles_impuestos imp = new Fec_factura_detalles_impuestos();
+
+      // id único (mejor hacerlo robusto, pero te dejo tu estilo)
+      Long idImp = Long.valueOf(String.valueOf(rubro) + idDetalle);
+
+      imp.setIdfacturadetalleimpuestos(idImp);
+      imp.setIdfacturadetalle(idDetalle);
+      imp.setCodigoimpuesto("2");
+      imp.setCodigoporcentaje("0");
+      imp.setBaseimponible(base);
+
+      return imp;
+   }
+
+   public void generarFecFacturaDetallesImpuestos(Rubroxfac rxf, Long idfecfacturadetalle) {
+      Fec_factura_detalles_impuestos fecFacturaDetallesImpuestos = new Fec_factura_detalles_impuestos();
+
+      String idfacdetalleimpuestos = String.valueOf(
+            rxf.getIdrubro_rubros().getIdrubro() + "" + idfecfacturadetalle);
+
+      fecFacturaDetallesImpuestos.setIdfacturadetalleimpuestos(Long.valueOf(idfacdetalleimpuestos));
+      fecFacturaDetallesImpuestos.setIdfacturadetalle(idfecfacturadetalle);
+      fecFacturaDetallesImpuestos.setCodigoimpuesto("2");
+      fecFacturaDetallesImpuestos.setCodigoporcentaje("0");
+      fecFacturaDetallesImpuestos.setBaseimponible(rxf.getValorunitario());
+
+      fecFacturaDetallesImpuestosR.save(fecFacturaDetallesImpuestos);
+   }
+
+   // ✅ impuesto único para el consolidado 1004
+   public void generarFecFacturaDetallesImpuestosConsolidado(Long idfecfacturadetalle, BigDecimal baseImponible) {
+
+      Fec_factura_detalles_impuestos imp = new Fec_factura_detalles_impuestos();
+
+      // id único (puedes dejar esta lógica o definir una más segura)
+      String idfacdetalleimpuestos = String.valueOf(1004L + "" + idfecfacturadetalle);
+
+      imp.setIdfacturadetalleimpuestos(Long.valueOf(idfacdetalleimpuestos));
+      imp.setIdfacturadetalle(idfecfacturadetalle);
+      imp.setCodigoimpuesto("2");
+      imp.setCodigoporcentaje("0");
+      imp.setBaseimponible(baseImponible); // ✅ suma
+
+      fecFacturaDetallesImpuestosR.save(imp);
    }
 
    public void generarFecFacturaPagos(Long idfactura, Long m3) {

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Erpmodulos;
-import com.epmapat.erp_epmapat.modelo.administracion.Usrxmodulos;
 import com.epmapat.erp_epmapat.repositorio.administracion.ErpmodulosR;
 
 @Service

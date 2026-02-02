@@ -1,6 +1,5 @@
 package com.epmapat.erp_epmapat.sri.services;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ThreadLocalRandom;
@@ -57,28 +56,6 @@ public class ClaveAccesoGenerator {
         // Generar 8 dígitos aleatorios
         long randomNum = ThreadLocalRandom.current().nextLong(10000000L, 99999999L);
         return String.valueOf(randomNum);
-    }
-
-    private static String calcularDigitoVerificador(String claveAcceso43) {
-        if (claveAcceso43 == null || claveAcceso43.length() != 43) {
-            throw new IllegalArgumentException("La clave de acceso debe tener exactamente 43 dígitos");
-        }
-
-        int[] patrones = { 2, 3, 4, 5, 6, 7 };
-        int suma = 0;
-        int j = 0;
-
-        // Recorrer desde el final hacia el inicio
-        for (int i = claveAcceso43.length() - 1; i >= 0; i--) {
-            int digito = Character.getNumericValue(claveAcceso43.charAt(i));
-            suma += digito * patrones[j];
-            j = (j + 1) % patrones.length; // repetir patrón
-        }
-
-        int modulo = suma % 11;
-        int digitoVerificador = (modulo == 0 || modulo == 1) ? 0 : 11 - modulo;
-
-        return String.valueOf(digitoVerificador);
     }
 
 }

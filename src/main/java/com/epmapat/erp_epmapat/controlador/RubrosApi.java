@@ -88,6 +88,7 @@ public class RubrosApi {
 		y.setFeccrea(x.getFeccrea());
 		y.setUsumodi(x.getUsumodi());
 		y.setFecmodi(x.getFecmodi());
+		y.setAjenos(x.getAjenos());
 
 		Rubros actualizar = rubServicio.save(y);
 		return ResponseEntity.ok(actualizar);

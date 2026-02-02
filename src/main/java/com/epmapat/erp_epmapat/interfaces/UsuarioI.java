@@ -17,4 +17,6 @@ public interface UsuarioI {
 
     String getPlataform_access();
 
+    String getCargo();
+
 }

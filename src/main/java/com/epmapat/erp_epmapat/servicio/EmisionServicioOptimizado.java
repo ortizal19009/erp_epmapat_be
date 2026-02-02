@@ -143,10 +143,12 @@ public class EmisionServicioOptimizado {
         BigDecimal rbepmapat = recaudacionBasura();
 
         // Excedente (si aplica)
-        BigDecimal ex = ZERO;
-        if (ctx.getCategoria() == 9 && swAdultoMayor && m3 > 34 && m3 <= 70) {
-            ex = calcExcedente(ctx);
-        }
+        /*
+         * BigDecimal ex = ZERO;
+         * if (ctx.getCategoria() == 9 && swAdultoMayor && m3 > 34 && m3 <= 70) {
+         * ex = calcExcedente(ctx);
+         * }
+         */
 
         // Total base (SIN recargos todavía)
         BigDecimal total = ap.add(al)
@@ -156,8 +158,10 @@ public class EmisionServicioOptimizado {
                 .add(rbepmapat)
                 .add(cfepmapat);
 
-        if (ex.compareTo(ZERO) > 0)
-            total = total.add(ex);
+        /*
+         * if (ex.compareTo(ZERO) > 0)
+         * total = total.add(ex);
+         */
         if (multa.compareTo(ZERO) > 0)
             total = total.add(multa);
         // if (multa_basura.compareTo(ZERO) > 0)
@@ -176,9 +180,11 @@ public class EmisionServicioOptimizado {
         rubros.add(buildRubro(factura, 1008L, rb));
         rubros.add(buildRubro(factura, 1009L, rbepmapat));
 
-        if (ex.compareTo(ZERO) > 0) {
-            rubros.add(buildRubro(factura, 1005L, ex));
-        }
+        /*
+         * if (ex.compareTo(ZERO) > 0) {
+         * rubros.add(buildRubro(factura, 1005L, ex));
+         * }
+         */
         if (multa.compareTo(ZERO) > 0) {
             rubros.add(buildRubro(factura, 6L, multa));
         }
@@ -268,12 +274,14 @@ public class EmisionServicioOptimizado {
         BigDecimal rb = calcRecoleccionBasura(ctx);
         BigDecimal rbepmapat = recaudacionBasura();
 
-        BigDecimal ex = ZERO;
-        if (ctx.getCategoria() == 9 && swAdultoMayor && m3 > 34 && m3 <= 70) {
-            ex = calcExcedente(ctx);
-        }
+        /*
+         * BigDecimal ex = ZERO;
+         * if (ctx.getCategoria() == 9 && swAdultoMayor && m3 > 34 && m3 <= 70) {
+         * ex = calcExcedente(ctx);
+         * }
+         */
 
-        BigDecimal total = ap.add(al).add(sa).add(cf).add(ex).add(rb).add(rbepmapat).add(cfepmapat);
+        BigDecimal total = ap.add(al).add(sa).add(cf).add(rb).add(rbepmapat).add(cfepmapat);
 
         respuesta.put("Agua Potable", ap);
         respuesta.put("Alcantarillado", al);
@@ -282,8 +290,10 @@ public class EmisionServicioOptimizado {
         respuesta.put("Conservacion Fuentes Epmapat", cfepmapat);
         respuesta.put("Recoleccion Basura", rb);
         respuesta.put("Recaudacion Basura", rbepmapat);
-        if (ex.compareTo(ZERO) > 0)
-            respuesta.put("Excedente", ex);
+        /*
+         * if (ex.compareTo(ZERO) > 0)
+         * respuesta.put("Excedente", ex);
+         */
         respuesta.put("Total", total.setScale(2, RM));
 
         return respuesta;
@@ -473,12 +483,43 @@ public class EmisionServicioOptimizado {
                 .multiply(porcPliego);
 
         BigDecimal total = apFijo.add(apVar);
+
         if (v.getCategoria() == 4 && v.isSwMunicipio())
             total = total.multiply(HALF);
+
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
+        // ✅ rango correcto
+        if (v.getCategoria() == 9 && v.isSwAdultoMayor() && (v.getM3() > 34 && v.getM3() < 70)) {
+            total = total.add(baseAguaPotableExcedente(v));
+        }
+
         return total.setScale(2, RM);
+    }
+
+    private BigDecimal baseAguaPotableExcedente(EmisionOfCuentaDTO v) {
+        ensurePliego(v);
+
+        int n = v.getM3();
+        if (n <= 0)
+            return ZERO;
+
+        int categoriaOriginal = v.getCategoria();
+        try {
+            v.setCategoria(1); // ✅ calcular como categoría 1
+
+            BigDecimal porcPliego = v.getPliego24().getPorc();
+
+            // apVar(n) - apVar(n-1) (lineal) => 1 * tarifa * porc
+            BigDecimal excedente = BigDecimal.ONE
+                    .multiply(v.getPliego24().getAgua())
+                    .multiply(porcPliego);
+
+            return excedente.setScale(2, RM);
+        } finally {
+            v.setCategoria(categoriaOriginal); // ✅ restaurar
+        }
     }
 
     private BigDecimal baseAlcantarillado(EmisionOfCuentaDTO v) {
@@ -502,8 +543,38 @@ public class EmisionServicioOptimizado {
             total = total.multiply(HALF);
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
+        // ✅ rango correcto
+        if (v.getCategoria() == 9 && v.isSwAdultoMayor() && (v.getM3() > 34 && v.getM3() < 70)) {
+            total = total.add(baseAlcantarilladoExcedente(v));
+        }
 
         return total.add(hidrosuccionador(v, porc)).setScale(2, RM);
+    }
+
+    private BigDecimal baseAlcantarilladoExcedente(EmisionOfCuentaDTO v) {
+        ensurePliego(v);
+
+        if (v.isSwAguapotable())
+            return ZERO;
+
+        int n = v.getM3();
+        if (n <= 0)
+            return ZERO;
+
+        int categoriaOriginal = v.getCategoria();
+        try {
+            v.setCategoria(1); // ✅ calcular como categoría 1
+
+            BigDecimal porc = v.getPliego24().getPorc();
+
+            BigDecimal excedente = BigDecimal.ONE
+                    .multiply(v.getPliego24().getSaneamiento().multiply(HALF))
+                    .multiply(porc);
+
+            return excedente.setScale(2, RM);
+        } finally {
+            v.setCategoria(categoriaOriginal); // ✅ restaurar
+        }
     }
 
     private BigDecimal baseSaneamiento(EmisionOfCuentaDTO v) {

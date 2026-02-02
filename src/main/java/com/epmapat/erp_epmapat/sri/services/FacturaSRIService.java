@@ -36,7 +36,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class FacturaSRIService {
@@ -46,8 +48,6 @@ public class FacturaSRIService {
     @Autowired
     private ClaveAccesoGenerator claveAccesoGenerator;
 
-    @Autowired
-    private EmailService emailService;
     @Autowired
     private FacturaDetalleR fDetalleR;
     @Autowired
@@ -141,8 +141,10 @@ public class FacturaSRIService {
         return infoFactura;
     }
 
-    private List<Detalle> mapearDetalles(List<FacturaDetalle> detallesFactura) {
+    private List<Detalle> _mapearDetalles(List<FacturaDetalle> detallesFactura) {
         return detallesFactura.stream().map(d -> {
+            System.out.println("Detalle codigo principal: " + d.getCodigoprincipal());
+            System.out.println("Detalle descripcion: " + d.getDescripcion());
             Detalle detalle = new Detalle();
             detalle.setCodigoPrincipal(d.getCodigoprincipal());
             detalle.setDescripcion(d.getDescripcion());
@@ -164,6 +166,98 @@ public class FacturaSRIService {
 
             return detalle;
         }).collect(Collectors.toList());
+    }
+
+    private List<Detalle> mapearDetalles(List<FacturaDetalle> detallesFactura) {
+
+        Set<String> codigosConsolidar = Set.of("1006", "1007");
+
+        List<FacturaDetalle> aConsolidar = detallesFactura.stream()
+                .filter(d -> d.getCodigoprincipal() != null
+                        && codigosConsolidar.contains(d.getCodigoprincipal().trim()))
+                .collect(Collectors.toList());
+
+        List<FacturaDetalle> normales = detallesFactura.stream()
+                .filter(d -> d.getCodigoprincipal() == null
+                        || !codigosConsolidar.contains(d.getCodigoprincipal().trim()))
+                .collect(Collectors.toList());
+
+        // Mapear normales igual que antes
+        List<Detalle> resultado = normales.stream().map(d -> {
+            Detalle detalle = new Detalle();
+            detalle.setCodigoPrincipal(d.getCodigoprincipal());
+            detalle.setDescripcion(d.getDescripcion());
+            detalle.setCantidad(d.getCantidad());
+            detalle.setPrecioUnitario(d.getPreciounitario());
+            detalle.setDescuento(d.getDescuento());
+            detalle.setPrecioTotalSinImpuesto(BigDecimal.ZERO);
+
+            detalle.setImpuestos(d.getImpuestos().stream().map(i -> {
+                Impuesto impuesto = new Impuesto();
+                impuesto.setCodigo(i.getCodigoimpuesto());
+                impuesto.setCodigoPorcentaje(i.getCodigoporcentaje());
+                impuesto.setTarifa(BigDecimal.ZERO);
+                impuesto.setBaseImponible(i.getBaseimponible());
+                impuesto.setValor(BigDecimal.ZERO);
+                return impuesto;
+            }).collect(Collectors.toList()));
+
+            return detalle;
+        }).collect(Collectors.toList());
+
+        // Consolidado 1006/1007 -> un solo Detalle con codigoPrincipal=1004 y
+        // cantidad=1
+        if (!aConsolidar.isEmpty()) {
+
+            BigDecimal precioUnitarioTotal = aConsolidar.stream()
+                    .map(FacturaDetalle::getPreciounitario)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            BigDecimal descuentoTotal = aConsolidar.stream()
+                    .map(FacturaDetalle::getDescuento)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            // Buscar el primer impuesto disponible para tomar código/códigoPorcentaje
+            FacturaDetalleImpuesto impRef = aConsolidar.stream()
+                    .filter(d -> d.getImpuestos() != null && !d.getImpuestos().isEmpty())
+                    .map(d -> d.getImpuestos().get(0))
+                    .findFirst()
+                    .orElse(null);
+
+            String codigoImp = impRef != null ? impRef.getCodigoimpuesto() : null;
+            String codigoPorc = impRef != null ? impRef.getCodigoporcentaje() : null;
+
+            // Un SOLO impuesto: sumar todas las bases imponibles
+            BigDecimal baseImponibleTotal = aConsolidar.stream()
+                    .flatMap(d -> d.getImpuestos() == null ? Stream.empty() : d.getImpuestos().stream())
+                    .map(FacturaDetalleImpuesto::getBaseimponible) // ajusta el tipo si tu clase se llama distinto
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            Impuesto impuestoUnico = new Impuesto();
+            impuestoUnico.setCodigo(codigoImp);
+            impuestoUnico.setCodigoPorcentaje(codigoPorc);
+            impuestoUnico.setTarifa(BigDecimal.ZERO);
+            impuestoUnico.setBaseImponible(baseImponibleTotal);
+            impuestoUnico.setValor(BigDecimal.ZERO);
+
+            Detalle consolidado = new Detalle();
+            consolidado.setCodigoPrincipal("1004"); // ✅ como pediste
+            consolidado.setDescripcion("Conservación de fuentes"); // ✅
+            consolidado.setCantidad(BigDecimal.ONE); // ✅ cantidad = 1 (si es BigDecimal)
+            // Si tu cantidad NO es BigDecimal, cambia a: consolidado.setCantidad(1);
+
+            consolidado.setPrecioUnitario(precioUnitarioTotal); // ✅ sumado
+            consolidado.setDescuento(descuentoTotal); // ✅ sumado
+            consolidado.setPrecioTotalSinImpuesto(BigDecimal.ZERO);
+            consolidado.setImpuestos(List.of(impuestoUnico)); // ✅ un solo impuesto
+
+            resultado.add(consolidado);
+        }
+
+        return resultado;
     }
 
     public static String formatToDDMMYYYY(LocalDateTime dateTime) {
@@ -248,15 +342,17 @@ public class FacturaSRIService {
         // Convertir el archivo XML a bytes
         byte[] xmlData = xmlFile.getBytes();
         // Generar PDF a partir del XML
-        //byte[] pdfData = PdfGenerationService.generatePdfFromXml(xmlData);
+        // byte[] pdfData = PdfGenerationService.generatePdfFromXml(xmlData);
 
         // Enviar por email
         String attachmentName = "factura_" + System.currentTimeMillis() + ".pdf";
-/*         emailService.se(
-                toEmail,
-                subject,
-                body,
-                pdfData,
-                attachmentName); */
+        /*
+         * emailService.se(
+         * toEmail,
+         * subject,
+         * body,
+         * pdfData,
+         * attachmentName);
+         */
     }
 }

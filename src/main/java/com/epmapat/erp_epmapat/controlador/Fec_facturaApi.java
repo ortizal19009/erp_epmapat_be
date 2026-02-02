@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -116,8 +118,10 @@ public class Fec_facturaApi {
       return fecFactura;
    }
 
+   @Transactional
    @GetMapping("/createFacElectro")
    public ResponseEntity<Map<String, Object>> generarFecFactura(@RequestParam Long idfactura) {
+      System.out.println("idfactura: " + idfactura);
       return ResponseEntity.ok(fecfacServicio.generarFecFactura(idfactura));
    }
 

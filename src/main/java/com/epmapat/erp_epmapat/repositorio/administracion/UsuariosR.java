@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.interfaces.UsuarioI;
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
@@ -30,5 +31,18 @@ public interface UsuariosR extends JpaRepository<Usuarios, Long> {
 
    @Query(value = "select u.idusuario,u.nomusu, u.estado as estado from usuarios u join personal p on u.personal_idpersonal = p.idpersonal where p.idcargo_cargos = ?1", nativeQuery = true)
    List<UsuarioI> findByCargoUsuario(Long idcargo);
+
+   @Query(value = """
+           SELECT
+             u.idusuario,
+             u.nomusu,
+             u.estado AS estado,
+             c.descripcion as cargo
+           FROM usuarios u
+           JOIN personal p ON u.personal_idpersonal = p.idpersonal
+           JOIN cargos c ON p.idcargo_cargos = c.idcargo
+           WHERE p.idcargo_cargos IN (:idsCargo)
+         """, nativeQuery = true)
+   List<UsuarioI> findByCargoIn(@Param("idsCargo") List<Long> idsCargo);
 
 }

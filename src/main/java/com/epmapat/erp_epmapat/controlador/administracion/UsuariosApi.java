@@ -222,9 +222,11 @@ public class UsuariosApi {
    }
 
    @GetMapping("/cargo")
-   public ResponseEntity<List<UsuarioI>> getByCargo(@RequestParam Long idcargo) {
-      List<UsuarioI> usuario = usuServicio.findByCargo(idcargo);
-      return ResponseEntity.ok(usuario);
+   public ResponseEntity<List<UsuarioI>> getByCargo(
+         @RequestParam(name = "ids") List<Long> idsCargo) {
+
+      List<UsuarioI> usuarios = usuServicio.findByCargo(idsCargo);
+      return ResponseEntity.ok(usuarios);
    }
 
 }
