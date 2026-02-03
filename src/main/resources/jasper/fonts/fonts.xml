@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fontFamilies>
+  <fontFamily name="Times New Roman">
+    <normal><![CDATA[jasper/fonts/ttf/times.ttf]]></normal>
+    <bold><![CDATA[jasper/fonts/ttf/timesbd.ttf]]></bold>
+    <italic><![CDATA[jasper/fonts/ttf/timesi.ttf]]></italic>
+    <boldItalic><![CDATA[jasper/fonts/ttf/timesbi.ttf]]></boldItalic>
+    <pdfEncoding><![CDATA[Cp1252]]></pdfEncoding>
+    <pdfEmbedded><![CDATA[true]]></pdfEmbedded>
+  </fontFamily>
+</fontFamilies>

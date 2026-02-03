@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="NtaCreditoIndividual" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="13acf49e-4913-4d1b-bccc-113817ad15d1">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ServerErp"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="189"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="805"/>
-	<style name="Title" forecolor="#FFFFFF" fontName="Times New Roman" fontSize="50" isBold="false"/>
-	<style name="SubTitle" forecolor="#CCCCCC" fontName="Times New Roman" fontSize="18" isBold="false"/>
-	<style name="Column header" forecolor="#666666" fontName="Times New Roman" fontSize="14" isBold="true"/>
-	<style name="Detail" mode="Transparent" fontName="Times New Roman"/>
-	<style name="Row" mode="Transparent" fontName="Times New Roman" pdfFontName="Times-Roman">
+	<style name="Title" forecolor="#FFFFFF" fontName="DejaVu Serif" fontSize="50" isBold="false"/>
+	<style name="SubTitle" forecolor="#CCCCCC" fontName="DejaVu Serif" fontSize="18" isBold="false"/>
+	<style name="Column header" forecolor="#666666" fontName="DejaVu Serif" fontSize="14" isBold="true"/>
+	<style name="Detail" mode="Transparent" fontName="DejaVu Serif"/>
+	<style name="Row" mode="Transparent" fontName="DejaVu Serif" pdfFontName="Times-Roman">
 		<conditionalStyle>
 			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
 			<style mode="Opaque" backcolor="#F0EFEF"/>
@@ -106,8 +106,7 @@ FROM
 	LEFT JOIN facturas f ON nc.nrofactura = f.idfactura::text -- ✅ CORREGIDO
 	JOIN documentos d ON nc.iddocumento_documentos = d.intdoc 
 WHERE 
-	nc.idntacredito = $P{idntacredito}
-]]>
+	nc.idntacredito = $P{idntacredito}]]>
 	</queryString>
 	<field name="idntacredito" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.name" value="idntacredito"/>
@@ -185,16 +184,16 @@ WHERE
 				<staticText>
 					<reportElement style="Title" x="10" y="0" width="310" height="66" uuid="a2a2cac8-5a7d-4487-8c54-dab235ce4e21"/>
 					<textElement>
-						<font size="47" isBold="false"/>
+						<font fontName="Bitstream Charter" size="47" isBold="false"/>
 					</textElement>
 					<text><![CDATA[Nta. Crédito N° ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement style="SubTitle" x="157" y="66" width="63" height="29" uuid="8978eac3-c578-41c9-837e-48d2b0184642"/>
+					<reportElement style="SubTitle" x="140" y="66" width="89" height="29" uuid="8978eac3-c578-41c9-837e-48d2b0184642"/>
 					<textElement verticalAlignment="Middle">
 						<font size="18" isBold="false"/>
 					</textElement>
-					<text><![CDATA[Cuenta]]></text>
+					<text><![CDATA[Cuenta:]]></text>
 				</staticText>
 				<textField>
 					<reportElement x="320" y="0" width="90" height="67" forecolor="#FFFFFF" uuid="c2dec7c0-f04f-4a18-9e1b-07abac6c91e9"/>
@@ -244,7 +243,7 @@ WHERE
 				<textFieldExpression><![CDATA["IDENTIFICACIÓN: " + $F{cedula}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="167" width="380" height="30" uuid="eb7be99a-d7aa-4adc-a98d-371200aa3120"/>
+				<reportElement x="0" y="167" width="555" height="30" uuid="eb7be99a-d7aa-4adc-a98d-371200aa3120"/>
 				<box leftPadding="5" rightPadding="5">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -323,8 +322,7 @@ WHERE
 				<textElement verticalAlignment="Middle">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA["SALDO: " + $F{valor}.subtract($F{devengado})
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA["SALDO: " + $F{valor}.subtract($F{devengado})]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
