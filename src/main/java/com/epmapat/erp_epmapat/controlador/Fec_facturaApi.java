@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.epmapat.erp_epmapat.DTO.FecFacturaUpdateDto;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.servicio.Fec_facturaService;
@@ -110,6 +112,20 @@ public class Fec_facturaApi {
       factura.setRecaudador(fecfactura.getRecaudador());
       Fec_factura upfecfactura = fecfacServicio.save(factura);
       return ResponseEntity.ok(upfecfactura);
+   }
+
+   @PutMapping("/{idfactura}/sri")
+   public ResponseEntity<Fec_factura> updateSriFields(
+         @PathVariable Long idfactura,
+         @RequestBody FecFacturaUpdateDto dto) {
+      Fec_factura factura = fecfacServicio.findById(idfactura)
+            .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
+
+      factura.setEstado(dto.getEstado());
+      factura.setClaveacceso(dto.getClaveacceso());
+      factura.setXmlautorizado(dto.getXmlautorizado());
+
+      return ResponseEntity.ok(fecfacServicio.save(factura));
    }
 
    @GetMapping("/fecFacturaDatos")
