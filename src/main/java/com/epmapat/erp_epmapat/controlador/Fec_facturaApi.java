@@ -114,7 +114,7 @@ public class Fec_facturaApi {
       return ResponseEntity.ok(upfecfactura);
    }
 
-   @PutMapping("/{idfactura}/sri")
+   @PutMapping("/sri/{idfactura}")
    public ResponseEntity<Fec_factura> updateSriFields(
          @PathVariable Long idfactura,
          @RequestBody FecFacturaUpdateDto dto) {
