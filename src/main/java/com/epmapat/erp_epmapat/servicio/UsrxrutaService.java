@@ -2,6 +2,7 @@ package com.epmapat.erp_epmapat.servicio;
 
 import java.util.List;
 import java.util.Optional;
+// import java.util.stream.Collectors; // si usas Java 11
 
 import javax.persistence.EntityNotFoundException;
 
@@ -45,14 +46,21 @@ public class UsrxrutaService implements UsrxrutasService {
         Emisiones emision = emisionesRepository.findById(idemision)
                 .orElseThrow(() -> new EntityNotFoundException("Emisión no existe: " + idemision));
 
-        // extraer idrutas
+        // =========================
+        // ✅ extraer idrutas como List<Long> (NO array)
+        // =========================
         List<Rutas> rutas = entity.getRutas() != null ? entity.getRutas() : List.of();
-        Long[] idrutas = rutas.stream()
+
+        // Java 16+:
+        List<Long> idrutas = rutas.stream()
                 .map(Rutas::getIdruta)
-                .toArray(Long[]::new);
+                .toList();
+
+        // Si estás en Java 11, usa:
+        // List<Long> idrutas = rutas.stream().map(Rutas::getIdruta).collect(Collectors.toList());
 
         // validar ocupadas por otros
-        if (idrutas.length > 0) {
+        if (!idrutas.isEmpty()) {
             List<Long> ocupadas = usrxrutasRepository
                     .findRutasOcupadasEnEmisionPorOtros(idemision, idusuario, idrutas);
 
@@ -106,9 +114,17 @@ public class UsrxrutaService implements UsrxrutasService {
             Long idusuarioActual = actual.getIdusuario_usuarios().getIdusuario();
             Long idemisionActual = actual.getIdemision_emisiones().getIdemision();
 
-            Long[] idrutas = entity.getRutas().stream().map(Rutas::getIdruta).toArray(Long[]::new);
+            // =========================
+            // ✅ extraer idrutas como List<Long>
+            // =========================
+            List<Long> idrutas = entity.getRutas().stream()
+                    .map(Rutas::getIdruta)
+                    .toList();
 
-            if (idrutas.length > 0) {
+            // Java 11:
+            // List<Long> idrutas = entity.getRutas().stream().map(Rutas::getIdruta).collect(Collectors.toList());
+
+            if (!idrutas.isEmpty()) {
                 List<Long> ocupadas = usrxrutasRepository
                         .findRutasOcupadasEnEmisionPorOtros(idemisionActual, idusuarioActual, idrutas);
 

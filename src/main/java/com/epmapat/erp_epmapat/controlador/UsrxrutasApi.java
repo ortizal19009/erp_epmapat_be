@@ -55,9 +55,12 @@ public class UsrxrutasApi {
     public ResponseEntity<Usrxrutas> obtenerPorUsuarioYEmision(
             @PathVariable Long idusuario,
             @PathVariable Long idemision) {
-        return usrxrutasService.findByUsuarioAndEmision(idusuario, idemision)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+
+        Usrxrutas resultado = usrxrutasService
+                .findByUsuarioAndEmision(idusuario, idemision)
+                .orElseGet(Usrxrutas::new);
+
+        return ResponseEntity.ok(resultado);
     }
 
     @GetMapping("/emision/{idemision}/rutas-ocupadas")

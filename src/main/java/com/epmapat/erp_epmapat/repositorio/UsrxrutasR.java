@@ -47,24 +47,25 @@ public interface UsrxrutasR extends JpaRepository<Usrxrutas, Long> {
     );
 
     // ✅ Rutas ocupadas en una emisión por OTROS usuarios
-    // Nota: uso ANY(CAST(:idrutas AS bigint[])) para que Hibernate lo bindeé correctamente en Postgres.
+    // ✅ OJO: SIN "::bigint" -> usar CAST()
     @Query(value = """
-        SELECT DISTINCT (r->>'idruta')::bigint AS idruta
+        SELECT DISTINCT CAST(r->>'idruta' AS bigint) AS idruta
         FROM usrxrutas u
         CROSS JOIN LATERAL jsonb_array_elements(u.rutas) r
         WHERE u.idemision_emisiones = :idemision
           AND u.idusuario_usuarios <> :idusuario
-          AND (r->>'idruta')::bigint = ANY(CAST(:idrutas AS bigint[]))
+          AND CAST(r->>'idruta' AS bigint) IN (:idrutas)
     """, nativeQuery = true)
     List<Long> findRutasOcupadasEnEmisionPorOtros(
             @Param("idemision") Long idemision,
             @Param("idusuario") Long idusuario,
-            @Param("idrutas") Long[] idrutas
+            @Param("idrutas") List<Long> idrutas
     );
 
     // ✅ Todas las rutas ocupadas en una emisión (para pintar UI)
+    // ✅ OJO: SIN "::bigint"
     @Query(value = """
-        SELECT DISTINCT (r->>'idruta')::bigint AS idruta
+        SELECT DISTINCT CAST(r->>'idruta' AS bigint) AS idruta
         FROM usrxrutas u
         CROSS JOIN LATERAL jsonb_array_elements(u.rutas) r
         WHERE u.idemision_emisiones = :idemision

@@ -184,7 +184,7 @@ WHERE
 				<staticText>
 					<reportElement style="Title" x="10" y="0" width="310" height="66" uuid="a2a2cac8-5a7d-4487-8c54-dab235ce4e21"/>
 					<textElement>
-						<font fontName="Bitstream Charter" size="47" isBold="false"/>
+						<font fontName="DejaVu Sans" size="47" isBold="false"/>
 					</textElement>
 					<text><![CDATA[Nta. Crédito N° ]]></text>
 				</staticText>
