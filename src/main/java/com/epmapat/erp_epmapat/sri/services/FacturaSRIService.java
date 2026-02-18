@@ -50,9 +50,8 @@ public class FacturaSRIService {
 
     @Autowired
     private FacturaDetalleR fDetalleR;
-    @Autowired
-
-    private static final String VERSION = "1.1.0";
+    
+    private final String VERSION = "1.1.0";
 
     public String generarXmlFactura(Factura factura) throws FacturaElectronicaException {
 
