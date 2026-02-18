@@ -132,7 +132,7 @@ public class EmisionServicioOptimizado {
         // 2) Calcular rubros base
         // ---------------------------
         BigDecimal multa = multas(cuenta);
-        // BigDecimal multa_basura = multas_basura(cuenta);
+        BigDecimal multa_basura = multas_basura(cuenta);
 
         BigDecimal ap = baseAguaPotable(ctx);
         BigDecimal al = baseAlcantarillado(ctx);
@@ -164,8 +164,8 @@ public class EmisionServicioOptimizado {
          */
         if (multa.compareTo(ZERO) > 0)
             total = total.add(multa);
-        // if (multa_basura.compareTo(ZERO) > 0)
-        // total = total.add(multa_basura);
+        if (multa_basura.compareTo(ZERO) > 0)
+            total = total.add(multa_basura);
 
         // ---------------------------
         // 3) Armar lista de rubros a guardar

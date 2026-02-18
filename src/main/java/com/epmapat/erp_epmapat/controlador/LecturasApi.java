@@ -260,8 +260,7 @@ public class LecturasApi {
 	@PostMapping("/valoresemisionesanteriores")
 	public ResponseEntity<BigDecimal> recalcularValoresEmisionAnterior(@RequestBody EmisionOfCuentaDTO datos) {
 		return ResponseEntity.ok(
-				emisionServicioOptimizado.calcularValores(
-						datos.getIdemision(), // ✅ NUEVO
+				emisionServicioOptimizado_anterior.calcularValores(
 						datos.getCuenta(),
 						datos.getIdfactura(),
 						datos.getM3(),
