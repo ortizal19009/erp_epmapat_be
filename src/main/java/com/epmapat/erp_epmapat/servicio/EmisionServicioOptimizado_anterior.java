@@ -110,27 +110,21 @@ public class EmisionServicioOptimizado_anterior {
         BigDecimal ap = baseAguaPotable(ctx);
         BigDecimal al = baseAlcantarillado(ctx);
         BigDecimal sa = baseSaneamiento(ctx);
-        BigDecimal cf = calcConservacionFuentes(ctx.getCategoria());
-        BigDecimal cfepmapat = calcConservacionFuentesEpmapat(ctx.getCategoria());
-        BigDecimal rb = calcRecoleccionBasura(ctx);
-        BigDecimal rbepmapat = recaudacionBasura();
+        BigDecimal cf = calcConservacionFuentes();
 
         BigDecimal ex = ZERO;
         if (ctx.getCategoria() == 9 && swAdultoMayor && m3 > 34 && m3 <= 70) {
             ex = calcExcedente(ctx);
         }
 
-        BigDecimal total = ap.add(al).add(sa).add(cf).add(ex).add(multa).add(rb).add(rbepmapat).add(cfepmapat);
+        BigDecimal total = ap.add(al).add(sa).add(cf).add(ex).add(multa);
 
         // --- Persistimos en lote (una sola vez) ---
         List<Rubroxfac> rubros = new ArrayList<>(6);
         rubros.add(buildRubro(factura, 1001L, ap));
         rubros.add(buildRubro(factura, 1002L, al));
         rubros.add(buildRubro(factura, 1003L, sa));
-        rubros.add(buildRubro(factura, 1006L, cf));
-        rubros.add(buildRubro(factura, 1007L, cfepmapat));
-        rubros.add(buildRubro(factura, 1008L, rb));
-        rubros.add(buildRubro(factura, 1009L, rbepmapat));
+        rubros.add(buildRubro(factura, 1004L, cf));
         if (ex.compareTo(ZERO) > 0)
             rubros.add(buildRubro(factura, 1005L, ex));
         if (multa.compareTo(ZERO) > 0)
@@ -162,26 +156,20 @@ public class EmisionServicioOptimizado_anterior {
         BigDecimal ap = baseAguaPotable(ctx);
         BigDecimal al = baseAlcantarillado(ctx);
         BigDecimal sa = baseSaneamiento(ctx);
-        BigDecimal cf = calcConservacionFuentes(ctx.getCategoria());
-        BigDecimal cfepmapat = calcConservacionFuentesEpmapat(ctx.getCategoria());
-        BigDecimal rb = calcRecoleccionBasura(ctx);
-        BigDecimal rbepmapat = recaudacionBasura();
+        BigDecimal cf = calcConservacionFuentes();
 
         BigDecimal ex = ZERO;
         if (ctx.getCategoria() == 9 && swAdultoMayor && m3 > 34 && m3 <= 70) {
             ex = calcExcedente(ctx);
         }
 
-        BigDecimal total = ap.add(al).add(sa).add(cf).add(ex).add(rb).add(rbepmapat).add(cfepmapat);
+        BigDecimal total = ap.add(al).add(sa).add(cf).add(ex);
 
         // --- Persistimos en lote (una sola vez) ---
         respuesta.put("Agua Potable", ap);
         respuesta.put("Alcantarillado", al);
         respuesta.put("Saneamiento", sa);
         respuesta.put("Conservacion Fuentes", cf);
-        respuesta.put("Conservacion Fuentes Epmapat", cfepmapat);
-        respuesta.put("Recoleccion Basura", rb);
-        respuesta.put("Recaudacion Basura", rbepmapat);
         if (ex.compareTo(ZERO) > 0)
             respuesta.put("Excedente", ex);
         respuesta.put("Total", total.setScale(2, RoundingMode.HALF_UP));
@@ -433,11 +421,9 @@ public class EmisionServicioOptimizado_anterior {
      * }
      */
 
-    private BigDecimal calcConservacionFuentes(int categoria) {
-        if (categoria == 9) {
-            return new BigDecimal("0.15").setScale(2, RoundingMode.HALF_UP); // por ejemplo subsidio
-        }
-        return new BigDecimal("0.30").setScale(2, RoundingMode.HALF_UP);
+    private BigDecimal calcConservacionFuentes() {
+        return TEN_CENTS;
+
     }
 
     private BigDecimal calcConservacionFuentesEpmapat(int categoria) {
@@ -466,10 +452,6 @@ public class EmisionServicioOptimizado_anterior {
         return FIFTY_CENTS.multiply(porc);
     }
 
-    private BigDecimal recaudacionBasura() {
-        return new BigDecimal("0.50").setScale(2, RoundingMode.HALF_UP);
-    }
-
     /*
      * ============================================================
      * EXCEDENTE
@@ -482,68 +464,13 @@ public class EmisionServicioOptimizado_anterior {
         EmisionOfCuentaDTO v2 = copyForExcedente(base, base.getM3() - 1);
 
         BigDecimal s1 = baseAguaPotable(v1).add(baseAlcantarillado(v1)).add(baseSaneamiento(v1))
-                .add(calcConservacionFuentes(base.getCategoria()))
+                .add(calcConservacionFuentes())
                 .add(calcConservacionFuentesEpmapat(base.getCategoria()));
         BigDecimal s2 = baseAguaPotable(v2).add(baseAlcantarillado(v2)).add(baseSaneamiento(v2))
-                .add(calcConservacionFuentes(base.getCategoria()))
+                .add(calcConservacionFuentes())
                 .add(calcConservacionFuentesEpmapat(base.getCategoria()));
 
         return s1.subtract(s2).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    /*
-     * ============================================================
-     * CALCULO DE TARIFA DE RECOLECCION DE BASURA
-     * ============================================================
-     */
-
-    private BigDecimal calcRecoleccionBasura(EmisionOfCuentaDTO v) {
-
-        BigDecimal Qs = new BigDecimal("0.0032");
-        BigDecimal CO = new BigDecimal("6.40");
-        BigDecimal Lr = new BigDecimal("1.24148665");
-        BigDecimal CF = new BigDecimal("0.1");
-        BigDecimal iF = new BigDecimal("0.0749"); // 7.49%
-
-        BigDecimal m3 = BigDecimal.valueOf(v.getM3());
-
-        BigDecimal sumco;
-        int cat = v.getCategoria();
-
-        if (cat == 1) {
-            sumco = new BigDecimal("0.49294");
-        } else if (cat == 2) {
-            sumco = new BigDecimal("0.9855");
-        } else if (cat == 3) {
-            sumco = new BigDecimal("10.3511");
-        } else if (cat == 4) {
-            sumco = new BigDecimal("0.1429");
-        } else if (cat == 9) {
-            sumco = new BigDecimal("0.2464");
-        } else {
-            sumco = BigDecimal.ZERO; // o lanza excepción si debe ser obligatorio
-            // throw new IllegalArgumentException("Categoría no soportada: " + cat);
-        }
-
-        // (CO * Lr + CF * iF)
-        BigDecimal parteFija = CO.multiply(Lr).add(CF.multiply(iF));
-
-        // (Qs * m3 + sumco)
-        BigDecimal parteVariable = Qs.multiply(m3).add(sumco);
-
-        BigDecimal total = parteFija.multiply(parteVariable);
-
-        // Si cat == 9, mitad (BigDecimal divide, no "/")
-        /*
-         * if (cat == 9) {
-         * total = total.divide(new BigDecimal("2"), 10, RoundingMode.HALF_UP); //
-         * escala alta intermedia
-         * }
-         */
-        // Redondeo final monetario
-        total = total.setScale(2, RoundingMode.HALF_UP);
-
-        return total;
     }
 
     // Copia “pura” para excedente (categoría 1, sw's iguales, pliego/categoría
