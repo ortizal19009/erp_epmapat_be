@@ -152,7 +152,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			+ "select rf.idrubro_rubros , r.descripcion , sum(rf.cantidad * rf.valorunitario) as total , count(a.idabonado) as abonados "
 			+ "FROM lecturas l join rubroxfac rf on l.idfactura = rf.idfactura_facturas join rubros r on rf.idrubro_rubros = r.idrubro "
 			+ "join abonados a on l.idabonado_abonados = a.idabonado "
-			+ "WHERE l.idemision = ?1 and not rf.idrubro_rubros = 5 " 
+			+ "WHERE l.idemision = ?1 and not rf.idrubro_rubros = 5 "
 			+ "AND l.fechaemision = (SELECT fechaemision FROM max_fechaemision) "
 			+ "group by rf.idrubro_rubros , r.descripcion ; ", nativeQuery = true)
 	CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision);
@@ -336,5 +336,13 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			""", nativeQuery = true)
 	void reasignarCliente(@Param("dupId") Long dupId,
 			@Param("masterId") Long masterId);
+
+    @Query("""
+        select l
+        from Lecturas l
+        where l.idrutaxemision_rutasxemision in :ids
+        order by l.idlectura desc
+    """)
+    List<Lecturas> findByRutasxEmisionIds(@Param("ids") List<Long> ids);
 
 }

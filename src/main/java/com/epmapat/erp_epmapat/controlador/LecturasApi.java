@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
+import com.epmapat.erp_epmapat.DTO.LecturaDto;
+import com.epmapat.erp_epmapat.DTO.LecturasByRutasRequest;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
@@ -294,4 +296,21 @@ public class LecturasApi {
 				.ok(emisionServicioOptimizado.simularValores(m3, categoria, swMunicipio, swAdultoMayor, swAguapotable));
 	}
 
+	/*
+	 * ====================================================================
+	 * ENDPOINTS PARA MOBILE
+	 * =====================================================================
+	 */
+
+	@PostMapping("/by-rutas")
+	public ResponseEntity<List<LecturaDto>> downloadByRutasxEmisionIds(
+			@RequestBody LecturasByRutasRequest request) {
+		List<LecturaDto> lecturas = lecServicio.downloadByRutasxEmisionIds(request.getIds());
+
+		if (lecturas.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+
+		return ResponseEntity.ok(lecturas);
+	}
 }

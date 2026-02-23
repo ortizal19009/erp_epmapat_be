@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
+import com.epmapat.erp_epmapat.DTO.LecturaDto;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
@@ -20,6 +21,7 @@ import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
+import com.epmapat.erp_epmapat.mappers.LecturaMapper;
 import com.epmapat.erp_epmapat.modelo.Categorias;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
@@ -627,6 +629,15 @@ public class LecturaServicio {
 
 	public List<Lecturas> findPendientesByCliente(Long idcliente) {
 		return dao.findPendientesByCliente(idcliente);
+	}
+
+	public List<LecturaDto> downloadByRutasxEmisionIds(List<Long> ids) {
+		if (ids == null || ids.isEmpty())
+			return List.of();
+		return dao.findByRutasxEmisionIds(ids)
+				.stream()
+				.map(LecturaMapper::toDto)
+				.toList();
 	}
 
 }
