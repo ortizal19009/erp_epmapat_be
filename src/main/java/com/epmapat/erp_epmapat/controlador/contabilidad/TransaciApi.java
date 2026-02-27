@@ -18,8 +18,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.TransaciServicio;
 
 @RestController
 @RequestMapping("/transaci")
-
-
 public class TransaciApi {
 
 	@Autowired
@@ -127,7 +125,7 @@ public class TransaciApi {
 
 	@GetMapping("/{inttra}")
 	public Optional<Transaci> findById(@PathVariable Long inttra) {
-		return tranServicio.findById( inttra );
+		return tranServicio.findById(inttra);
 	}
 
 	@PostMapping
@@ -166,7 +164,7 @@ public class TransaciApi {
 		return ResponseEntity.ok(updateTransaci);
 	}
 
-	//Actualiza con id
+	// Actualiza con id
 	@PutMapping("/{inttra}")
 	public ResponseEntity<Transaci> updateTransaci1(@PathVariable Long inttra, @RequestBody Transaci transaci) {
 		Transaci transacim = tranServicio.findById(inttra)
@@ -204,6 +202,7 @@ public class TransaciApi {
 		tranServicio.deleteById(inttra);
 		return ResponseEntity.ok(!(tranServicio.findById(inttra) != null));
 	}
+
 	@GetMapping("/aperini")
 	public ResponseEntity<List<Transaci>> getAperInicial(@RequestParam("codcue") String Codcue) {
 		return ResponseEntity.ok(tranServicio.aperInicial(Codcue));

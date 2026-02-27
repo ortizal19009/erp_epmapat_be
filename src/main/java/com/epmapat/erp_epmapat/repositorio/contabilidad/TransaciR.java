@@ -53,14 +53,28 @@ public interface TransaciR extends JpaRepository<Transaci, Long> {
 	@Query(value = "SELECT SUM(t.valor) FROM Transaci t JOIN asientos a ON t.idasiento = a.idasiento WHERE t.codcue LIKE ?1% AND t.debcre=?2 and a.fecha>=?3 and a.fecha<=?4", nativeQuery = true)
 	BigDecimal sumValor(String codcue, Integer debcre, Date desde, Date hasta);
 
-	//Sinafip
-	@Query(value = "SELECT * FROM transaci t JOIN asientos a ON  t.idasiento = a.idasiento WHERE a.tipasi = ?1", nativeQuery = true)
-	public List<Transaci> findByTipAsi(Long tipasi);
+	// Sinafip
+	// @Query(value = "SELECT * FROM transaci t JOIN asientos a ON t.idasiento =
+	// a.idasiento WHERE a.tipasi = ?1", nativeQuery = true)
+	@Query(value = """
+			SELECT *
+			FROM transaci t
+			JOIN asientos a ON t.idasiento = a.idasiento
+			WHERE a.tipasi = ?1
+			ORDER BY
+			  COALESCE(CAST(NULLIF(split_part(t.codcue, '.', 1), '') AS integer), 0),
+			  COALESCE(CAST(NULLIF(split_part(t.codcue, '.', 2), '') AS integer), 0),
+			  COALESCE(CAST(NULLIF(split_part(t.codcue, '.', 3), '') AS integer), 0),
+			  t.codcue
+			""", nativeQuery = true)
+	List<Transaci> findByTipAsi(Long tipasi);
 
-	// Transaciones de los Asientos por números y fechas (Para el reporte de detalle de asientos)
+	// Transaciones de los Asientos por números y fechas (Para el reporte de detalle
+	// de asientos)
 	@Query(value = "SELECT * FROM transaci t INNER JOIN asientos a ON t.idasiento = a.idasiento WHERE a.asiento BETWEEN (?1) AND (?2) and a.fecha BETWEEN (?3) AND (?4) ORDER BY a.asiento ASC", nativeQuery = true)
-	public List<Transaci> tranAsientos(Long desdeAsi, Long hastaAsi, Date desdeFecha, Date hastaFecha);	
+	public List<Transaci> tranAsientos(Long desdeAsi, Long hastaAsi, Date desdeFecha, Date hastaFecha);
+
 	@Query(value = "SELECT * FROM transaci t JOIN asientos a ON  t.idasiento = a.idasiento WHERE t.codcue LIKE ?1% AND a.tipasi=1 ORDER BY codcue ASC", nativeQuery = true)
-	public List<Transaci> aperInicial(String codcue); 
+	public List<Transaci> aperInicial(String codcue);
 
 }
