@@ -28,6 +28,7 @@ import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizado;
+import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizadoV2;
 import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizado_anterior;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
 
@@ -42,6 +43,7 @@ public class LecturasApi {
 
 	private final LecturaServicio lecServicio;
 	private final EmisionServicioOptimizado emisionServicioOptimizado;
+	private final EmisionServicioOptimizadoV2 emisionServicioOptimizadoV2;
 	private final EmisionServicioOptimizado_anterior emisionServicioOptimizado_anterior;
 
 	// Busca por Planilla (Es una a una)
@@ -294,6 +296,28 @@ public class LecturasApi {
 			@RequestParam boolean swAdultoMayor, @RequestParam boolean swAguapotable) {
 		return ResponseEntity
 				.ok(emisionServicioOptimizado.simularValores(m3, categoria, swMunicipio, swAdultoMayor, swAguapotable));
+	}
+
+	@PostMapping("/valoresEmisiones/v2")
+	public ResponseEntity<BigDecimal> calcularValoresEmisionV2(@RequestBody EmisionOfCuentaDTO datos) {
+		return ResponseEntity.ok(
+				emisionServicioOptimizadoV2.calcularValores(
+						datos.getIdemision(),
+						datos.getCuenta(),
+						datos.getIdfactura(),
+						datos.getM3(),
+						datos.getCategoria(),
+						datos.isSwMunicipio(),
+						datos.isSwAdultoMayor(),
+						datos.isSwAguapotable()));
+	}
+
+	@GetMapping("/simular/v2")
+	public ResponseEntity<Object> simularValoresV2(@RequestParam int m3, @RequestParam int categoria,
+			@RequestParam boolean swMunicipio,
+			@RequestParam boolean swAdultoMayor, @RequestParam boolean swAguapotable) {
+		return ResponseEntity
+				.ok(emisionServicioOptimizadoV2.simularValores(m3, categoria, swMunicipio, swAdultoMayor, swAguapotable));
 	}
 
 	/*
