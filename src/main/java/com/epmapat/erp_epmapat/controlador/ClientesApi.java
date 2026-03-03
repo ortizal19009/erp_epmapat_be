@@ -110,7 +110,10 @@ public class ClientesApi {
 		clienteM.setFeccrea(clientem.getFeccrea());
 		clienteM.setUsumodi(clientem.getUsumodi());
 		clienteM.setFecmodi(clientem.getFecmodi());
-		clienteM.setIdpjuridica_personeriajuridica(clientem.getIdpjuridica_personeriajuridica());
+		// Evitar violar NOT NULL cuando el móvil no envía este campo
+		if (clientem.getIdpjuridica_personeriajuridica() != null) {
+			clienteM.setIdpjuridica_personeriajuridica(clientem.getIdpjuridica_personeriajuridica());
+		}
 		Clientes updateCliente = cliServicio.save(clienteM);
 		return ResponseEntity.ok(updateCliente);
 	}
