@@ -352,6 +352,31 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	List<Lecturas> findByRutasxEmisionIds(@Param("ids") List<Long> ids);
 
 	@Query(value = """
+		SELECT l.*
+		FROM lecturas l
+		WHERE l.idrutaxemision_rutasxemision IN (
+		    SELECT DISTINCT CAST(COALESCE(r->>'idrutaxemision', r->>'idrutaxemision_rutasxemision') AS bigint)
+		    FROM usrxrutas u
+		    CROSS JOIN LATERAL jsonb_array_elements(u.rutas) r
+		    WHERE u.idusuario_usuarios = :idusuario
+		      AND u.idemision_emisiones = :idemision
+		      AND COALESCE(r->>'idrutaxemision', r->>'idrutaxemision_rutasxemision') ~ '^[0-9]+$'
+		    UNION
+		    SELECT DISTINCT rx.idrutaxemision
+		    FROM usrxrutas u
+		    CROSS JOIN LATERAL jsonb_array_elements(u.rutas) r
+		    JOIN rutasxemision rx
+		      ON rx.idemision_emisiones = :idemision
+		     AND (r->>'idruta') ~ '^[0-9]+$'
+		     AND rx.idruta_rutas = CAST(r->>'idruta' AS bigint)
+		    WHERE u.idusuario_usuarios = :idusuario
+		      AND u.idemision_emisiones = :idemision
+		)
+		ORDER BY l.idlectura DESC
+	""", nativeQuery = true)
+	List<Lecturas> findByUsuarioEmision(@Param("idusuario") Long idusuario, @Param("idemision") Long idemision);
+
+	@Query(value = """
 			    SELECT DISTINCT
 			           l.idfactura AS idfactura,
 			           l.idabonado_abonados    AS cuenta

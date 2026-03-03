@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
 import com.epmapat.erp_epmapat.DTO.LecturasByRutasRequest;
+import com.epmapat.erp_epmapat.DTO.LecturasByUsuarioEmisionRequest;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
@@ -329,12 +330,23 @@ public class LecturasApi {
 	@PostMapping("/by-rutas")
 	public ResponseEntity<List<LecturaDto>> downloadByRutasxEmisionIds(
 			@RequestBody LecturasByRutasRequest request) {
+				System.out.println("Request recibida: " + request);
 		List<LecturaDto> lecturas = lecServicio.downloadByRutasxEmisionIds(request.getIds());
 
 		if (lecturas.isEmpty()) {
 			return ResponseEntity.noContent().build();
 		}
 
+		return ResponseEntity.ok(lecturas);
+	}
+
+	@PostMapping("/by-usuario-emision")
+	public ResponseEntity<List<LecturaDto>> downloadByUsuarioEmision(
+			@RequestBody LecturasByUsuarioEmisionRequest request) {
+		List<LecturaDto> lecturas = lecServicio.downloadByUsuarioEmision(request.getIdusuario(), request.getIdemision());
+		if (lecturas.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
 		return ResponseEntity.ok(lecturas);
 	}
 }
