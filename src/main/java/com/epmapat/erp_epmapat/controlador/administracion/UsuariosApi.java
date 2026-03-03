@@ -184,6 +184,7 @@ public class UsuariosApi {
             "token-jwt-falso", // luego JWT real
             user.getNomusu(), // username
             user.getIdusuario(), // userId REAL
+            user.getCargo(), // profile
             modules // módulos habilitados
       );
 
@@ -230,3 +231,5 @@ public class UsuariosApi {
    }
 
 }
+
+
