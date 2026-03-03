@@ -348,12 +348,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	void reasignarCliente(@Param("dupId") Long dupId,
 			@Param("masterId") Long masterId);
 
-	@Query("""
-			    select l
-			    from Lecturas l
-			    where l.idrutaxemision_rutasxemision in :ids
-			    order by l.idlectura desc
-			""")
+	@Query(value = "SELECT * FROM lecturas WHERE idrutaxemision_rutasxemision IN (:ids) ORDER BY idlectura DESC", nativeQuery = true)
 	List<Lecturas> findByRutasxEmisionIds(@Param("ids") List<Long> ids);
 
 	@Query(value = """
