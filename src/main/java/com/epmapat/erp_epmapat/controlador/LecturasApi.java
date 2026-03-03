@@ -327,7 +327,13 @@ public class LecturasApi {
 	 * =====================================================================
 	 */
 
-	@PostMapping("/by-rutas")`r`n`t@Deprecated`r`n`tpublic ResponseEntity<List<LecturaDto>> downloadByRutasxEmisionIds(`r`n`t`t`t@RequestBody LecturasByRutasRequest request) {`r`n`t`t// Endpoint deprecado: usar /by-usuario-emision`r`n`t`treturn ResponseEntity.status(410).build();`r`n`t}
+	@PostMapping("/by-rutas")
+	@Deprecated
+	public ResponseEntity<List<LecturaDto>> downloadByRutasxEmisionIds(
+			@RequestBody LecturasByRutasRequest request) {
+		// Endpoint deprecado: usar /by-usuario-emision
+		return ResponseEntity.status(410).build();
+	}
 
 	@PostMapping("/by-usuario-emision")
 	public ResponseEntity<List<LecturaDto>> downloadByUsuarioEmision(
@@ -339,4 +345,5 @@ public class LecturasApi {
 		return ResponseEntity.ok(lecturas);
 	}
 }
+
 
