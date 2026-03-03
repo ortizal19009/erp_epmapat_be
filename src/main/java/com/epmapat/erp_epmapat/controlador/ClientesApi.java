@@ -102,7 +102,10 @@ public class ClientesApi {
 		clienteM.setTelefono(clientem.getTelefono());
 		clienteM.setFechanacimiento(clientem.getFechanacimiento());
 		clienteM.setDiscapacitado(clientem.getDiscapacitado());
-		clienteM.setIdtpidentifica_tpidentifica(clientem.getIdtpidentifica_tpidentifica());
+		// Evitar violar NOT NULL cuando el móvil no envía este campo
+		if (clientem.getIdtpidentifica_tpidentifica() != null) {
+			clienteM.setIdtpidentifica_tpidentifica(clientem.getIdtpidentifica_tpidentifica());
+		}
 		clienteM.setPorcexonera(clientem.getPorcexonera());
 		clienteM.setEstado(clientem.getEstado());
 		clienteM.setEmail(clientem.getEmail());
