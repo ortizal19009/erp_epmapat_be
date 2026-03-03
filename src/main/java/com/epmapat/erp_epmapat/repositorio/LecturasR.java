@@ -17,6 +17,7 @@ import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
+import com.epmapat.erp_epmapat.interfaces.FacturaCuentaView;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
@@ -321,6 +322,16 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			""", nativeQuery = true)
 	List<Lecturas> findPendientesByCliente(@Param("idcliente") Long idcliente);
 
+	@Query(value = """
+			    SELECT DISTINCT l.idfactura AS idfactura, l.idabonado_abonados AS cuenta
+			    FROM lecturas l
+			    WHERE l.idemision = :idemision
+			      AND l.idrutaxemision_rutasxemision = :idruta
+			      AND l.idfactura IS NOT NULL
+			""", nativeQuery = true)
+	List<FacturaCuentaView> findFacturasByEmisionAndRuta(@Param("idemision") Long idemision,
+			@Param("idruta") Long idruta);
+
 	// 2️⃣ Reasignar lecturas al cliente master (MERGE)
 	@Modifying
 	@Transactional
@@ -337,12 +348,27 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	void reasignarCliente(@Param("dupId") Long dupId,
 			@Param("masterId") Long masterId);
 
-    @Query("""
-        select l
-        from Lecturas l
-        where l.idrutaxemision_rutasxemision in :ids
-        order by l.idlectura desc
-    """)
-    List<Lecturas> findByRutasxEmisionIds(@Param("ids") List<Long> ids);
+	@Query("""
+			    select l
+			    from Lecturas l
+			    where l.idrutaxemision_rutasxemision in :ids
+			    order by l.idlectura desc
+			""")
+	List<Lecturas> findByRutasxEmisionIds(@Param("ids") List<Long> ids);
+
+	@Query(value = """
+			    SELECT DISTINCT
+			           l.idfactura AS idfactura,
+			           l.idabonado_abonados    AS cuenta
+			    FROM lecturas l
+			    JOIN facturas f ON f.idfactura = l.idfactura
+			    WHERE l.idemision = :idemision
+			      AND l.idrutaxemision_rutasxemision = :idrutaxemision
+			      AND f.pagado = 0
+			      AND l.idfactura IS NOT NULL
+			""", nativeQuery = true)
+	List<FacturaCuentaView> findFacturasPendientesByEmisionAndRutaXEmision(
+			@Param("idemision") Long idemision,
+			@Param("idrutaxemision") Long idrutaxemision);
 
 }

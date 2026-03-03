@@ -21,15 +21,17 @@ import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.ResEmisiones;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.servicio.EmisionServicio;
+import com.epmapat.erp_epmapat.servicio.MultaBasuraRepairService;
 
 @RestController
 @RequestMapping("/emisiones")
-
 
 public class EmisionesApi {
 
 	@Autowired
 	private EmisionServicio emiServicio;
+	@Autowired
+	private MultaBasuraRepairService multaBasuraRepairService;
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
@@ -90,6 +92,15 @@ public class EmisionesApi {
 	@GetMapping("/resumen")
 	public ResponseEntity<List<ResEmisiones>> getResEmisiones(@RequestParam Long limit) {
 		return ResponseEntity.ok(emiServicio.getResEmisiones(limit));
+	}
+
+	@PostMapping("/{idemision}/rutaxemision/{idrutaxemision}/multa-basura/recalcular")
+	public ResponseEntity<?> recalcular(
+			@PathVariable Long idemision,
+			@PathVariable Long idrutaxemision) {
+		var resultado = multaBasuraRepairService.recalcularPorRuta(idemision, idrutaxemision);
+		System.out.println("Recalculo Multa Basura - Emision: " + idemision + ", Ruta: " + idrutaxemision);
+		return ResponseEntity.ok(resultado);
 	}
 
 }

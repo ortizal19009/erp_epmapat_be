@@ -188,9 +188,9 @@ public class EmisionServicioOptimizado {
         if (multa.compareTo(ZERO) > 0) {
             rubros.add(buildRubro(factura, 6L, multa));
         }
-        // if (multa_basura.compareTo(ZERO) > 0) {
-        // rubros.add(buildRubro(factura, 1011L, multa_basura));
-        // }
+     /*    if (multa_basura.compareTo(ZERO) > 0) {
+        rubros.add(buildRubro(factura, 1011L, multa_basura));
+        } */
 
         // ---------------------------
         // 4) Recargos por emisión + abonado (SOLO guardar)

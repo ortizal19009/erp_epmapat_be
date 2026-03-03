@@ -286,35 +286,67 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			@Param("rubros") Set<Long> rubros);
 
 	// Traer rubros por id de factura (evita el derived con guion bajo)
-/* 	@Query("SELECT r FROM Rubroxfac r WHERE r.idfactura_facturas.idfactura = :idfactura")
-	List<Rubroxfac> findAllByFacturaId(@Param("idfactura") Long idfactura);
+	/*
+	 * @Query("SELECT r FROM Rubroxfac r WHERE r.idfactura_facturas.idfactura = :idfactura"
+	 * )
+	 * List<Rubroxfac> findAllByFacturaId(@Param("idfactura") Long idfactura);
+	 * 
+	 * // Borrar todos los rubros con idrubro = :idrubro de una factura dada
+	 * 
+	 * @Modifying
+	 * 
+	 * @Query("DELETE FROM Rubroxfac r " +
+	 * "WHERE r.idfactura_facturas.idfactura = :idfactura " +
+	 * "AND r.idrubro_rubros.idrubro = :idrubro")
+	 * void deleteByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
+	 * 
+	 * @Param("idrubro") Long idrubro);
+	 * 
+	 * @Query("select r from Rubroxfac r where r.idfactura_facturas = :idfactura and r.idrubro_rubros = :idrubro"
+	 * )
+	 * Optional<Rubroxfac> findByFacturaIdAndRubroId(@Param("idfactura") Long
+	 * idfactura, @Param("idrubro") Long idrubro);
+	 */
 
-	// Borrar todos los rubros con idrubro = :idrubro de una factura dada
 	@Modifying
-	@Query("DELETE FROM Rubroxfac r " +
-			"WHERE r.idfactura_facturas.idfactura = :idfactura " +
-			"AND r.idrubro_rubros.idrubro = :idrubro")
+	@Query("delete from Rubroxfac rf " +
+			"where rf.idfactura_facturas.idfactura = :idfactura " +
+			"and rf.idrubro_rubros.idrubro = :idrubro")
 	void deleteByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
 			@Param("idrubro") Long idrubro);
 
-	@Query("select r from Rubroxfac r where r.idfactura_facturas = :idfactura and r.idrubro_rubros = :idrubro")
-	Optional<Rubroxfac> findByFacturaIdAndRubroId(@Param("idfactura") Long idfactura, @Param("idrubro") Long idrubro); */
-	
-	
-	
-    @Modifying
-    @Query("delete from Rubroxfac rf " +
-           "where rf.idfactura_facturas.idfactura = :idfactura " +
-           "and rf.idrubro_rubros.idrubro = :idrubro")
-    void deleteByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
-                                     @Param("idrubro") Long idrubro);
+	@Query("select rf from Rubroxfac rf " +
+			"where rf.idfactura_facturas.idfactura = :idfactura " +
+			"and rf.idrubro_rubros.idrubro = :idrubro")
+	Optional<Rubroxfac> findByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
+			@Param("idrubro") Long idrubro);
 
-    @Query("select rf from Rubroxfac rf " +
-           "where rf.idfactura_facturas.idfactura = :idfactura " +
-           "and rf.idrubro_rubros.idrubro = :idrubro")
-    Optional<Rubroxfac> findByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
-                                                  @Param("idrubro") Long idrubro);
+	@Query("select rf from Rubroxfac rf where rf.idfactura_facturas.idfactura = :idfactura")
+	List<Rubroxfac> findAllByFacturaId(@Param("idfactura") Long idfactura);
 
-    @Query("select rf from Rubroxfac rf where rf.idfactura_facturas.idfactura = :idfactura")
-    List<Rubroxfac> findAllByFacturaId(@Param("idfactura") Long idfactura);
+	@Query("""
+			    SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
+			    FROM Rubroxfac r
+			    WHERE r.idfactura_facturas.idfactura = :idfactura
+			      AND r.idrubro_rubros.idrubro = :idrubro
+			""")
+	boolean existsRubroInFactura(@Param("idfactura") Long idfactura,
+			@Param("idrubro") Long idrubro);
+
+	@Query("""
+			    SELECT COALESCE(SUM(r.valorunitario * r.cantidad), 0)
+			    FROM Rubroxfac r
+			    WHERE r.idfactura_facturas.idfactura = :idfactura
+			""")
+	BigDecimal sumRubrosFactura(@Param("idfactura") Long idfactura);
+
+	@Transactional
+	@Modifying
+	@Query("""
+			    DELETE FROM Rubroxfac r
+			    WHERE r.idfactura_facturas.idfactura = :idfactura
+			      AND r.idrubro_rubros.idrubro = :idrubro
+			""")
+	void deleteByFacturaAndRubro(@Param("idfactura") Long idfactura,
+			@Param("idrubro") Long idrubro);
 }
