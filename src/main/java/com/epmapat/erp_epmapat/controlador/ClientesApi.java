@@ -103,7 +103,8 @@ public class ClientesApi {
 		clienteM.setFechanacimiento(clientem.getFechanacimiento());
 		clienteM.setDiscapacitado(clientem.getDiscapacitado());
 		// Evitar violar NOT NULL cuando el móvil no envía este campo
-		if (clientem.getIdtpidentifica_tpidentifica() != null) {
+		if (clientem.getIdtpidentifica_tpidentifica() != null
+				&& clientem.getIdtpidentifica_tpidentifica().getIdtpidentifica() != null) {
 			clienteM.setIdtpidentifica_tpidentifica(clientem.getIdtpidentifica_tpidentifica());
 		}
 		clienteM.setPorcexonera(clientem.getPorcexonera());
@@ -114,7 +115,8 @@ public class ClientesApi {
 		clienteM.setUsumodi(clientem.getUsumodi());
 		clienteM.setFecmodi(clientem.getFecmodi());
 		// Evitar violar NOT NULL cuando el móvil no envía este campo
-		if (clientem.getIdpjuridica_personeriajuridica() != null) {
+		if (clientem.getIdpjuridica_personeriajuridica() != null
+				&& clientem.getIdpjuridica_personeriajuridica().getIdpjuridica() != null) {
 			clienteM.setIdpjuridica_personeriajuridica(clientem.getIdpjuridica_personeriajuridica());
 		}
 		Clientes updateCliente = cliServicio.save(clienteM);
