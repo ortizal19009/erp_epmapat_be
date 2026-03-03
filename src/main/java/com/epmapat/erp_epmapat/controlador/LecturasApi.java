@@ -327,18 +327,7 @@ public class LecturasApi {
 	 * =====================================================================
 	 */
 
-	@PostMapping("/by-rutas")
-	public ResponseEntity<List<LecturaDto>> downloadByRutasxEmisionIds(
-			@RequestBody LecturasByRutasRequest request) {
-				System.out.println("Request recibida: " + request);
-		List<LecturaDto> lecturas = lecServicio.downloadByRutasxEmisionIds(request.getIds());
-
-		if (lecturas.isEmpty()) {
-			return ResponseEntity.noContent().build();
-		}
-
-		return ResponseEntity.ok(lecturas);
-	}
+	@PostMapping("/by-rutas")`r`n`t@Deprecated`r`n`tpublic ResponseEntity<List<LecturaDto>> downloadByRutasxEmisionIds(`r`n`t`t`t@RequestBody LecturasByRutasRequest request) {`r`n`t`t// Endpoint deprecado: usar /by-usuario-emision`r`n`t`treturn ResponseEntity.status(410).build();`r`n`t}
 
 	@PostMapping("/by-usuario-emision")
 	public ResponseEntity<List<LecturaDto>> downloadByUsuarioEmision(
@@ -350,3 +339,4 @@ public class LecturasApi {
 		return ResponseEntity.ok(lecturas);
 	}
 }
+
