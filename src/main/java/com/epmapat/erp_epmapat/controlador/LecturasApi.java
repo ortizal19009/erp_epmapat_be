@@ -340,8 +340,10 @@ public class LecturasApi {
 			@RequestBody LecturasByUsuarioEmisionRequest request) {
 		List<LecturaDto> lecturas = lecServicio.downloadByUsuarioEmision(request.getIdusuario(), request.getIdemision());
 		if (lecturas.isEmpty()) {
+			System.out.println("No se encontraron lecturas para el usuario " + request.getIdusuario() + " y emisión " + request.getIdemision());
 			return ResponseEntity.noContent().build();
 		}
+		System.out.println("Se encontraron " + lecturas.size() + " lecturas para el usuario " + request.getIdusuario() + " y emisión " + request.getIdemision());
 		return ResponseEntity.ok(lecturas);
 	}
 }
