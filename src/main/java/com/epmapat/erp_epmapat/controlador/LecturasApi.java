@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
 import com.epmapat.erp_epmapat.DTO.LecturasByRutasRequest;
+import com.epmapat.erp_epmapat.DTO.LecturasByUsuarioEmisionRequest;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
@@ -327,14 +328,24 @@ public class LecturasApi {
 	 */
 
 	@PostMapping("/by-rutas")
+	@Deprecated
 	public ResponseEntity<List<LecturaDto>> downloadByRutasxEmisionIds(
 			@RequestBody LecturasByRutasRequest request) {
-		List<LecturaDto> lecturas = lecServicio.downloadByRutasxEmisionIds(request.getIds());
+		// Endpoint deprecado: usar /by-usuario-emision
+		return ResponseEntity.status(410).build();
+	}
 
+	@PostMapping("/by-usuario-emision")
+	public ResponseEntity<List<LecturaDto>> downloadByUsuarioEmision(
+			@RequestBody LecturasByUsuarioEmisionRequest request) {
+		List<LecturaDto> lecturas = lecServicio.downloadByUsuarioEmision(request.getIdusuario(), request.getIdemision());
 		if (lecturas.isEmpty()) {
+			System.out.println("No se encontraron lecturas para el usuario " + request.getIdusuario() + " y emisión " + request.getIdemision());
 			return ResponseEntity.noContent().build();
 		}
-
+		System.out.println("Se encontraron " + lecturas.size() + " lecturas para el usuario " + request.getIdusuario() + " y emisión " + request.getIdemision());
 		return ResponseEntity.ok(lecturas);
 	}
 }
+
+

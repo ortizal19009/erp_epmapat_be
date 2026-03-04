@@ -640,4 +640,13 @@ public class LecturaServicio {
 				.toList();
 	}
 
+	public List<LecturaDto> downloadByUsuarioEmision(Long idusuario, Long idemision) {
+		if (idusuario == null || idemision == null)
+			return List.of();
+		return dao.findByUsuarioEmision(idusuario, idemision)
+				.stream()
+				.map(LecturaMapper::toDto)
+				.toList();
+	}
+
 }
