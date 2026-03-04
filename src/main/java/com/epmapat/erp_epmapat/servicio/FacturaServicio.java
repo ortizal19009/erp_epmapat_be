@@ -1,11 +1,12 @@
 package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,7 +33,6 @@ import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
 import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
-import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
 
 @Service
 public class FacturaServicio {
@@ -752,4 +752,71 @@ public class FacturaServicio {
 		return definir.getRbu().multiply(BigDecimal.valueOf(0.005));
 	}
 
+	@Transactional
+	public Map<String, Object> reCalcularMultas(Long emision) {
+		Map<String, Object> respuesta = new HashMap<>();
+		int actualizados = 0;
+
+		try {
+			// 1. Obtener facturas de la emisión
+			List<FacturasSinCobroInter> facturas = dao.findBothMultas(emision);
+			System.out.println("Lista de facturas" + facturas.size());
+
+			// Fecha de referencia para el cálculo de pendientes
+			LocalDate fechaReferencia = LocalDate.of(2026, 3, 3);
+
+			for (FacturasSinCobroInter factura : facturas) {
+				// 2. Obtener pendientes para verificar la condición (> 2 pendientes)
+				List<FacturasSinCobroInter> pendientes = dao.calcularPendientesDeAbonados(
+						factura.getCuenta(),
+						fechaReferencia,
+						fechaReferencia);
+				System.out.println("Pendientes cuenta " + factura.getCuenta() + " - " + pendientes.size());
+
+				if (pendientes != null && pendientes.size() == 1) {
+
+					// 3. Borrar rubros de multas específicos (1011 y 6)
+					// Asegúrate que estos métodos en rubroxfacR usen @Modifying
+					rubroxfacR.deleteByFacturaIdAndRubroId(factura.getIdfactura(), 1011L);
+					rubroxfacR.deleteByFacturaIdAndRubroId(factura.getIdfactura(), 6L);
+
+					// IMPORTANTE: Forzar el vaciado del caché de Hibernate para que la suma SQL sea
+					// correcta
+					// Si tienes el EntityManager inyectado, usa em.flush(); em.clear();
+
+					// 4. Obtener la nueva suma de los rubros restantes
+					BigDecimal valorFactura = rubroxfacR.sumRubrosFactura(factura.getIdfactura());
+
+					if (valorFactura == null)
+						valorFactura = BigDecimal.ZERO;
+
+					// 5. Actualizar la entidad Factura
+					// Corregido: 'fact' para el objeto y los nombres de los setters
+					Facturas fact = dao.findById(factura.getIdfactura())
+							.orElseThrow(
+									() -> new RuntimeException("Factura no encontrada: " + factura.getIdfactura()));
+
+					fact.setValorbase(valorFactura);
+					fact.setTotaltarifa(valorFactura);
+
+					// Guardamos los cambios en la tabla principal de facturas
+					dao.save(fact);
+
+					actualizados++;
+				}
+			}
+
+			respuesta.put("status", "finalizado");
+			respuesta.put("procesadas", facturas.size());
+			respuesta.put("actualizadas", actualizados);
+
+		} catch (Exception e) {
+			System.err.println("Error en reCalcularMultas: " + e.getMessage());
+			respuesta.put("status", "error");
+			respuesta.put("mensaje", e.getMessage());
+			// El @Transactional hará rollback de todos los borrados si algo falla aquí
+		}
+
+		return respuesta;
+	}
 }

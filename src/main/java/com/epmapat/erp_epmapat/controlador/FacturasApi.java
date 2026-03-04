@@ -680,4 +680,9 @@ public class FacturasApi {
 		return ResponseEntity.ok(facServicio.validarMultasYRecalcularTotal(idfactura));
 	}
 
+	@GetMapping("/recalcularMultas")
+	ResponseEntity<?> corregirEmision(@RequestParam Long idemision) {
+		return ResponseEntity.ok(facServicio.reCalcularMultas(idemision));
+	}
+
 }

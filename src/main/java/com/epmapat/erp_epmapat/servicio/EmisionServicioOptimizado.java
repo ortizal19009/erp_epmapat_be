@@ -189,7 +189,7 @@ public class EmisionServicioOptimizado {
             rubros.add(buildRubro(factura, 6L, multa));
         }
         if (multa_basura.compareTo(ZERO) > 0) {
-        rubros.add(buildRubro(factura, 1011L, multa_basura));
+            rubros.add(buildRubro(factura, 1011L, multa_basura));
         }
 
         // ---------------------------
@@ -724,7 +724,7 @@ public class EmisionServicioOptimizado {
             return ZERO;
 
         long nroPendientes = idfacturas.size();
-        if (nroPendientes < 1)
+        if (nroPendientes < 2)
             return ZERO;
 
         Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
@@ -740,7 +740,7 @@ public class EmisionServicioOptimizado {
             return ZERO;
 
         long nroPendientes = idfacturas.size();
-        if (nroPendientes < 1)
+        if (nroPendientes < 2)
             return ZERO;
 
         Definir definir = dao_definir.findTopByOrderByIddefinirDesc();

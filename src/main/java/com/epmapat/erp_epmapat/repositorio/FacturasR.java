@@ -776,4 +776,44 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "select * from facturas f where f.idcliente = ?1 and f.pagado = 0", nativeQuery = true)
 	public List<Facturas> findSincobroToMerge(Long idcliente);
 
+	@Query(value = """
+						select
+				idfactura, feccrea
+			from
+				facturas
+			where
+				totaltarifa > 0
+				and idabonado = ?1
+				and (( (estado = 1
+					or estado = 2)
+				and (fechacobro is null or fechacobro between ?2 and ?3))
+				or estado = 3 )
+				and fechaconvenio is null
+				and fechaanulacion is null
+				and fechaeliminacion is null
+				and fechaconvenio is null
+				and (idmodulo = 3
+					or idmodulo = 4)
+			order by
+				idfactura
+					""", nativeQuery = true)
+	public List<FacturasSinCobroInter> calcularPendientesDeAbonados(Long cuenta,
+			LocalDate d, LocalDate h);
+
+	@Query(value = """
+			SELECT
+				l.idabonado_abonados as cuenta,
+				l.idfactura
+				FROM lecturas l
+				JOIN rubroxfac r
+				ON r.idfactura_facturas = l.idfactura
+				WHERE l.idemision = ?1
+				AND r.idrubro_rubros IN (6, 1011)
+				GROUP BY l.idabonado_abonados, l.idfactura
+				HAVING
+				COUNT(DISTINCT r.idrubro_rubros) = 2
+				ORDER BY l.idabonado_abonados, l.idfactura;
+			""", nativeQuery = true)
+	List<FacturasSinCobroInter> findBothMultas(Long emision);
+
 }
