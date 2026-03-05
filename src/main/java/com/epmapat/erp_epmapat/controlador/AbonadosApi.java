@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.DTO.AbonadoGeoUploadItemDto;
 import com.epmapat.erp_epmapat.DTO.EstadisticasAbonadosDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
@@ -257,5 +258,32 @@ public class AbonadosApi {
 	@GetMapping("/allabonadosmobile")
 	public List<AbonadosMobile> getAllAbonadosMobile() {
 		return aboServicio.getAllAbonadosMobile();
+	}
+
+	@PostMapping("/mobile/upload-geolocalizacion")
+	public ResponseEntity<java.util.Map<String, Integer>> uploadGeolocalizacionMobile(
+			@RequestBody List<AbonadoGeoUploadItemDto> items) {
+		int ok = 0;
+		int err = 0;
+
+		for (AbonadoGeoUploadItemDto item : items) {
+			try {
+				if (item.getIdabonado() == null)
+					throw new IllegalArgumentException("idabonado requerido");
+				Abonados a = aboServicio.findById(item.getIdabonado())
+						.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe abonado: " + item.getIdabonado()));
+				a.setGeolocalizacion(item.getGeolocalizacion());
+				aboServicio.save(a);
+				ok++;
+			} catch (Exception ex) {
+				err++;
+			}
+		}
+
+		java.util.Map<String, Integer> out = new java.util.HashMap<>();
+		out.put("ok", ok);
+		out.put("error", err);
+		out.put("total", items.size());
+		return ResponseEntity.ok(out);
 	}
 }
