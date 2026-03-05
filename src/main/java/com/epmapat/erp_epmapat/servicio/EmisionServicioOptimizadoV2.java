@@ -703,8 +703,6 @@ public class EmisionServicioOptimizadoV2 {
         BigDecimal TP = new BigDecimal("6.40");
         BigDecimal m = new BigDecimal("0.0034");
 
-        BigDecimal m3 = BigDecimal.valueOf(v.getM3());
-
         BigDecimal sumco;
         int cat = v.getCategoria();
 
@@ -715,12 +713,11 @@ public class EmisionServicioOptimizadoV2 {
         else if (cat == 3)
             sumco = new BigDecimal("4.1063");
         else if (cat == 4)
-            sumco = new BigDecimal("0.1429");
-        else if (cat == 9)
             sumco = new BigDecimal("10.7031");
+        else if (cat == 9)
+            sumco = new BigDecimal("0.1429");
         else
             sumco = ZERO;
-
         /*
          * BigDecimal parteFija = CO.multiply(Lr).add(CF.multiply(iF));
          * BigDecimal parteVariable = Qs.multiply(m3).add(sumco);
