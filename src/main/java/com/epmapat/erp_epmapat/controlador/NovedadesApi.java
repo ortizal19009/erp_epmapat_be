@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.DTO.NovedadesDto;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-
+import com.epmapat.erp_epmapat.interfaces.mobile.NovedadesMobile;
 import com.epmapat.erp_epmapat.modelo.Novedad;
 import com.epmapat.erp_epmapat.servicio.NovedadServicio;
 
@@ -90,6 +91,16 @@ public class NovedadesApi {
     private ResponseEntity<Boolean> deleteNovedad(@PathVariable("idnovedad") Long idnovedad) {
         novServicio.deleteById(idnovedad);
         return ResponseEntity.ok(!(novServicio.findById(idnovedad) != null));
+    }
+
+    @GetMapping("/novMobile")
+    private ResponseEntity<List<NovedadesMobile>> getNovedadesToMobile(){
+        return ResponseEntity.ok(novServicio.getNovedadesToMobile());
+    }
+
+    @GetMapping("/novedadesmobile")
+    private ResponseEntity<List<NovedadesMobile>> getNovedadesToMobileAlias(){
+        return ResponseEntity.ok(novServicio.getNovedadesToMobile());
     }
 
 }
