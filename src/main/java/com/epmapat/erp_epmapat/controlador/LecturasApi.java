@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
+import com.epmapat.erp_epmapat.DTO.LecturaUploadItemDto;
 import com.epmapat.erp_epmapat.DTO.LecturasByRutasRequest;
 import com.epmapat.erp_epmapat.DTO.LecturasByUsuarioEmisionRequest;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
@@ -28,6 +29,9 @@ import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
+import com.epmapat.erp_epmapat.repositorio.AbonadosR;
+import com.epmapat.erp_epmapat.repositorio.NovedadR;
+import com.epmapat.erp_epmapat.repositorio.RutasxemisionR;
 import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizado;
 import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizadoV2;
 import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizado_anterior;
@@ -46,6 +50,9 @@ public class LecturasApi {
 	private final EmisionServicioOptimizado emisionServicioOptimizado;
 	private final EmisionServicioOptimizadoV2 emisionServicioOptimizadoV2;
 	private final EmisionServicioOptimizado_anterior emisionServicioOptimizado_anterior;
+	private final AbonadosR abonadosR;
+	private final NovedadR novedadR;
+	private final RutasxemisionR rutasxemisionR;
 
 	// Busca por Planilla (Es una a una)
 	@GetMapping("/onePlanilla/{idfactura}")
@@ -326,6 +333,62 @@ public class LecturasApi {
 	 * ENDPOINTS PARA MOBILE
 	 * =====================================================================
 	 */
+
+	@PostMapping("/mobile/upload")
+	public ResponseEntity<java.util.Map<String, Integer>> uploadLecturasMobile(
+			@RequestBody List<LecturaUploadItemDto> items) {
+		int ok = 0;
+		int err = 0;
+
+		for (LecturaUploadItemDto item : items) {
+			try {
+				if (item.getIdlectura() == null) {
+					err++;
+					continue;
+				}
+
+				Lecturas y = lecServicio.findById(item.getIdlectura())
+						.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe la Lectura Id: " + item.getIdlectura()));
+
+				y.setEstado(item.getEstado());
+				y.setFechaemision(item.getFechaemision());
+				y.setLecturaanterior(item.getLecturaanterior());
+				y.setLecturaactual(item.getLecturaactual());
+				y.setLecturadigitada(item.getLecturadigitada());
+				y.setMesesmulta(item.getMesesmulta());
+				y.setObservaciones(item.getObservaciones());
+				y.setIdemision(item.getIdemision());
+				y.setIdcategoria(item.getIdcategoria());
+				y.setIdfactura(item.getIdfactura());
+				y.setTotal1(item.getTotal1());
+				y.setTotal31(item.getTotal31());
+				y.setTotal32(item.getTotal32());
+
+				y.setIdabonado_abonados(item.getIdabonado_abonados() == null
+						? null
+						: abonadosR.findById(item.getIdabonado_abonados()).orElse(null));
+
+				y.setIdnovedad_novedades(item.getIdnovedad() == null
+						? null
+						: novedadR.findById(item.getIdnovedad()).orElse(null));
+
+				y.setIdrutaxemision_rutasxemision(item.getIdrutaxemision_rutasxemision() == null
+						? null
+						: rutasxemisionR.findById(item.getIdrutaxemision_rutasxemision()).orElse(null));
+
+				lecServicio.saveLectura(y);
+				ok++;
+			} catch (Exception ex) {
+				err++;
+			}
+		}
+
+		java.util.Map<String, Integer> out = new java.util.HashMap<>();
+		out.put("ok", ok);
+		out.put("error", err);
+		out.put("total", items.size());
+		return ResponseEntity.ok(out);
+	}
 
 	@PostMapping("/by-rutas")
 	@Deprecated
