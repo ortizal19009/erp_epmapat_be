@@ -95,7 +95,6 @@ public class CategoriasApi {
 	}
 	@GetMapping("/categoriasmobile")
 	public List<CategoriasMobile> findAllCategoriasMobile() {
-		System.out.println("Entrando al método findAllCategoriasMobile");
 		return cateServicio.findAllCategorias();
 	}
 }	

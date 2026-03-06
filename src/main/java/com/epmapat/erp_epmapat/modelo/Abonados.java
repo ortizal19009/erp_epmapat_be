@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Entity
 @Getter
 @Setter
@@ -24,9 +23,13 @@ public class Abonados {
 	private String nromedidor;
 	private Long lecturainicial;
 	private Long estado;
-	/* @Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fechainstalacion") */
+	/*
+	 * @Temporal(TemporalType.DATE)
+	 * 
+	 * @DateTimeFormat(iso = ISO.DATE)
+	 * 
+	 * @Column(name = "fechainstalacion")
+	 */
 	private LocalDate fechainstalacion;
 	private String marca;
 	private Long secuencia;
@@ -66,20 +69,28 @@ public class Abonados {
 	 * Set<ServiciosM> servSeleccionados = new HashSet<>();
 	 */
 	private Long usucrea;
-	/* @Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "feccrea") */
+	/*
+	 * @Temporal(TemporalType.DATE)
+	 * 
+	 * @DateTimeFormat(iso = ISO.DATE)
+	 * 
+	 * @Column(name = "feccrea")
+	 */
 	private LocalDate feccrea;
 	private Long usumodi;
-	/* @Temporal(TemporalType.DATE)
-	@DateTimeFormat(iso = ISO.DATE)
-	@Column(name = "fecmodi") */
+	/*
+	 * @Temporal(TemporalType.DATE)
+	 * 
+	 * @DateTimeFormat(iso = ISO.DATE)
+	 * 
+	 * @Column(name = "fecmodi")
+	 */
 	private LocalDate fecmodi;
 	private Boolean adultomayor;
 	private Boolean municipio;
 	private Boolean swalcantarillado;
 	private Long promedio;
 	private String geolocalizacion;
+	private Boolean swbasura;
 
-	
 }

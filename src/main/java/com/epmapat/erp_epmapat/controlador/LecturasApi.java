@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.annotation.RequestScope;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
@@ -308,16 +310,20 @@ public class LecturasApi {
 
 	@PostMapping("/valoresEmisiones/v2")
 	public ResponseEntity<BigDecimal> calcularValoresEmisionV2(@RequestBody EmisionOfCuentaDTO datos) {
+	
+		BigDecimal resultado = emisionServicioOptimizadoV2.calcularValores(
+				datos.getIdemision(),
+				datos.getCuenta(),
+				datos.getIdfactura(),
+				datos.getM3(),
+				datos.getCategoria(),
+				datos.isSwMunicipio(),
+				datos.isSwAdultoMayor(),
+				datos.isSwAguapotable(),
+				datos.isSwbasura());
 		return ResponseEntity.ok(
-				emisionServicioOptimizadoV2.calcularValores(
-						datos.getIdemision(),
-						datos.getCuenta(),
-						datos.getIdfactura(),
-						datos.getM3(),
-						datos.getCategoria(),
-						datos.isSwMunicipio(),
-						datos.isSwAdultoMayor(),
-						datos.isSwAguapotable()));
+				resultado);
+
 	}
 
 	@GetMapping("/simular/v2")
@@ -325,7 +331,8 @@ public class LecturasApi {
 			@RequestParam boolean swMunicipio,
 			@RequestParam boolean swAdultoMayor, @RequestParam boolean swAguapotable) {
 		return ResponseEntity
-				.ok(emisionServicioOptimizadoV2.simularValores(m3, categoria, swMunicipio, swAdultoMayor, swAguapotable));
+				.ok(emisionServicioOptimizadoV2.simularValores(m3, categoria, swMunicipio, swAdultoMayor,
+						swAguapotable));
 	}
 
 	/*
@@ -348,7 +355,8 @@ public class LecturasApi {
 				}
 
 				Lecturas y = lecServicio.findById(item.getIdlectura())
-						.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe la Lectura Id: " + item.getIdlectura()));
+						.orElseThrow(() -> new ResourceNotFoundExcepciones(
+								"No existe la Lectura Id: " + item.getIdlectura()));
 
 				y.setEstado(item.getEstado());
 				y.setFechaemision(item.getFechaemision());
@@ -401,14 +409,18 @@ public class LecturasApi {
 	@PostMapping("/by-usuario-emision")
 	public ResponseEntity<List<LecturaDto>> downloadByUsuarioEmision(
 			@RequestBody LecturasByUsuarioEmisionRequest request) {
-		List<LecturaDto> lecturas = lecServicio.downloadByUsuarioEmision(request.getIdusuario(), request.getIdemision());
+		List<LecturaDto> lecturas = lecServicio.downloadByUsuarioEmision(request.getIdusuario(),
+				request.getIdemision());
 		if (lecturas.isEmpty()) {
-			System.out.println("No se encontraron lecturas para el usuario " + request.getIdusuario() + " y emisión " + request.getIdemision());
 			return ResponseEntity.noContent().build();
 		}
-		System.out.println("Se encontraron " + lecturas.size() + " lecturas para el usuario " + request.getIdusuario() + " y emisión " + request.getIdemision());
+
 		return ResponseEntity.ok(lecturas);
 	}
+
+	@DeleteMapping("/emision")
+	public ResponseEntity<Void> deleteRubrosByIdEmisin(@RequestParam Long idemision) {
+		lecServicio.deleteRubrosByIdEmisin(idemision);
+		return ResponseEntity.noContent().build();
+	}
 }
-
-

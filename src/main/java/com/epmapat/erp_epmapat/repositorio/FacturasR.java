@@ -801,6 +801,30 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			LocalDate d, LocalDate h);
 
 	@Query(value = """
+						select
+				idfactura
+			from
+				facturas
+			where
+				totaltarifa > 0
+				and idabonado = ?1
+				and (( (estado = 1
+					or estado = 2)
+				and (fechacobro is null or fechacobro between ?2 and ?3))
+				or estado = 3 )
+				and fechaconvenio is null
+				and fechaanulacion is null
+				and fechaeliminacion is null
+				and fechaconvenio is null
+				and (idmodulo = 3
+					or idmodulo = 4)
+			order by
+				idfactura
+					""", nativeQuery = true)
+	public List<Long> _calcularPendientesDeAbonados(Long cuenta,
+			LocalDate d, LocalDate h);
+
+	@Query(value = """
 			SELECT
 				l.idabonado_abonados as cuenta,
 				l.idfactura
@@ -815,5 +839,42 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				ORDER BY l.idabonado_abonados, l.idfactura;
 			""", nativeQuery = true)
 	List<FacturasSinCobroInter> findBothMultas(Long emision);
+
+	@Query(value = """
+					SELECT f.idfactura,
+				f.nrofactura,
+				c.nombre,
+				u.nomusu,
+				f.fechacobro,
+				fc.descripcion,
+				e.emision,
+				l.idabonado_abonados,
+				sum( rf.cantidad * rf.valorunitario)
+			FROM lecturas l
+				join facturas f ON
+				 l.idfactura = f.idfactura
+				join emisiones e ON
+				 l.idemision = e.idemision
+				join rubroxfac rf ON
+				 l.idfactura = rf.idfactura_facturas
+				join usuarios u ON
+				 f.usuariocobro = u.idusuario
+				join formacobro fc ON
+				 f.formapago = fc.idformacobro
+				 join clientes c ON
+				 l.idresponsable = c.idcliente
+			WHERE
+				 l.idemision = ?1
+				 AND f.pagado = 1
+			GROUP BY f.idfactura,
+				e.emision,
+				l.idabonado_abonados,
+				u.nomusu,
+				fc.descripcion,
+				c.nombre
+			ORDER BY f.fechacobro ASC
+					""", nativeQuery = true)
+
+	List<FacturasProjection> findFacturasCobradasByEmision(Long idemision);
 
 }

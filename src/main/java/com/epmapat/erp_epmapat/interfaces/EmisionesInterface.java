@@ -16,4 +16,5 @@ public interface EmisionesInterface {
     Boolean getSwAguapotable();
 
     Long getTotalRubros();
+    Boolean getSwbasura();
 }

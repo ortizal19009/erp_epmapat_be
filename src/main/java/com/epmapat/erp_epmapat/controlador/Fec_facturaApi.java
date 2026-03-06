@@ -137,7 +137,6 @@ public class Fec_facturaApi {
    @Transactional
    @GetMapping("/createFacElectro")
    public ResponseEntity<Map<String, Object>> generarFecFactura(@RequestParam Long idfactura) {
-      System.out.println("idfactura: " + idfactura);
       return ResponseEntity.ok(fecfacServicio.generarFecFactura(idfactura));
    }
 

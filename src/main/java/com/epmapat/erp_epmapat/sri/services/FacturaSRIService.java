@@ -140,32 +140,6 @@ public class FacturaSRIService {
         return infoFactura;
     }
 
-    private List<Detalle> _mapearDetalles(List<FacturaDetalle> detallesFactura) {
-        return detallesFactura.stream().map(d -> {
-            System.out.println("Detalle codigo principal: " + d.getCodigoprincipal());
-            System.out.println("Detalle descripcion: " + d.getDescripcion());
-            Detalle detalle = new Detalle();
-            detalle.setCodigoPrincipal(d.getCodigoprincipal());
-            detalle.setDescripcion(d.getDescripcion());
-            detalle.setCantidad(d.getCantidad());
-            detalle.setPrecioUnitario(d.getPreciounitario());
-            detalle.setDescuento(d.getDescuento());
-            detalle.setPrecioTotalSinImpuesto(new BigDecimal(0));
-
-            // Mapear impuestos
-            detalle.setImpuestos(d.getImpuestos().stream().map(i -> {
-                Impuesto impuesto = new Impuesto();
-                impuesto.setCodigo(i.getCodigoimpuesto());
-                impuesto.setCodigoPorcentaje(i.getCodigoporcentaje());
-                impuesto.setTarifa(new BigDecimal(0));
-                impuesto.setBaseImponible(i.getBaseimponible());
-                impuesto.setValor(new BigDecimal(0));
-                return impuesto;
-            }).collect(Collectors.toList()));
-
-            return detalle;
-        }).collect(Collectors.toList());
-    }
 
     private List<Detalle> mapearDetalles(List<FacturaDetalle> detallesFactura) {
 

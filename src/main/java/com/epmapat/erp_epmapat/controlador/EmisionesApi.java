@@ -99,7 +99,6 @@ public class EmisionesApi {
 			@PathVariable Long idemision,
 			@PathVariable Long idrutaxemision) {
 		var resultado = multaBasuraRepairService.recalcularPorRuta(idemision, idrutaxemision);
-		System.out.println("Recalculo Multa Basura - Emision: " + idemision + ", Ruta: " + idrutaxemision);
 		return ResponseEntity.ok(resultado);
 	}
 

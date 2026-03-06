@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
@@ -647,6 +648,11 @@ public class LecturaServicio {
 				.stream()
 				.map(LecturaMapper::toDto)
 				.toList();
+	}
+
+	@Transactional
+	public void deleteRubrosByIdEmisin(Long idemision) {
+		dao.eliminarRubrosByEmision(idemision);
 	}
 
 }

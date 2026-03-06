@@ -760,7 +760,6 @@ public class FacturaServicio {
 		try {
 			// 1. Obtener facturas de la emisión
 			List<FacturasSinCobroInter> facturas = dao.findBothMultas(emision);
-			System.out.println("Lista de facturas" + facturas.size());
 
 			// Fecha de referencia para el cálculo de pendientes
 			LocalDate fechaReferencia = LocalDate.of(2026, 3, 3);
@@ -771,13 +770,11 @@ public class FacturaServicio {
 						factura.getCuenta(),
 						fechaReferencia,
 						fechaReferencia);
-				System.out.println("Pendientes cuenta " + factura.getCuenta() + " - " + pendientes.size());
 
 				if (pendientes != null && pendientes.size() == 1) {
 
 					// 3. Borrar rubros de multas específicos (1011 y 6)
 					// Asegúrate que estos métodos en rubroxfacR usen @Modifying
-					rubroxfacR.deleteByFacturaIdAndRubroId(factura.getIdfactura(), 1011L);
 					rubroxfacR.deleteByFacturaIdAndRubroId(factura.getIdfactura(), 6L);
 
 					// IMPORTANTE: Forzar el vaciado del caché de Hibernate para que la suma SQL sea
@@ -818,5 +815,9 @@ public class FacturaServicio {
 		}
 
 		return respuesta;
+	}
+
+	public List<FacturasProjection> findFacturasCobradasByEmision(Long idemision) {
+		return dao.findFacturasCobradasByEmision(idemision);
 	}
 }

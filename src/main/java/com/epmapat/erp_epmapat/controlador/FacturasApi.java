@@ -684,5 +684,8 @@ public class FacturasApi {
 	ResponseEntity<?> corregirEmision(@RequestParam Long idemision) {
 		return ResponseEntity.ok(facServicio.reCalcularMultas(idemision));
 	}
-
+	@GetMapping("/findByIdEmision")
+	public ResponseEntity<List<FacturasProjection>> findFacturasCobradasByEmision(@RequestParam Long idemision) {
+		return ResponseEntity.ok(facServicio.findFacturasCobradasByEmision(idemision));
+	}
 }

@@ -143,6 +143,7 @@ public class AbonadosApi {
 		abonadosM.setMunicipio(abonadosm.getMunicipio());
 		abonadosM.setSwalcantarillado(abonadosm.getSwalcantarillado());
 		abonadosM.setGeolocalizacion(abonadosm.getGeolocalizacion());
+		abonadosM.setSwbasura(abonadosm.getSwbasura());
 		Abonados updateAbonado = aboServicio.save(abonadosM);
 		return ResponseEntity.ok(updateAbonado);
 	}

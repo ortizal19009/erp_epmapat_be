@@ -24,4 +24,5 @@ public class EmisionOfCuentaDTO {
     Categorias categorias;
     Facturas factura;
     Long totalRubros;
+    boolean swbasura;
 }
