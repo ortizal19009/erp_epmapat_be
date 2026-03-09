@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.tomcat.jni.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -678,7 +677,7 @@ public class EmisionServicioOptimizadoV2 {
         else if (cat == 4)
             sumco = new BigDecimal("10.7031");
         else if (cat == 9)
-            sumco = new BigDecimal("0.1429");
+            sumco = new BigDecimal("0.2283");
         else
             sumco = ZERO;
         /*
