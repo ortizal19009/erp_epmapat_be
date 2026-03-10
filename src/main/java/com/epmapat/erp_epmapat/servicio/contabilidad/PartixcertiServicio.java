@@ -52,14 +52,12 @@ public class PartixcertiServicio implements PartixcertiR {
 
 	}
 
-	@SuppressWarnings("null")
 	@Override
 	public <S extends Partixcerti> S saveAndFlush(S entity) {
 
 		return null;
 	}
 
-	@SuppressWarnings("null")
 	@Override
 	public <S extends Partixcerti> List<S> saveAllAndFlush(@SuppressWarnings("null") Iterable<S> entities) {
 
