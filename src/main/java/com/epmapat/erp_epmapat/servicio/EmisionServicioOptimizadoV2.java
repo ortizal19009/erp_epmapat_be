@@ -677,7 +677,7 @@ public class EmisionServicioOptimizadoV2 {
         else if (cat == 4)
             sumco = new BigDecimal("10.7031");
         else if (cat == 9)
-            sumco = new BigDecimal("0.2283");
+            sumco = new BigDecimal("0.2281");
         else
             sumco = ZERO;
         /*
