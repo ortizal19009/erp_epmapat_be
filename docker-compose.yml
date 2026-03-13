@@ -1,17 +1,20 @@
 services:
   erp_epmapat_be:
-    build: erp_epmapat_be
+    build: .
     image: erp_epmapat_be
     container_name: erp_epmapat_be
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=086411421
-    ports: 
+      - SPRING_DATASOURCE_PASSWORD=3pmapaT24
+    ports:
       - "8080:8080"
-    restart: "always"
+    volumes:
+      - ./deploy/erp_epmapat-v0.1.war:/usr/local/tomcat/webapps/ROOT.war
+    restart: always
     networks:
       - erp_epmapat
+
 networks:
   erp_epmapat:
-    driver: bridge
+    driver: bridge 
