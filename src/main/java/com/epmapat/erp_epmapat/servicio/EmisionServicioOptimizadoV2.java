@@ -124,7 +124,7 @@ public class EmisionServicioOptimizadoV2 {
         // ---------------------------
         // 1) Cargar factura y contexto
         // ---------------------------
-        //  // Asegurar no negativos
+        // // Asegurar no negativos
         Facturas factura = dao_facturas.findById(idfactura).orElseThrow();
 
         EmisionOfCuentaDTO ctx = buildContext(
@@ -497,10 +497,10 @@ public class EmisionServicioOptimizadoV2 {
                 .multiply(porcPliego);
 
         BigDecimal total = apFijo.add(apVar);
-/* 
-        if (v.getCategoria() == 4 && v.isSwMunicipio())
-            total = total.multiply(HALF);
- */
+        /*
+         * if (v.getCategoria() == 4 && v.isSwMunicipio())
+         * total = total.multiply(HALF);
+         */
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
@@ -561,8 +561,10 @@ public class EmisionServicioOptimizadoV2 {
                 .multiply(porc);
 
         BigDecimal total = fijo.add(variable);
-/*         if (v.getCategoria() == 4 && v.isSwMunicipio())
-            total = total.multiply(HALF); */
+        /*
+         * if (v.getCategoria() == 4 && v.isSwMunicipio())
+         * total = total.multiply(HALF);
+         */
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
         // ✅ rango correcto
@@ -617,8 +619,10 @@ public class EmisionServicioOptimizadoV2 {
         BigDecimal total = BigDecimal.valueOf(v.getM3())
                 .multiply(v.getPliego24().getSaneamiento().multiply(HALF))
                 .multiply(porc);
-     /*    if (v.getCategoria() == 4 && v.isSwMunicipio())
-            total = total.multiply(HALF); */
+        /*
+         * if (v.getCategoria() == 4 && v.isSwMunicipio())
+         * total = total.multiply(HALF);
+         */
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
@@ -691,16 +695,18 @@ public class EmisionServicioOptimizadoV2 {
     }
 
     // ----------------- Multas -----------------
-    private static final LocalDate FECHA_DESDE = LocalDate.of(2026, 3, 3);
-    private static final LocalDate FECHA_HASTA = LocalDate.of(2026, 3, 3);
+
     private static final BigDecimal PORCENTAJE_MULTA = new BigDecimal("0.005");
 
     private BigDecimal multas(Long cuenta) {
+        // Se recalculan en cada invocación → siempre es "hoy"
+        LocalDate fechaDesde = LocalDate.now();
+        LocalDate fechaHasta = LocalDate.now();
 
         List<Long> idfacturas = dao_facturas._calcularPendientesDeAbonados(
                 cuenta,
-                FECHA_DESDE,
-                FECHA_HASTA);
+                fechaDesde,
+                fechaHasta);
 
         if (idfacturas == null || idfacturas.isEmpty() || idfacturas.size() <= 1) {
             return ZERO;
