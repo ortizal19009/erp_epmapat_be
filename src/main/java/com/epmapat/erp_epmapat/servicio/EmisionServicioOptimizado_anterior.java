@@ -96,7 +96,8 @@ public class EmisionServicioOptimizado_anterior {
             int categoria,
             boolean swMunicipio,
             boolean swAdultoMayor,
-            boolean swAguapotable) {
+            boolean swAguapotable,
+            boolean swRefacturacion) {
 
         Facturas factura = dao_facturas.findById(idfactura).orElseThrow();
         // Construimos el contexto (categoría efectiva, pliego y categoría ya
@@ -192,7 +193,8 @@ public class EmisionServicioOptimizado_anterior {
                     e.getCategoria(),
                     e.getSwMunicipio(),
                     e.getSwAdultoMayor(),
-                    e.getSwAguapotable());
+                    e.getSwAguapotable(),
+                    e.getSwRefacturacion());
         });
         return emiI;
     }

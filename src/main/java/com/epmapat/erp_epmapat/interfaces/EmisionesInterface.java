@@ -17,4 +17,5 @@ public interface EmisionesInterface {
 
     Long getTotalRubros();
     Boolean getSwbasura();
+    Boolean getSwRefacturacion();
 }

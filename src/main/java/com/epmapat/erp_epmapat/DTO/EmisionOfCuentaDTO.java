@@ -25,4 +25,5 @@ public class EmisionOfCuentaDTO {
     Facturas factura;
     Long totalRubros;
     boolean swbasura;
+    boolean swRefacturacion;
 }

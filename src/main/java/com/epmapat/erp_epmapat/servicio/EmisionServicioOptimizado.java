@@ -118,7 +118,8 @@ public class EmisionServicioOptimizado {
             int categoria,
             boolean swMunicipio,
             boolean swAdultoMayor,
-            boolean swAguapotable) {
+            boolean swAguapotable,
+            boolean swRefacturacion) {
 
         // ---------------------------
         // 1) Cargar factura y contexto
@@ -131,8 +132,12 @@ public class EmisionServicioOptimizado {
         // ---------------------------
         // 2) Calcular rubros base
         // ---------------------------
-        BigDecimal multa = multas(cuenta);
-        BigDecimal multa_basura = multas_basura(cuenta);
+        BigDecimal multa = BigDecimal.ZERO;
+
+        if(!swRefacturacion) {
+            multa = multas(cuenta);
+        }
+       // BigDecimal multa_basura = multas_basura(cuenta);
 
         BigDecimal ap = baseAguaPotable(ctx);
         BigDecimal al = baseAlcantarillado(ctx);
@@ -164,8 +169,8 @@ public class EmisionServicioOptimizado {
          */
         if (multa.compareTo(ZERO) > 0)
             total = total.add(multa);
-        if (multa_basura.compareTo(ZERO) > 0)
-            total = total.add(multa_basura);
+       /*  if (multa_basura.compareTo(ZERO) > 0)
+            total = total.add(multa_basura); */
 
         // ---------------------------
         // 3) Armar lista de rubros a guardar
@@ -188,9 +193,9 @@ public class EmisionServicioOptimizado {
         if (multa.compareTo(ZERO) > 0) {
             rubros.add(buildRubro(factura, 6L, multa));
         }
-        if (multa_basura.compareTo(ZERO) > 0) {
+    /*     if (multa_basura.compareTo(ZERO) > 0) {
             rubros.add(buildRubro(factura, 1011L, multa_basura));
-        }
+        } */
 
         // ---------------------------
         // 4) Recargos por emisión + abonado (SOLO guardar)
@@ -313,7 +318,8 @@ public class EmisionServicioOptimizado {
                     e.getCategoria(),
                     e.getSwMunicipio(),
                     e.getSwAdultoMayor(),
-                    e.getSwAguapotable());
+                    e.getSwAguapotable(),
+                    e.getSwRefacturacion());
         });
         return emiI;
     }

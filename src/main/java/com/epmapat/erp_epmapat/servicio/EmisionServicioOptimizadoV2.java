@@ -119,7 +119,8 @@ public class EmisionServicioOptimizadoV2 {
             boolean swMunicipio,
             boolean swAdultoMayor,
             boolean swAguapotable,
-            boolean swbasura) {
+            boolean swbasura,
+            boolean swRefacturacion) {
 
         // ---------------------------
         // 1) Cargar factura y contexto
@@ -325,7 +326,8 @@ public class EmisionServicioOptimizadoV2 {
                     e.getSwMunicipio(),
                     e.getSwAdultoMayor(),
                     e.getSwAguapotable(),
-                    e.getSwbasura());
+                    e.getSwbasura(),
+                    e.getSwRefacturacion());
         });
         return emiI;
     }
@@ -698,7 +700,7 @@ public class EmisionServicioOptimizadoV2 {
 
     private static final BigDecimal PORCENTAJE_MULTA = new BigDecimal("0.005");
 
-    private BigDecimal multas(Long cuenta) {
+    public BigDecimal multas(Long cuenta) {
         // Se recalculan en cada invocación → siempre es "hoy"
         LocalDate fechaDesde = LocalDate.now();
         LocalDate fechaHasta = LocalDate.now();

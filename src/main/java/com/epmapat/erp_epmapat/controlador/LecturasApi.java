@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.annotation.RequestScope;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
@@ -268,7 +267,8 @@ public class LecturasApi {
 						datos.getCategoria(),
 						datos.isSwMunicipio(),
 						datos.isSwAdultoMayor(),
-						datos.isSwAguapotable()));
+						datos.isSwAguapotable(),
+						datos.isSwRefacturacion()));
 	}
 
 	@PostMapping("/valoresemisionesanteriores")
@@ -281,7 +281,8 @@ public class LecturasApi {
 						datos.getCategoria(),
 						datos.isSwMunicipio(),
 						datos.isSwAdultoMayor(),
-						datos.isSwAguapotable()));
+						datos.isSwAguapotable(),
+						datos.isSwRefacturacion()));
 	}
 
 	@GetMapping("/swalcantarillado")
@@ -310,7 +311,7 @@ public class LecturasApi {
 
 	@PostMapping("/valoresEmisiones/v2")
 	public ResponseEntity<BigDecimal> calcularValoresEmisionV2(@RequestBody EmisionOfCuentaDTO datos) {
-	
+
 		BigDecimal resultado = emisionServicioOptimizadoV2.calcularValores(
 				datos.getIdemision(),
 				datos.getCuenta(),
@@ -320,7 +321,8 @@ public class LecturasApi {
 				datos.isSwMunicipio(),
 				datos.isSwAdultoMayor(),
 				datos.isSwAguapotable(),
-				datos.isSwbasura());
+				datos.isSwbasura(),
+				datos.isSwRefacturacion());
 		return ResponseEntity.ok(
 				resultado);
 
@@ -422,5 +424,11 @@ public class LecturasApi {
 	public ResponseEntity<Void> deleteRubrosByIdEmisin(@RequestParam Long idemision) {
 		lecServicio.deleteRubrosByIdEmisin(idemision);
 		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/findMultas")
+	public ResponseEntity<BigDecimal> findMultas(@RequestParam Long cuenta) {
+		BigDecimal multa = emisionServicioOptimizadoV2.multas(cuenta);
+		return ResponseEntity.ok(multa);
 	}
 }
