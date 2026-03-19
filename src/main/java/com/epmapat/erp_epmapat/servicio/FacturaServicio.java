@@ -2,7 +2,9 @@ package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Facturas;
+import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
@@ -49,6 +52,8 @@ public class FacturaServicio {
 	private RubroxfacR rubroxfacR;
 	@Autowired
 	private DefinirR dao_definir;
+	@Autowired
+	private LecturaServicio lecturaServicio;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -706,6 +711,49 @@ public class FacturaServicio {
 		return recalcularYGuardarTotales(factura);
 	}
 
+	@Transactional
+	public Facturas setMulta(Long idfactura) {
+
+		Facturas factura = dao.findById(idfactura)
+				.orElseThrow(() -> new RuntimeException("Factura no encontrada con ID: " + idfactura));
+		Date emisionDate = lecturaServicio.findDateByIdfactura(idfactura);
+
+		// ✅ 1) Obtén la cuenta (AJUSTA el getter al tuyo real)
+		// Long cuenta = factura.getIdabonado();
+
+		// ✅ 2) Calcula cuánto debe de multa (0 = no debe)
+		BigDecimal valorMulta = set_multas(emisionDate);
+		boolean debeMulta = valorMulta != null && valorMulta.compareTo(BigDecimal.ZERO) > 0;
+
+		// ✅ 3) Si NO debe multa: borrar rubro 6 si existe
+		if (!debeMulta) {
+			rubroxfacR.deleteByFacturaIdAndRubroId(idfactura, 6L);
+			return recalcularYGuardarTotales(factura);
+		}
+		Rubros rubro = new Rubros();
+		rubro.setIdrubro(6L);
+
+		// ✅ 4) Si SÍ debe multa: crear o actualizar rubro 6
+		Rubroxfac multa = rubroxfacR.findByFacturaIdAndRubroId(idfactura, 6L)
+				.orElseGet(() -> {
+					Rubroxfac nuevo = new Rubroxfac();
+					nuevo.setIdfactura_facturas(factura);
+					nuevo.setIdrubro_rubros(rubro);
+					// si tu entidad Rubroxfac tiene objeto rubro relacionado, setéalo también
+					// nuevo.setIdrubro_rubros(rubrosRepo.getById(6L));
+					nuevo.setCantidad(1F); // multa siempre 1
+					return nuevo;
+				});
+
+		// ✅ valor multa va en valorunitario (cantidad=1)
+		multa.setCantidad(1F);
+		multa.setValorunitario(valorMulta);
+		rubroxfacR.save(multa);
+
+		// ✅ 5) recalcular totales
+		return recalcularYGuardarTotales(factura);
+	}
+
 	/** Recalcula totales en base a rubroxfac */
 	private Facturas recalcularYGuardarTotales(Facturas factura) {
 		Long idfactura = factura.getIdfactura();
@@ -750,6 +798,32 @@ public class FacturaServicio {
 
 		// 0.5% del RBU
 		return definir.getRbu().multiply(BigDecimal.valueOf(0.005));
+	}
+
+	private BigDecimal set_multas(Date fechaemision) {
+		BigDecimal rbu2025 = BigDecimal.valueOf(470.00);
+		BigDecimal porcentaje = BigDecimal.valueOf(0.005);
+
+		Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
+		if (definir == null || definir.getRbu() == null)
+			return BigDecimal.ZERO;
+		if (fechaemision == null)
+			return BigDecimal.ZERO;
+
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(fechaemision);
+		LocalDate fecha = LocalDate.of(
+				cal.get(Calendar.YEAR),
+				cal.get(Calendar.MONTH) + 1,
+				cal.get(Calendar.DAY_OF_MONTH));
+
+		if (fecha.isBefore(LocalDate.of(2025, 8, 1)))
+			return BigDecimal.valueOf(2.00);
+
+		if (fecha.isBefore(LocalDate.of(2025, 12, 1)))
+			return rbu2025.multiply(porcentaje);
+
+		return definir.getRbu().multiply(porcentaje);
 	}
 
 	@Transactional

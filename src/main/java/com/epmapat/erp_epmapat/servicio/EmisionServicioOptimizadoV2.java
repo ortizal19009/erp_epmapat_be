@@ -134,7 +134,11 @@ public class EmisionServicioOptimizadoV2 {
         // ---------------------------
         // 2) Calcular rubros base
         // ---------------------------
-        BigDecimal multa = multas(cuenta);
+        BigDecimal multa = BigDecimal.ZERO;
+
+        if (!swRefacturacion) {
+            multa = multas(cuenta);
+        }
         /*
          * BigDecimal multa_basura = multas_basura(cuenta);
          */

@@ -680,10 +680,16 @@ public class FacturasApi {
 		return ResponseEntity.ok(facServicio.validarMultasYRecalcularTotal(idfactura));
 	}
 
+	@GetMapping("/set_multas")
+	public ResponseEntity<Facturas> setultaFactura(@RequestParam Long idfactura) {
+		return ResponseEntity.ok(facServicio.setMulta(idfactura));
+	}
+
 	@GetMapping("/recalcularMultas")
 	ResponseEntity<?> corregirEmision(@RequestParam Long idemision) {
 		return ResponseEntity.ok(facServicio.reCalcularMultas(idemision));
 	}
+
 	@GetMapping("/findByIdEmision")
 	public ResponseEntity<List<FacturasProjection>> findFacturasCobradasByEmision(@RequestParam Long idemision) {
 		return ResponseEntity.ok(facServicio.findFacturasCobradasByEmision(idemision));

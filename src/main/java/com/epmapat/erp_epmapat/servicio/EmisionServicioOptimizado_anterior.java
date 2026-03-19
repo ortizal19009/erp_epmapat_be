@@ -106,7 +106,11 @@ public class EmisionServicioOptimizado_anterior {
                 swAguapotable, factura);
 
         // --- Cálculos puros ---
-        BigDecimal multa = multas(cuenta);
+        BigDecimal multa = BigDecimal.ZERO;
+
+        if (!swRefacturacion) {
+            multa = multas(cuenta);
+        }
 
         BigDecimal ap = baseAguaPotable(ctx);
         BigDecimal al = baseAlcantarillado(ctx);
