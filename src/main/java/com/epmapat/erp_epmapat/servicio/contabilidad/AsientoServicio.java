@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Asientos;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.AsientosR;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class AsientoServicio {
 
@@ -35,12 +38,12 @@ public class AsientoServicio {
 	}
 
 	//Busca por número de Asiento
-	public List<Asientos> findAsientos(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
+	public List<Asientos> findAsientos(Long desdeNum, Long hastaNum, LocalDate desdeFecha, LocalDate hastaFecha) {
 		return dao.findAsientos(desdeNum, hastaNum, desdeFecha, hastaFecha);
 	}
 
 	//Busca por número de Cpmprobante
-	public List<Asientos> findComprobantes(Integer tipcom, Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
+	public List<Asientos> findComprobantes(Integer tipcom, Long desdeNum, Long hastaNum, LocalDate desdeFecha, LocalDate hastaFecha) {
 		return dao.findComprobantes(tipcom, desdeNum, hastaNum, desdeFecha, hastaFecha);
 	}
 

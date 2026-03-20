@@ -1,39 +1,51 @@
 package com.epmapat.erp_epmapat.repositorio.contabilidad;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.modelo.contabilidad.Certipresu;
 
-public interface CertipresuR extends JpaRepository<Certipresu, Long>{
+public interface CertipresuR extends JpaRepository<Certipresu, Long> {
 
-	@Query(value ="SELECT * FROM certificaciones WHERE tipo=1 and numero BETWEEN (?1) AND (?2) and fecha BETWEEN (?3) AND (?4) ORDER BY numero ASC", nativeQuery = true)
-	public List<Certipresu> findDesdeHasta(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha);
-	
-	@Query(value = "SELECT * FROM certificaciones ORDER BY idcerti DESC LIMIT 10 ", nativeQuery = true)
-	public List<Certipresu> findLastTen();
+	@Query(value = "SELECT * FROM certificaciones " +
+			"WHERE tipo = ?1 " +
+			"AND numero BETWEEN ?2 AND ?3 " +
+			"AND fecha BETWEEN ?4 AND ?5 " +
+			"ORDER BY numero ASC", nativeQuery = true)
+	List<Certipresu> findDesdeHasta(Integer tipo, Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha);
 
-	@Query(value="SELECT * FROM certificaciones WHERE tipo = 2 AND fecha BETWEEN (?1) AND (?2)", nativeQuery = true)
-	public List<Certipresu> findByFecha(Date desde, Date hasta);
-   
-	@Query(value = "SELECT * FROM certificaciones ORDER BY numero DESC LIMIT 1", nativeQuery = true)
-	public List<Certipresu> findMax();
+	// Ultima Certificación o Reintegrada
+	Certipresu findFirstByTipoOrderByNumeroDesc(Integer tipo);
 
-	@Query(value="SELECT * FROM certificaciones WHERE numero BETWEEN (?1) AND (?2)", nativeQuery = true)
-	public List<Certipresu> findByNumero(Long desde, Long hasta);
+	// Busca Certificación o Reintegrada por número
+	Certipresu findByNumeroAndTipo(Long numero, int tipo); // Si se usa
 
-	// @Query(value ="SELECT * FROM certificaciones WHERE fecha BETWEEN  (?3) AND (?4) OR numero BETWEEN (?1) AND (?2) ORDER BY numero ASC", nativeQuery = true)
-	// public List<Certipresu> findByDorN(Long d_num, Long h_num, Date d_date, Date h_date);
+	// Valida por Número
+	boolean existsByNumeroAndTipo(Long numero, int tipo);
 
-	
+	// @Query("""
+	// SELECT c.numero
+	// FROM Certipresu c
+	// WHERE c.tipo = 1
+	// AND c.fecha <= :fecha
+	// ORDER BY c.numero DESC
+	// """)
+	// Long findUltimoNumeroTipo1HastaFecha(@Param("fecha") LocalDate fecha);
 
-	//Ultima ccertificación
-	Certipresu findFirstByOrderByNumeroDesc();
- 
-	//Validar por Número
-	Certipresu findByNumeroAndTipo(Long numero, int tipo);
+	// BUsca la última certificacion hasta una fecha (para el navegador)
+	@Query(value = """
+			  SELECT c.numero
+			  FROM certificaciones c
+			  WHERE c.tipo = 1
+			    AND c.fecha <= :fecha
+			  ORDER BY c.numero DESC
+			  LIMIT 1
+			""", nativeQuery = true)
+	Long findUltimoNumeroTipo1HastaFecha(@Param("fecha") LocalDate fecha);
 
 }

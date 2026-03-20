@@ -21,8 +21,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.BeneficiarioServicio;
 
 @RestController
 @RequestMapping("/beneficiarios")
-
-
 public class BeneficiariosApi {
 
 	@Autowired
@@ -46,6 +44,7 @@ public class BeneficiariosApi {
 	@GetMapping("/nombengru")
 	public List<Beneficiarios> findByGrupoBene(@Param(value = "nomben") String nomben,
 			@Param(value = "idgrupo") Long idgrupo) {
+		System.out.println("nomben: " + nomben.toLowerCase());
 		return beneServicio.findByNombenGru(nomben.toLowerCase(), idgrupo);
 	}
 

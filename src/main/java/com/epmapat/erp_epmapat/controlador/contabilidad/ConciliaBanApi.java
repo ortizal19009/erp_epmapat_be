@@ -17,8 +17,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.ConciliaBanServicio;
 
 @RestController
 @RequestMapping("/conciliaban")
-
-
 public class ConciliaBanApi {
 
 	@Autowired
@@ -38,8 +36,7 @@ public class ConciliaBanApi {
 		 return ResponseEntity.notFound().build();
 	  }
 	}
- 
-	
+
 	@PostMapping
 	public ResponseEntity<ConciliaBan> saveConciliaban(@RequestBody ConciliaBan conciliaban){
 		return ResponseEntity.ok(conciServicio.save(conciliaban));

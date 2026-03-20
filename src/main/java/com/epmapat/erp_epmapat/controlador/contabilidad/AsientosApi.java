@@ -2,7 +2,6 @@ package com.epmapat.erp_epmapat.controlador.contabilidad;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,8 +19,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.AsientoServicio;
 
 @RestController
 @RequestMapping("/asientos")
-
-
 public class AsientosApi {
 
 	@Autowired
@@ -29,12 +26,12 @@ public class AsientosApi {
 
 	@GetMapping
 	public List<Asientos> getAsientos(
-			@Param(value = "asi_com") Integer asi_com,	//1 o 2
+			@Param(value = "asi_com") Integer asi_com, // 1 o 2
 			@Param(value = "tipcom") Integer tipcom,
 			@Param(value = "desdeNum") Long desdeNum,
 			@Param(value = "hastaNum") Long hastaNum,
-			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
-			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
+			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desdeFecha,
+			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hastaFecha) {
 		if (asi_com == 1) {
 			return asiServicio.findAsientos(desdeNum, hastaNum, desdeFecha, hastaFecha);
 		} else if (asi_com == 2)
@@ -48,6 +45,7 @@ public class AsientosApi {
 		return asiServicio.findFirstByOrderByAsientoDesc();
 	}
 
+	// Ultimo comprobante
 	@GetMapping("/ultimocompro")
 	public Long ultimocompro(@Param("tipcom") Integer tipcom) {
 		return asiServicio.findLastComproByTipcom(tipcom);
@@ -77,17 +75,20 @@ public class AsientosApi {
 		return asiServicio.obtenerUltimaFecha();
 	}
 
+	// Valida número de comprobante
 	@GetMapping("/valcompro")
 	public ResponseEntity<Boolean> validarCompro(@RequestParam Integer tipcom, @RequestParam Long compro) {
 		boolean esComproValido = asiServicio.valCompro(tipcom, compro);
 		return ResponseEntity.ok(esComproValido);
 	}
 
+	// Guarda nuevo
 	@PostMapping
-	public Asientos saveAsiento(@RequestBody Asientos x) {
-		return asiServicio.save( x );
+	public Asientos saveAsiento(@RequestBody Asientos asiento) {
+		return asiServicio.save(asiento);
 	}
 
+	// Actualiza (OJO: Colocar los campos modificados en el servicio)
 	@PutMapping("/{idasiento}")
 	public ResponseEntity<Asientos> updateAsiento(@PathVariable Long idasiento, @RequestBody Asientos x) {
 		Asientos y = asiServicio.findById(idasiento)
@@ -116,6 +117,7 @@ public class AsientosApi {
 		return ResponseEntity.ok(updateAsiento);
 	}
 
+	// Actualiza totdeb y totcre de un asiento
 	@PatchMapping("/totales")
 	public void updateTotdebAndTotcre(@Param(value = "idasiento") Long idasiento,
 			@Param(value = "totdeb") BigDecimal totdeb,

@@ -1,12 +1,14 @@
 package com.epmapat.erp_epmapat.controlador.contabilidad;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,73 +17,59 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Certipresu;
 import com.epmapat.erp_epmapat.servicio.contabilidad.CertipresuServicio;
 
-@RestController
-@RequestMapping("/certipresu")
+import lombok.RequiredArgsConstructor;
 
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/certipresu")
 
 public class CertipresuApi {
 
-	@Autowired
-	private CertipresuServicio certiServicio;
+	final private CertipresuServicio certiServicio;
 
+	// Certificaciones o Reintegradas por numero y fechas
 	@GetMapping
-	public List<Certipresu> getAllLista(@Param(value = "desdeNum") Long desdeNum,
-			@Param(value = "hastaNum") Long hastaNum,
-			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
-			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
-		if (desdeNum != null) {
-			return certiServicio.findDesdeHasta(desdeNum, hastaNum, desdeFecha, hastaFecha);
-		} else
-			return null;
+	public List<Certipresu> desdeHasta(@RequestParam int tipo, @RequestParam Long desdeNum, @RequestParam Long hastaNum,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
+		return certiServicio.findDesdeHasta(tipo, desdeNum, hastaNum, desdeFecha, hastaFecha);
 	}
 
-	@GetMapping("/ultimo")
-	public Certipresu ultimo() {
-		return certiServicio.findFirstByOrderByNumeroDesc();
+	// Obtiene la última Certificacion o Reintegrada
+	@GetMapping("/ultima")
+	public Certipresu ultimo(@RequestParam Integer tipo) {
+		return certiServicio.findFirstByTipoOrderByNumeroDesc(tipo);
 	}
 
-	//Valida número certificación (OJO preferibre debería retornar true/false y con Param)
-	@GetMapping("/numero/{numero}/tipo/{tipo}")
-	public Certipresu valNumero(@PathVariable Long numero, @PathVariable Integer tipo) {
-		return certiServicio.findByNumeroAndTipo(numero, tipo);
+	// Valida número
+	@GetMapping("/valnumero/numero/{numero}/tipo/{tipo}")
+	public boolean valNumero(@PathVariable Long numero, @PathVariable Integer tipo) {
+		return certiServicio.existsByNumeroAndTipo(numero, tipo);
 	}
 
-	//Una certificación por número
+	// Busca por número (Retorna 200:Ok 204: noContent)
 	@GetMapping("/numero")
-	public Certipresu findCertipresu(@Param(value = "numero") Long numero, @Param(value = "tipo") Integer tipo ) {
-		return certiServicio.findByNumeroAndTipo(numero, tipo);
+	public ResponseEntity<Certipresu> findByNumeroAndTipo(@RequestParam Long numero, @RequestParam int tipo) {
+		Certipresu c = certiServicio.findByNumeroAndTipo(numero, tipo);
+		if (c == null) {
+			return ResponseEntity.noContent().build();
+		} // 204 No Content
+		return ResponseEntity.ok(c); // 200 OK
 	}
 
-	@PostMapping
-	public Certipresu saveCertiPresu(@RequestBody Certipresu certipresu) {
-		return certiServicio.save(certipresu);
-	}
-
-	@PutMapping("/{idcerti}")
-	public ResponseEntity<Certipresu> updateCertiPresu(@PathVariable Long idcerti, @RequestBody Certipresu y) {
-		Certipresu x = certiServicio.findById(idcerti)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones("No se encuenta este Id" + idcerti));
-		x.setTipo(y.getTipo());
-		x.setNumero(y.getNumero());
-		x.setFecha(y.getFecha());
-		x.setValor(y.getValor());
-		x.setDescripcion(y.getDescripcion());
-		x.setNumdoc(y.getNumdoc());
-		x.setUsucrea(y.getUsucrea());
-		x.setFeccrea(y.getFeccrea());
-		x.setUsumodi(y.getUsumodi());
-		x.setFecmodi(y.getFecmodi());
-		x.setIdbene(y.getIdbene());
-		x.setIdbeneres(y.getIdbeneres());
-		x.setIntdoc(y.getIntdoc());
-		Certipresu updateCerti = certiServicio.save(x);
-		return ResponseEntity.ok(updateCerti);
+	// BUsca la última certificacion hasta una fecha (para el navegador)
+	@GetMapping("/ultima/fecha")
+	public ResponseEntity<Long> obtenerUltimoNumero(
+			@RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+		Long numero = certiServicio.obtenerUltimoNumeroTipo1HastaFecha(fecha);
+		return ResponseEntity.ok(numero);
 	}
 
 	@GetMapping("/{idcerti}")
@@ -89,10 +77,30 @@ public class CertipresuApi {
 		return certiServicio.findById(idcerti);
 	}
 
-	@DeleteMapping(value = "/{idcerti}")
-	public ResponseEntity<Boolean> deleteCertipresu(@PathVariable("idcerti") Long idcerti) {
-		certiServicio.deleteById(idcerti);
-		return ResponseEntity.ok(!(certiServicio.findById(idcerti) != null));
+	// Nueva
+	@PostMapping
+	public Certipresu saveCertiPresu(@RequestBody Certipresu certipresu) {
+		return certiServicio.save(certipresu);
+	}
+
+	// Actualiza
+	@PutMapping("/{idcerti}")
+	public ResponseEntity<Certipresu> updateCertipresu(
+			@PathVariable Long idcerti,
+			@RequestBody Certipresu certipresu) {
+		Certipresu updated = certiServicio.updateCertipresu(idcerti, certipresu);
+		return ResponseEntity.ok(updated);
+	}
+
+	// Elimina (Si no existe devuelve 404)
+	@DeleteMapping("/{idcerti}")
+	public ResponseEntity<?> deleteCertipresu(@PathVariable Long idcerti) {
+		try {
+			certiServicio.deleteById(idcerti);
+			return ResponseEntity.ok(true);
+		} catch (EntityNotFoundException ex) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
 	}
 
 }

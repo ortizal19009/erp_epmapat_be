@@ -2,7 +2,6 @@ package com.epmapat.erp_epmapat.repositorio.contabilidad;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -16,14 +15,21 @@ import com.epmapat.erp_epmapat.modelo.contabilidad.Asientos;
 
 public interface AsientosR extends JpaRepository<Asientos, Long> {
 
-	//Asientos por números y fechas
-	@Query(value = "SELECT * FROM asientos WHERE asiento BETWEEN (?1) AND (?2) and fecha BETWEEN (?3) AND (?4) ORDER BY asiento ASC", nativeQuery = true)
-	public List<Asientos> findAsientos(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha);
-
-	//Comprobantes por números y fechas
-	@Query(value = "SELECT * FROM asientos WHERE tipcom=?1 and compro BETWEEN (?2) AND (?3) and fecha BETWEEN (?4) AND (?5) ORDER BY compro ASC", nativeQuery = true)
-	public List<Asientos> findComprobantes(Integer tipcom, Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha);
-
+	// Asientos por números y fechas
+	@Query("SELECT a FROM Asientos a WHERE a.asiento BETWEEN :desdeNum AND :hastaNum AND a.fecha BETWEEN :desdeFecha AND :hastaFecha ORDER BY a.asiento ASC")
+	List<Asientos> findAsientos(@Param("desdeNum") Long desdeNum, 
+										 @Param("hastaNum") Long hastaNum, 
+										 @Param("desdeFecha") LocalDate desdeFecha, 
+										 @Param("hastaFecha") LocalDate hastaFecha);
+	
+	// Comprobantes por números y fechas
+	@Query("SELECT a FROM Asientos a WHERE a.tipcom = :tipcom AND a.compro BETWEEN :desdeNum AND :hastaNum AND a.fecha BETWEEN :desdeFecha AND :hastaFecha ORDER BY a.compro ASC")
+	List<Asientos> findComprobantes(@Param("tipcom") Integer tipcom, 
+											  @Param("desdeNum") Long desdeNum, 
+											  @Param("hastaNum") Long hastaNum, 
+											  @Param("desdeFecha") LocalDate desdeFecha, 
+											  @Param("hastaFecha") LocalDate hastaFecha);
+	
 	// Ultimo por Asiento
 	Asientos findFirstByOrderByAsientoDesc();
 
@@ -45,8 +51,8 @@ public interface AsientosR extends JpaRepository<Asientos, Long> {
 	Asientos findTopByOrderByNumeroDesc();
 
 	// Valida Número de Comprobante
-	@Query("SELECT COUNT(a) > 0 FROM Asientos a WHERE a.tipcom = :tipcom AND a.compro = :compro")
-	boolean valComproOld(@Param("tipcom") Integer tipcom, @Param("compro") Long compro);
+	// @Query("SELECT COUNT(a) > 0 FROM Asientos a WHERE a.tipcom = :tipcom AND a.compro = :compro")
+	// boolean valComproOld(@Param("tipcom") Integer tipcom, @Param("compro") Long compro);
 
 	@Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Asientos a WHERE a.tipcom = :tipcom AND a.compro = :compro")
 	boolean valCompro(@Param("tipcom") Integer tipcom, @Param("compro") Long compro);
@@ -60,6 +66,6 @@ public interface AsientosR extends JpaRepository<Asientos, Long> {
 	@Transactional
 	@Query("UPDATE Asientos a SET a.totdeb = :totdeb, a.totcre = :totcre WHERE a.idasiento = :idasiento")
 	void updateTotdebAndTotcre(@Param("totdeb") BigDecimal totdeb, @Param("totcre") BigDecimal totcre,
-			@Param("idasiento") Long idasiento);
+	@Param("idasiento") Long idasiento );
 
 }

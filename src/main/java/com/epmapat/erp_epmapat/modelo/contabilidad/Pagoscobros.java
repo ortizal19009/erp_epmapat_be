@@ -11,7 +11,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "pagoscobros")
 public class Pagoscobros {
 
@@ -32,60 +41,5 @@ public class Pagoscobros {
 	private String codparreci; 
 	private String codcuereci; 
 	private Long asierefe;
-
-   public Long getIdpagcob() {
-      return idpagcob;
-   }
-   public void setIdpagcob(Long idpagcob) {
-      this.idpagcob = idpagcob;
-   }
-   public Transaci getInttra() {
-      return inttra;
-   }
-   public void setInttra(Transaci inttra) {
-      this.inttra = inttra;
-   }
-   public Beneficiarios getIdbene() {
-      return idbene;
-   }
-   public void setIdbene(Beneficiarios idbene) {
-      this.idbene = idbene;
-   }
-   public BenexTran getIdbenxtra() {
-      return idbenxtra;
-   }
-   public void setIdbenxtra(BenexTran idbenxtra) {
-      this.idbenxtra = idbenxtra;
-   }
-   public BigDecimal getValor() {
-      return valor;
-   }
-   public void setValor(BigDecimal valor) {
-      this.valor = valor;
-   }
-   public Long getIntpre() {
-      return intpre;
-   }
-   public void setIntpre(Long intpre) {
-      this.intpre = intpre;
-   }
-   public String getCodparreci() {
-      return codparreci;
-   }
-   public void setCodparreci(String codparreci) {
-      this.codparreci = codparreci;
-   }
-   public String getCodcuereci() {
-      return codcuereci;
-   }
-   public void setCodcuereci(String codcuereci) {
-      this.codcuereci = codcuereci;
-   }
-   public Long getAsierefe() {
-      return asierefe;
-   }
-   public void setAsierefe(Long asierefe) {
-      this.asierefe = asierefe;
-   }
 
 }

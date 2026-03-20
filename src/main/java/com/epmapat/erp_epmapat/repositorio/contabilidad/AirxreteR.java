@@ -9,7 +9,7 @@ import com.epmapat.erp_epmapat.modelo.contabilidad.Airxrete;
 
 public interface AirxreteR extends JpaRepository<Airxrete, Long> {
 
- 	// Airxrete de una Retención
+	// Airxrete de una Retención
 	@Query(value = "select * from airxrete a where a.idrete = ?1", nativeQuery = true)
 	public List<Airxrete> findByIdrete(Long idrete);
 
