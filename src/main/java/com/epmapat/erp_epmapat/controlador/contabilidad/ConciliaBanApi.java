@@ -36,7 +36,8 @@ public class ConciliaBanApi {
 		 return ResponseEntity.notFound().build();
 	  }
 	}
-
+ 
+	
 	@PostMapping
 	public ResponseEntity<ConciliaBan> saveConciliaban(@RequestBody ConciliaBan conciliaban){
 		return ResponseEntity.ok(conciServicio.save(conciliaban));

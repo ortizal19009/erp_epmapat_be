@@ -21,7 +21,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.GrupobeneServicio;
 @RestController
 @RequestMapping("/gruposbene")
 
-
 public class GruposbeneApi {
 
     @Autowired
@@ -44,12 +43,10 @@ public class GruposbeneApi {
         return ResponseEntity.ok(grupobene);
     }
 
-
     @PostMapping
     public Gruposbene updateOrSave(@RequestBody Gruposbene x) {
         return grubenServicio.save(x);
     }
-
 
     @PutMapping("/{idgrupo}")
     public ResponseEntity<Gruposbene> update(@PathVariable Long idgrupo, @RequestBody Gruposbene x) {

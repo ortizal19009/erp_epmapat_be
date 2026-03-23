@@ -20,8 +20,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.TramipresuServicio;
 
 @RestController
 @RequestMapping("/tramipresu")
-
-
 public class TramipresuApi {
 
    @Autowired

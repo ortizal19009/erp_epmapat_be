@@ -10,6 +10,7 @@ import javax.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,27 +18,48 @@ import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Asientos;
 import com.epmapat.erp_epmapat.servicio.contabilidad.AsientoServicio;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/asientos")
+@RequiredArgsConstructor
 public class AsientosApi {
 
-	@Autowired
-	private AsientoServicio asiServicio;
+	private final AsientoServicio asiServicio;
 
+	// @GetMapping
+	// public List<Asientos> getAsientos(
+	// @Param(value = "asi_com") Integer asi_com, // 1 o 2
+	// @Param(value = "tipcom") Integer tipcom,
+	// @Param(value = "desdeNum") Long desdeNum,
+	// @Param(value = "hastaNum") Long hastaNum,
+	// @Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate
+	// desdeFecha,
+	// @Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate
+	// hastaFecha) {
+	// if (asi_com == 1) {
+	// return asiServicio.findAsientos(desdeNum, hastaNum, desdeFecha, hastaFecha);
+	// } else if (asi_com == 2)
+	// return asiServicio.findComprobantes(tipcom, desdeNum, hastaNum, desdeFecha,
+	// hastaFecha);
+	// else
+	// return null;
+	// }
 	@GetMapping
 	public List<Asientos> getAsientos(
-			@Param(value = "asi_com") Integer asi_com, // 1 o 2
-			@Param(value = "tipcom") Integer tipcom,
-			@Param(value = "desdeNum") Long desdeNum,
-			@Param(value = "hastaNum") Long hastaNum,
-			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desdeFecha,
-			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hastaFecha) {
+			@RequestParam(value = "asi_com") Integer asi_com, // 1 o 2
+			@RequestParam(value = "tipcom", required = false) Integer tipcom,
+			@RequestParam(value = "desdeNum") Long desdeNum,
+			@RequestParam(value = "hastaNum") Long hastaNum,
+			@RequestParam("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desdeFecha,
+			@RequestParam("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hastaFecha) {
 		if (asi_com == 1) {
 			return asiServicio.findAsientos(desdeNum, hastaNum, desdeFecha, hastaFecha);
-		} else if (asi_com == 2)
+		} else if (asi_com == 2) {
 			return asiServicio.findComprobantes(tipcom, desdeNum, hastaNum, desdeFecha, hastaFecha);
-		else
-			return null;
+		} else {
+			return List.of();
+		}
 	}
 
 	@GetMapping("/ultimo")
@@ -51,18 +73,40 @@ public class AsientosApi {
 		return asiServicio.findLastComproByTipcom(tipcom);
 	}
 
+	// Un asiento por ID (con /asiento)
 	@GetMapping("/asiento")
-	public Asientos obtenerAsientoPorId(@Param("idasiento") Long idasiento) {
-		Asientos asientos = asiServicio.obtenerAsientoPorId(idasiento);
-		if (asientos == null) {
-			throw new EntityNotFoundException("Asiento no encontrado");
-		}
-		return asientos;
+	public ResponseEntity<Asientos> buscaById(@RequestParam Long idasiento) {
+		return asiServicio.findById(idasiento)
+				.map(ResponseEntity::ok) // 200 OK si existe
+				.orElseGet(() -> ResponseEntity.notFound().build()); // 404 si no existe
 	}
 
+	// Un Asiento por ID
 	@GetMapping("/{idasiento}")
-	public Optional<Asientos> findByIdAsiento(@PathVariable Long idasiento) {
-		return asiServicio.findById(idasiento);
+	public ResponseEntity<Asientos> findById(@PathVariable Long idasiento) {
+		return asiServicio.findById(idasiento)
+				.map(ResponseEntity::ok) // 200 OK si existe
+				.orElseGet(() -> ResponseEntity.notFound().build()); // 404 si no existe
+	}
+
+	// Un Asiento por Número (Retorna 200:Ok 204: noContent)
+	@GetMapping("/numero/{asiento}")
+	public ResponseEntity<Asientos> buscarPorNumero(@PathVariable Long asiento) {
+		Asientos asi = asiServicio.buscarPorNumero(asiento);
+		return (asi != null)
+				? ResponseEntity.ok(asi) // 200 OK con cuerpo
+				: ResponseEntity.noContent().build(); // 204 No Content sin cuerpo
+	}
+
+	// Un Asiento por Número (Retorna 200:Ok 204: noContent)
+	@GetMapping("/comprobante/{tipcom}/{compro}")
+	public ResponseEntity<Asientos> buscarPorTipcomYCompro(
+			@PathVariable Integer tipcom,
+			@PathVariable Long compro) {
+		Asientos asi = asiServicio.findByTipcomAndCompro(tipcom, compro);
+		return (asi != null)
+				? ResponseEntity.ok(asi) // 200 OK con cuerpo
+				: ResponseEntity.noContent().build(); // 204 No Content
 	}
 
 	@GetMapping("/siguiente")
@@ -73,6 +117,13 @@ public class AsientosApi {
 	@GetMapping("/ultimafecha")
 	public LocalDate obtenerUltimaFecha() {
 		return asiServicio.obtenerUltimaFecha();
+	}
+
+	// Busca primer comprobante de un tipcom (para navegador)
+	@GetMapping("/primercompro/{tipcom}")
+	public ResponseEntity<Long> obtenerPrimerComprobante(@PathVariable Integer tipcom) {
+		Long compro = asiServicio.obtenerPrimerComprobante(tipcom);
+		return ResponseEntity.ok(compro);
 	}
 
 	// Valida número de comprobante
@@ -88,47 +139,24 @@ public class AsientosApi {
 		return asiServicio.save(asiento);
 	}
 
-	// Actualiza (OJO: Colocar los campos modificados en el servicio)
+	// Actualiza
 	@PutMapping("/{idasiento}")
-	public ResponseEntity<Asientos> updateAsiento(@PathVariable Long idasiento, @RequestBody Asientos x) {
-		Asientos y = asiServicio.findById(idasiento)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones("No se encuenta este Id" + idasiento));
-		y.setAsiento(x.getAsiento());
-		y.setFecha(x.getFecha());
-		y.setTipasi(x.getTipasi());
-		y.setTipcom(x.getTipcom());
-		y.setCompro(x.getCompro());
-		y.setNumcue(x.getNumcue());
-		y.setTotdeb(x.getTotdeb());
-		y.setTotcre(x.getTotcre());
-		y.setGlosa(x.getGlosa());
-		y.setNumdoc(x.getNumdoc());
-		y.setCerrado(x.getCerrado());
-		y.setSwretencion(x.getSwretencion());
-		y.setTotalspi(x.getTotalspi());
-		y.setIntdoc(x.getIntdoc());
-		y.setIdbene(x.getIdbene());
-		y.setIdcueban(x.getIdcueban());
-		y.setUsucrea(x.getUsucrea());
-		y.setFeccrea(x.getFeccrea());
-		y.setUsumodi(x.getUsumodi());
-		y.setFecmodi(x.getFecmodi());
-		Asientos updateAsiento = asiServicio.save(y);
-		return ResponseEntity.ok(updateAsiento);
+	public ResponseEntity<Asientos> updateAsiento(
+			@PathVariable Long idasiento,
+			@RequestBody Asientos asiento) {
+		Asientos updated = asiServicio.updateAsiento(idasiento, asiento);
+		return ResponseEntity.ok(updated);
 	}
 
-	// Actualiza totdeb y totcre de un asiento
-	@PatchMapping("/totales")
-	public void updateTotdebAndTotcre(@Param(value = "idasiento") Long idasiento,
-			@Param(value = "totdeb") BigDecimal totdeb,
-			@Param(value = "totcre") BigDecimal totcre) {
-		asiServicio.updateTotdebAndTotcre(idasiento, totdeb, totcre);
-	}
-
-	@DeleteMapping(value = "/{idasiento}")
-	public ResponseEntity<Boolean> deleteAsientos(@PathVariable("idasiento") Long idasiento) {
-		asiServicio.deleteById(idasiento);
-		return ResponseEntity.ok(!(asiServicio.findById(idasiento) != null));
+	// Elimina (Si no existe devuelve 404)
+	@DeleteMapping("/{idasiento}")
+	public ResponseEntity<?> deleteAsiento(@PathVariable Long idasiento) {
+		try {
+			asiServicio.deleteById(idasiento);
+			return ResponseEntity.ok(true);
+		} catch (EntityNotFoundException ex) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
 	}
 
 }

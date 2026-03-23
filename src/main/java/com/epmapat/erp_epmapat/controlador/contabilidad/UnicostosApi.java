@@ -13,8 +13,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.UnicostosServicio;
 
 @RestController
 @RequestMapping("/unicostos")
-
-
 public class UnicostosApi {
 
    @Autowired

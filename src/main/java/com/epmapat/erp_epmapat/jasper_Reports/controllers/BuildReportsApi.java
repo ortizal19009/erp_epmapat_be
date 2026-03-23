@@ -1,4 +1,4 @@
-package com.epmapat.erp_epmapat.jasperReports.controllers;
+package com.epmapat.erp_epmapat.jasper_Reports.controllers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,8 +33,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.epmapat.erp_epmapat.jasperReports.DTO.JasperDTO;
-import com.epmapat.erp_epmapat.jasperReports.services.BuildReports;
+import com.epmapat.erp_epmapat.jasper_Reports.DTO.JasperDTO;
+import com.epmapat.erp_epmapat.jasper_Reports.services.BuildReports;
 
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;

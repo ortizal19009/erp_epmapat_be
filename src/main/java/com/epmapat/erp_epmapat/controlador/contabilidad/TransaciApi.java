@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +21,7 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.TransaciServicio;
 
 @RestController
 @RequestMapping("/transaci")
+
 public class TransaciApi {
 
 	@Autowired
@@ -37,7 +41,7 @@ public class TransaciApi {
 
 	// Valida si una Cuenta tiene Transacciones
 	@GetMapping("/tieneTransaci")
-	public ResponseEntity<Boolean> verificarEjecuciones(@Param(value = "codcue") String codcue) {
+	public ResponseEntity<Boolean> tieneTransaci(@Param(value = "codcue") String codcue) {
 		boolean tieneTransaci = tranServicio.tieneTransaci(codcue);
 		return ResponseEntity.ok(tieneTransaci);
 	}
@@ -47,6 +51,13 @@ public class TransaciApi {
 	public ResponseEntity<Boolean> existsByIdasiento(@Param(value = "idasiento") Long idasiento) {
 		boolean x = tranServicio.existsByIdasiento(idasiento);
 		return ResponseEntity.ok(x);
+	}
+
+	// Cuenta las transacciones de un asiento
+	@GetMapping("/count/{idasiento}")
+	public ResponseEntity<Short> countByIdasiento_Idasiento(@PathVariable Long idasiento) {
+		short count = tranServicio.countByIdasiento_Idasiento(idasiento);
+		return ResponseEntity.ok(count);
 	}
 
 	// Mayor de una Cuenta
@@ -100,7 +111,7 @@ public class TransaciApi {
 	}
 
 	@GetMapping("/tipasi")
-	public ResponseEntity<List<Transaci>> getByTipAsi(@RequestParam Long tipasi) {
+	public ResponseEntity<List<Transaci>> getByTipAsi(@RequestParam("tipasi") Long tipasi) {
 		return ResponseEntity.ok(tranServicio.getByTipAsi(tipasi));
 	}
 
@@ -133,79 +144,24 @@ public class TransaciApi {
 		return tranServicio.save(transaci);
 	}
 
-	@PutMapping("/updtransaci/{inttra}")
-	public ResponseEntity<Transaci> updateTransaci(@PathVariable Long inttra, @RequestBody Transaci transaci) {
-		Transaci transacim = tranServicio.findById(inttra)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones("No se encuentra esta transaci " + inttra));
-		transacim.setOrden(transaci.getOrden());
-		transacim.setCodcue(transaci.getCodcue());
-		transacim.setValor(transaci.getValor());
-		transacim.setDebcre(transaci.getDebcre());
-		transacim.setDescri(transaci.getDescri());
-		transacim.setNumdoc(transaci.getNumdoc());
-		transacim.setTiptran(transaci.getTiptran());
-		transacim.setTotbene(transaci.getTotbene());
-		transacim.setSwconcili(transaci.getSwconcili());
-		transacim.setMesconcili(transaci.getMesconcili());
-		transacim.setIdasiento(transaci.getIdasiento());
-		transacim.setIdbene(transaci.getIdbene());
-		transacim.setIntdoc(transaci.getIntdoc());
-		transacim.setIntpre(transaci.getIntpre());
-		transacim.setCodpartr(transaci.getCodpartr());
-		transacim.setCodcueiog(transaci.getCodcueiog());
-		transacim.setDebeiog(transaci.getDebeiog());
-		transacim.setHaberiog(transaci.getHaberiog());
-		transacim.setAsierefe(transaci.getAsierefe());
-		transacim.setUsucrea(transaci.getUsucrea());
-		transacim.setFeccrea(transaci.getFeccrea());
-		transacim.setUsumodi(transaci.getUsumodi());
-		transacim.setFecmodi(transaci.getFecmodi());
-		Transaci updateTransaci = tranServicio.save(transacim);
-		return ResponseEntity.ok(updateTransaci);
-	}
-
-	// Actualiza con id
+	// Actualiza solo los modificados
 	@PutMapping("/{inttra}")
-	public ResponseEntity<Transaci> updateTransaci1(@PathVariable Long inttra, @RequestBody Transaci transaci) {
-		Transaci transacim = tranServicio.findById(inttra)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones("No se encuentra esta transaci " + inttra));
-		transacim.setOrden(transaci.getOrden());
-		transacim.setIdcuenta(transaci.getIdcuenta());
-		transacim.setCodcue(transaci.getCodcue());
-		transacim.setValor(transaci.getValor());
-		transacim.setDebcre(transaci.getDebcre());
-		transacim.setDescri(transaci.getDescri());
-		transacim.setNumdoc(transaci.getNumdoc());
-		transacim.setTiptran(transaci.getTiptran());
-		transacim.setTotbene(transaci.getTotbene());
-		transacim.setSwconcili(transaci.getSwconcili());
-		transacim.setMesconcili(transaci.getMesconcili());
-		transacim.setIdasiento(transaci.getIdasiento());
-		transacim.setIdbene(transaci.getIdbene());
-		transacim.setIntdoc(transaci.getIntdoc());
-		transacim.setIntpre(transaci.getIntpre());
-		transacim.setCodpartr(transaci.getCodpartr());
-		transacim.setCodcueiog(transaci.getCodcueiog());
-		transacim.setDebeiog(transaci.getDebeiog());
-		transacim.setHaberiog(transaci.getHaberiog());
-		transacim.setAsierefe(transaci.getAsierefe());
-		transacim.setUsucrea(transaci.getUsucrea());
-		transacim.setFeccrea(transaci.getFeccrea());
-		transacim.setUsumodi(transaci.getUsumodi());
-		transacim.setFecmodi(transaci.getFecmodi());
-		Transaci updateTransaci = tranServicio.save(transacim);
-		return ResponseEntity.ok(updateTransaci);
+	public ResponseEntity<Transaci> updateTran(
+			@PathVariable Long inttra,
+			@RequestBody Transaci transaci) {
+		Transaci updated = tranServicio.updateTransaci(inttra, transaci);
+		return ResponseEntity.ok(updated);
 	}
 
-	@DeleteMapping(value = "/{inttra}")
-	public ResponseEntity<Boolean> deleteTransaci(@PathVariable("inttra") Long inttra) {
-		tranServicio.deleteById(inttra);
-		return ResponseEntity.ok(!(tranServicio.findById(inttra) != null));
-	}
-
-	@GetMapping("/aperini")
-	public ResponseEntity<List<Transaci>> getAperInicial(@RequestParam("codcue") String Codcue) {
-		return ResponseEntity.ok(tranServicio.aperInicial(Codcue));
+	// Elimina verificando si existe (otro usuario pudo eliminar)
+	@DeleteMapping("/{inttra}")
+	public ResponseEntity<?> deleteTransaci(@PathVariable Long inttra) {
+		try {
+			tranServicio.deleteById(inttra);
+			return ResponseEntity.ok(true);
+		} catch (EntityNotFoundException ex) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
 	}
 
 }

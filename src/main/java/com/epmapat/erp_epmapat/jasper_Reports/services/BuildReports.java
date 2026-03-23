@@ -1,4 +1,4 @@
-package com.epmapat.erp_epmapat.jasperReports.services;
+package com.epmapat.erp_epmapat.jasper_Reports.services;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -8,9 +8,9 @@ import java.util.Map;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import com.epmapat.erp_epmapat.jasperReports.DTO.JasperDTO;
-import com.epmapat.erp_epmapat.jasperReports.utils.JasperReportLoader;
-import com.epmapat.erp_epmapat.jasperReports.utils.ReportCache;
+import com.epmapat.erp_epmapat.jasper_Reports.DTO.JasperDTO;
+import com.epmapat.erp_epmapat.jasper_Reports.utils.JasperReportLoader;
+import com.epmapat.erp_epmapat.jasper_Reports.utils.ReportCache;
 
 import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.*;

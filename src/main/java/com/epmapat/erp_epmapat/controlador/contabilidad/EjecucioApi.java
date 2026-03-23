@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.controlador.contabilidad;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,8 +29,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.PresupueServicio;
 
 @RestController
 @RequestMapping("/ejecucio")
-
-
 public class EjecucioApi {
 
    private EjecucioServicio ejecuServicio;
@@ -59,7 +59,7 @@ public class EjecucioApi {
    @GetMapping("/tieneEjecucio")
    public ResponseEntity<Boolean> tieneEjecucio(@Param(value = "codpar") String codpar) {
       boolean b = ejecuServicio.tieneEjecucio(codpar);
-      return ResponseEntity.ok( b );
+      return ResponseEntity.ok(b);
    }
 
    @GetMapping("/{inteje}")
@@ -70,15 +70,21 @@ public class EjecucioApi {
       return ResponseEntity.ok(x);
    }
 
+   // Cuenta por idparxcer
+   @GetMapping("/countByIdparxcer/{idparxcer}")
+   public short countEjecucioByIdparxcer(@PathVariable Long idparxcer) {
+      return ejecuServicio.countByIdparxcer(idparxcer);
+   }
+
    // Contar por intpre
    @GetMapping("/countByIntpre")
    public Long countByIntpre(@Param(value = "intpre") Long intpre) {
       return ejecuServicio.countByIntpre(intpre);
    }
 
-   //Partidas de un Trámite
+   // Partidas de un Trámite
    @GetMapping("/partixtrami")
-   public List<Ejecucio> partixtrami(@Param(value = "idtrami") Long idtrami){
+   public List<Ejecucio> partixtrami(@Param(value = "idtrami") Long idtrami) {
       return ejecuServicio.partixtrami(idtrami);
    }
 
@@ -87,6 +93,7 @@ public class EjecucioApi {
          @Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
          @Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
       Double tmodi = ejecuServicio.totalModi(codpar, desdeFecha, hastaFecha);
+      // System.out.println("tmodi: " + tmodi);
       return tmodi;
    }
 
@@ -106,9 +113,44 @@ public class EjecucioApi {
       return tdeven;
    }
 
+   // Ejecución de un Asiento
+   @GetMapping("/idasiento/{idasiento}")
+   public List<Ejecucio> findByIdasiento(@PathVariable Long idasiento) {
+      return ejecuServicio.findByIdasiento(idasiento);
+   }
+
+   // Ejecución de un Asiento y tippar
+   @GetMapping("/idasiento/{idasiento}/tippar/{tippar}")
+   public List<Ejecucio> findByIdasientoAndTippar(@PathVariable Long idasiento, @PathVariable Integer tippar) {
+      return ejecuServicio.findByIdasientoAndTippar(idasiento, tippar);
+   }
+
+   // Ejecucion de una transaci.inttra
+   @GetMapping("/inttra/{inttra}")
+   public ResponseEntity<Ejecucio> getByInttra(@PathVariable Long inttra) {
+      return ejecuServicio.buscarPorInttra(inttra)
+            .map(ResponseEntity::ok) // 200 con el registro
+            .orElseGet(() -> ResponseEntity.ok(null)); // 200 con null
+   }
+
+   // Compromisos que tienen saldo pendiente (Los comodines están en el servicio)
+   @GetMapping("/misosPendientes")
+   public List<Ejecucio> obtenerCompromisos(
+         @RequestParam("nomben") String nomben,
+         @RequestParam("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hasta) {
+      return ejecuServicio.getMisosPendientes(nomben, hasta);
+   }
+
    @PostMapping
    public ResponseEntity<Ejecucio> save(@RequestBody Ejecucio x) {
       return ResponseEntity.ok(ejecuServicio.save(x));
+   }
+
+   // Nueva con claves foraneas credas en el servicio
+   @PostMapping("/foraneas")
+   public ResponseEntity<Ejecucio> saveEjecu(@RequestBody Ejecucio ejecucio) {
+      Ejecucio saved = ejecuServicio.save(ejecucio);
+      return ResponseEntity.status(HttpStatus.CREATED).body(saved);
    }
 
    @PutMapping("/{inteje}")
@@ -140,6 +182,13 @@ public class EjecucioApi {
 
       Ejecucio actualizar = ejecuServicio.save(y);
       return ResponseEntity.ok(actualizar);
+   }
+
+   // Actualiza totdeven de una ejecución
+   @PatchMapping("/totdeven")
+   public void updateTotdeven(@Param(value = "inteje") Long inteje,
+         @Param(value = "totdeven") BigDecimal totdeven) {
+      ejecuServicio.updateTotdeven(inteje, totdeven);
    }
 
    @DeleteMapping("/{inteje}")

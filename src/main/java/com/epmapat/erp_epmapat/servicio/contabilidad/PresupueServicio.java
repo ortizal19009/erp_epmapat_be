@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.servicio.contabilidad;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,21 +8,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.contabilidad.Presupue;
+import com.epmapat.erp_epmapat.repositorio.contabilidad.PartixcertiR;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.PresupueR;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class PresupueServicio {
 
-   @Autowired
-   private PresupueR dao;
+   private final PresupueR dao;
+   private final PartixcertiR daoPartixcerti;
 
    // Busca Partidas de ingresos o Gastos (Para cálculos con todas las partidas)
    public List<Presupue> buscaPartidas(Integer tippar) {
       return dao.buscaPartidas(tippar);
    }
 
+   // Partidas de Ingresos por Codigo Y Nombre
    public List<Presupue> findAllIng(String codpar, String nompar) {
-      return dao.findAllIng(codpar, nompar);
+      int tippar = 1; // Partidas de Ingresos
+      String codparPattern = codpar + "%";
+      String nomparPattern = "%" + nompar.toLowerCase() + "%";
+      return dao.findAllByTippar(tippar, codparPattern, nomparPattern);
    }
 
    // Busca por Código o Nombre
@@ -33,6 +42,11 @@ public class PresupueServicio {
    // codigo completo )
    public List<Presupue> findByCodpar(Long tippar, String codpar) {
       return dao.findByCodpar(tippar, codpar);
+   }
+
+   // Partidas por naturaleza (para cobrado/pagado)
+   public List<Presupue> findByTipparAndNaturaleza(int tippar, int inicio, String naturaleza) {
+      return dao.findByTipparAndNaturaleza(tippar, inicio, naturaleza);
    }
 
    public List<Presupue> findByNompar(Long tippar, String nompar) {
@@ -62,6 +76,26 @@ public class PresupueServicio {
       return dao.buscaClasificador(codigo);
    }
 
+   // Busca una partida
+   public Optional<Presupue> getPresupueByCodpar(String codpar) {
+      return dao.findByCodpar(codpar);
+   }
+
+   // Suma partixcerti.valor y lo guarda en presupue.totcerti
+   public void recalculaValorTotcerti(Long intpre) {
+      BigDecimal total = daoPartixcerti.sumaValoresPorPartida(intpre);
+      Presupue partida = dao.findById(intpre)
+            .orElseThrow(() -> new RuntimeException("Partida no encontrada: " + intpre));
+      partida.setTotcerti(total);
+      dao.save(partida);
+   }
+
+   // Usada en Ejecución Presupuestaria
+   public Double totalCodpar(Long tippar, String codpar) {
+      Double total = dao.totalCodpar(tippar, codpar);
+      return total;
+   }
+
    public <S extends Presupue> S save(S entity) {
       return dao.save(entity);
    }
@@ -84,16 +118,6 @@ public class PresupueServicio {
 
    public void delete(Presupue entity) {
       dao.delete(entity);
-   }
-
-   // Usada en Ejecución Presupuestaria
-   public Double totalCodpar(Long tippar, String codpar) {
-      Double total = dao.totalCodpar(tippar, codpar);
-      return total;
-   }
-
-   public List<Presupue> findByActividad(Long intest) {
-      return dao.findByActividad(intest);
    }
 
 }

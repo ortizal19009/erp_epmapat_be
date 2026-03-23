@@ -19,15 +19,20 @@ public interface RetencionesR extends JpaRepository<Retenciones, Long> {
 	@Query(value = "SELECT * FROM retenciones ORDER BY secretencion1", nativeQuery = true)
 	public List<Retenciones> findAll();
 
-	//Retencion(es) de un asiento
+	// Retencion(es) de un asiento
 	@Query(value = "SELECT * FROM retenciones WHERE idasiento = (?1)", nativeQuery = true)
 	public List<Retenciones> findByIdasiento(Long idasiento);
 
 	// Última retención
-	Retenciones findFirstByOrderBySecretencion1Desc();
+	@Query(value = "SELECT * FROM retenciones ORDER BY CAST(secretencion1 AS integer) DESC LIMIT 1", nativeQuery = true)
+	Retenciones findLastNumeric();
 
-	// Validar por Número
-	@Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Retenciones r WHERE r.secretencion1 = :secretencion1")
-	boolean valSecretencion1( @Param("secretencion1") String secretencion1);
+	// Validar Número de retencion (es string pero compara como numero)
+	@Query(value = """
+			    SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END
+			    FROM retenciones r
+			    WHERE CAST(r.secretencion1 AS INTEGER) = :secretencion1
+			""", nativeQuery = true)
+	boolean valSecretencion1(@Param("secretencion1") Integer secretencion1);
 
 }

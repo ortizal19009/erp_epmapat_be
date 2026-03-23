@@ -20,7 +20,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.Tabla10Servicio;
 @RestController
 @RequestMapping("/tabla10")
 
-
 public class Tabla10Api {
     @Autowired
     Tabla10Servicio tabla10Servicio;

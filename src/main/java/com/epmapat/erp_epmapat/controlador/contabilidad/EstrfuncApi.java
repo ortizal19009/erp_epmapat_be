@@ -22,8 +22,6 @@ import org.springframework.data.repository.query.Param;
 
 @RestController
 @RequestMapping("/estrfunc")
-
-
 public class EstrfuncApi {
 
    @Autowired

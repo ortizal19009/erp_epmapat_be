@@ -16,8 +16,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.Fec_retencionesServicio;
 
 @RestController
 @RequestMapping("/fec_retenciones")
-
-
 public class Fec_retencionesAPI {
    
    @Autowired

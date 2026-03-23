@@ -20,7 +20,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.NiifCuentaServicio;
 @RestController
 @RequestMapping("/niifcuentas")
 
-
 public class NiifCuentasApi {
 
 	@Autowired

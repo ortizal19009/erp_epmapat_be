@@ -75,7 +75,7 @@ public class Retenciones {
    private Date fechacaduca;
    private String descripcion;
 
-   @ManyToOne(fetch = FetchType.LAZY)
+   @OneToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idasiento")
    private Asientos idasiento;
 
@@ -84,12 +84,13 @@ public class Retenciones {
    private Beneficiarios idbene;
 
    @ManyToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name = "intdoc")
-   private Documentos intdoc;
+   @JoinColumn(name = "iddocu")
+   private Documentos iddocu;
 
-   @ManyToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name = "idautoriza")
-   private Autorizaxbene idautoriza;
+   // @ManyToOne(fetch = FetchType.LAZY)
+   // @JoinColumn(name = "idautoriza")
+   // private Autorizaxbene idautoriza;
+   private Integer idautoriza;
 
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idtabla01")

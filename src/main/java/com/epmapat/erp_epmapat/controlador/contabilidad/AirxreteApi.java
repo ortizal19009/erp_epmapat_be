@@ -19,6 +19,7 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.AirxreteServicio;
 
 @RestController
 @RequestMapping("/airxrete")
+
 public class AirxreteApi {
 
    @Autowired

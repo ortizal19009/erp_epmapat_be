@@ -22,7 +22,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.PresupueServicio;
 @RestController
 @RequestMapping("/presupue")
 
-
 public class PresupueApi {
 
    @Autowired
@@ -53,6 +52,15 @@ public class PresupueApi {
    @GetMapping("/clasificador")
    public List<Presupue> buscaClasificador(@Param(value = "codigo") String codigo) {
       return presuServicio.buscaClasificador(codigo);
+   }
+
+   // Partidas por naturaleza (para cobrado/pagado)
+   @GetMapping("/naturaleza")
+   public List<Presupue> findByNaturaleza(
+         @RequestParam int tippar,
+         @RequestParam int inicio,
+         @RequestParam String naturaleza) {
+      return presuServicio.findByTipparAndNaturaleza(tippar, inicio, naturaleza);
    }
 
    public Presupue updateOrSave(@RequestBody Presupue x) {

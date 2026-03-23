@@ -17,7 +17,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.Fec_reteimpuServicio;
 @RestController
 @RequestMapping("/fec_reteimpu")
 
-
 public class Fec_reteimpuApi {
 
    @Autowired

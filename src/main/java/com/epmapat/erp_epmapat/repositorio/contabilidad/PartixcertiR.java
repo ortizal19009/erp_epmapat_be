@@ -12,6 +12,7 @@ import com.epmapat.erp_epmapat.modelo.contabilidad.Partixcerti;
 
 public interface PartixcertiR extends JpaRepository<Partixcerti, Long> {
 
+
 	// Partidas de una certipresu
 	List<Partixcerti> findByIdcerti_Idcerti(Long idcerti);
 

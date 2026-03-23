@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.controlador.contabilidad;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -20,7 +21,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.PresupueServicio;
 
 @RestController
 @RequestMapping("/preingresos")
-
 
 public class PreingresosApi {
 
@@ -64,6 +64,30 @@ public class PreingresosApi {
             .orElseThrow(() -> new ResourceNotFoundExcepciones(
                   ("No existe Partida con Intpre: " + intpre)));
       return ResponseEntity.ok(x);
+   }
+
+   // Una partida por código
+   // @GetMapping("/codpar/{codpar}")
+   // public ResponseEntity<Presupue> getPresupue(@PathVariable String codpar) {
+   // Optional<Presupue> presupueOptional =
+   // presuServicio.getPresupueByCodpar(codpar);
+   // if (presupueOptional.isPresent()) {
+   // return ResponseEntity.ok(presupueOptional.get());
+   // } else {
+   // return ResponseEntity.notFound().build();
+   // }
+   // }
+
+   @GetMapping("/codpar/{codpar}")
+   public ResponseEntity<Presupue> getPresupue(@PathVariable String codpar) {
+      Optional<Presupue> presupueOptional = presuServicio.getPresupueByCodpar(codpar);
+      if (presupueOptional.isPresent()) {
+         return ResponseEntity.ok(presupueOptional.get());
+      } else {
+         return ResponseEntity.ok(null); // Devuelve null en caso de no encontrar
+         // return ResponseEntity.ok(new Presupue()); // Devuelve un objeto Presupue
+         // vacío
+      }
    }
 
    @PostMapping

@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.repositorio.contabilidad;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import com.epmapat.erp_epmapat.modelo.contabilidad.BenexTran;
 
 public interface BenexTranR extends JpaRepository<BenexTran, Long> {
 
-	@Query(value = "SELECT * FROM benextran b join transaci t on b.inttra = t.inttra WHERE t.codcue LIKE ?1% AND t.debcre = 2", nativeQuery = true)
+	@Query(value = "SELECT * FROM benextran b join transaci t on b.inttra = t.inttra WHERE t.codcue LIKE ?1 || '%' AND t.debcre = 2", nativeQuery = true)
 	public List<BenexTran> getEgresos(String codcue);
 
 	// Benextran de un Beneficiario desde/hasta
@@ -25,11 +26,40 @@ public interface BenexTranR extends JpaRepository<BenexTran, Long> {
 	public List<BenexTran> getCxP();
 
 	// ACFP sin liquidar
-	@Query(value = "select * from beneficiarios b JOIN benextran x on b.idbene=x.idbene JOIN transaci t ON x.inttra=t.inttra JOIN asientos a ON a.idasiento=t.idasiento where a.fecha<=?1 and b.nomben like %?2% and t.tiptran=?3 and t.codcue=?4 order by b.nomben", nativeQuery = true)
-	public List<BenexTran> getACFP(Date hasta, String nomben, Integer tiptran, String codcue);
+	// @Query(value = "select * from beneficiarios b JOIN benextran x on
+	// b.idbene=x.idbene JOIN transaci t ON x.inttra=t.inttra JOIN asientos a ON
+	// a.idasiento=t.idasiento WHERE ?1 > a.fecha and lower(b.nomben) LIKE '%' ||
+	// lower(?2) || '%' and t.tiptran=?3 and t.codcue=?4 and x.valor <> x.totpagcob
+	// order by b.nomben, a.fecha", nativeQuery = true)
+	// public List<BenexTran> getACFP(Date hasta, String nomben, Integer tiptran,
+	// String codcue);
+	@Query("""
+			    SELECT x
+			    FROM BenexTran x
+			    JOIN x.idbene b
+			    JOIN x.inttra t
+			    JOIN t.idasiento a
+			    WHERE a.fecha <= :hasta
+			      AND LOWER(b.nomben) LIKE LOWER(CONCAT('%', :nomben, '%'))
+			      AND t.tiptran = :tiptran
+			      AND t.codcue = :codcue
+			      AND x.valor <> x.totpagcob
+			    ORDER BY b.nomben, a.fecha
+			""")
+	List<BenexTran> getACFP(
+			LocalDate hasta,
+			String nomben,
+			Integer tiptran,
+			String codcue);
 
 	// Verifica si un Beneficiario tiene registros en benextran
 	@Query(value = "SELECT EXISTS (SELECT 1 FROM benextran WHERE idbene = ?1)", nativeQuery = true)
 	boolean existeByIdbene(Long idbene);
+
+	// Benextran de una transaci
+	List<BenexTran> findByInttra_Inttra(Long inttra);
+
+	// Cuenta los Benextran de una transaci.inttra
+	short countByInttra_Inttra(Long inttra);
 
 }

@@ -22,7 +22,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.PresupueServicio;
 @RestController
 @RequestMapping("/pregastos")
 
-
 public class PregastosApi {
 
    @Autowired
@@ -59,21 +58,22 @@ public class PregastosApi {
 
    // Cuenta las Partidas por Actividad
    // @GetMapping("/count")
-   // public ResponseEntity<Long> countPresupueWithIdestrfunc(@RequestParam("intest") Long intest) {
-   //    Long count = presuServicio.countByIdestrfunc(intest);
-   //    return ResponseEntity.ok(count);
+   // public ResponseEntity<Long>
+   // countPresupueWithIdestrfunc(@RequestParam("intest") Long intest) {
+   // Long count = presuServicio.countByIdestrfunc(intest);
+   // return ResponseEntity.ok(count);
    // }
 
    // Cuenta las Partidas por Actividad
-    @GetMapping("/actividad")
-    public List<Presupue> findByActividad(@RequestParam("intest") Long intest) {
-       return presuServicio.findByActividad(intest);
-    }
+   // @GetMapping("/actividad")
+   // public List<Presupue> findByActividad(@RequestParam("intest") Long intest) {
+   // return presuServicio.findByActividad(intest);
+   // }
 
-    @PostMapping
-    public ResponseEntity<Presupue> save(@RequestBody Presupue x) {
-        return ResponseEntity.ok(presuServicio.save( x ));
-    }
+   @PostMapping
+   public ResponseEntity<Presupue> save(@RequestBody Presupue x) {
+      return ResponseEntity.ok(presuServicio.save(x));
+   }
 
    @PutMapping("/{intpre}")
    public ResponseEntity<Presupue> update(@PathVariable Long intpre, @RequestBody Presupue x) {
@@ -109,5 +109,5 @@ public class PregastosApi {
       presuServicio.deleteById(intpre);
       return ResponseEntity.ok(!(presuServicio.findById(intpre) != null));
    }
-   
+
 }

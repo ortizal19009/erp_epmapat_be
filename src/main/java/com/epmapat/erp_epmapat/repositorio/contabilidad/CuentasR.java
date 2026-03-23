@@ -34,8 +34,12 @@ public interface CuentasR extends JpaRepository<Cuentas, Long> {
     @Query(value = "SELECT * FROM cuentas where asohaber = ?1 order by codcue", nativeQuery = true)
     List<Cuentas> findByAsohaber(String asohaber);
 
-    @Query(value = "SELECT * FROM cuentas where asodebe = ?1 order by codcue", nativeQuery = true)
-    List<Cuentas> findByAsodebe(String asodebe);
+    // @Query(value = "SELECT * FROM cuentas where asodebe = ?1 order by codcue",
+    // nativeQuery = true)
+    // List<Cuentas> findByAsodebe(String asodebe);
+
+    // Cuentas asociadas a una Partida (al Debe)
+    List<Cuentas> findByAsodebeOrderByCodcue(String asodebe);
 
     // Cuentas por tiptran para los DataList
     @Query(value = "SELECT * FROM cuentas where tiptran = ?1 and codcue like ?2 and movcue = 2 order by codcue", nativeQuery = true)
@@ -64,5 +68,12 @@ public interface CuentasR extends JpaRepository<Cuentas, Long> {
     // Cuentas de costos
     @Query(value = "SELECT * FROM cuentas where (codcue like '133%' or codcue like '62%') and movcue=2 and (asodebe >= '0' or asohaber >= '0') order by codcue", nativeQuery = true)
     List<Cuentas> findCuecostos();
+
+    // Cuentas para reporte SaldoCuentas (Beans)
+    // @Query("""
+    //         SELECT c FROM Cuentas c WHERE c.codcue LIKE CONCAT(:codcue, '%') ORDER BY c.codcue """)
+    // List<Cuentas> findByCodcuePrefix(@Param("codcue") String codcue);
+    List<Cuentas> findByCodcueStartingWithOrderByCodcue(String codcue);
+
 
 }

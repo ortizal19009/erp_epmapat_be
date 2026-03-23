@@ -20,7 +20,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.ReformaServicio;
 @RestController
 @RequestMapping("/reformas")
 
-
 public class ReformasApi {
 
    @Autowired
@@ -38,10 +37,10 @@ public class ReformasApi {
       return refoServicio.findFirstByOrderByNumeroDesc();
    }
 
-   @GetMapping("/siguiente")
-   public Long getSiguienteReforma() {
-      return refoServicio.obtenerSiguienteNumeroReforma();
-   }
+   // @GetMapping("/siguiente")
+   // public Long getSiguienteReforma() {
+   // return refoServicio.obtenerSiguienteNumeroReforma();
+   // }
 
    @GetMapping("/{idrefo}")
    public ResponseEntity<Reformas> getByIdreforma(@PathVariable Long idrefo) {
@@ -82,5 +81,4 @@ public class ReformasApi {
       refoServicio.deleteById(idrefo);
       return ResponseEntity.ok(!(refoServicio.findById(idrefo) != null));
    }
-
 }

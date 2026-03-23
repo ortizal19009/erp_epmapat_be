@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.repositorio.contabilidad;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,9 @@ public interface TransaciR extends JpaRepository<Transaci, Long> {
 	@Query(value = "SELECT EXISTS (SELECT 1 FROM Transaci WHERE idasiento = ?1)", nativeQuery = true)
 	boolean existsByIdasiento(Long idasiento);
 
+	// Cuenta las transacciones de un asiento
+	short countByIdasiento_Idasiento(Long idasiento);
+
 	// Para el mayor
 	@Query(value = "SELECT * FROM transaci t INNER JOIN asientos a ON t.idasiento = a.idasiento where t.codcue like ?1% and a.fecha>=?2 and a.fecha<=?3 order by a.fecha", nativeQuery = true)
 	public List<Transaci> findByCodcue(String codcue, Date desde, Date hasta);
@@ -54,27 +58,40 @@ public interface TransaciR extends JpaRepository<Transaci, Long> {
 	BigDecimal sumValor(String codcue, Integer debcre, Date desde, Date hasta);
 
 	// Sinafip
-	// @Query(value = "SELECT * FROM transaci t JOIN asientos a ON t.idasiento =
-	// a.idasiento WHERE a.tipasi = ?1", nativeQuery = true)
-	@Query(value = """
-			SELECT *
-			FROM transaci t
-			JOIN asientos a ON t.idasiento = a.idasiento
-			WHERE a.tipasi = ?1
-			ORDER BY
-			  COALESCE(CAST(NULLIF(split_part(t.codcue, '.', 1), '') AS integer), 0),
-			  COALESCE(CAST(NULLIF(split_part(t.codcue, '.', 2), '') AS integer), 0),
-			  COALESCE(CAST(NULLIF(split_part(t.codcue, '.', 3), '') AS integer), 0),
-			  t.codcue
-			""", nativeQuery = true)
-	List<Transaci> findByTipAsi(Long tipasi);
+	@Query(value = "SELECT * FROM transaci t JOIN asientos a ON  t.idasiento = a.idasiento WHERE a.tipasi = ?1", nativeQuery = true)
+	public List<Transaci> findByTipAsi(Long tipasi);
 
 	// Transaciones de los Asientos por números y fechas (Para el reporte de detalle
 	// de asientos)
 	@Query(value = "SELECT * FROM transaci t INNER JOIN asientos a ON t.idasiento = a.idasiento WHERE a.asiento BETWEEN (?1) AND (?2) and a.fecha BETWEEN (?3) AND (?4) ORDER BY a.asiento ASC", nativeQuery = true)
 	public List<Transaci> tranAsientos(Long desdeAsi, Long hastaAsi, Date desdeFecha, Date hastaFecha);
 
-	@Query(value = "SELECT * FROM transaci t JOIN asientos a ON  t.idasiento = a.idasiento WHERE t.codcue LIKE ?1% AND a.tipasi=1 ORDER BY codcue ASC", nativeQuery = true)
-	public List<Transaci> aperInicial(String codcue);
+	// === Para SaldoCuentas ===
+	// Saldos Anteriores
+	@Query("""
+			    SELECT
+			        SUM(CASE WHEN t.debcre = 1 THEN t.valor ELSE 0 END),
+			        SUM(CASE WHEN t.debcre = 2 THEN t.valor ELSE 0 END)
+			    FROM Transaci t
+			    WHERE t.codcue = :codcue
+			      AND t.idasiento.fecha < :desde
+			""")
+	List<Object[]> obtenerTotalesAnteriores(
+			@Param("codcue") String codcue,
+			@Param("desde") LocalDate desde);
+
+	// Saldos del período
+	@Query("""
+			    SELECT
+			        SUM(CASE WHEN t.debcre = 1 THEN t.valor ELSE 0 END),
+			        SUM(CASE WHEN t.debcre = 2 THEN t.valor ELSE 0 END)
+			    FROM Transaci t
+			    WHERE t.codcue = :codcue
+			      AND t.idasiento.fecha BETWEEN :desde AND :hasta
+			""")
+	List<Object[]> obtenerTotalesPeriodo(
+			@Param("codcue") String codcue,
+			@Param("desde") LocalDate desde,
+			@Param("hasta") LocalDate hasta);
 
 }

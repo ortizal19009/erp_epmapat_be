@@ -21,7 +21,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.NiifHomologaServicio;
 @RestController
 @RequestMapping("/niifhomologa")
 
-
 public class NiifHomologaApi {
 
    @Autowired
