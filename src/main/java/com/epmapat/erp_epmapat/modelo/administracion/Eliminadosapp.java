@@ -13,6 +13,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "eliminadosapp")
+
 public class Eliminadosapp {
 
    @Id
