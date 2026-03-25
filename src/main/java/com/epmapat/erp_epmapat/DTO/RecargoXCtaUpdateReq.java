@@ -5,7 +5,8 @@ import java.sql.Timestamp;
 import lombok.Data;
 
 @Data
-public class RecargoXCtaReq {
+public class RecargoXCtaUpdateReq {
+    // Campos de actualización
     private Long idabonado;
     private Long idemision;
     private Long idrubro;
@@ -14,4 +15,9 @@ public class RecargoXCtaReq {
     private Long usucrea;
     private Long usuresp;
     private Timestamp fecha;
+
+    // Campos de auditoría
+    private Long usumodi;
+    private String observacionAuditoria;
+    private String tipoAuditoria;
 }

@@ -8,27 +8,48 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.epmapat.erp_epmapat.DTO.DeleteAuditReq;
 import com.epmapat.erp_epmapat.DTO.RecargoXCtaReq;
+import com.epmapat.erp_epmapat.DTO.RecargoXCtaUpdateReq;
+import com.epmapat.erp_epmapat.DTO.RecargosxcuentaAuditDTO;
 import com.epmapat.erp_epmapat.DTO.ValidarRecargosRequest;
 import com.epmapat.erp_epmapat.DTO.ValidarRecargosResponse;
 import com.epmapat.erp_epmapat.excepciones.BusinessConflictException;
+import com.epmapat.erp_epmapat.modelo.AuditoriaGenerica;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.modelo.Recargosxcuenta;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
+import com.epmapat.erp_epmapat.repositorio.AuditoriaGenericaR;
 import com.epmapat.erp_epmapat.repositorio.EmisionesR;
 import com.epmapat.erp_epmapat.repositorio.RecargosxcuentaR;
 import com.epmapat.erp_epmapat.repositorio.RubrosR;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class RecargosxcuentaService {
 
     private final RecargosxcuentaR recargosR;
     private final EmisionesR emisionesR;
     private final AbonadosR abonadosR;
     private final RubrosR rubrosR;
+    private final AuditoriaGenericaR auditoriaGenericaR;
+    private final ObjectMapper objectMapper;
+
+    public RecargosxcuentaService(RecargosxcuentaR recargosR, EmisionesR emisionesR, AbonadosR abonadosR, RubrosR rubrosR, AuditoriaGenericaR auditoriaGenericaR) {
+        this.recargosR = recargosR;
+        this.emisionesR = emisionesR;
+        this.abonadosR = abonadosR;
+        this.rubrosR = rubrosR;
+        this.auditoriaGenericaR = auditoriaGenericaR;
+        
+        // Configurar ObjectMapper para manejar tipos de Java 8
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+    }
 
     // =========================
     // Helpers (null checks)
@@ -58,8 +79,159 @@ public class RecargosxcuentaService {
         recargosR.deleteById(id);
     }
 
+    public Recargosxcuenta findById(Long id) {
+        return recargosR.findById(id).orElse(null);
+    }
+
     public List<Recargosxcuenta> findAllByEmision(Long emision) {
         return recargosR.findByIdEmision(emision);
+    }
+
+    // =========================
+    // Actualizar Recargo
+    // =========================
+    @Transactional
+    public Recargosxcuenta actualizarRecargo(Long idrecargo, RecargoXCtaReq req) {
+        Recargosxcuenta recargo = recargosR.findById(idrecargo)
+                .orElseThrow(() -> new IllegalArgumentException("Recargo no encontrado: " + idrecargo));
+
+        // Actualizar solo los campos recibidos
+        if (req.getTipo() != null) {
+            Integer tipo = requireTipo(req.getTipo(), "Tipo inválido");
+            recargo.setTipo(tipo);
+        }
+
+        if (req.getIdabonado() != null) {
+            recargo.setIdabonado_abonados(abonadosR.getReferenceById(req.getIdabonado()));
+        }
+
+        if (req.getIdrubro() != null) {
+            recargo.setIdrubro_rubros(rubrosR.getReferenceById(req.getIdrubro()));
+        }
+
+        if (req.getObservacion() != null) {
+            recargo.setObservacion(req.getObservacion());
+        }
+
+        if (req.getFecha() != null) {
+            recargo.setFecha(req.getFecha());
+        }
+
+        Long usumodi = requireId(req.getUsuresp(), "usuresp (modificador) es obligatorio");
+        recargo.setUsumodi(usumodi);
+        recargo.setFecmodi(new Timestamp(System.currentTimeMillis()));
+
+        return recargosR.save(recargo);
+    }
+
+    // =========================
+    // Actualizar con auditoría (guarda estado inicial)
+    // =========================
+    @Transactional
+    public Recargosxcuenta actualizarRecargoConAuditoria(Long idrecargo, RecargoXCtaUpdateReq req) {
+        Recargosxcuenta recargoOriginal = recargosR.findById(idrecargo)
+                .orElseThrow(() -> new IllegalArgumentException("Recargo no encontrado: " + idrecargo));
+
+        // Convertir el objeto ORIGINAL a DTO para auditoría
+        RecargosxcuentaAuditDTO auditDTO = convertToAuditDTO(recargoOriginal);
+
+        // Serializar el estado inicial
+        String json = "{}";
+        try {
+            json = objectMapper.writeValueAsString(auditDTO);
+        } catch (JsonProcessingException e) {
+            json = "{\"serializationError\":\"" + e.getMessage().replaceAll("\"", "\\\"") + "\"}";
+        }
+
+        // Guardar auditoría con el estado inicial
+        AuditoriaGenerica audit = new AuditoriaGenerica();
+        audit.setEntidad("recargosxcuenta");
+        audit.setEntidadId(idrecargo);
+        audit.setUsumodi(requireId(req.getUsumodi(), "usumodi (usuario que modifica) es obligatorio"));
+        audit.setFecmodi(new Timestamp(System.currentTimeMillis()));
+        audit.setObservacion(req.getObservacionAuditoria());
+        audit.setTipo((req.getTipoAuditoria() == null || req.getTipoAuditoria().isBlank()) ? "MODIFICACION" : req.getTipoAuditoria());
+        audit.setObjectJson(json);
+        auditoriaGenericaR.save(audit);
+
+        // Ahora aplicar los cambios
+        if (req.getTipo() != null) {
+            Integer tipo = requireTipo(req.getTipo(), "Tipo inválido");
+            recargoOriginal.setTipo(tipo);
+        }
+
+        if (req.getIdabonado() != null) {
+            recargoOriginal.setIdabonado_abonados(abonadosR.getReferenceById(req.getIdabonado()));
+        }
+
+        if (req.getIdrubro() != null) {
+            recargoOriginal.setIdrubro_rubros(rubrosR.getReferenceById(req.getIdrubro()));
+        }
+
+        if (req.getObservacion() != null) {
+            recargoOriginal.setObservacion(req.getObservacion());
+        }
+
+        if (req.getFecha() != null) {
+            recargoOriginal.setFecha(req.getFecha());
+        }
+
+        Long usumodi = requireId(req.getUsuresp(), "usuresp (modificador) es obligatorio");
+        recargoOriginal.setUsumodi(usumodi);
+        recargoOriginal.setFecmodi(new Timestamp(System.currentTimeMillis()));
+
+        return recargosR.save(recargoOriginal);
+    }
+
+    // =========================
+    // Eliminar con auditoría
+    // =========================
+    @Transactional
+    public void eliminarRecargoConAuditoria(Long idrecargo, DeleteAuditReq deleteAuditReq) {
+        Recargosxcuenta recargo = recargosR.findById(idrecargo)
+                .orElseThrow(() -> new IllegalArgumentException("Recargo no encontrado: " + idrecargo));
+
+        // Convertir a DTO para auditoría (evita problemas de serialización con relaciones)
+        RecargosxcuentaAuditDTO auditDTO = convertToAuditDTO(recargo);
+
+        String json = "{}";
+        try {
+            json = objectMapper.writeValueAsString(auditDTO);
+        } catch (JsonProcessingException e) {
+            json = "{\"serializationError\":\"" + e.getMessage().replaceAll("\"", "\\\"") + "\"}";
+        }
+
+        AuditoriaGenerica audit = new AuditoriaGenerica();
+        audit.setEntidad("recargosxcuenta");
+        audit.setEntidadId(idrecargo);
+        audit.setUsumodi(requireId(deleteAuditReq.getUsumodi(), "usumodi (usuario que elimina) es obligatorio"));
+        audit.setFecmodi(new Timestamp(System.currentTimeMillis()));
+        audit.setObservacion(deleteAuditReq.getObservacion());
+        audit.setTipo((deleteAuditReq.getTipo() == null || deleteAuditReq.getTipo().isBlank()) ? "ELIMINACION" : deleteAuditReq.getTipo());
+        audit.setObjectJson(json);
+
+        auditoriaGenericaR.save(audit);
+        recargosR.delete(recargo);
+    }
+
+    // =========================
+    // Helper para conversión a DTO de auditoría
+    // =========================
+    private RecargosxcuentaAuditDTO convertToAuditDTO(Recargosxcuenta recargo) {
+        return new RecargosxcuentaAuditDTO(
+            recargo.getIdrecargoxcuenta(),
+            recargo.getIdabonado_abonados() != null ? recargo.getIdabonado_abonados().getIdabonado() : null,
+            recargo.getIdemision_emisiones() != null ? recargo.getIdemision_emisiones().getIdemision() : null,
+            recargo.getIdrubro_rubros() != null ? recargo.getIdrubro_rubros().getIdrubro() : null,
+            recargo.getTipo(),
+            recargo.getObservacion(),
+            recargo.getUsucrea(),
+            recargo.getFeccrea(),
+            recargo.getUsumodi(),
+            recargo.getFecmodi(),
+            recargo.getUsuresp(),
+            recargo.getFecha()
+        );
     }
 
     // =========================

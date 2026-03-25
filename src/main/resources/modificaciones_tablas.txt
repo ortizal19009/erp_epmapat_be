@@ -39,6 +39,31 @@ CREATE TABLE public.recargosxcuenta (
 	fecmodi timestamp NULL,
 	CONSTRAINT recargosxcuenta_pk PRIMARY KEY (idrecargoxcuenta)
 );
-ALTER TABLE public.recargosxcuenta ADD CONSTRAINT recargosxcuenta_abonados_fk FOREIGN KEY (idabonado_abonados) REFERENCES public.abonados(idabonado);
+-- AUDITORIA GENERICA
+CREATE TABLE public.auditoria_generica (
+	idauditoria int GENERATED ALWAYS AS IDENTITY NOT NULL,
+	entidad varchar NULL,
+	entidad_id int NULL,
+	usumodi int NULL,
+	fecmodi timestamp NULL,
+	observacion varchar NULL,
+	tipo varchar NULL,
+	object_json jsonb NULL,
+	CONSTRAINT auditoria_generica_pk PRIMARY KEY (idauditoria)
+);ALTER TABLE public.recargosxcuenta ADD CONSTRAINT recargosxcuenta_abonados_fk FOREIGN KEY (idabonado_abonados) REFERENCES public.abonados(idabonado);
 ALTER TABLE public.recargosxcuenta ADD CONSTRAINT recargosxcuenta_emisiones_fk FOREIGN KEY (idemision_emisiones) REFERENCES public.emisiones(idemision);
 ALTER TABLE public.recargosxcuenta ADD CONSTRAINT recargosxcuenta_rubros_fk FOREIGN KEY (idrubro_rubros) REFERENCES public.rubros(idrubro);
+
+-- AUDITORÍA RECARGOS X CUENTA
+CREATE TABLE public.recargosxcuenta_audit (
+    idrecargoxcuenta_audit int GENERATED ALWAYS AS IDENTITY NOT NULL,
+    idrecargoxcuenta_recargosxcuenta int NULL,
+    usumodi int NULL,
+    fecmodi timestamp NULL,
+    observacion varchar NULL,
+    tipo varchar NULL,
+    object_json jsonb NULL,
+    CONSTRAINT recargosxcuenta_audit_pk PRIMARY KEY (idrecargoxcuenta_audit)
+);
+ALTER TABLE public.recargosxcuenta_audit ADD CONSTRAINT recargosxcuenta_audit_recargos_fk FOREIGN KEY (idrecargoxcuenta_recargosxcuenta) REFERENCES public.recargosxcuenta(idrecargoxcuenta);
+

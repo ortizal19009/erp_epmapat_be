@@ -1,0 +1,12 @@
+-- AUDITORIA GENERICA
+CREATE TABLE public.auditoria_generica (
+    idauditoria int GENERATED ALWAYS AS IDENTITY NOT NULL,
+    entidad varchar NULL,
+    entidad_id int NULL,
+    usumodi int NULL,
+    fecmodi timestamp NULL,
+    observacion varchar NULL,
+    tipo varchar NULL,
+    object_json jsonb NULL,
+    CONSTRAINT auditoria_generica_pk PRIMARY KEY (idauditoria)
+);
