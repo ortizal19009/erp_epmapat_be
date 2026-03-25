@@ -20,8 +20,6 @@ import com.epmapat.erp_epmapat.servicio.RubroServicio;
 
 @RestController
 @RequestMapping("/rubros")
-
-
 public class RubrosApi {
 
 	@Autowired
@@ -72,26 +70,15 @@ public class RubrosApi {
 	}
 
 	@PutMapping("/{idrubro}")
-	public ResponseEntity<Rubros> update(@PathVariable Long idrubro, @RequestBody Rubros x) {
-		Rubros y = rubServicio.findById(idrubro)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones(
-						("No existe el Rubro con Id: " + idrubro)));
-		y.setIdmodulo_modulos(x.getIdmodulo_modulos());
-		y.setDescripcion(x.getDescripcion());
-		y.setEstado(x.getEstado());
-		y.setValor(x.getValor());
-		y.setCalculable(x.getCalculable());
-		y.setSwiva(x.getSwiva());
-		y.setTipo(x.getTipo());
-		y.setFacturable(x.getFacturable());
-		y.setUsucrea(x.getUsucrea());
-		y.setFeccrea(x.getFeccrea());
-		y.setUsumodi(x.getUsumodi());
-		y.setFecmodi(x.getFecmodi());
-		y.setAjenos(x.getAjenos());
+	public ResponseEntity<Rubros> update(
+			@PathVariable Long idrubro,
+			@RequestBody Rubros x,
+			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "Actualización de rubro") String observacion) {
 
-		Rubros actualizar = rubServicio.save(y);
-		return ResponseEntity.ok(actualizar);
+		Rubros updated = rubServicio.actualizarRubroConAuditoria(idrubro, x, usumodi, observacion, tipo);
+		return ResponseEntity.ok(updated);
 	}
 
 	@GetMapping("/findByName")

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.DTO.AbonadosAuditDTO;
 import com.epmapat.erp_epmapat.DTO.EstadisticasAbonadosDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.interfaces.AbonadoI;
@@ -28,6 +29,8 @@ public class AbonadoServicio {
 
 	@Autowired
 	private AbonadosR dao;
+	@Autowired
+	private AuditoriaGenericaService auditoriaService;
 	@Autowired
 	@Lazy
 	private FacturaServicio facturaServicio;
@@ -211,6 +214,119 @@ public class AbonadoServicio {
 				cuenta,
 				ruta,
 				pageable);
+	}
+
+	public Abonados actualizarGeolocalizacionConAuditoria(Long idabonado, String geolocalizacion, Long usumodi, String observacion, String tipo) {
+		Abonados abonadoOriginal = dao.findById(idabonado)
+				.orElseThrow(() -> new RuntimeException("Abonado no encontrado: " + idabonado));
+
+		AbonadosAuditDTO auditDTO = new AbonadosAuditDTO(
+				abonadoOriginal.getIdabonado(),
+				abonadoOriginal.getNromedidor(),
+				abonadoOriginal.getLecturainicial(),
+				abonadoOriginal.getEstado(),
+				abonadoOriginal.getFechainstalacion(),
+				abonadoOriginal.getMarca(),
+				abonadoOriginal.getSecuencia(),
+				abonadoOriginal.getDireccionubicacion(),
+				abonadoOriginal.getLocalizacion(),
+				abonadoOriginal.getObservacion(),
+				abonadoOriginal.getDepartamento(),
+				abonadoOriginal.getPiso(),
+				abonadoOriginal.getIdresponsable() == null ? null : abonadoOriginal.getIdresponsable().getIdcliente(),
+				abonadoOriginal.getIdcategoria_categorias() == null ? null : abonadoOriginal.getIdcategoria_categorias().getIdcategoria(),
+				abonadoOriginal.getIdruta_rutas() == null ? null : abonadoOriginal.getIdruta_rutas().getIdruta(),
+				abonadoOriginal.getIdcliente_clientes() == null ? null : abonadoOriginal.getIdcliente_clientes().getIdcliente(),
+				abonadoOriginal.getIdubicacionm_ubicacionm() == null ? null : abonadoOriginal.getIdubicacionm_ubicacionm().getIdubicacionm(),
+				abonadoOriginal.getIdtipopago_tipopago() == null ? null : abonadoOriginal.getIdtipopago_tipopago().getIdtipopago(),
+				abonadoOriginal.getIdestadom_estadom() == null ? null : abonadoOriginal.getIdestadom_estadom().getIdestadom(),
+				abonadoOriginal.getMedidorprincipal(),
+				abonadoOriginal.getUsucrea(),
+				abonadoOriginal.getFeccrea(),
+				abonadoOriginal.getUsumodi(),
+				abonadoOriginal.getFecmodi(),
+				abonadoOriginal.getAdultomayor(),
+				abonadoOriginal.getMunicipio(),
+				abonadoOriginal.getSwalcantarillado(),
+				abonadoOriginal.getPromedio(),
+				abonadoOriginal.getGeolocalizacion(),
+				abonadoOriginal.getSwbasura());
+
+		auditoriaService.saveAudit("abonados", abonadoOriginal.getIdabonado(), auditDTO, usumodi, observacion, tipo);
+
+		abonadoOriginal.setGeolocalizacion(geolocalizacion);
+		return dao.save(abonadoOriginal);
+	}
+
+	public Abonados actualizarAbonadoConAuditoria(Long idabonado, Abonados abonadosM, Long usumodi, String observacion, String tipo) {
+		Abonados abonadoOriginal = dao.findById(idabonado)
+				.orElseThrow(() -> new RuntimeException("Abonado no encontrado: " + idabonado));
+
+		AbonadosAuditDTO auditDTO = new AbonadosAuditDTO(
+				abonadoOriginal.getIdabonado(),
+				abonadoOriginal.getNromedidor(),
+				abonadoOriginal.getLecturainicial(),
+				abonadoOriginal.getEstado(),
+				abonadoOriginal.getFechainstalacion(),
+				abonadoOriginal.getMarca(),
+				abonadoOriginal.getSecuencia(),
+				abonadoOriginal.getDireccionubicacion(),
+				abonadoOriginal.getLocalizacion(),
+				abonadoOriginal.getObservacion(),
+				abonadoOriginal.getDepartamento(),
+				abonadoOriginal.getPiso(),
+				abonadoOriginal.getIdresponsable() == null ? null : abonadoOriginal.getIdresponsable().getIdcliente(),
+				abonadoOriginal.getIdcategoria_categorias() == null ? null : abonadoOriginal.getIdcategoria_categorias().getIdcategoria(),
+				abonadoOriginal.getIdruta_rutas() == null ? null : abonadoOriginal.getIdruta_rutas().getIdruta(),
+				abonadoOriginal.getIdcliente_clientes() == null ? null : abonadoOriginal.getIdcliente_clientes().getIdcliente(),
+				abonadoOriginal.getIdubicacionm_ubicacionm() == null ? null : abonadoOriginal.getIdubicacionm_ubicacionm().getIdubicacionm(),
+				abonadoOriginal.getIdtipopago_tipopago() == null ? null : abonadoOriginal.getIdtipopago_tipopago().getIdtipopago(),
+				abonadoOriginal.getIdestadom_estadom() == null ? null : abonadoOriginal.getIdestadom_estadom().getIdestadom(),
+				abonadoOriginal.getMedidorprincipal(),
+				abonadoOriginal.getUsucrea(),
+				abonadoOriginal.getFeccrea(),
+				abonadoOriginal.getUsumodi(),
+				abonadoOriginal.getFecmodi(),
+				abonadoOriginal.getAdultomayor(),
+				abonadoOriginal.getMunicipio(),
+				abonadoOriginal.getSwalcantarillado(),
+				abonadoOriginal.getPromedio(),
+				abonadoOriginal.getGeolocalizacion(),
+				abonadoOriginal.getSwbasura());
+
+		auditoriaService.saveAudit("abonados", abonadoOriginal.getIdabonado(), auditDTO, usumodi, observacion, tipo);
+
+		abonadoOriginal.setNromedidor(abonadosM.getNromedidor());
+		abonadoOriginal.setLecturainicial(abonadosM.getLecturainicial());
+		abonadoOriginal.setEstado(abonadosM.getEstado());
+		abonadoOriginal.setFechainstalacion(abonadosM.getFechainstalacion());
+		abonadoOriginal.setMarca(abonadosM.getMarca());
+		abonadoOriginal.setSecuencia(abonadosM.getSecuencia());
+		abonadoOriginal.setDireccionubicacion(abonadosM.getDireccionubicacion());
+		abonadoOriginal.setLocalizacion(abonadosM.getLocalizacion());
+		abonadoOriginal.setObservacion(abonadosM.getObservacion());
+		abonadoOriginal.setDepartamento(abonadosM.getDepartamento());
+		abonadoOriginal.setPiso(abonadosM.getPiso());
+		abonadoOriginal.setIdresponsable(abonadosM.getIdresponsable());
+		abonadoOriginal.setIdcategoria_categorias(abonadosM.getIdcategoria_categorias());
+		abonadoOriginal.setIdruta_rutas(abonadosM.getIdruta_rutas());
+		abonadoOriginal.setIdcliente_clientes(abonadosM.getIdcliente_clientes());
+		abonadoOriginal.setIdubicacionm_ubicacionm(abonadosM.getIdubicacionm_ubicacionm());
+		abonadoOriginal.setIdtipopago_tipopago(abonadosM.getIdtipopago_tipopago());
+		abonadoOriginal.setIdestadom_estadom(abonadosM.getIdestadom_estadom());
+		abonadoOriginal.setMedidorprincipal(abonadosM.getMedidorprincipal());
+		abonadoOriginal.setUsucrea(abonadosM.getUsucrea());
+		abonadoOriginal.setFeccrea(abonadosM.getFeccrea());
+		abonadoOriginal.setUsumodi(usumodi);
+		abonadoOriginal.setFecmodi(abonadosM.getFecmodi());
+		abonadoOriginal.setAdultomayor(abonadosM.getAdultomayor());
+		abonadoOriginal.setMunicipio(abonadosM.getMunicipio());
+		abonadoOriginal.setSwalcantarillado(abonadosM.getSwalcantarillado());
+		abonadoOriginal.setPromedio(abonadosM.getPromedio());
+		abonadoOriginal.setGeolocalizacion(abonadosM.getGeolocalizacion());
+		abonadoOriginal.setSwbasura(abonadosM.getSwbasura());
+
+		return dao.save(abonadoOriginal);
 	}
 
 	/*

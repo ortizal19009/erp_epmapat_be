@@ -19,7 +19,6 @@ import com.epmapat.erp_epmapat.modelo.AuditoriaGenerica;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.modelo.Recargosxcuenta;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
-import com.epmapat.erp_epmapat.repositorio.AuditoriaGenericaR;
 import com.epmapat.erp_epmapat.repositorio.EmisionesR;
 import com.epmapat.erp_epmapat.repositorio.RecargosxcuentaR;
 import com.epmapat.erp_epmapat.repositorio.RubrosR;
@@ -36,15 +35,15 @@ public class RecargosxcuentaService {
     private final EmisionesR emisionesR;
     private final AbonadosR abonadosR;
     private final RubrosR rubrosR;
-    private final AuditoriaGenericaR auditoriaGenericaR;
+    private final AuditoriaGenericaService auditoriaService;
     private final ObjectMapper objectMapper;
 
-    public RecargosxcuentaService(RecargosxcuentaR recargosR, EmisionesR emisionesR, AbonadosR abonadosR, RubrosR rubrosR, AuditoriaGenericaR auditoriaGenericaR) {
+    public RecargosxcuentaService(RecargosxcuentaR recargosR, EmisionesR emisionesR, AbonadosR abonadosR, RubrosR rubrosR, AuditoriaGenericaService auditoriaService) {
         this.recargosR = recargosR;
         this.emisionesR = emisionesR;
         this.abonadosR = abonadosR;
         this.rubrosR = rubrosR;
-        this.auditoriaGenericaR = auditoriaGenericaR;
+        this.auditoriaService = auditoriaService;
         
         // Configurar ObjectMapper para manejar tipos de Java 8
         this.objectMapper = new ObjectMapper();
@@ -143,16 +142,13 @@ public class RecargosxcuentaService {
             json = "{\"serializationError\":\"" + e.getMessage().replaceAll("\"", "\\\"") + "\"}";
         }
 
-        // Guardar auditoría con el estado inicial
-        AuditoriaGenerica audit = new AuditoriaGenerica();
-        audit.setEntidad("recargosxcuenta");
-        audit.setEntidadId(idrecargo);
-        audit.setUsumodi(requireId(req.getUsumodi(), "usumodi (usuario que modifica) es obligatorio"));
-        audit.setFecmodi(new Timestamp(System.currentTimeMillis()));
-        audit.setObservacion(req.getObservacionAuditoria());
-        audit.setTipo((req.getTipoAuditoria() == null || req.getTipoAuditoria().isBlank()) ? "MODIFICACION" : req.getTipoAuditoria());
-        audit.setObjectJson(json);
-        auditoriaGenericaR.save(audit);
+        auditoriaService.saveAudit(
+                "recargosxcuenta",
+                idrecargo,
+                auditDTO,
+                requireId(req.getUsumodi(), "usumodi (usuario que modifica) es obligatorio"),
+                req.getObservacionAuditoria(),
+                req.getTipoAuditoria() == null || req.getTipoAuditoria().isBlank() ? "MODIFICACION" : req.getTipoAuditoria());
 
         // Ahora aplicar los cambios
         if (req.getTipo() != null) {
@@ -201,16 +197,14 @@ public class RecargosxcuentaService {
             json = "{\"serializationError\":\"" + e.getMessage().replaceAll("\"", "\\\"") + "\"}";
         }
 
-        AuditoriaGenerica audit = new AuditoriaGenerica();
-        audit.setEntidad("recargosxcuenta");
-        audit.setEntidadId(idrecargo);
-        audit.setUsumodi(requireId(deleteAuditReq.getUsumodi(), "usumodi (usuario que elimina) es obligatorio"));
-        audit.setFecmodi(new Timestamp(System.currentTimeMillis()));
-        audit.setObservacion(deleteAuditReq.getObservacion());
-        audit.setTipo((deleteAuditReq.getTipo() == null || deleteAuditReq.getTipo().isBlank()) ? "ELIMINACION" : deleteAuditReq.getTipo());
-        audit.setObjectJson(json);
+        auditoriaService.saveAudit(
+                "recargosxcuenta",
+                idrecargo,
+                auditDTO,
+                requireId(deleteAuditReq.getUsumodi(), "usumodi (usuario que elimina) es obligatorio"),
+                deleteAuditReq.getObservacion(),
+                deleteAuditReq.getTipo() == null || deleteAuditReq.getTipo().isBlank() ? "ELIMINACION" : deleteAuditReq.getTipo());
 
-        auditoriaGenericaR.save(audit);
         recargosR.delete(recargo);
     }
 

@@ -113,39 +113,15 @@ public class AbonadosApi {
 	}
 
 	@PutMapping("/{idabonado}")
-	public ResponseEntity<Abonados> updateAbonados(@PathVariable Long idabonado, @RequestBody Abonados abonadosm) {
-		Abonados abonadosM = aboServicio.findById(idabonado)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe ese abonado con ese Id: " + idabonado)));
-		abonadosM.setNromedidor(abonadosm.getNromedidor());
-		abonadosM.setLecturainicial(abonadosm.getLecturainicial());
-		abonadosM.setEstado(abonadosm.getEstado());
-		abonadosM.setFechainstalacion(abonadosm.getFechainstalacion());
-		abonadosM.setMarca(abonadosm.getMarca());
-		abonadosM.setSecuencia(abonadosm.getSecuencia());
-		abonadosM.setDireccionubicacion(abonadosm.getDireccionubicacion());
-		abonadosM.setLocalizacion(abonadosm.getLocalizacion());
-		abonadosM.setObservacion(abonadosm.getObservacion());
-		abonadosM.setDepartamento(abonadosm.getDepartamento());
-		abonadosM.setPiso(abonadosm.getPiso());
-		abonadosM.setIdresponsable(abonadosm.getIdresponsable());
-		abonadosM.setIdcategoria_categorias(abonadosm.getIdcategoria_categorias());
-		abonadosM.setIdruta_rutas(abonadosm.getIdruta_rutas());
-		abonadosM.setIdcliente_clientes(abonadosm.getIdcliente_clientes());
-		abonadosM.setIdubicacionm_ubicacionm(abonadosm.getIdubicacionm_ubicacionm());
-		abonadosM.setIdtipopago_tipopago(abonadosm.getIdtipopago_tipopago());
-		abonadosM.setIdestadom_estadom(abonadosm.getIdestadom_estadom());
-		abonadosM.setMedidorprincipal(abonadosm.getMedidorprincipal());
-		abonadosM.setUsucrea(abonadosm.getUsucrea());
-		abonadosM.setFeccrea(abonadosm.getFeccrea());
-		abonadosM.setUsumodi(abonadosm.getUsumodi());
-		abonadosM.setFecmodi(abonadosm.getFecmodi());
-		abonadosM.setAdultomayor(abonadosm.getAdultomayor());
-		abonadosM.setMunicipio(abonadosm.getMunicipio());
-		abonadosM.setSwalcantarillado(abonadosm.getSwalcantarillado());
-		abonadosM.setGeolocalizacion(abonadosm.getGeolocalizacion());
-		abonadosM.setSwbasura(abonadosm.getSwbasura());
-		Abonados updateAbonado = aboServicio.save(abonadosM);
-		return ResponseEntity.ok(updateAbonado);
+	public ResponseEntity<Abonados> updateAbonados(
+			@PathVariable Long idabonado,
+			@RequestBody Abonados abonadosm,
+			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "Actualización de abonado") String observacion) {
+
+		Abonados updated = aboServicio.actualizarAbonadoConAuditoria(idabonado, abonadosm, usumodi, observacion, tipo);
+		return ResponseEntity.ok(updated);
 	}
 
 	@DeleteMapping(value = "/{idabonado}")
@@ -263,7 +239,10 @@ public class AbonadosApi {
 
 	@PostMapping("/mobile/upload-geolocalizacion")
 	public ResponseEntity<java.util.Map<String, Integer>> uploadGeolocalizacionMobile(
-			@RequestBody List<AbonadoGeoUploadItemDto> items) {
+			@RequestBody List<AbonadoGeoUploadItemDto> items,
+			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "Upload geolocalizacion") String observacion) {
 		int ok = 0;
 		int err = 0;
 
@@ -271,10 +250,7 @@ public class AbonadosApi {
 			try {
 				if (item.getIdabonado() == null)
 					throw new IllegalArgumentException("idabonado requerido");
-				Abonados a = aboServicio.findById(item.getIdabonado())
-						.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe abonado: " + item.getIdabonado()));
-				a.setGeolocalizacion(item.getGeolocalizacion());
-				aboServicio.save(a);
+				aboServicio.actualizarGeolocalizacionConAuditoria(item.getIdabonado(), item.getGeolocalizacion(), usumodi, observacion, tipo);
 				ok++;
 			} catch (Exception ex) {
 				err++;

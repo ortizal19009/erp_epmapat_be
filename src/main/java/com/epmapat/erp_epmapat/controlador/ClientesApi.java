@@ -78,6 +78,34 @@ public class ClientesApi {
 		return cliServicio.obtenerCampos();
 	}
 
+	@PostMapping("/mobile/upload")
+	public ResponseEntity<Map<String, Integer>> uploadClientesMobile(
+			@RequestBody List<Clientes> items,
+			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "Upload Clientes") String observacion) {
+		int ok = 0;
+		int err = 0;
+
+		for (Clientes item : items) {
+			try {
+				if (item.getIdcliente() == null) {
+					throw new IllegalArgumentException("idcliente requerido");
+				}
+				cliServicio.actualizarClienteConAuditoria(item, usumodi, observacion, tipo);
+				ok++;
+			} catch (Exception e) {
+				err++;
+			}
+		}
+
+		Map<String, Integer> out = new java.util.HashMap<>();
+		out.put("ok", ok);
+		out.put("error", err);
+		out.put("total", items.size());
+		return ResponseEntity.ok(out);
+	}
+
 	@PostMapping
 	public ResponseEntity<Clientes> saveClientes(@RequestBody Clientes clienteM) {
 		boolean resp = validadorDeCedula(clienteM.getCedula());
@@ -93,34 +121,19 @@ public class ClientesApi {
 	}
 
 	@PutMapping(value = "/{idcliente}")
-	public ResponseEntity<Clientes> updateCliente(@PathVariable Long idcliente, @RequestBody Clientes clientem) {
-		Clientes clienteM = cliServicio.findById(idcliente)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones("No Existe ese cliente con ese Id: " + idcliente));
-		clienteM.setCedula(clientem.getCedula());
-		clienteM.setNombre(clientem.getNombre());
-		clienteM.setDireccion(clientem.getDireccion());
-		clienteM.setTelefono(clientem.getTelefono());
-		clienteM.setFechanacimiento(clientem.getFechanacimiento());
-		clienteM.setDiscapacitado(clientem.getDiscapacitado());
-		// Evitar violar NOT NULL cuando el móvil no envía este campo
-		if (clientem.getIdtpidentifica_tpidentifica() != null
-				&& clientem.getIdtpidentifica_tpidentifica().getIdtpidentifica() != null) {
-			clienteM.setIdtpidentifica_tpidentifica(clientem.getIdtpidentifica_tpidentifica());
+	public ResponseEntity<Clientes> updateCliente(
+			@PathVariable Long idcliente,
+			@RequestBody Clientes clientem,
+			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "Actualización de cliente") String observacion) {
+
+		if (!idcliente.equals(clientem.getIdcliente())) {
+			throw new IllegalArgumentException("El idcliente de la ruta y del body deben coincidir");
 		}
-		clienteM.setPorcexonera(clientem.getPorcexonera());
-		clienteM.setEstado(clientem.getEstado());
-		clienteM.setEmail(clientem.getEmail());
-		clienteM.setUsucrea(clientem.getUsucrea());
-		clienteM.setFeccrea(clientem.getFeccrea());
-		clienteM.setUsumodi(clientem.getUsumodi());
-		clienteM.setFecmodi(clientem.getFecmodi());
-		// Evitar violar NOT NULL cuando el móvil no envía este campo
-		if (clientem.getIdpjuridica_personeriajuridica() != null
-				&& clientem.getIdpjuridica_personeriajuridica().getIdpjuridica() != null) {
-			clienteM.setIdpjuridica_personeriajuridica(clientem.getIdpjuridica_personeriajuridica());
-		}
-		Clientes updateCliente = cliServicio.save(clienteM);
-		return ResponseEntity.ok(updateCliente);
+
+		Clientes updated = cliServicio.actualizarClienteConAuditoria(clientem, usumodi, observacion, tipo);
+		return ResponseEntity.ok(updated);
 	}
 
 	@DeleteMapping(value = "/{idcliente}")

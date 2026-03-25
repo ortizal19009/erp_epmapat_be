@@ -48,7 +48,46 @@ public class RubroServicio {
    public <S extends Rubros> S save(S entity) {
       return dao.save(entity);
    }
+   public Rubros actualizarRubroConAuditoria(Long idrubro, Rubros x, Long usumodi, String observacion, String tipo) {
+      Rubros rubroOriginal = dao.findById(idrubro)
+              .orElseThrow(() -> new RuntimeException("Rubro no encontrado: " + idrubro));
 
+      RubrosAuditDTO auditDTO = new RubrosAuditDTO(
+              rubroOriginal.getIdrubro(),
+              rubroOriginal.getDescripcion(),
+              rubroOriginal.getEstado(),
+              rubroOriginal.getCalculable(),
+              rubroOriginal.getValor(),
+              rubroOriginal.getSwiva(),
+              rubroOriginal.getTipo(),
+              rubroOriginal.getEsiva(),
+              rubroOriginal.getEsdebito(),
+              rubroOriginal.getFacturable(),
+              rubroOriginal.getIdmodulo_modulos() != null ? rubroOriginal.getIdmodulo_modulos().getIdmodulo() : null,
+              rubroOriginal.getUsucrea(),
+              rubroOriginal.getFeccrea(),
+              rubroOriginal.getUsumodi(),
+              rubroOriginal.getFecmodi(),
+              rubroOriginal.getAjenos());
+
+      auditoriaService.saveAudit("rubros", rubroOriginal.getIdrubro(), auditDTO, usumodi, observacion, tipo);
+
+      rubroOriginal.setIdmodulo_modulos(x.getIdmodulo_modulos());
+      rubroOriginal.setDescripcion(x.getDescripcion());
+      rubroOriginal.setEstado(x.getEstado());
+      rubroOriginal.setValor(x.getValor());
+      rubroOriginal.setCalculable(x.getCalculable());
+      rubroOriginal.setSwiva(x.getSwiva());
+      rubroOriginal.setTipo(x.getTipo());
+      rubroOriginal.setFacturable(x.getFacturable());
+      rubroOriginal.setUsucrea(x.getUsucrea());
+      rubroOriginal.setFeccrea(x.getFeccrea());
+      rubroOriginal.setUsumodi(usumodi);
+      rubroOriginal.setFecmodi(x.getFecmodi());
+      rubroOriginal.setAjenos(x.getAjenos());
+
+      return dao.save(rubroOriginal);
+   }
    public List<Rubros> findAll(Sort sort) {
       return null;
    }
