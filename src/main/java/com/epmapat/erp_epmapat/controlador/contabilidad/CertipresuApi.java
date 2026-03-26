@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/certipresu")
 
+
 public class CertipresuApi {
 
 	final private CertipresuServicio certiServicio;

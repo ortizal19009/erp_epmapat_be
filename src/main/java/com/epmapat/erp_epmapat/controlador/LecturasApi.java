@@ -163,6 +163,7 @@ public class LecturasApi {
 		y.setTotal1(x.getTotal1());
 		y.setTotal31(x.getTotal31());
 		y.setTotal32(x.getTotal32());
+		y.setFotoPath(x.getFotoPath());
 
 		Lecturas actualizar = lecServicio.saveLectura(y);
 		return ResponseEntity.ok(actualizar);
@@ -373,6 +374,7 @@ public class LecturasApi {
 				y.setTotal1(item.getTotal1());
 				y.setTotal31(item.getTotal31());
 				y.setTotal32(item.getTotal32());
+				y.setFotoPath(item.getFotoPath());
 
 				y.setIdabonado_abonados(item.getIdabonado_abonados() == null
 						? null

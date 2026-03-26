@@ -18,5 +18,6 @@ public class RemiDTO {
     private BigDecimal total;
     private BigDecimal intereses;
     private String nrofactura;
+    private Boolean bol;
 
 }

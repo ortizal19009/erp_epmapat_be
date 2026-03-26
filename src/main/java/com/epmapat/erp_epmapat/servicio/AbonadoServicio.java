@@ -89,6 +89,19 @@ public class AbonadoServicio {
 		return dao.findByIdruta(idruta);
 	}
 
+	public Page<Abonados> findByIdruta(Long idruta, Pageable pageable) {
+		return dao.findByIdruta(idruta, pageable);
+	}
+
+	// Abonados por Categoría
+	public List<Abonados> findByIdcategoria(Long idcategoria) {
+		return dao.findByIdcategoria(idcategoria);
+	}
+
+	public Page<Abonados> findByIdcategoria(Long idcategoria, Pageable pageable) {
+		return dao.findByIdcategoria(idcategoria, pageable);
+	}
+
 	public List<Abonados> findByIdCliente(Long idcliente) {
 		return dao.findByIdCliente(idcliente);
 	}
@@ -196,6 +209,10 @@ public class AbonadoServicio {
 
 	public List<Abonados> findByEstado(Long estado) {
 		return dao.findByEstado(estado);
+	}
+
+	public Page<Abonados> findByEstado(Long estado, Pageable pageable) {
+		return dao.findByEstado(estado, pageable);
 	}
 
 	public Page<Abonados> buscar(

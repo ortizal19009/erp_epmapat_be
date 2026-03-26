@@ -24,4 +24,5 @@ public class LecturaUploadItemDto {
     private BigDecimal total1;
     private BigDecimal total31;
     private BigDecimal total32;
+    private String fotoPath;
 }

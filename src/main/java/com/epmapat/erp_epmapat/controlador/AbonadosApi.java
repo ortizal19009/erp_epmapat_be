@@ -214,6 +214,31 @@ public class AbonadosApi {
 		return ResponseEntity.ok(aboServicio.findByEstado(estado));
 	}
 
+	@GetMapping("/estado/{estado}/pageable")
+	public ResponseEntity<Page<Abonados>> getAbonadosByEstadoPageable(@PathVariable Long estado, @PageableDefault(size = 20) Pageable pageable) {
+		return ResponseEntity.ok(aboServicio.findByEstado(estado, pageable));
+	}
+
+	@GetMapping("/categoria/{idcategoria}")
+	public ResponseEntity<List<Abonados>> getAbonadosByCategoria(@PathVariable Long idcategoria) {
+		return ResponseEntity.ok(aboServicio.findByIdcategoria(idcategoria));
+	}
+
+	@GetMapping("/categoria/{idcategoria}/pageable")
+	public ResponseEntity<Page<Abonados>> getAbonadosByCategoriaPageable(@PathVariable Long idcategoria, @PageableDefault(size = 20) Pageable pageable) {
+		return ResponseEntity.ok(aboServicio.findByIdcategoria(idcategoria, pageable));
+	}
+
+	@GetMapping("/ruta/{idruta}")
+	public ResponseEntity<List<Abonados>> getAbonadosByRuta(@PathVariable Long idruta) {
+		return ResponseEntity.ok(aboServicio.findByIdruta(idruta));
+	}
+
+	@GetMapping("/ruta/{idruta}/pageable")
+	public ResponseEntity<Page<Abonados>> getAbonadosByRutaPageable(@PathVariable Long idruta, @PageableDefault(size = 20) Pageable pageable) {
+		return ResponseEntity.ok(aboServicio.findByIdruta(idruta, pageable));
+	}
+
 	@GetMapping("/buscar")
 	public Page<Abonados> buscar(
 			@RequestParam(required = false) Long idruta,
