@@ -28,9 +28,9 @@ public class UsrModulosApi {
         return ResponseEntity.ok(umServicio.findModulosEnabledByUser(idusuario, plataform));
     }
 
-    // @GetMapping
-    public ResponseEntity<List<Usrxmodulos>> getAllByUser(@RequestParam Long idusuario, @RequestParam String platform) {
-        return ResponseEntity.ok(umServicio.FindByUser(idusuario, platform));
+    @GetMapping
+    public ResponseEntity<List<ErpModulosI>> getAllByUser(@RequestParam Long idusuario) {
+        return ResponseEntity.ok(umServicio.FindByUser(idusuario));
     }
 
     @PostMapping
@@ -38,9 +38,4 @@ public class UsrModulosApi {
         return ResponseEntity.ok(umServicio.save(usrxmodulos));
     }
 
-    @GetMapping
-    public ResponseEntity<List<Usrxmodulos>> findByUserPlatform(@RequestParam Long idusuario,
-            @RequestParam String platform) {
-        return ResponseEntity.ok(umServicio.findByUserPlatform(idusuario, platform));
-    }
 }

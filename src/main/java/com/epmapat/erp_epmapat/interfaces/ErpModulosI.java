@@ -4,4 +4,6 @@ public interface ErpModulosI {
     String getDescripcion();
 
     Boolean getEnabled();
+
+    String getPlataform();
 }

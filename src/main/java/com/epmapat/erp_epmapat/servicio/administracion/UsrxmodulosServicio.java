@@ -23,8 +23,8 @@ public class UsrxmodulosServicio {
         return dao.findModulosEnabledByUser(idusuario, platform);
     }
 
-    public List<Usrxmodulos> FindByUser(Long iduser, String platform) {
-        return dao.findByUser(iduser, platform);
+    public List<ErpModulosI> FindByUser(Long iduser) {
+        return dao.findByUser(iduser);
     }
 
     @Transactional
