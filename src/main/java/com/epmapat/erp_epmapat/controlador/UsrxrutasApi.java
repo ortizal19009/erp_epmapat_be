@@ -1,12 +1,16 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import com.epmapat.erp_epmapat.excepciones.RutasOcupadasException;
 import com.epmapat.erp_epmapat.modelo.Usrxrutas;
 import com.epmapat.erp_epmapat.interfaces.UsrxrutasService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/usrxrutas")
@@ -66,6 +70,25 @@ public class UsrxrutasApi {
     @GetMapping("/emision/{idemision}/rutas-ocupadas")
     public ResponseEntity<List<Long>> rutasOcupadas(@PathVariable Long idemision) {
         return ResponseEntity.ok(usrxrutasService.rutasOcupadasEnEmision(idemision));
+    }
+
+    @ExceptionHandler(RutasOcupadasException.class)
+    public ResponseEntity<Map<String, Object>> handleRutasOcupadas(RutasOcupadasException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                "message", ex.getMessage(),
+                "ocupadas", ex.getOcupadas()));
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleEntityNotFound(EntityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "message", ex.getMessage()));
     }
 
 }

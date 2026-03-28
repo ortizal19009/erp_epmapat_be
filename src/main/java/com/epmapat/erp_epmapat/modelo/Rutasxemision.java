@@ -13,6 +13,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +26,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "rutasxemision")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Rutasxemision implements Serializable {
 
@@ -37,9 +40,11 @@ public class Rutasxemision implements Serializable {
    Date feccrea;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idemision_emisiones")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Emisiones idemision_emisiones;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idruta_rutas")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Rutas idruta_rutas;
    private Long m3;
    private BigDecimal total;

@@ -62,15 +62,15 @@ public class LecturasApi {
 	}
 
 	@GetMapping
-	public List<Lecturas> getByIdemision(@Param(value = "idemision") Long idrutaxemision,
-			@Param(value = "idabonado") Long idabonado, @Param(value = "limit") Long limit) {
+	public List<Lecturas> getByIdemision(@RequestParam(required = false) Long idrutaxemision,
+			@RequestParam(required = false) Long idabonado, @RequestParam(required = false) Long limit) {
 		if (idrutaxemision != null) {
 			return lecServicio.findByIdrutaxemision(idrutaxemision);
 		} else {
 			if (idabonado != null) {
 				return lecServicio.findByIdabonado(idabonado, limit);
 			}
-			return null;
+			return List.of();
 		}
 	}
 

@@ -12,6 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +27,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "lecturas")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Lecturas implements Serializable {
 
    @Id
@@ -32,6 +36,7 @@ public class Lecturas implements Serializable {
    Integer estado;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idrutaxemision_rutasxemision")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Rutasxemision idrutaxemision_rutasxemision;
    Date fechaemision;
    Float lecturaanterior;
@@ -41,10 +46,12 @@ public class Lecturas implements Serializable {
    String observaciones;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idnovedad_novedades")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Novedad idnovedad_novedades;
    Long idemision;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idabonado_abonados")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Abonados idabonado_abonados;
    Long idresponsable;
    Long idcategoria;
@@ -52,6 +59,7 @@ public class Lecturas implements Serializable {
    private BigDecimal total1;
    private BigDecimal total31;
    private BigDecimal total32;
+   @Transient
    private String fotoPath;
 
 }

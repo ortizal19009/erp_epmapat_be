@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.DTO.RubrosAuditDTO;
 import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.repositorio.RubrosR;
 
@@ -20,6 +21,9 @@ public class RubroServicio {
 
    @Autowired
    private RubrosR dao;
+
+   @Autowired
+   private AuditoriaGenericaService auditoriaService;
 
    public List<Rubros> findByIdmodulo(Long idmodulo) {
       return dao.findByIdmodulo(idmodulo);

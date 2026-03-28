@@ -135,7 +135,7 @@ public class EmisionServicioOptimizadoV2 {
         // 2) Calcular rubros base
         // ---------------------------
         BigDecimal multa = BigDecimal.ZERO;
-
+        System.out.println("swRefacturacion: " + swRefacturacion);
         if (!swRefacturacion) {
             multa = multas(cuenta);
         }
@@ -713,8 +713,9 @@ public class EmisionServicioOptimizadoV2 {
                 cuenta,
                 fechaDesde,
                 fechaHasta);
+        System.out.println("Calculando multas para cuenta: " + cuenta + " entre " + fechaDesde + " y " + fechaHasta + ". Facturas pendientes: " + idfacturas.size());
 
-        if (idfacturas == null || idfacturas.isEmpty() || idfacturas.size() <= 1) {
+        if (idfacturas == null || idfacturas.isEmpty() || idfacturas.size() < 1) {
             return ZERO;
         }
 

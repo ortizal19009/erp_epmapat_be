@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.modelo;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Table(name = "usrxrutas")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Usrxrutas {
 
     @Id
@@ -25,10 +27,12 @@ public class Usrxrutas {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idusuario_usuarios")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Usuarios idusuario_usuarios;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idemision_emisiones")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Emisiones idemision_emisiones;
 
     @Type(type = "jsonb")
