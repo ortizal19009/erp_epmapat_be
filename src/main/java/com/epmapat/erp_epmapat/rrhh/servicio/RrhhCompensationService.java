@@ -39,7 +39,7 @@ public class RrhhCompensationService {
 
     @Transactional(readOnly = true)
     public Page<PayrollResponse> listPayrolls(String status, java.time.LocalDate fromDate, Integer page, Integer size) {
-        Specification<RrhhPayroll> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("status", status))
+        Specification<RrhhPayroll> spec = Specification.<RrhhPayroll>where(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("periodStart", fromDate));
         return payrollRepository.findAll(spec, pageable(page, size)).map(this::toPayrollResponse);
     }
@@ -59,7 +59,7 @@ public class RrhhCompensationService {
 
     @Transactional(readOnly = true)
     public Page<BenefitResponse> listBenefits(String status, java.time.LocalDate fromDate, Integer page, Integer size) {
-        Specification<RrhhBenefit> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("status", status))
+        Specification<RrhhBenefit> spec = Specification.<RrhhBenefit>where(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("startDate", fromDate));
         return benefitRepository.findAll(spec, pageable(page, size)).map(this::toBenefitResponse);
     }
@@ -74,7 +74,7 @@ public class RrhhCompensationService {
 
     @Transactional(readOnly = true)
     public Page<IncentiveResponse> listIncentives(String status, java.time.LocalDate fromDate, Integer page, Integer size) {
-        Specification<RrhhIncentive> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("status", status))
+        Specification<RrhhIncentive> spec = Specification.<RrhhIncentive>where(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("grantedDate", fromDate));
         return incentiveRepository.findAll(spec, pageable(page, size)).map(this::toIncentiveResponse);
     }

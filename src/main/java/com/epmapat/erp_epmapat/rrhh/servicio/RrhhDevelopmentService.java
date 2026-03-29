@@ -45,7 +45,7 @@ public class RrhhDevelopmentService {
     @Transactional(readOnly = true)
     public Page<TrainingPlanResponse> listTrainings(String area, String status, java.time.LocalDate fromDate,
             Integer page, Integer size) {
-        Specification<RrhhTrainingPlan> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("area", area))
+        Specification<RrhhTrainingPlan> spec = Specification.<RrhhTrainingPlan>where(RrhhSpecifications.likeIgnoreCase("area", area))
                 .and(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("startDate", fromDate));
         return trainingRepository.findAll(spec, pageable(page, size)).map(this::toTrainingResponse);
@@ -70,7 +70,7 @@ public class RrhhDevelopmentService {
     @Transactional(readOnly = true)
     public Page<PerformanceReviewResponse> listReviews(String period, String status, java.time.LocalDate fromDate,
             Integer page, Integer size) {
-        Specification<RrhhPerformanceReview> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("period", period))
+        Specification<RrhhPerformanceReview> spec = Specification.<RrhhPerformanceReview>where(RrhhSpecifications.likeIgnoreCase("period", period))
                 .and(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("reviewDate", fromDate));
         return reviewRepository.findAll(spec, pageable(page, size)).map(this::toReviewResponse);
@@ -94,7 +94,7 @@ public class RrhhDevelopmentService {
 
     @Transactional(readOnly = true)
     public Page<CareerPlanResponse> listCareerPlans(String status, java.time.LocalDate fromDate, Integer page, Integer size) {
-        Specification<RrhhCareerPlan> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("status", status))
+        Specification<RrhhCareerPlan> spec = Specification.<RrhhCareerPlan>where(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("startDate", fromDate));
         return careerRepository.findAll(spec, pageable(page, size)).map(this::toCareerResponse);
     }
@@ -117,7 +117,7 @@ public class RrhhDevelopmentService {
 
     @Transactional(readOnly = true)
     public Page<MentoringResponse> listMentoring(String status, java.time.LocalDate fromDate, Integer page, Integer size) {
-        Specification<RrhhMentoring> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("status", status))
+        Specification<RrhhMentoring> spec = Specification.<RrhhMentoring>where(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("startDate", fromDate));
         return mentoringRepository.findAll(spec, pageable(page, size)).map(this::toMentoringResponse);
     }

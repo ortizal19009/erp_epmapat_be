@@ -40,7 +40,7 @@ public class RrhhWellbeingService {
     @Transactional(readOnly = true)
     public Page<ClimateSurveyResponse> listClimateSurveys(String area, String status, java.time.LocalDate fromDate,
             Integer page, Integer size) {
-        Specification<RrhhClimateSurvey> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("area", area))
+        Specification<RrhhClimateSurvey> spec = Specification.<RrhhClimateSurvey>where(RrhhSpecifications.likeIgnoreCase("area", area))
                 .and(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("startDate", fromDate));
         return climateRepository.findAll(spec, pageable(page, size)).map(this::toClimateResponse);
@@ -56,14 +56,14 @@ public class RrhhWellbeingService {
 
     @Transactional(readOnly = true)
     public Page<ClimateSurveyResponse> listClimateResults(String area, Integer page, Integer size) {
-        Specification<RrhhClimateSurvey> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("area", area));
+        Specification<RrhhClimateSurvey> spec = Specification.<RrhhClimateSurvey>where(RrhhSpecifications.likeIgnoreCase("area", area));
         return climateRepository.findAll(spec, pageable(page, size)).map(this::toClimateResponse);
     }
 
     @Transactional(readOnly = true)
     public Page<WellbeingProgramResponse> listWellbeingPrograms(String area, String status, java.time.LocalDate fromDate,
             Integer page, Integer size) {
-        Specification<RrhhWellbeingProgram> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("area", area))
+        Specification<RrhhWellbeingProgram> spec = Specification.<RrhhWellbeingProgram>where(RrhhSpecifications.likeIgnoreCase("area", area))
                 .and(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("startDate", fromDate));
         return wellbeingRepository.findAll(spec, pageable(page, size)).map(this::toWellbeingResponse);
@@ -79,7 +79,7 @@ public class RrhhWellbeingService {
 
     @Transactional(readOnly = true)
     public Page<ConflictCaseResponse> listConflicts(String status, java.time.LocalDate fromDate, Integer page, Integer size) {
-        Specification<RrhhConflictCase> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("status", status))
+        Specification<RrhhConflictCase> spec = Specification.<RrhhConflictCase>where(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("openedAt", fromDate));
         return conflictRepository.findAll(spec, pageable(page, size)).map(this::toConflictResponse);
     }

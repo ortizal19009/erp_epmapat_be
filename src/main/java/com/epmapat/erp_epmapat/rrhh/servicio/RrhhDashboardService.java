@@ -183,13 +183,13 @@ public class RrhhDashboardService {
     }
 
     private Specification<RrhhEmployee> employeeSpec(String area, String contractType, String dependency) {
-        return Specification.where(RrhhSpecifications.likeIgnoreCase("area", area))
+        return Specification.<RrhhEmployee>where(RrhhSpecifications.likeIgnoreCase("area", area))
                 .and(RrhhSpecifications.likeIgnoreCase("contractType", contractType))
                 .and(RrhhSpecifications.likeIgnoreCase("dependency", dependency));
     }
 
     private Specification<RrhhVacancy> vacancySpec(String area, String dependency) {
-        return Specification.where(RrhhSpecifications.likeIgnoreCase("area", area))
+        return Specification.<RrhhVacancy>where(RrhhSpecifications.likeIgnoreCase("area", area))
                 .and(RrhhSpecifications.likeIgnoreCase("dependency", dependency));
     }
 

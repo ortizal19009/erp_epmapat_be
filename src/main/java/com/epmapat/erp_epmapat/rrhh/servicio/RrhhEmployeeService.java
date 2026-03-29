@@ -46,7 +46,7 @@ public class RrhhEmployeeService {
     @Transactional(readOnly = true)
     public Page<EmployeeResponse> list(String area, String dependency, String contractType, String status,
             java.time.LocalDate hireDateFrom, Integer page, Integer size) {
-        Specification<RrhhEmployee> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("area", area))
+        Specification<RrhhEmployee> spec = Specification.<RrhhEmployee>where(RrhhSpecifications.likeIgnoreCase("area", area))
                 .and(RrhhSpecifications.likeIgnoreCase("dependency", dependency))
                 .and(RrhhSpecifications.likeIgnoreCase("contractType", contractType))
                 .and(RrhhSpecifications.likeIgnoreCase("employmentStatus", status))

@@ -39,7 +39,7 @@ public class RrhhComplianceService {
     @Transactional(readOnly = true)
     public Page<AuditResponse> listAudits(String auditType, String status, java.time.LocalDate fromDate, Integer page,
             Integer size) {
-        Specification<RrhhAuditRecord> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("auditType", auditType))
+        Specification<RrhhAuditRecord> spec = Specification.<RrhhAuditRecord>where(RrhhSpecifications.likeIgnoreCase("auditType", auditType))
                 .and(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("auditDate", fromDate));
         return auditRepository.findAll(spec, pageable(page, size)).map(this::toAuditResponse);
@@ -55,7 +55,7 @@ public class RrhhComplianceService {
 
     @Transactional(readOnly = true)
     public Page<PolicyResponse> listPolicies(String status, java.time.LocalDate fromDate, Integer page, Integer size) {
-        Specification<RrhhPolicy> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("status", status))
+        Specification<RrhhPolicy> spec = Specification.<RrhhPolicy>where(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("effectiveDate", fromDate));
         return policyRepository.findAll(spec, pageable(page, size)).map(this::toPolicyResponse);
     }
@@ -72,7 +72,7 @@ public class RrhhComplianceService {
     @Transactional(readOnly = true)
     public Page<SafetyTrainingResponse> listSafetyTrainings(String area, String status, java.time.LocalDate fromDate,
             Integer page, Integer size) {
-        Specification<RrhhSafetyTraining> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("area", area))
+        Specification<RrhhSafetyTraining> spec = Specification.<RrhhSafetyTraining>where(RrhhSpecifications.likeIgnoreCase("area", area))
                 .and(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("trainingDate", fromDate));
         return safetyTrainingRepository.findAll(spec, pageable(page, size)).map(this::toSafetyResponse);

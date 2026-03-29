@@ -46,7 +46,7 @@ public class RrhhRecruitmentService {
     @Transactional(readOnly = true)
     public Page<VacancyResponse> listVacancies(String area, String stage, String status, java.time.LocalDate fromDate,
             Integer page, Integer size) {
-        Specification<RrhhVacancy> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("area", area))
+        Specification<RrhhVacancy> spec = Specification.<RrhhVacancy>where(RrhhSpecifications.likeIgnoreCase("area", area))
                 .and(RrhhSpecifications.likeIgnoreCase("stage", stage))
                 .and(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("openDate", fromDate));
@@ -74,7 +74,7 @@ public class RrhhRecruitmentService {
     @Transactional(readOnly = true)
     public Page<CandidateResponse> listCandidates(UUID vacancyId, String area, String stage, String status,
             java.time.LocalDate fromDate, Integer page, Integer size) {
-        Specification<RrhhCandidate> spec = Specification.where(RrhhSpecifications.equalsNested("vacancy", "id", vacancyId))
+        Specification<RrhhCandidate> spec = Specification.<RrhhCandidate>where(RrhhSpecifications.equalsNested("vacancy", "id", vacancyId))
                 .and(RrhhSpecifications.likeNestedIgnoreCase("vacancy", "area", area))
                 .and(RrhhSpecifications.likeIgnoreCase("stage", stage))
                 .and(RrhhSpecifications.likeIgnoreCase("status", status))
@@ -103,7 +103,7 @@ public class RrhhRecruitmentService {
     @Transactional(readOnly = true)
     public Page<InterviewResponse> listInterviews(UUID vacancyId, String stage, String status,
             java.time.LocalDate date, Integer page, Integer size) {
-        Specification<RrhhInterview> spec = Specification.where(RrhhSpecifications.equalsNested("vacancy", "id", vacancyId))
+        Specification<RrhhInterview> spec = Specification.<RrhhInterview>where(RrhhSpecifications.equalsNested("vacancy", "id", vacancyId))
                 .and(RrhhSpecifications.likeIgnoreCase("stage", stage))
                 .and(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and((root, query, cb) -> date == null ? cb.conjunction()
@@ -129,7 +129,7 @@ public class RrhhRecruitmentService {
 
     @Transactional(readOnly = true)
     public Page<OnboardingResponse> listOnboarding(String status, java.time.LocalDate fromDate, Integer page, Integer size) {
-        Specification<RrhhOnboarding> spec = Specification.where(RrhhSpecifications.likeIgnoreCase("status", status))
+        Specification<RrhhOnboarding> spec = Specification.<RrhhOnboarding>where(RrhhSpecifications.likeIgnoreCase("status", status))
                 .and(RrhhSpecifications.dateGreaterOrEqual("startDate", fromDate));
         return onboardingRepository.findAll(spec, pageable(page, size)).map(this::toOnboardingResponse);
     }
