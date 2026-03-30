@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.epmapat.erp_epmapat.jasperReports.DTO.JasperDTO;
+import com.epmapat.erp_epmapat.jasperReports.DTO.Jasper_DTO;
 import com.epmapat.erp_epmapat.jasperReports.services.BuildReports;
 
 import net.sf.jasperreports.engine.JasperPrint;
@@ -58,9 +58,9 @@ public class BuildReportsApi {
     }
 
     @PostMapping("/reportes")
-    public ResponseEntity<Resource> generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
+    public ResponseEntity<Resource> generarPdfFactura(@RequestBody Jasper_DTO jasperDTO) {
         try {
-            JasperDTO dto = new JasperDTO();
+            Jasper_DTO dto = new Jasper_DTO();
             dto.setReportName(jasperDTO.getReportName());
 
             Map<String, Object> params = new HashMap<>();
@@ -235,7 +235,7 @@ public class BuildReportsApi {
                     reportName = pickReportNameFromDb(conn, it.getIdfactura());
                 }
 
-                JasperDTO dto = new JasperDTO();
+                Jasper_DTO dto = new Jasper_DTO();
                 dto.setReportName(reportName);
 
                 Map<String, Object> params = new HashMap<>();

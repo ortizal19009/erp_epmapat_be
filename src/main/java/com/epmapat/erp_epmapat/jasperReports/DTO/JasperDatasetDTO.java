@@ -5,10 +5,11 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class JasperDTO {
+public class JasperDatasetDTO<T> {
 
    private String reportName;
-   private List<JasperParameterDTO> parameters;
    private String extension;
+   private List<ReportParameterDTO> parameters; // opcional
+   private List<T> data;
 
 }

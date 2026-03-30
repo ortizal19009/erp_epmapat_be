@@ -8,7 +8,7 @@ import java.util.Map;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import com.epmapat.erp_epmapat.jasperReports.DTO.JasperDTO;
+import com.epmapat.erp_epmapat.jasperReports.DTO.Jasper_DTO;
 import com.epmapat.erp_epmapat.jasperReports.utils.JasperReportLoader;
 import com.epmapat.erp_epmapat.jasperReports.utils.ReportCache;
 
@@ -22,7 +22,7 @@ public class BuildReports {
     private final ReportCache reportCache;
     private final JasperReportLoader loader;
 
-    public ByteArrayOutputStream buildReport(JasperDTO jasperDTO, Connection conn) {
+    public ByteArrayOutputStream buildReport(Jasper_DTO jasperDTO, Connection conn) {
         Map<String, Object> parameters = jasperDTO.getParameters();
 
         try (
