@@ -1,4 +1,4 @@
-package com.epmapat.erp_epmapat.controlador.contabilidad;
+/* package com.epmapat.erp_epmapat.controlador.contabilidad;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
@@ -292,3 +292,4 @@ public class CuentasApi {
 	}
 
 }
+ */
