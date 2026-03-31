@@ -342,6 +342,7 @@ public class AbonadoServicio {
 		abonadoOriginal.setPromedio(abonadosM.getPromedio());
 		abonadoOriginal.setGeolocalizacion(abonadosM.getGeolocalizacion());
 		abonadoOriginal.setSwbasura(abonadosM.getSwbasura());
+		abonadoOriginal.setFotoPath(abonadosM.getFotoPath());
 
 		return dao.save(abonadoOriginal);
 	}

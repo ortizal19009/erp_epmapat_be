@@ -1,11 +1,23 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +59,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/lecturas")
 public class LecturasApi {
 
+	private static final String FOTO_BASE_PATH = "/opt/epmapat/fotos";
+	private static final DateTimeFormatter YEAR_MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM");
+
 	private final LecturaServicio lecServicio;
 	private final EmisionServicioOptimizado emisionServicioOptimizado;
 	private final EmisionServicioOptimizadoV2 emisionServicioOptimizadoV2;
@@ -54,6 +69,35 @@ public class LecturasApi {
 	private final AbonadosR abonadosR;
 	private final NovedadR novedadR;
 	private final RutasxemisionR rutasxemisionR;
+
+	private Path resolveStorageDir(String subfolder) {
+		LocalDate now = LocalDate.now();
+		return Paths.get(FOTO_BASE_PATH, subfolder, String.valueOf(now.getYear()), String.format("%02d", now.getMonthValue()));
+	}
+
+	private String randomFileName(Long id, String originalName) {
+		String ext = "";
+		if (originalName != null && originalName.contains(".")) {
+			ext = originalName.substring(originalName.lastIndexOf('.') + 1);
+		}
+		String timestamp = String.valueOf(Instant.now().getEpochSecond());
+		return (id != null ? id + "_" : "") + timestamp + (ext.isEmpty() ? "" : "." + ext);
+	}
+
+	private ResponseEntity<Resource> buildImageResponse(Path filePath) throws IOException {
+		Resource resource = new UrlResource(filePath.toUri());
+		if (!resource.exists() || !resource.isReadable()) {
+			return ResponseEntity.notFound().build();
+		}
+		String contentType = Files.probeContentType(filePath);
+		if (contentType == null) {
+			contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+		}
+		return ResponseEntity.ok()
+				.contentType(MediaType.parseMediaType(contentType))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filePath.getFileName().toString() + "\"")
+				.body(resource);
+	}
 
 	// Busca por Planilla (Es una a una)
 	@GetMapping("/onePlanilla/{idfactura}")
@@ -134,6 +178,36 @@ public class LecturasApi {
 	public Long ultimaLecturaByIdemision(@Param(value = "idabonado") Long idabonado,
 			@Param("idemision") Long idemision) {
 		return lecServicio.ultimaLecturaByIdemision(idabonado, idemision);
+	}
+
+	@PostMapping("/{idlectura}/foto")
+	public ResponseEntity<Lecturas> uploadLecturaFoto(@PathVariable Long idlectura,
+			@RequestParam("file") org.springframework.web.multipart.MultipartFile file) throws IOException {
+		Lecturas lectura = lecServicio.findById(idlectura)
+				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
+					"No existe la Lectura con Id: " + idlectura));
+
+		Path dir = resolveStorageDir("lectura");
+		Files.createDirectories(dir);
+		String generatedFileName = randomFileName(idlectura, file.getOriginalFilename());
+		Path target = dir.resolve(generatedFileName);
+		Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+
+		lectura.setFotoPath(target.toString());
+		lecServicio.saveLectura(lectura);
+
+		return ResponseEntity.ok(lectura);
+	}
+
+	@GetMapping("/{idlectura}/foto")
+	public ResponseEntity<Resource> getLecturaFoto(@PathVariable Long idlectura) throws IOException {
+		Lecturas lectura = lecServicio.findById(idlectura)
+				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
+					"No existe la Lectura con Id: " + idlectura));
+		if (lectura.getFotoPath() == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return buildImageResponse(Paths.get(lectura.getFotoPath()));
 	}
 
 	@PostMapping

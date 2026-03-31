@@ -1,8 +1,17 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +58,37 @@ public class AbonadosApi {
 	@Autowired
 	private FacturasR facturaR;
 
+	private static final String FOTO_BASE_PATH = "/opt/epmapat/fotos";
+
+	private Path resolveStorageDir(String subfolder) {
+		LocalDate now = LocalDate.now();
+		return Paths.get(FOTO_BASE_PATH, subfolder, String.valueOf(now.getYear()), String.format("%02d", now.getMonthValue()));
+	}
+
+	private String randomFileName(Long id, String originalName) {
+		String ext = "";
+		if (originalName != null && originalName.contains(".")) {
+			ext = originalName.substring(originalName.lastIndexOf('.') + 1);
+		}
+		String timestamp = String.valueOf(Instant.now().getEpochSecond());
+		return (id != null ? id + "_" : "") + timestamp + (ext.isEmpty() ? "" : "." + ext);
+	}
+
+	private ResponseEntity<Resource> buildImageResponse(Path filePath) throws IOException {
+		Resource resource = new UrlResource(filePath.toUri());
+		if (!resource.exists() || !resource.isReadable()) {
+			return ResponseEntity.notFound().build();
+		}
+		String contentType = Files.probeContentType(filePath);
+		if (contentType == null) {
+			contentType = org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
+		}
+		return ResponseEntity.ok()
+				.contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+				.header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filePath.getFileName().toString() + "\"")
+				.body(resource);
+	}
+
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	public List<Abonados> getAllAbonados(@Param(value = "consulta") String consulta,
@@ -65,6 +105,36 @@ public class AbonadosApi {
 		} else {
 			return aboServicio.findAll(consulta.toLowerCase(), Sort.by(Sort.Order.asc("nromedidor")));
 		}
+	}
+
+	@PostMapping("/{idabonado}/foto")
+	public ResponseEntity<Abonados> uploadAbonadoFoto(@PathVariable Long idabonado,
+			@RequestParam("file") org.springframework.web.multipart.MultipartFile file) throws IOException {
+		Abonados abonado = aboServicio.findById(idabonado)
+				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
+					"No existe el Abonado con Id: " + idabonado));
+
+		Path dir = resolveStorageDir("abonado");
+		Files.createDirectories(dir);
+		String generatedFileName = randomFileName(idabonado, file.getOriginalFilename());
+		Path target = dir.resolve(generatedFileName);
+		Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+
+		abonado.setFotoPath(target.toString());
+		aboServicio.save(abonado);
+
+		return ResponseEntity.ok(abonado);
+	}
+
+	@GetMapping("/{idabonado}/foto")
+	public ResponseEntity<Resource> getAbonadoFoto(@PathVariable Long idabonado) throws IOException {
+		Abonados abonado = aboServicio.findById(idabonado)
+				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
+					"No existe el Abonado con Id: " + idabonado));
+		if (abonado.getFotoPath() == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return buildImageResponse(Paths.get(abonado.getFotoPath()));
 	}
 
 	@GetMapping("/clienteTieneAbonados")
