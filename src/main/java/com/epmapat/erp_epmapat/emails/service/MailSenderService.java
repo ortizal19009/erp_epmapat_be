@@ -17,6 +17,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +36,8 @@ import javax.mail.internet.MimeMessage;
 
 @Service
 public class MailSenderService {
+
+    private static final Logger log = LoggerFactory.getLogger(MailSenderService.class);
 
     private final EmailAttachmentR attachRepo;
     private final RestTemplate restTemplate;
@@ -100,7 +104,17 @@ public class MailSenderService {
 
             mailSender.send(mime);
         } catch (Exception e) {
-            throw new RuntimeException("Falló envío SMTP: " + e.getMessage(), e);
+            EmailAccountSecurityType effectiveSecurityType = resolveSecurityType(account);
+            String context = String.format(
+                    "host=%s, port=%s, protocol=%s, securityType=%s, authRequired=%s, username=%s",
+                    account.getHost(),
+                    account.getPort(),
+                    account.getProtocol(),
+                    effectiveSecurityType,
+                    account.isAuthRequired(),
+                    maskUsername(account.getUsername())
+            );
+            throw new RuntimeException("Falló envío SMTP (" + context + "): " + e.getMessage(), e);
         }
     }
 
@@ -152,6 +166,7 @@ public class MailSenderService {
         sender.setHost(account.getHost());
         sender.setPort(account.getPort());
         sender.setProtocol(account.getProtocol());
+        EmailAccountSecurityType effectiveSecurityType = resolveSecurityType(account);
 
         if (account.getUsername() != null && !account.getUsername().isBlank()) {
             sender.setUsername(account.getUsername());
@@ -163,12 +178,39 @@ public class MailSenderService {
         Properties props = sender.getJavaMailProperties();
         props.put("mail.transport.protocol", account.getProtocol());
         props.put("mail.smtp.auth", Boolean.toString(account.isAuthRequired()));
-        props.put("mail.smtp.starttls.enable", Boolean.toString(account.getSecurityType() == EmailAccountSecurityType.STARTTLS));
-        props.put("mail.smtp.ssl.enable", Boolean.toString(account.getSecurityType() == EmailAccountSecurityType.SSL_TLS));
+        props.put("mail.smtp.starttls.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS));
+        props.put("mail.smtp.starttls.required", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS));
+        props.put("mail.smtp.ssl.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.SSL_TLS));
+        props.put("mail.smtp.ssl.trust", account.getHost());
+        if (effectiveSecurityType == EmailAccountSecurityType.SSL_TLS) {
+            props.put("mail.smtp.socketFactory.port", Integer.toString(account.getPort()));
+            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            props.put("mail.smtp.socketFactory.fallback", "false");
+        }
         props.put("mail.smtp.connectiontimeout", "10000");
         props.put("mail.smtp.timeout", "10000");
         props.put("mail.smtp.writetimeout", "10000");
         return sender;
+    }
+
+    private EmailAccountSecurityType resolveSecurityType(EmailAccount account) {
+        if (account.getSecurityType() == EmailAccountSecurityType.STARTTLS && Integer.valueOf(465).equals(account.getPort())) {
+            log.warn("La cuenta SMTP {} usa puerto 465 con STARTTLS; se aplicara SSL_TLS implicito para evitar timeouts de handshake",
+                    account.getCode());
+            return EmailAccountSecurityType.SSL_TLS;
+        }
+        return account.getSecurityType();
+    }
+
+    private String maskUsername(String username) {
+        if (username == null || username.isBlank()) {
+            return "<empty>";
+        }
+        int atIndex = username.indexOf('@');
+        if (atIndex > 1) {
+            return username.charAt(0) + "***" + username.substring(atIndex);
+        }
+        return "***";
     }
 
     private Map<String, Object> buildFrom(EmailAccount account) {

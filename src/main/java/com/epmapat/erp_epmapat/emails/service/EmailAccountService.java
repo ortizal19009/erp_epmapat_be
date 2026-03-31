@@ -99,18 +99,19 @@ public class EmailAccountService {
     }
 
     private void apply(EmailAccount account, EmailAccountRequest req, boolean creating) {
-        validate(req, creating, account.getPassword(), account.getApiKey());
+        EmailAccountTransportType transportType = resolveTransportType(req, account);
+        validate(req, creating, account.getPassword(), account.getApiKey(), transportType);
 
         account.setName(req.name.trim());
         account.setProvider(trimToNull(req.provider));
         account.setFromAddress(req.fromAddress.trim());
         account.setFromName(trimToNull(req.fromName));
         account.setReplyTo(trimToNull(req.replyTo));
-        account.setTransportType(req.transportType);
+        account.setTransportType(transportType);
         account.setHost(trimToNull(req.host));
         account.setPort(req.port);
         account.setProtocol(trimToNull(req.protocol) == null ? "smtp" : req.protocol.trim().toLowerCase());
-        account.setSecurityType(req.securityType);
+        account.setSecurityType(resolveSecurityType(req, account, transportType));
         account.setAuthRequired(req.authRequired);
         account.setUsername(trimToNull(req.username));
         account.setApiUrl(trimToNull(req.apiUrl));
@@ -135,16 +136,14 @@ public class EmailAccountService {
         }
     }
 
-    private void validate(EmailAccountRequest req, boolean creating, String existingPassword, String existingApiKey) {
-        if (req.transportType == EmailAccountTransportType.SMTP) {
+    private void validate(EmailAccountRequest req, boolean creating, String existingPassword, String existingApiKey,
+                          EmailAccountTransportType transportType) {
+        if (transportType == EmailAccountTransportType.SMTP) {
             if (trimToNull(req.host) == null) {
                 throw new IllegalArgumentException("La cuenta SMTP requiere host");
             }
             if (req.port == null) {
                 throw new IllegalArgumentException("La cuenta SMTP requiere port");
-            }
-            if (req.securityType == null) {
-                throw new IllegalArgumentException("La cuenta SMTP requiere securityType");
             }
             if (req.authRequired && trimToNull(req.username) == null) {
                 throw new IllegalArgumentException("La cuenta SMTP requiere username cuando authRequired=true");
@@ -158,7 +157,7 @@ public class EmailAccountService {
             return;
         }
 
-        if (req.transportType == EmailAccountTransportType.API_HTTP) {
+        if (transportType == EmailAccountTransportType.API_HTTP) {
             if (trimToNull(req.apiUrl) == null) {
                 throw new IllegalArgumentException("La cuenta API_HTTP requiere apiUrl");
             }
@@ -169,6 +168,33 @@ public class EmailAccountService {
                 throw new IllegalArgumentException("La cuenta API_HTTP requiere apiKey");
             }
         }
+    }
+
+    private EmailAccountTransportType resolveTransportType(EmailAccountRequest req, EmailAccount account) {
+        if (req.transportType != null) {
+            return req.transportType;
+        }
+        if (account.getTransportType() != null) {
+            return account.getTransportType();
+        }
+        return EmailAccountTransportType.SMTP;
+    }
+
+    private com.epmapat.erp_epmapat.emails.model.EmailAccountSecurityType resolveSecurityType(
+            EmailAccountRequest req,
+            EmailAccount account,
+            EmailAccountTransportType transportType
+    ) {
+        if (transportType != EmailAccountTransportType.SMTP) {
+            return req.securityType;
+        }
+        if (req.securityType != null) {
+            return req.securityType;
+        }
+        if (account.getSecurityType() != null) {
+            return account.getSecurityType();
+        }
+        return com.epmapat.erp_epmapat.emails.model.EmailAccountSecurityType.STARTTLS;
     }
 
     private void ensureSingleDefaults(EmailAccount saved) {

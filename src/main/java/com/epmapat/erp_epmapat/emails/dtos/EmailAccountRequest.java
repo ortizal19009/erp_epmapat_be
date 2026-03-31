@@ -7,7 +7,6 @@ import com.epmapat.erp_epmapat.emails.model.EmailType;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 public class EmailAccountRequest {
     @NotBlank
@@ -32,10 +31,9 @@ public class EmailAccountRequest {
 
     public String protocol;
 
-    public EmailAccountSecurityType securityType;
+    public EmailAccountSecurityType securityType = EmailAccountSecurityType.STARTTLS;
 
-    @NotNull
-    public EmailAccountTransportType transportType;
+    public EmailAccountTransportType transportType = EmailAccountTransportType.SMTP;
 
     public boolean authRequired = true;
     public String username;

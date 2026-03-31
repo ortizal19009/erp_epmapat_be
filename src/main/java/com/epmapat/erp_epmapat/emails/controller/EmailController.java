@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @RestController
@@ -73,6 +74,19 @@ public class EmailController {
     ) {
         var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         var spec = EmailSpecs.filter(status, type, correlationId, accountId);
+        return emailRepo.findAll(spec, pageable).map(this::toResponse);
+    }
+
+    @GetMapping("/pending/stale")
+    public Page<EmailResponse> listStalePending(
+            @RequestParam(defaultValue = "30") int olderThanMinutes,
+            @RequestParam(required = false) Integer minAttempts,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        OffsetDateTime createdBefore = OffsetDateTime.now().minusMinutes(Math.max(olderThanMinutes, 0));
+        var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
+        var spec = EmailSpecs.pendingStale(createdBefore, minAttempts);
         return emailRepo.findAll(spec, pageable).map(this::toResponse);
     }
 
