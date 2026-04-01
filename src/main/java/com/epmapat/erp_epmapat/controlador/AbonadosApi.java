@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -107,9 +108,12 @@ public class AbonadosApi {
 		}
 	}
 
-	@PostMapping("/{idabonado}/foto")
+	@PostMapping(value = "/{idabonado}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Abonados> uploadAbonadoFoto(@PathVariable Long idabonado,
-			@RequestParam("file") org.springframework.web.multipart.MultipartFile file) throws IOException {
+			@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "Upload foto de abonado") String observacion) throws IOException {
 		Abonados abonado = aboServicio.findById(idabonado)
 				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
 					"No existe el Abonado con Id: " + idabonado));
@@ -120,8 +124,7 @@ public class AbonadosApi {
 		Path target = dir.resolve(generatedFileName);
 		Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
-		abonado.setFotoPath(target.toString());
-		aboServicio.save(abonado);
+		abonado = aboServicio.actualizarFotoConAuditoria(idabonado, target.toString(), usumodi, observacion, tipo);
 
 		return ResponseEntity.ok(abonado);
 	}

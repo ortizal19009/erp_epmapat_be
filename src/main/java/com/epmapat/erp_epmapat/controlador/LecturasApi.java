@@ -180,9 +180,12 @@ public class LecturasApi {
 		return lecServicio.ultimaLecturaByIdemision(idabonado, idemision);
 	}
 
-	@PostMapping("/{idlectura}/foto")
+	@PostMapping(value = "/{idlectura}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Lecturas> uploadLecturaFoto(@PathVariable Long idlectura,
-			@RequestParam("file") org.springframework.web.multipart.MultipartFile file) throws IOException {
+			@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "Upload foto de lectura") String observacion) throws IOException {
 		Lecturas lectura = lecServicio.findById(idlectura)
 				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
 					"No existe la Lectura con Id: " + idlectura));
@@ -193,8 +196,7 @@ public class LecturasApi {
 		Path target = dir.resolve(generatedFileName);
 		Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
-		lectura.setFotoPath(target.toString());
-		lecServicio.saveLectura(lectura);
+		lectura = lecServicio.actualizarFotoConAuditoria(idlectura, target.toString(), usumodi, observacion, tipo);
 
 		return ResponseEntity.ok(lectura);
 	}
@@ -216,30 +218,11 @@ public class LecturasApi {
 	}
 
 	@PutMapping("/{idlectura}")
-	public ResponseEntity<Lecturas> update(@PathVariable Long idlectura, @RequestBody Lecturas x) {
-		Lecturas y = lecServicio.findById(idlectura)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones(
-						("No existe la Lectura Id: " + idlectura)));
-		y.setEstado(x.getEstado());
-		y.setFechaemision(x.getFechaemision());
-		y.setLecturaanterior(x.getLecturaanterior());
-		y.setLecturaactual(x.getLecturaactual());
-		y.setLecturadigitada(x.getLecturadigitada());
-		y.setMesesmulta(x.getMesesmulta());
-		y.setObservaciones(x.getObservaciones());
-		y.setIdnovedad_novedades(x.getIdnovedad_novedades());
-		y.setIdemision(x.getIdemision());
-		y.setIdabonado_abonados(x.getIdabonado_abonados());
-		y.setIdresponsable(x.getIdresponsable());
-		y.setIdcategoria(x.getIdcategoria());
-		y.setIdrutaxemision_rutasxemision(x.getIdrutaxemision_rutasxemision());
-		y.setIdfactura(x.getIdfactura());
-		y.setTotal1(x.getTotal1());
-		y.setTotal31(x.getTotal31());
-		y.setTotal32(x.getTotal32());
-		y.setFotoPath(x.getFotoPath());
-
-		Lecturas actualizar = lecServicio.saveLectura(y);
+	public ResponseEntity<Lecturas> update(@PathVariable Long idlectura, @RequestBody Lecturas x,
+			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "Actualización de lectura") String observacion) {
+		Lecturas actualizar = lecServicio.actualizarLecturaConAuditoria(idlectura, x, usumodi, observacion, tipo);
 		return ResponseEntity.ok(actualizar);
 	}
 
@@ -420,7 +403,10 @@ public class LecturasApi {
 
 	@PostMapping("/mobile/upload")
 	public ResponseEntity<java.util.Map<String, Integer>> uploadLecturasMobile(
-			@RequestBody List<LecturaUploadItemDto> items) {
+			@RequestBody List<LecturaUploadItemDto> items,
+			@RequestParam(required = false) Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "Upload lecturas mobile") String observacion) {
 		int ok = 0;
 		int err = 0;
 
@@ -462,7 +448,11 @@ public class LecturasApi {
 						? null
 						: rutasxemisionR.findById(item.getIdrutaxemision_rutasxemision()).orElse(null));
 
-				lecServicio.saveLectura(y);
+				if (usumodi != null) {
+					lecServicio.actualizarLecturaConAuditoria(item.getIdlectura(), y, usumodi, observacion, tipo);
+				} else {
+					lecServicio.saveLectura(y);
+				}
 				ok++;
 			} catch (Exception ex) {
 				err++;

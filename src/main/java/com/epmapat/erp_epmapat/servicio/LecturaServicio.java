@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
+import com.epmapat.erp_epmapat.DTO.LecturasAuditDTO;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
@@ -52,6 +53,8 @@ public class LecturaServicio {
 	private DefinirR dao_definir;
 	@Autowired
 	private RubroxfacR dao_rubroxfac;
+	@Autowired
+	private AuditoriaGenericaService auditoriaService;
 
 	// Lectura por Planilla
 	public Lecturas findOnefactura(Long idfactura) {
@@ -114,6 +117,69 @@ public class LecturaServicio {
 
 	public <S extends Lecturas> S saveLectura(S entity) {
 		return dao.save(entity);
+	}
+
+	public Lecturas actualizarLecturaConAuditoria(Long idlectura, Lecturas lecturaM, Long usumodi, String observacion, String tipo) {
+		Lecturas lecturaOriginal = dao.findById(idlectura)
+				.orElseThrow(() -> new RuntimeException("Lectura no encontrada: " + idlectura));
+
+		LecturasAuditDTO auditDTO = buildAuditDTO(lecturaOriginal);
+		auditoriaService.saveAudit("lecturas", lecturaOriginal.getIdlectura(), auditDTO, usumodi, observacion, tipo);
+
+		lecturaOriginal.setEstado(lecturaM.getEstado());
+		lecturaOriginal.setFechaemision(lecturaM.getFechaemision());
+		lecturaOriginal.setLecturaanterior(lecturaM.getLecturaanterior());
+		lecturaOriginal.setLecturaactual(lecturaM.getLecturaactual());
+		lecturaOriginal.setLecturadigitada(lecturaM.getLecturadigitada());
+		lecturaOriginal.setMesesmulta(lecturaM.getMesesmulta());
+		lecturaOriginal.setObservaciones(lecturaM.getObservaciones());
+		lecturaOriginal.setIdnovedad_novedades(lecturaM.getIdnovedad_novedades());
+		lecturaOriginal.setIdemision(lecturaM.getIdemision());
+		lecturaOriginal.setIdabonado_abonados(lecturaM.getIdabonado_abonados());
+		lecturaOriginal.setIdresponsable(lecturaM.getIdresponsable());
+		lecturaOriginal.setIdcategoria(lecturaM.getIdcategoria());
+		lecturaOriginal.setIdrutaxemision_rutasxemision(lecturaM.getIdrutaxemision_rutasxemision());
+		lecturaOriginal.setIdfactura(lecturaM.getIdfactura());
+		lecturaOriginal.setTotal1(lecturaM.getTotal1());
+		lecturaOriginal.setTotal31(lecturaM.getTotal31());
+		lecturaOriginal.setTotal32(lecturaM.getTotal32());
+		lecturaOriginal.setFotoPath(lecturaM.getFotoPath());
+
+		return dao.save(lecturaOriginal);
+	}
+
+	public Lecturas actualizarFotoConAuditoria(Long idlectura, String fotoPath, Long usumodi, String observacion, String tipo) {
+		Lecturas lecturaOriginal = dao.findById(idlectura)
+				.orElseThrow(() -> new RuntimeException("Lectura no encontrada: " + idlectura));
+
+		LecturasAuditDTO auditDTO = buildAuditDTO(lecturaOriginal);
+		auditoriaService.saveAudit("lecturas", lecturaOriginal.getIdlectura(), auditDTO, usumodi, observacion, tipo);
+
+		lecturaOriginal.setFotoPath(fotoPath);
+		return dao.save(lecturaOriginal);
+	}
+
+	private LecturasAuditDTO buildAuditDTO(Lecturas lectura) {
+		return new LecturasAuditDTO(
+				lectura.getIdlectura(),
+				lectura.getEstado(),
+				lectura.getIdrutaxemision_rutasxemision() == null ? null : lectura.getIdrutaxemision_rutasxemision().getIdrutaxemision(),
+				lectura.getFechaemision(),
+				lectura.getLecturaanterior(),
+				lectura.getLecturaactual(),
+				lectura.getLecturadigitada(),
+				lectura.getMesesmulta(),
+				lectura.getObservaciones(),
+				lectura.getIdnovedad_novedades() == null ? null : lectura.getIdnovedad_novedades().getIdnovedad(),
+				lectura.getIdemision(),
+				lectura.getIdabonado_abonados() == null ? null : lectura.getIdabonado_abonados().getIdabonado(),
+				lectura.getIdresponsable(),
+				lectura.getIdcategoria(),
+				lectura.getIdfactura(),
+				lectura.getTotal1(),
+				lectura.getTotal31(),
+				lectura.getTotal32(),
+				lectura.getFotoPath());
 	}
 
 	// Ultima lectura de un Abonado

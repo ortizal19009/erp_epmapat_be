@@ -237,37 +237,7 @@ public class AbonadoServicio {
 		Abonados abonadoOriginal = dao.findById(idabonado)
 				.orElseThrow(() -> new RuntimeException("Abonado no encontrado: " + idabonado));
 
-		AbonadosAuditDTO auditDTO = new AbonadosAuditDTO(
-				abonadoOriginal.getIdabonado(),
-				abonadoOriginal.getNromedidor(),
-				abonadoOriginal.getLecturainicial(),
-				abonadoOriginal.getEstado(),
-				abonadoOriginal.getFechainstalacion(),
-				abonadoOriginal.getMarca(),
-				abonadoOriginal.getSecuencia(),
-				abonadoOriginal.getDireccionubicacion(),
-				abonadoOriginal.getLocalizacion(),
-				abonadoOriginal.getObservacion(),
-				abonadoOriginal.getDepartamento(),
-				abonadoOriginal.getPiso(),
-				abonadoOriginal.getIdresponsable() == null ? null : abonadoOriginal.getIdresponsable().getIdcliente(),
-				abonadoOriginal.getIdcategoria_categorias() == null ? null : abonadoOriginal.getIdcategoria_categorias().getIdcategoria(),
-				abonadoOriginal.getIdruta_rutas() == null ? null : abonadoOriginal.getIdruta_rutas().getIdruta(),
-				abonadoOriginal.getIdcliente_clientes() == null ? null : abonadoOriginal.getIdcliente_clientes().getIdcliente(),
-				abonadoOriginal.getIdubicacionm_ubicacionm() == null ? null : abonadoOriginal.getIdubicacionm_ubicacionm().getIdubicacionm(),
-				abonadoOriginal.getIdtipopago_tipopago() == null ? null : abonadoOriginal.getIdtipopago_tipopago().getIdtipopago(),
-				abonadoOriginal.getIdestadom_estadom() == null ? null : abonadoOriginal.getIdestadom_estadom().getIdestadom(),
-				abonadoOriginal.getMedidorprincipal(),
-				abonadoOriginal.getUsucrea(),
-				abonadoOriginal.getFeccrea(),
-				abonadoOriginal.getUsumodi(),
-				abonadoOriginal.getFecmodi(),
-				abonadoOriginal.getAdultomayor(),
-				abonadoOriginal.getMunicipio(),
-				abonadoOriginal.getSwalcantarillado(),
-				abonadoOriginal.getPromedio(),
-				abonadoOriginal.getGeolocalizacion(),
-				abonadoOriginal.getSwbasura());
+		AbonadosAuditDTO auditDTO = buildAuditDTO(abonadoOriginal);
 
 		auditoriaService.saveAudit("abonados", abonadoOriginal.getIdabonado(), auditDTO, usumodi, observacion, tipo);
 
@@ -279,37 +249,7 @@ public class AbonadoServicio {
 		Abonados abonadoOriginal = dao.findById(idabonado)
 				.orElseThrow(() -> new RuntimeException("Abonado no encontrado: " + idabonado));
 
-		AbonadosAuditDTO auditDTO = new AbonadosAuditDTO(
-				abonadoOriginal.getIdabonado(),
-				abonadoOriginal.getNromedidor(),
-				abonadoOriginal.getLecturainicial(),
-				abonadoOriginal.getEstado(),
-				abonadoOriginal.getFechainstalacion(),
-				abonadoOriginal.getMarca(),
-				abonadoOriginal.getSecuencia(),
-				abonadoOriginal.getDireccionubicacion(),
-				abonadoOriginal.getLocalizacion(),
-				abonadoOriginal.getObservacion(),
-				abonadoOriginal.getDepartamento(),
-				abonadoOriginal.getPiso(),
-				abonadoOriginal.getIdresponsable() == null ? null : abonadoOriginal.getIdresponsable().getIdcliente(),
-				abonadoOriginal.getIdcategoria_categorias() == null ? null : abonadoOriginal.getIdcategoria_categorias().getIdcategoria(),
-				abonadoOriginal.getIdruta_rutas() == null ? null : abonadoOriginal.getIdruta_rutas().getIdruta(),
-				abonadoOriginal.getIdcliente_clientes() == null ? null : abonadoOriginal.getIdcliente_clientes().getIdcliente(),
-				abonadoOriginal.getIdubicacionm_ubicacionm() == null ? null : abonadoOriginal.getIdubicacionm_ubicacionm().getIdubicacionm(),
-				abonadoOriginal.getIdtipopago_tipopago() == null ? null : abonadoOriginal.getIdtipopago_tipopago().getIdtipopago(),
-				abonadoOriginal.getIdestadom_estadom() == null ? null : abonadoOriginal.getIdestadom_estadom().getIdestadom(),
-				abonadoOriginal.getMedidorprincipal(),
-				abonadoOriginal.getUsucrea(),
-				abonadoOriginal.getFeccrea(),
-				abonadoOriginal.getUsumodi(),
-				abonadoOriginal.getFecmodi(),
-				abonadoOriginal.getAdultomayor(),
-				abonadoOriginal.getMunicipio(),
-				abonadoOriginal.getSwalcantarillado(),
-				abonadoOriginal.getPromedio(),
-				abonadoOriginal.getGeolocalizacion(),
-				abonadoOriginal.getSwbasura());
+		AbonadosAuditDTO auditDTO = buildAuditDTO(abonadoOriginal);
 
 		auditoriaService.saveAudit("abonados", abonadoOriginal.getIdabonado(), auditDTO, usumodi, observacion, tipo);
 
@@ -345,6 +285,53 @@ public class AbonadoServicio {
 		abonadoOriginal.setFotoPath(abonadosM.getFotoPath());
 
 		return dao.save(abonadoOriginal);
+	}
+
+	public Abonados actualizarFotoConAuditoria(Long idabonado, String fotoPath, Long usumodi, String observacion, String tipo) {
+		Abonados abonadoOriginal = dao.findById(idabonado)
+				.orElseThrow(() -> new RuntimeException("Abonado no encontrado: " + idabonado));
+
+		AbonadosAuditDTO auditDTO = buildAuditDTO(abonadoOriginal);
+		auditoriaService.saveAudit("abonados", abonadoOriginal.getIdabonado(), auditDTO, usumodi, observacion, tipo);
+
+		abonadoOriginal.setFotoPath(fotoPath);
+		abonadoOriginal.setUsumodi(usumodi);
+		return dao.save(abonadoOriginal);
+	}
+
+	private AbonadosAuditDTO buildAuditDTO(Abonados abonadoOriginal) {
+		return new AbonadosAuditDTO(
+				abonadoOriginal.getIdabonado(),
+				abonadoOriginal.getNromedidor(),
+				abonadoOriginal.getLecturainicial(),
+				abonadoOriginal.getEstado(),
+				abonadoOriginal.getFechainstalacion(),
+				abonadoOriginal.getMarca(),
+				abonadoOriginal.getSecuencia(),
+				abonadoOriginal.getDireccionubicacion(),
+				abonadoOriginal.getLocalizacion(),
+				abonadoOriginal.getObservacion(),
+				abonadoOriginal.getDepartamento(),
+				abonadoOriginal.getPiso(),
+				abonadoOriginal.getIdresponsable() == null ? null : abonadoOriginal.getIdresponsable().getIdcliente(),
+				abonadoOriginal.getIdcategoria_categorias() == null ? null : abonadoOriginal.getIdcategoria_categorias().getIdcategoria(),
+				abonadoOriginal.getIdruta_rutas() == null ? null : abonadoOriginal.getIdruta_rutas().getIdruta(),
+				abonadoOriginal.getIdcliente_clientes() == null ? null : abonadoOriginal.getIdcliente_clientes().getIdcliente(),
+				abonadoOriginal.getIdubicacionm_ubicacionm() == null ? null : abonadoOriginal.getIdubicacionm_ubicacionm().getIdubicacionm(),
+				abonadoOriginal.getIdtipopago_tipopago() == null ? null : abonadoOriginal.getIdtipopago_tipopago().getIdtipopago(),
+				abonadoOriginal.getIdestadom_estadom() == null ? null : abonadoOriginal.getIdestadom_estadom().getIdestadom(),
+				abonadoOriginal.getMedidorprincipal(),
+				abonadoOriginal.getUsucrea(),
+				abonadoOriginal.getFeccrea(),
+				abonadoOriginal.getUsumodi(),
+				abonadoOriginal.getFecmodi(),
+				abonadoOriginal.getAdultomayor(),
+				abonadoOriginal.getMunicipio(),
+				abonadoOriginal.getSwalcantarillado(),
+				abonadoOriginal.getPromedio(),
+				abonadoOriginal.getGeolocalizacion(),
+				abonadoOriginal.getSwbasura(),
+				abonadoOriginal.getFotoPath());
 	}
 
 	/*
