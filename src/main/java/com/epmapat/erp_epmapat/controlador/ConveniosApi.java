@@ -71,22 +71,25 @@ public class ConveniosApi {
    }
 
    @PutMapping("/{idconvenio}")
-   public ResponseEntity<Convenios> update(@PathVariable Long idconvenio, @RequestBody Convenios x) {
-      Convenios y = convServicio.findById(idconvenio)
-            .orElseThrow(() -> new ResourceNotFoundExcepciones(
-                  ("No existe el Convenio Id: " + idconvenio)));
-      y.setReferencia(x.getReferencia());
-      y.setNroautorizacion(x.getNroautorizacion());
-      y.setEstado(x.getEstado());
-      y.setObservaciones(x.getObservaciones());
-      y.setUsuarioeliminacion(x.getUsuarioeliminacion());
-      y.setFechaeliminacion(x.getFechaeliminacion());
-      y.setRazoneliminacion(x.getRazoneliminacion());
-      y.setUsumodi(x.getUsumodi());
-      y.setFecmodi(x.getFecmodi());
+   public ResponseEntity<Convenios> update(@PathVariable Long idconvenio,
+         @RequestBody Convenios x,
+         @RequestParam(required = false, defaultValue = "0") Long usumodi,
+         @RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+         @RequestParam(required = false, defaultValue = "Actualización de convenio") String observacion) {
 
-      Convenios actualizar = convServicio.save(y);
-      return ResponseEntity.ok(actualizar);
+      Convenios actualizado = convServicio.actualizarConvenioConAuditoria(idconvenio, x, usumodi, observacion, tipo);
+      return ResponseEntity.ok(actualizado);
+   }
+
+   @PutMapping("/{idconvenio}/estado")
+   public ResponseEntity<Convenios> updateEstado(@PathVariable Long idconvenio,
+         @RequestParam Integer estado,
+         @RequestParam(required = false, defaultValue = "0") Long usumodi,
+         @RequestParam(required = false, defaultValue = "Cambio de estado de convenio") String observacion,
+         @RequestParam(required = false, defaultValue = "CAMBIO_DE_ESTADO") String tipo) {
+
+      Convenios actualizado = convServicio.actualizarEstadoConvenioConAuditoria(idconvenio, estado, usumodi, observacion, tipo);
+      return ResponseEntity.ok(actualizado);
    }
 
    @DeleteMapping(value = "/{idconvenio}")

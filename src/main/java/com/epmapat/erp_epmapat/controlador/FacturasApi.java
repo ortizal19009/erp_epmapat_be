@@ -293,10 +293,11 @@ public class FacturasApi {
 		Facturas y = facServicio.findById(idfactura)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
 		BigDecimal interes = rxfServicio.getTotalInteres(idfactura);
+		BigDecimal interescobradoRecibido = x.getInterescobrado() == null ? BigDecimal.ZERO : x.getInterescobrado();
 		if (interes == null) {
-			y.setInterescobrado(x.getInterescobrado());
+			y.setInterescobrado(interescobradoRecibido);
 		} else {
-			y.setInterescobrado(interes.add(x.getInterescobrado()));
+			y.setInterescobrado(interes.add(interescobradoRecibido));
 		}
 		if (x.getHoracobro() != null) {
 			hora = LocalTime.parse(x.getHoracobro().toString()); // Esto funciona
