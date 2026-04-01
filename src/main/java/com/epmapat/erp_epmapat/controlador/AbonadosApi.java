@@ -13,6 +13,7 @@ import java.util.Map;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.epmapat.erp_epmapat.DTO.AbonadoGeoUploadItemDto;
 import com.epmapat.erp_epmapat.DTO.EstadisticasAbonadosDTO;
@@ -59,11 +61,12 @@ public class AbonadosApi {
 	@Autowired
 	private FacturasR facturaR;
 
-	private static final String FOTO_BASE_PATH = "/opt/epmapat/fotos";
+	@Value("${abonados.fotos.base-path:/opt/epmapat/fotos}")
+	private String fotoBasePath;
 
 	private Path resolveStorageDir(String subfolder) {
 		LocalDate now = LocalDate.now();
-		return Paths.get(FOTO_BASE_PATH, subfolder, String.valueOf(now.getYear()), String.format("%02d", now.getMonthValue()));
+		return Paths.get(fotoBasePath, subfolder, String.valueOf(now.getYear()), String.format("%02d", now.getMonthValue()));
 	}
 
 	private String randomFileName(Long id, String originalName) {
@@ -90,6 +93,18 @@ public class AbonadosApi {
 				.body(resource);
 	}
 
+	private String saveImageFile(Long idabonado, MultipartFile file, String subfolder) throws IOException {
+		if (file == null || file.isEmpty()) {
+			return null;
+		}
+		Path dir = resolveStorageDir(subfolder);
+		Files.createDirectories(dir);
+		String generatedFileName = randomFileName(idabonado, file.getOriginalFilename());
+		Path target = dir.resolve(generatedFileName);
+		Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+		return target.toString();
+	}
+
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	public List<Abonados> getAllAbonados(@Param(value = "consulta") String consulta,
@@ -108,36 +123,55 @@ public class AbonadosApi {
 		}
 	}
 
-	@PostMapping(value = "/{idabonado}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<Abonados> uploadAbonadoFoto(@PathVariable Long idabonado,
-			@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+	@PostMapping(value = "/{idabonado}/fotos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<Abonados> uploadFotosAbonado(@PathVariable Long idabonado,
+			@RequestParam(value = "fotocasa", required = false) MultipartFile fotocasa,
+			@RequestParam(value = "fotomedidor", required = false) MultipartFile fotomedidor,
 			@RequestParam Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
-			@RequestParam(required = false, defaultValue = "Upload foto de abonado") String observacion) throws IOException {
-		Abonados abonado = aboServicio.findById(idabonado)
+			@RequestParam(required = false, defaultValue = "Upload fotos de abonado") String observacion) throws IOException {
+		aboServicio.findById(idabonado)
 				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
 					"No existe el Abonado con Id: " + idabonado));
 
-		Path dir = resolveStorageDir("abonado");
-		Files.createDirectories(dir);
-		String generatedFileName = randomFileName(idabonado, file.getOriginalFilename());
-		Path target = dir.resolve(generatedFileName);
-		Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+		if ((fotocasa == null || fotocasa.isEmpty()) && (fotomedidor == null || fotomedidor.isEmpty())) {
+			return ResponseEntity.badRequest().build();
+		}
 
-		abonado = aboServicio.actualizarFotoConAuditoria(idabonado, target.toString(), usumodi, observacion, tipo);
+		String fotocasaPath = saveImageFile(idabonado, fotocasa, "abonado/fotocasa");
+		String fotomedidorPath = saveImageFile(idabonado, fotomedidor, "abonado/fotomedidor");
+
+		Abonados abonado = aboServicio.actualizarFotosAbonadoConAuditoria(
+				idabonado,
+				fotocasaPath,
+				fotomedidorPath,
+				usumodi,
+				observacion,
+				tipo);
 
 		return ResponseEntity.ok(abonado);
 	}
 
-	@GetMapping("/{idabonado}/foto")
-	public ResponseEntity<Resource> getAbonadoFoto(@PathVariable Long idabonado) throws IOException {
+	@GetMapping("/{idabonado}/fotocasa")
+	public ResponseEntity<Resource> getAbonadoFotoCasa(@PathVariable Long idabonado) throws IOException {
 		Abonados abonado = aboServicio.findById(idabonado)
 				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
 					"No existe el Abonado con Id: " + idabonado));
-		if (abonado.getFotoPath() == null) {
+		if (abonado.getFotocasaPath() == null) {
 			return ResponseEntity.notFound().build();
 		}
-		return buildImageResponse(Paths.get(abonado.getFotoPath()));
+		return buildImageResponse(Paths.get(abonado.getFotocasaPath()));
+	}
+
+	@GetMapping("/{idabonado}/fotomedidor")
+	public ResponseEntity<Resource> getAbonadoFotoMedidor(@PathVariable Long idabonado) throws IOException {
+		Abonados abonado = aboServicio.findById(idabonado)
+				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
+					"No existe el Abonado con Id: " + idabonado));
+		if (abonado.getFotomedidorPath() == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return buildImageResponse(Paths.get(abonado.getFotomedidorPath()));
 	}
 
 	@GetMapping("/clienteTieneAbonados")

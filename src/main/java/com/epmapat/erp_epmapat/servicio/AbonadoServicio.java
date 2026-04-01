@@ -282,19 +282,26 @@ public class AbonadoServicio {
 		abonadoOriginal.setPromedio(abonadosM.getPromedio());
 		abonadoOriginal.setGeolocalizacion(abonadosM.getGeolocalizacion());
 		abonadoOriginal.setSwbasura(abonadosM.getSwbasura());
-		abonadoOriginal.setFotoPath(abonadosM.getFotoPath());
+		abonadoOriginal.setFotocasaPath(abonadosM.getFotocasaPath());
+		abonadoOriginal.setFotomedidorPath(abonadosM.getFotomedidorPath());
 
 		return dao.save(abonadoOriginal);
 	}
 
-	public Abonados actualizarFotoConAuditoria(Long idabonado, String fotoPath, Long usumodi, String observacion, String tipo) {
+	public Abonados actualizarFotosAbonadoConAuditoria(Long idabonado, String fotocasaPath, String fotomedidorPath,
+			Long usumodi, String observacion, String tipo) {
 		Abonados abonadoOriginal = dao.findById(idabonado)
 				.orElseThrow(() -> new RuntimeException("Abonado no encontrado: " + idabonado));
 
 		AbonadosAuditDTO auditDTO = buildAuditDTO(abonadoOriginal);
 		auditoriaService.saveAudit("abonados", abonadoOriginal.getIdabonado(), auditDTO, usumodi, observacion, tipo);
 
-		abonadoOriginal.setFotoPath(fotoPath);
+		if (fotocasaPath != null) {
+			abonadoOriginal.setFotocasaPath(fotocasaPath);
+		}
+		if (fotomedidorPath != null) {
+			abonadoOriginal.setFotomedidorPath(fotomedidorPath);
+		}
 		abonadoOriginal.setUsumodi(usumodi);
 		return dao.save(abonadoOriginal);
 	}
@@ -331,7 +338,8 @@ public class AbonadoServicio {
 				abonadoOriginal.getPromedio(),
 				abonadoOriginal.getGeolocalizacion(),
 				abonadoOriginal.getSwbasura(),
-				abonadoOriginal.getFotoPath());
+				abonadoOriginal.getFotocasaPath(),
+				abonadoOriginal.getFotomedidorPath());
 	}
 
 	/*

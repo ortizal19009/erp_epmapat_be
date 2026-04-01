@@ -40,5 +40,6 @@ public class AbonadosAuditDTO {
     private Long promedio;
     private String geolocalizacion;
     private Boolean swbasura;
-    private String fotoPath;
+    private String fotocasaPath;
+    private String fotomedidorPath;
 }

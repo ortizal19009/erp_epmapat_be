@@ -1,0 +1,1 @@
+ALTER TABLE abonados DROP COLUMN IF EXISTS foto_path;

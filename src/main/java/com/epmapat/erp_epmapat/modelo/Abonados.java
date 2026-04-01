@@ -100,7 +100,9 @@ public class Abonados {
 	private Long promedio;
 	private String geolocalizacion;
 	private Boolean swbasura;
-	@Column(name = "foto_path")
-	private String fotoPath;
+	@Column(name = "fotocasa_path")
+	private String fotocasaPath;
+	@Column(name = "fotomedidor_path")
+	private String fotomedidorPath;
 
 }
