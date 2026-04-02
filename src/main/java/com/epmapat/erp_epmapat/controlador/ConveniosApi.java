@@ -17,6 +17,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.ConvenioDetalle;
 import com.epmapat.erp_epmapat.interfaces.ConvenioOneData;
 import com.epmapat.erp_epmapat.interfaces.EstadoConvenios;
 import com.epmapat.erp_epmapat.modelo.Convenios;
@@ -113,6 +114,44 @@ public class ConveniosApi {
    public ResponseEntity<Page<EstadoConvenios>> getByFacPendientes(@RequestParam Long d, @RequestParam Long h,
          @RequestParam int page, @RequestParam int size) {
       return ResponseEntity.ok(convServicio.getByFacPendientes(d, h, page, size));
+   }
+
+   @GetMapping("/buscar")
+   public ResponseEntity<Page<ConvenioDetalle>> buscarConvenios(
+         @RequestParam(required = false) Integer nroDesde,
+         @RequestParam(required = false) Integer nroHasta,
+         @RequestParam(required = false) String nombre,
+         @RequestParam(required = false) Integer estado,
+         @RequestParam(required = false) Long minPendientes,
+         @RequestParam(required = false) Long maxPendientes,
+         @RequestParam(required = false) Long idabonado,
+         @RequestParam(required = false) Long cuenta,
+         @RequestParam(defaultValue = "0") int page,
+         @RequestParam(defaultValue = "20") int size) {
+
+      Long cuentaFiltro = idabonado != null ? idabonado : cuenta;
+      return ResponseEntity.ok(
+            convServicio.buscarConvenios(nroDesde, nroHasta, nombre, estado, minPendientes, maxPendientes, cuentaFiltro, page, size));
+   }
+
+   @GetMapping("/sin-pendientes")
+   public ResponseEntity<List<ConvenioDetalle>> getConveniosSinPendientes(
+         @RequestParam(required = false) Integer estado) {
+      return ResponseEntity.ok(convServicio.getConveniosSinPendientes(estado));
+   }
+
+   @GetMapping("/con-pendientes")
+   public ResponseEntity<List<ConvenioDetalle>> getConveniosConPendientes(
+         @RequestParam(required = false) Integer estado) {
+      return ResponseEntity.ok(convServicio.getConveniosConPendientes(estado));
+   }
+
+   @PutMapping("/marcar-pagados")
+   public ResponseEntity<List<Convenios>> marcarConveniosPagados(
+         @RequestParam(required = false, defaultValue = "0") Long usumodi,
+         @RequestParam(required = false, defaultValue = "Actualización masiva de convenios pagados") String observacion,
+         @RequestParam(required = false, defaultValue = "CAMBIO_DE_ESTADO") String tipo) {
+      return ResponseEntity.ok(convServicio.marcarConveniosPagados(usumodi, observacion, tipo));
    }
 
    @GetMapping("/pendiente")

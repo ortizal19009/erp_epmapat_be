@@ -1,8 +1,10 @@
 package com.epmapat.erp_epmapat.servicio;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.DTO.ConvenioAuditDTO;
 import com.epmapat.erp_epmapat.interfaces.ConvenioOneData;
+import com.epmapat.erp_epmapat.interfaces.ConvenioDetalle;
 import com.epmapat.erp_epmapat.interfaces.EstadoConvenios;
 import com.epmapat.erp_epmapat.modelo.Convenios;
 import com.epmapat.erp_epmapat.repositorio.ConveniosR;
@@ -82,13 +85,7 @@ public class ConvenioServicio {
         }
         if (convenioM.getEstado() != null) {
             convenioOriginal.setEstado(convenioM.getEstado());
-
-            if (convenioM.getEstado() == 2 || convenioM.getEstado() == 3) {
-                // estado 2 = ANULADO, estado 3 = ELIMINADO
-                convenioOriginal.setUsuarioeliminacion(convenioM.getUsuarioeliminacion());
-                convenioOriginal.setFechaeliminacion(convenioM.getFechaeliminacion() != null ? convenioM.getFechaeliminacion() : java.time.LocalDate.now());
-                convenioOriginal.setRazoneliminacion(convenioM.getRazoneliminacion());
-            }
+            aplicarMetadatosEstado(convenioOriginal, convenioM.getEstado(), convenioM.getUsuarioeliminacion());
         }
 
         if (convenioM.getObservaciones() != null) {
@@ -120,16 +117,43 @@ public class ConvenioServicio {
         auditoriaService.saveAudit("convenios", convenioOriginal.getIdconvenio(), buildAuditDTO(convenioOriginal), usumodi, observacion, tipo);
 
         convenioOriginal.setEstado(estado);
-
-        if (estado == 2 || estado == 3) {
-            convenioOriginal.setFechaeliminacion(java.time.LocalDate.now());
-            convenioOriginal.setRazoneliminacion(estado == 2 ? "ANULADO" : "ELIMINADO");
-        }
+        aplicarMetadatosEstado(convenioOriginal, estado, usumodi);
 
         convenioOriginal.setUsumodi(usumodi);
         convenioOriginal.setFecmodi(new Timestamp(System.currentTimeMillis()));
 
         return dao.save(convenioOriginal);
+    }
+
+    public Page<ConvenioDetalle> buscarConvenios(
+            Integer nroDesde,
+            Integer nroHasta,
+            String nombre,
+            Integer estado,
+            Long minPendientes,
+            Long maxPendientes,
+            Long idabonado,
+            int page,
+            int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        String nombreNormalizado = (nombre == null || nombre.isBlank()) ? null : nombre.trim().toLowerCase();
+        return dao.buscarConvenios(nroDesde, nroHasta, nombreNormalizado, estado, minPendientes, maxPendientes, idabonado, pageable);
+    }
+
+    public List<ConvenioDetalle> getConveniosSinPendientes(Integer estado) {
+        return dao.findConveniosSinPendientes(estado);
+    }
+
+    public List<Convenios> marcarConveniosPagados(Long usumodi, String observacion, String tipo) {
+        List<ConvenioDetalle> conveniosSinPendientes = dao.findConveniosSinPendientes(1);
+
+        return conveniosSinPendientes.stream()
+                .map(item -> actualizarEstadoConvenioConAuditoria(item.getIdconvenio(), 3, usumodi, observacion, tipo))
+                .collect(Collectors.toList());
+    }
+
+    public List<ConvenioDetalle> getConveniosConPendientes(Integer estado) {
+        return dao.findConveniosConPendientes(estado);
     }
 
     private ConvenioAuditDTO buildAuditDTO(Convenios convenioOriginal) {
@@ -180,6 +204,28 @@ public class ConvenioServicio {
 
     public List<ConvenioOneData> findDatosConvenio(Long idconvenio) {
         return dao.findDatosConvenio(idconvenio);
+    }
+
+    private void aplicarMetadatosEstado(Convenios convenio, Integer estado, Long usuarioAccion) {
+        if (estado == null) {
+            return;
+        }
+
+        if (estado == 0 || estado == 2) {
+            convenio.setUsuarioeliminacion(usuarioAccion);
+            convenio.setFechaeliminacion(LocalDate.now());
+            convenio.setRazoneliminacion(estado == 2 ? "ANULADO" : "ELIMINADO");
+            return;
+        }
+
+        if (estado == 3) {
+            convenio.setRazoneliminacion("PAGADO");
+            return;
+        }
+
+        convenio.setUsuarioeliminacion(null);
+        convenio.setFechaeliminacion(null);
+        convenio.setRazoneliminacion(null);
     }
 
 }
