@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +11,6 @@ import java.util.Map;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -45,6 +42,7 @@ import com.epmapat.erp_epmapat.interfaces.mobile.AbonadosMobile;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
+import com.epmapat.erp_epmapat.servicio.AbonadoFotoStorageService;
 
 @RestController
 @RequestMapping("/abonados")
@@ -61,22 +59,8 @@ public class AbonadosApi {
 	@Autowired
 	private FacturasR facturaR;
 
-	@Value("${abonados.fotos.base-path:/opt/epmapat/fotos}")
-	private String fotoBasePath;
-
-	private Path resolveStorageDir(String subfolder) {
-		LocalDate now = LocalDate.now();
-		return Paths.get(fotoBasePath, subfolder, String.valueOf(now.getYear()), String.format("%02d", now.getMonthValue()));
-	}
-
-	private String randomFileName(Long id, String originalName) {
-		String ext = "";
-		if (originalName != null && originalName.contains(".")) {
-			ext = originalName.substring(originalName.lastIndexOf('.') + 1);
-		}
-		String timestamp = String.valueOf(Instant.now().getEpochSecond());
-		return (id != null ? id + "_" : "") + timestamp + (ext.isEmpty() ? "" : "." + ext);
-	}
+	@Autowired
+	private AbonadoFotoStorageService abonadoFotoStorageService;
 
 	private ResponseEntity<Resource> buildImageResponse(Path filePath) throws IOException {
 		Resource resource = new UrlResource(filePath.toUri());
@@ -91,18 +75,6 @@ public class AbonadosApi {
 				.contentType(org.springframework.http.MediaType.parseMediaType(contentType))
 				.header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filePath.getFileName().toString() + "\"")
 				.body(resource);
-	}
-
-	private String saveImageFile(Long idabonado, MultipartFile file, String subfolder) throws IOException {
-		if (file == null || file.isEmpty()) {
-			return null;
-		}
-		Path dir = resolveStorageDir(subfolder);
-		Files.createDirectories(dir);
-		String generatedFileName = randomFileName(idabonado, file.getOriginalFilename());
-		Path target = dir.resolve(generatedFileName);
-		Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-		return target.toString();
 	}
 
 	@GetMapping
@@ -138,8 +110,8 @@ public class AbonadosApi {
 			return ResponseEntity.badRequest().build();
 		}
 
-		String fotocasaPath = saveImageFile(idabonado, fotocasa, "abonado/fotocasa");
-		String fotomedidorPath = saveImageFile(idabonado, fotomedidor, "abonado/fotomedidor");
+		String fotocasaPath = abonadoFotoStorageService.saveImageFile(idabonado, fotocasa, "abonado/fotocasa");
+		String fotomedidorPath = abonadoFotoStorageService.saveImageFile(idabonado, fotomedidor, "abonado/fotomedidor");
 
 		Abonados abonado = aboServicio.actualizarFotosAbonadoConAuditoria(
 				idabonado,
