@@ -16,7 +16,6 @@ import com.epmapat.erp_epmapat.interfaces.ConvenioDetalle;
 import com.epmapat.erp_epmapat.interfaces.EstadoConvenios;
 import com.epmapat.erp_epmapat.modelo.Convenios;
 import com.epmapat.erp_epmapat.repositorio.ConveniosR;
-import com.epmapat.erp_epmapat.servicio.AuditoriaGenericaService;
 
 @Service
 public class ConvenioServicio {

@@ -15,6 +15,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -26,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,10 +51,14 @@ import net.sf.jasperreports.export.SimplePdfExporterConfiguration;
 @RequestMapping("/jasperReports")
 
 public class BuildReportsApi {
+    private static final String MERGED_FILENAME = "comprobantes_merged.pdf";
+
     @Autowired
     private BuildReports buildReports;
     @Autowired
     private DataSource dataSource;
+
+    private final ConcurrentHashMap<String, MergeJobStatus> mergeJobs = new ConcurrentHashMap<>();
 
     @GetMapping("/reportes")
     public ResponseEntity<String> reportesGetNotAllowed() {
@@ -354,6 +363,102 @@ public class BuildReportsApi {
         }
     }
 
+    private byte[] generarMergePdf(MergeReq req) throws Exception {
+        try (Connection conn = dataSource.getConnection();
+                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            List<MergeItem> itemsValidos = req.getItems().stream()
+                    .filter(it -> it != null && it.getIdfactura() != null)
+                    .collect(Collectors.toList());
+
+            if (itemsValidos.isEmpty()) {
+                throw new IllegalArgumentException("No existen items válidos para generar el merge");
+            }
+
+            Map<Long, ReportInfo> reportInfoByFactura = cargarReportInfoFaltante(conn, itemsValidos);
+            List<JasperPrint> prints = new ArrayList<>(itemsValidos.size());
+
+            for (MergeItem it : itemsValidos) {
+                ReportInfo info = resolveReportInfo(it, reportInfoByFactura.get(it.getIdfactura()));
+                String reportName = pickReportName(info.idAbonado(), info.idmodulo());
+
+                Map<String, Object> params = new HashMap<>();
+                params.put("idfactura", it.getIdfactura().intValue());
+
+                JasperPrint jp = buildReports.fillFromCompiled(reportName, params, conn);
+                prints.add(jp);
+            }
+
+            if (prints.isEmpty()) {
+                throw new IllegalArgumentException("No se pudo generar ningún comprobante");
+            }
+
+            JRPdfExporter exporter = new JRPdfExporter();
+            exporter.setExporterInput(SimpleExporterInput.getInstance(prints));
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
+
+            SimplePdfExporterConfiguration cfg = new SimplePdfExporterConfiguration();
+            cfg.setCompressed(true);
+            exporter.setConfiguration(cfg);
+            exporter.exportReport();
+
+            return out.toByteArray();
+        }
+    }
+
+    private Map<Long, ReportInfo> cargarReportInfoFaltante(Connection conn, List<MergeItem> items) throws SQLException {
+        List<Long> ids = items.stream()
+                .filter(it -> it.getIdfactura() != null && it.getIdmodulo() == null && it.getIdAbonado() == null)
+                .map(MergeItem::getIdfactura)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (ids.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        String placeholders = ids.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(","));
+
+        String sql = "SELECT f.idfactura, a.idabonado AS idAbonado, f.idmodulo AS idmodulo "
+                + "FROM facturas f LEFT JOIN abonados a ON f.idabonado = a.idabonado "
+                + "WHERE f.idfactura IN (" + placeholders + ")";
+
+        Map<Long, ReportInfo> result = new HashMap<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.size(); i++) {
+                ps.setLong(i + 1, ids.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Integer idAbonado = rs.getInt("idAbonado");
+                    if (rs.wasNull()) {
+                        idAbonado = null;
+                    }
+
+                    Integer idmodulo = rs.getInt("idmodulo");
+                    if (rs.wasNull()) {
+                        idmodulo = null;
+                    }
+
+                    result.put(rs.getLong("idfactura"), new ReportInfo(idAbonado, idmodulo));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private ReportInfo resolveReportInfo(MergeItem item, ReportInfo dbInfo) {
+        Integer idAbonado = item.getIdAbonado() != null ? item.getIdAbonado()
+                : dbInfo != null ? dbInfo.idAbonado() : null;
+        Integer idmodulo = item.getIdmodulo() != null ? item.getIdmodulo()
+                : dbInfo != null ? dbInfo.idmodulo() : null;
+        return new ReportInfo(idAbonado, idmodulo);
+    }
+
     @PostMapping(value = "/__comprobantes/merge", produces = "application/pdf")
     public ResponseEntity<byte[]> __mergeComprobantes(@RequestBody MergeReq req) {
         if (req == null || req.getItems() == null || req.getItems().isEmpty()) {
@@ -415,51 +520,190 @@ public class BuildReportsApi {
             return ResponseEntity.badRequest().build();
         }
 
-        try (Connection conn = dataSource.getConnection();
-                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-
-            List<JasperPrint> prints = new ArrayList<>(req.getItems().size());
-
-            for (MergeItem it : req.getItems()) {
-                if (it.getIdfactura() == null)
-                    continue;
-
-                String reportName = (it.getIdmodulo() != null || it.getIdAbonado() != null)
-                        ? pickReportName(it.getIdAbonado(), it.getIdmodulo())
-                        : pickReportNameFromDb(conn, it.getIdfactura());
-
-                Map<String, Object> params = new HashMap<>();
-                params.put("idfactura", it.getIdfactura().intValue());
-
-                JasperPrint jp = buildReports.fillFromCompiled(reportName, params, conn);
-                prints.add(jp);
-            }
-
-            if (prints.isEmpty())
-                return ResponseEntity.badRequest().build();
-
-            // Exportar TODOS los JasperPrint a UN solo PDF
-            JRPdfExporter exporter = new JRPdfExporter();
-            exporter.setExporterInput(SimpleExporterInput.getInstance(prints));
-            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
-
-            SimplePdfExporterConfiguration cfg = new SimplePdfExporterConfiguration();
-            cfg.setCompressed(true); // PDF comprimido
-            // cfg.setMetadataTitle("Comprobantes EP"); // opcional
-            exporter.setConfiguration(cfg);
-
-            exporter.exportReport();
-            byte[] pdf = out.toByteArray();
+        try {
+            byte[] pdf = generarMergePdf(req);
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=comprobantes_merged.pdf")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + MERGED_FILENAME)
                     .contentLength(pdf.length)
                     .body(pdf);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/comprobantes/merge/async")
+    public ResponseEntity<MergeJobResponse> mergeComprobantesAsync(@RequestBody MergeReq req) {
+        if (req == null || req.getItems() == null || req.getItems().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String jobId = UUID.randomUUID().toString();
+        MergeJobStatus job = MergeJobStatus.pending(jobId, req.getItems().size());
+        mergeJobs.put(jobId, job);
+
+        CompletableFuture.runAsync(() -> {
+            job.setStatus("PROCESSING");
+            job.setMessage("Generando merge de comprobantes");
+            try {
+                byte[] pdf = generarMergePdf(req);
+                job.setPdf(pdf);
+                job.setStatus("DONE");
+                job.setMessage("Merge generado correctamente");
+            } catch (Exception e) {
+                job.setStatus("ERROR");
+                job.setMessage(e.getMessage());
+            }
+        });
+
+        return ResponseEntity.accepted().body(MergeJobResponse.from(job));
+    }
+
+    @GetMapping("/comprobantes/merge/async/{jobId}")
+    public ResponseEntity<MergeJobResponse> getMergeComprobantesJob(@PathVariable String jobId) {
+        MergeJobStatus job = mergeJobs.get(jobId);
+        if (job == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(MergeJobResponse.from(job));
+    }
+
+    @GetMapping(value = "/comprobantes/merge/async/{jobId}/pdf", produces = "application/pdf")
+    public ResponseEntity<byte[]> downloadMergeComprobantesJob(@PathVariable String jobId) {
+        MergeJobStatus job = mergeJobs.get(jobId);
+        if (job == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!"DONE".equals(job.getStatus()) || job.getPdf() == null) {
+            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        }
+
+        byte[] pdf = job.getPdf();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + MERGED_FILENAME)
+                .contentLength(pdf.length)
+                .body(pdf);
+    }
+
+    private record ReportInfo(Integer idAbonado, Integer idmodulo) {
+    }
+
+    public static class MergeJobResponse {
+        private String jobId;
+        private String status;
+        private Integer totalItems;
+        private String message;
+        private Boolean ready;
+
+        public static MergeJobResponse from(MergeJobStatus job) {
+            MergeJobResponse response = new MergeJobResponse();
+            response.setJobId(job.getJobId());
+            response.setStatus(job.getStatus());
+            response.setTotalItems(job.getTotalItems());
+            response.setMessage(job.getMessage());
+            response.setReady("DONE".equals(job.getStatus()));
+            return response;
+        }
+
+        public String getJobId() {
+            return jobId;
+        }
+
+        public void setJobId(String jobId) {
+            this.jobId = jobId;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public Integer getTotalItems() {
+            return totalItems;
+        }
+
+        public void setTotalItems(Integer totalItems) {
+            this.totalItems = totalItems;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public Boolean getReady() {
+            return ready;
+        }
+
+        public void setReady(Boolean ready) {
+            this.ready = ready;
+        }
+    }
+
+    public static class MergeJobStatus {
+        private String jobId;
+        private String status;
+        private Integer totalItems;
+        private String message;
+        private byte[] pdf;
+
+        public static MergeJobStatus pending(String jobId, Integer totalItems) {
+            MergeJobStatus status = new MergeJobStatus();
+            status.setJobId(jobId);
+            status.setStatus("PENDING");
+            status.setTotalItems(totalItems);
+            status.setMessage("Trabajo en cola");
+            return status;
+        }
+
+        public String getJobId() {
+            return jobId;
+        }
+
+        public void setJobId(String jobId) {
+            this.jobId = jobId;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public Integer getTotalItems() {
+            return totalItems;
+        }
+
+        public void setTotalItems(Integer totalItems) {
+            this.totalItems = totalItems;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public byte[] getPdf() {
+            return pdf;
+        }
+
+        public void setPdf(byte[] pdf) {
+            this.pdf = pdf;
         }
     }
 }
