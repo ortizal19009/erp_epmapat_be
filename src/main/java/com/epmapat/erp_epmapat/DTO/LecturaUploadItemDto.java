@@ -10,6 +10,7 @@ public class LecturaUploadItemDto {
     private Long idlectura;
     private Integer estado;
     private Date fechaemision;
+    private Date fechalectura;
     private Float lecturaanterior;
     private Float lecturaactual;
     private Float lecturadigitada;
@@ -19,8 +20,11 @@ public class LecturaUploadItemDto {
     private Long idemision;
     private Long idabonado_abonados;
     private Long idcategoria;
+    private Long usuariolectura;
     private Long idrutaxemision_rutasxemision;
     private Long idfactura;
+    private Long usumodi;
+    private Date fecmodi;
     private BigDecimal total1;
     private BigDecimal total31;
     private BigDecimal total32;

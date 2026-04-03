@@ -2,22 +2,15 @@ package com.epmapat.erp_epmapat.controlador;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.StringUtils;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
@@ -48,6 +42,7 @@ import com.epmapat.erp_epmapat.repositorio.RutasxemisionR;
 import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizado;
 import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizadoV2;
 import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizado_anterior;
+import com.epmapat.erp_epmapat.servicio.LecturaFotoStorageService;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
 
 import lombok.RequiredArgsConstructor;
@@ -59,9 +54,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/lecturas")
 public class LecturasApi {
 
-	private static final String FOTO_BASE_PATH = "/opt/epmapat/fotos";
-	private static final DateTimeFormatter YEAR_MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM");
-
 	private final LecturaServicio lecServicio;
 	private final EmisionServicioOptimizado emisionServicioOptimizado;
 	private final EmisionServicioOptimizadoV2 emisionServicioOptimizadoV2;
@@ -69,33 +61,34 @@ public class LecturasApi {
 	private final AbonadosR abonadosR;
 	private final NovedadR novedadR;
 	private final RutasxemisionR rutasxemisionR;
+	private final LecturaFotoStorageService lecturaFotoStorageService;
 
-	private Path resolveStorageDir(String subfolder) {
-		LocalDate now = LocalDate.now();
-		return Paths.get(FOTO_BASE_PATH, subfolder, String.valueOf(now.getYear()), String.format("%02d", now.getMonthValue()));
-	}
-
-	private String randomFileName(Long id, String originalName) {
-		String ext = "";
-		if (originalName != null && originalName.contains(".")) {
-			ext = originalName.substring(originalName.lastIndexOf('.') + 1);
+	private String resolveLecturaFolder(Lecturas lectura) {
+		if (lectura.getIdrutaxemision_rutasxemision() == null
+				|| lectura.getIdrutaxemision_rutasxemision().getIdruta_rutas() == null) {
+			return "lecturas/emision/rutas/sin-ruta";
 		}
-		String timestamp = String.valueOf(Instant.now().getEpochSecond());
-		return (id != null ? id + "_" : "") + timestamp + (ext.isEmpty() ? "" : "." + ext);
+
+		String codigoRuta = lectura.getIdrutaxemision_rutasxemision().getIdruta_rutas().getCodigo();
+		Long idruta = lectura.getIdrutaxemision_rutasxemision().getIdruta_rutas().getIdruta();
+		String folderName = StringUtils.hasText(codigoRuta) ? codigoRuta : "ruta-" + idruta;
+		folderName = folderName.trim().replaceAll("[^a-zA-Z0-9._-]", "_");
+		return "lecturas/emision/rutas/" + folderName;
 	}
 
-	private ResponseEntity<Resource> buildImageResponse(Path filePath) throws IOException {
-		Resource resource = new UrlResource(filePath.toUri());
-		if (!resource.exists() || !resource.isReadable()) {
+	private ResponseEntity<Resource> buildImageResponse(Resource resource, String storedPath) throws IOException {
+		if (resource == null || !resource.exists() || !resource.isReadable()) {
 			return ResponseEntity.notFound().build();
 		}
-		String contentType = Files.probeContentType(filePath);
-		if (contentType == null) {
-			contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+		String filename = resource.getFilename();
+		if (!StringUtils.hasText(filename)) {
+			filename = StringUtils.getFilename(storedPath);
 		}
+		MediaType contentType = MediaTypeFactory.getMediaType(filename)
+				.orElse(MediaType.APPLICATION_OCTET_STREAM);
 		return ResponseEntity.ok()
-				.contentType(MediaType.parseMediaType(contentType))
-				.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filePath.getFileName().toString() + "\"")
+				.contentType(contentType)
+				.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
 				.body(resource);
 	}
 
@@ -183,20 +176,15 @@ public class LecturasApi {
 	@PostMapping(value = "/{idlectura}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Lecturas> uploadLecturaFoto(@PathVariable Long idlectura,
 			@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
-			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "0") Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
 			@RequestParam(required = false, defaultValue = "Upload foto de lectura") String observacion) throws IOException {
 		Lecturas lectura = lecServicio.findById(idlectura)
 				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
 					"No existe la Lectura con Id: " + idlectura));
 
-		Path dir = resolveStorageDir("lectura");
-		Files.createDirectories(dir);
-		String generatedFileName = randomFileName(idlectura, file.getOriginalFilename());
-		Path target = dir.resolve(generatedFileName);
-		Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-
-		lectura = lecServicio.actualizarFotoConAuditoria(idlectura, target.toString(), usumodi, observacion, tipo);
+		String fotoPath = lecturaFotoStorageService.saveImageFile(idlectura, file, resolveLecturaFolder(lectura));
+		lectura = lecServicio.actualizarFotoConAuditoria(idlectura, fotoPath, usumodi, observacion, tipo);
 
 		return ResponseEntity.ok(lectura);
 	}
@@ -209,7 +197,7 @@ public class LecturasApi {
 		if (lectura.getFotoPath() == null) {
 			return ResponseEntity.notFound().build();
 		}
-		return buildImageResponse(Paths.get(lectura.getFotoPath()));
+		return buildImageResponse(lecturaFotoStorageService.loadAsResource(lectura.getFotoPath()), lectura.getFotoPath());
 	}
 
 	@PostMapping
@@ -423,6 +411,7 @@ public class LecturasApi {
 
 				y.setEstado(item.getEstado());
 				y.setFechaemision(item.getFechaemision());
+				y.setFechalectura(item.getFechalectura());
 				y.setLecturaanterior(item.getLecturaanterior());
 				y.setLecturaactual(item.getLecturaactual());
 				y.setLecturadigitada(item.getLecturadigitada());
@@ -430,7 +419,10 @@ public class LecturasApi {
 				y.setObservaciones(item.getObservaciones());
 				y.setIdemision(item.getIdemision());
 				y.setIdcategoria(item.getIdcategoria());
+				y.setUsuariolectura(item.getUsuariolectura());
 				y.setIdfactura(item.getIdfactura());
+				y.setUsumodi(item.getUsumodi());
+				y.setFecmodi(item.getFecmodi());
 				y.setTotal1(item.getTotal1());
 				y.setTotal31(item.getTotal31());
 				y.setTotal32(item.getTotal32());

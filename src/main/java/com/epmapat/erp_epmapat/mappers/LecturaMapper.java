@@ -12,6 +12,7 @@ public class LecturaMapper {
         dto.setIdlectura(lectura.getIdlectura());
         dto.setEstado(lectura.getEstado());
         dto.setFechaemision(lectura.getFechaemision());
+        dto.setFechalectura(lectura.getFechalectura());
         dto.setLecturaanterior(lectura.getLecturaanterior());
         dto.setLecturaactual(lectura.getLecturaactual());
         dto.setLecturadigitada(lectura.getLecturadigitada());
@@ -19,8 +20,11 @@ public class LecturaMapper {
         dto.setObservaciones(lectura.getObservaciones());
         dto.setIdemision(lectura.getIdemision());
         dto.setIdresponsable(lectura.getIdresponsable());
+        dto.setUsuariolectura(lectura.getUsuariolectura());
         dto.setIdcategoria(lectura.getIdcategoria());
         dto.setIdfactura(lectura.getIdfactura());
+        dto.setUsumodi(lectura.getUsumodi());
+        dto.setFecmodi(lectura.getFecmodi());
         dto.setTotal1(lectura.getTotal1());
         dto.setTotal31(lectura.getTotal31());
         dto.setTotal32(lectura.getTotal32());
@@ -44,6 +48,7 @@ public class LecturaMapper {
         lectura.setIdlectura(dto.getIdlectura());
         lectura.setEstado(dto.getEstado());
         lectura.setFechaemision(dto.getFechaemision());
+        lectura.setFechalectura(dto.getFechalectura());
         lectura.setLecturaanterior(dto.getLecturaanterior());
         lectura.setLecturaactual(dto.getLecturaactual());
         lectura.setLecturadigitada(dto.getLecturadigitada());
@@ -51,8 +56,11 @@ public class LecturaMapper {
         lectura.setObservaciones(dto.getObservaciones());
         lectura.setIdemision(dto.getIdemision());
         lectura.setIdresponsable(dto.getIdresponsable());
+        lectura.setUsuariolectura(dto.getUsuariolectura());
         lectura.setIdcategoria(dto.getIdcategoria());
         lectura.setIdfactura(dto.getIdfactura());
+        lectura.setUsumodi(dto.getUsumodi());
+        lectura.setFecmodi(dto.getFecmodi());
         lectura.setTotal1(dto.getTotal1());
         lectura.setTotal31(dto.getTotal31());
         lectura.setTotal32(dto.getTotal32());

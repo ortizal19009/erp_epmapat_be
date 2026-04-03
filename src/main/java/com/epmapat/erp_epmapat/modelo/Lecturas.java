@@ -39,6 +39,7 @@ public class Lecturas implements Serializable {
    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Rutasxemision idrutaxemision_rutasxemision;
    Date fechaemision;
+   Date fechalectura;
    Float lecturaanterior;
    Float lecturaactual;
    Float lecturadigitada;
@@ -54,8 +55,11 @@ public class Lecturas implements Serializable {
    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Abonados idabonado_abonados;
    Long idresponsable;
+   Long usuariolectura;
    Long idcategoria;
    Long idfactura;
+   Long usumodi;
+   Date fecmodi;
    private BigDecimal total1;
    private BigDecimal total31;
    private BigDecimal total32;
@@ -63,3 +67,10 @@ public class Lecturas implements Serializable {
    private String fotoPath;
 
 }
+
+
+/* ALTER TABLE public.lecturas ADD usuariolectura int NULL;
+ALTER TABLE public.lecturas ADD usumodi int NULL;
+ALTER TABLE public.lecturas ADD fecmodi date NULL;
+ALTER TABLE public.lecturas ADD fechalectura date NULL;
+ */

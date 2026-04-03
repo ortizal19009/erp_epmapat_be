@@ -15,6 +15,7 @@ public class LecturasAuditDTO {
     private Integer estado;
     private Long idrutaxemision;
     private Date fechaemision;
+    private Date fechalectura;
     private Float lecturaanterior;
     private Float lecturaactual;
     private Float lecturadigitada;
@@ -24,8 +25,11 @@ public class LecturasAuditDTO {
     private Long idemision;
     private Long idabonado;
     private Long idresponsable;
+    private Long usuariolectura;
     private Long idcategoria;
     private Long idfactura;
+    private Long usumodi;
+    private Date fecmodi;
     private BigDecimal total1;
     private BigDecimal total31;
     private BigDecimal total32;

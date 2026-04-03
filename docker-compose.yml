@@ -7,6 +7,12 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=3pmapaT24
+      - SPRING_PROFILES_ACTIVE=prod
+      - STORAGE_TYPE=nextcloud
+      - NEXTCLOUD_BASE_URL=http://192.168.1.78/
+      - NEXTCLOUD_USERNAME=admin
+      - NEXTCLOUD_PASSWORD=Ytgx5-n67sP-cB9Z5-oSoxz-BjMGL
+      - NEXTCLOUD_BASE_FOLDER=/ERP/
     ports:
       - "8080:8080"
     volumes:

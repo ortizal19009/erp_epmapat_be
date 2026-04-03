@@ -128,6 +128,7 @@ public class LecturaServicio {
 
 		lecturaOriginal.setEstado(lecturaM.getEstado());
 		lecturaOriginal.setFechaemision(lecturaM.getFechaemision());
+		lecturaOriginal.setFechalectura(lecturaM.getFechalectura());
 		lecturaOriginal.setLecturaanterior(lecturaM.getLecturaanterior());
 		lecturaOriginal.setLecturaactual(lecturaM.getLecturaactual());
 		lecturaOriginal.setLecturadigitada(lecturaM.getLecturadigitada());
@@ -137,9 +138,12 @@ public class LecturaServicio {
 		lecturaOriginal.setIdemision(lecturaM.getIdemision());
 		lecturaOriginal.setIdabonado_abonados(lecturaM.getIdabonado_abonados());
 		lecturaOriginal.setIdresponsable(lecturaM.getIdresponsable());
+		lecturaOriginal.setUsuariolectura(lecturaM.getUsuariolectura());
 		lecturaOriginal.setIdcategoria(lecturaM.getIdcategoria());
 		lecturaOriginal.setIdrutaxemision_rutasxemision(lecturaM.getIdrutaxemision_rutasxemision());
 		lecturaOriginal.setIdfactura(lecturaM.getIdfactura());
+		lecturaOriginal.setUsumodi(usumodi);
+		lecturaOriginal.setFecmodi(new Date());
 		lecturaOriginal.setTotal1(lecturaM.getTotal1());
 		lecturaOriginal.setTotal31(lecturaM.getTotal31());
 		lecturaOriginal.setTotal32(lecturaM.getTotal32());
@@ -165,6 +169,7 @@ public class LecturaServicio {
 				lectura.getEstado(),
 				lectura.getIdrutaxemision_rutasxemision() == null ? null : lectura.getIdrutaxemision_rutasxemision().getIdrutaxemision(),
 				lectura.getFechaemision(),
+				lectura.getFechalectura(),
 				lectura.getLecturaanterior(),
 				lectura.getLecturaactual(),
 				lectura.getLecturadigitada(),
@@ -174,8 +179,11 @@ public class LecturaServicio {
 				lectura.getIdemision(),
 				lectura.getIdabonado_abonados() == null ? null : lectura.getIdabonado_abonados().getIdabonado(),
 				lectura.getIdresponsable(),
+				lectura.getUsuariolectura(),
 				lectura.getIdcategoria(),
 				lectura.getIdfactura(),
+				lectura.getUsumodi(),
+				lectura.getFecmodi(),
 				lectura.getTotal1(),
 				lectura.getTotal31(),
 				lectura.getTotal32(),
