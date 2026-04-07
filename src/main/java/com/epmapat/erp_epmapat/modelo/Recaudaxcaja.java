@@ -13,6 +13,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
+import com.epmapat.erp_epmapat.json.FlexibleLocalTimeDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @Entity
 @Table(name = "recaudaxcaja")
@@ -27,7 +29,9 @@ public class Recaudaxcaja {
    private Long facfin;
    private Date fechainiciolabor;
    private Date fechafinlabor;
+   @JsonDeserialize(using = FlexibleLocalTimeDeserializer.class)
    private LocalTime horainicio;
+   @JsonDeserialize(using = FlexibleLocalTimeDeserializer.class)
    private LocalTime horafin;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idcaja_cajas")
