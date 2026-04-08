@@ -14,7 +14,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.epmapat.erp_epmapat.json.FlexibleDateDeserializer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,7 +40,9 @@ public class Lecturas implements Serializable {
    @JoinColumn(name = "idrutaxemision_rutasxemision")
    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Rutasxemision idrutaxemision_rutasxemision;
+   @JsonDeserialize(using = FlexibleDateDeserializer.class)
    Date fechaemision;
+   @JsonDeserialize(using = FlexibleDateDeserializer.class)
    Date fechalectura;
    Float lecturaanterior;
    Float lecturaactual;
@@ -59,6 +63,7 @@ public class Lecturas implements Serializable {
    Long idcategoria;
    Long idfactura;
    Long usumodi;
+   @JsonDeserialize(using = FlexibleDateDeserializer.class)
    Date fecmodi;
    private BigDecimal total1;
    private BigDecimal total31;

@@ -3,13 +3,18 @@ package com.epmapat.erp_epmapat.DTO;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.epmapat.erp_epmapat.json.FlexibleDateDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import lombok.Data;
 
 @Data
 public class LecturaUploadItemDto {
     private Long idlectura;
     private Integer estado;
+    @JsonDeserialize(using = FlexibleDateDeserializer.class)
     private Date fechaemision;
+    @JsonDeserialize(using = FlexibleDateDeserializer.class)
     private Date fechalectura;
     private Float lecturaanterior;
     private Float lecturaactual;
@@ -24,6 +29,7 @@ public class LecturaUploadItemDto {
     private Long idrutaxemision_rutasxemision;
     private Long idfactura;
     private Long usumodi;
+    @JsonDeserialize(using = FlexibleDateDeserializer.class)
     private Date fecmodi;
     private BigDecimal total1;
     private BigDecimal total31;

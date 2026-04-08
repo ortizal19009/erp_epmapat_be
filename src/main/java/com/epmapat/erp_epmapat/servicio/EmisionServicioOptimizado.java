@@ -739,20 +739,4 @@ public class EmisionServicioOptimizado {
 
         return definir.getRbu().multiply(BigDecimal.valueOf(0.005));
     }
-
-    private BigDecimal multas_basura(Long cuenta) {
-        List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuenta);
-        if (idfacturas == null)
-            return ZERO;
-
-        long nroPendientes = idfacturas.size();
-        if (nroPendientes < 2)
-            return ZERO;
-
-        Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
-        if (Objects.isNull(definir) || Objects.isNull(definir.getRbu()))
-            return ZERO;
-
-        return definir.getRbu().multiply(BigDecimal.valueOf(0.01));
-    }
 }

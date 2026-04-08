@@ -151,6 +151,7 @@ public class ClienteServicio {
 
 		// Actualizar campos
 		if (cliente.getCedula() != null) clienteOriginal.setCedula(cliente.getCedula());
+		if (cliente.getIdtpidentifica_tpidentifica() != null) clienteOriginal.setIdtpidentifica_tpidentifica(cliente.getIdtpidentifica_tpidentifica());
 		if (cliente.getNombre() != null) clienteOriginal.setNombre(cliente.getNombre());
 		if (cliente.getDireccion() != null) clienteOriginal.setDireccion(cliente.getDireccion());
 		if (cliente.getTelefono() != null) clienteOriginal.setTelefono(cliente.getTelefono());
@@ -162,7 +163,7 @@ public class ClienteServicio {
 		if (cliente.getEmail() != null) clienteOriginal.setEmail(cliente.getEmail());
 		if (cliente.getUsucrea() != null) clienteOriginal.setUsucrea(cliente.getUsucrea());
 		if (cliente.getIdnacionalidad_nacionalidad() != null) clienteOriginal.setIdnacionalidad_nacionalidad(cliente.getIdnacionalidad_nacionalidad());
-		if (cliente.getUsumodi() != null) clienteOriginal.setUsumodi(cliente.getUsumodi());
+		clienteOriginal.setUsumodi(usumodi);
 		if (cliente.getFecmodi() != null) clienteOriginal.setFecmodi(cliente.getFecmodi());
 		if (cliente.getIdpjuridica_personeriajuridica() != null) clienteOriginal.setIdpjuridica_personeriajuridica(cliente.getIdpjuridica_personeriajuridica());
 		if (cliente.getUsername() != null) clienteOriginal.setUsername(cliente.getUsername());

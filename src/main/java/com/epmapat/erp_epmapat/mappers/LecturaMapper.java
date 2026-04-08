@@ -28,6 +28,7 @@ public class LecturaMapper {
         dto.setTotal1(lectura.getTotal1());
         dto.setTotal31(lectura.getTotal31());
         dto.setTotal32(lectura.getTotal32());
+        dto.setFotoPath(lectura.getFotoPath());
 
         if (lectura.getIdrutaxemision_rutasxemision() != null)
             dto.setIdrutaxemision(lectura.getIdrutaxemision_rutasxemision().getIdrutaxemision());
@@ -64,6 +65,7 @@ public class LecturaMapper {
         lectura.setTotal1(dto.getTotal1());
         lectura.setTotal31(dto.getTotal31());
         lectura.setTotal32(dto.getTotal32());
+        lectura.setFotoPath(dto.getFotoPath());
         // Las relaciones ManyToOne deben setearse desde el Service
         return lectura;
     }

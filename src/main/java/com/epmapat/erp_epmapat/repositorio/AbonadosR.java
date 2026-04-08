@@ -169,4 +169,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	@Query(value = "SELECT a.idabonado AS idabonado, a.nromedidor AS nromedidor, a.estado AS estado, a.fechainstalacion AS fechainstalacion, a.direccionubicacion AS direccionubicacion, a.observacion AS observacion, a.idresponsable AS idresponsable, a.idcategoria_categorias AS idcategoria_categorias, a.idruta_rutas AS idruta_rutas, a.idcliente_clientes AS idcliente_clientes, a.idestadom_estadom AS idestadom_estadom, a.municipio AS municipio, a.adultomayor AS adultomayor, a.swalcantarillado AS swalcantarillado, a.geolocalizacion AS geolocalizacion FROM abonados a", nativeQuery = true)
 	List<AbonadosMobile> getAllAbonadosMobile();
 
+	@Query(value = "SELECT a.idabonado AS idabonado, a.nromedidor AS nromedidor, a.estado AS estado, a.fechainstalacion AS fechainstalacion, a.direccionubicacion AS direccionubicacion, a.observacion AS observacion, a.idresponsable AS idresponsable, a.idcategoria_categorias AS idcategoria_categorias, a.idruta_rutas AS idruta_rutas, a.idcliente_clientes AS idcliente_clientes, a.idestadom_estadom AS idestadom_estadom, a.municipio AS municipio, a.adultomayor AS adultomayor, a.swalcantarillado AS swalcantarillado, a.geolocalizacion AS geolocalizacion FROM abonados a WHERE a.idruta_rutas IN (:idrutas) ORDER BY a.idruta_rutas, a.idabonado", nativeQuery = true)
+	List<AbonadosMobile> getAbonadosMobileByRutas(@Param("idrutas") List<Long> idrutas);
+
 }

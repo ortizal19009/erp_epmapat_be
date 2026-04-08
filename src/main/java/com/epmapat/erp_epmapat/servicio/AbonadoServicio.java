@@ -350,4 +350,11 @@ public class AbonadoServicio {
 	public List<AbonadosMobile> getAllAbonadosMobile() {
 		return dao.getAllAbonadosMobile();
 	}
+
+	public List<AbonadosMobile> getAbonadosMobileByRutas(List<Long> idrutas) {
+		if (idrutas == null || idrutas.isEmpty()) {
+			return java.util.Collections.emptyList();
+		}
+		return dao.getAbonadosMobileByRutas(idrutas);
+	}
 }

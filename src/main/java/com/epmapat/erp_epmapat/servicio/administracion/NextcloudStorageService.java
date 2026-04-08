@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
+import javax.annotation.PostConstruct;
 
 @Service
 @ConditionalOnProperty(name = "storage.type", havingValue = "nextcloud")
@@ -31,6 +32,19 @@ public class NextcloudStorageService implements StorageService {
 
     @Value("${nextcloud.base-folder:/epmapat}")
     private String baseFolder;
+
+    @PostConstruct
+    void validateConfig() {
+        if (!StringUtils.hasText(baseUrl)) {
+            throw new IllegalStateException("nextcloud.base-url es obligatorio cuando storage.type=nextcloud");
+        }
+        if (!StringUtils.hasText(username)) {
+            throw new IllegalStateException("nextcloud.username es obligatorio cuando storage.type=nextcloud");
+        }
+        if (!StringUtils.hasText(password)) {
+            throw new IllegalStateException("nextcloud.password o NEXTCLOUD_APP_TOKEN es obligatorio cuando storage.type=nextcloud");
+        }
+    }
 
     private String davBase() {
         return trimTrailingSlash(baseUrl) + "/remote.php/dav/files/" + username;
@@ -52,7 +66,11 @@ public class NextcloudStorageService implements StorageService {
 
         Sardine sardine = sardine();
         ensureDirectoryExists(sardine, getParentRelativePath(relativePath));
-        sardine.put(buildRemoteUrl(relativePath), file.getBytes(), file.getContentType());
+        try {
+            sardine.put(buildRemoteUrl(relativePath), file.getBytes(), file.getContentType());
+        } catch (Exception ex) {
+            throw new IllegalStateException("No se pudo subir el archivo a Nextcloud en " + buildRemoteUrl(relativePath), ex);
+        }
 
         return relativePath;
     }
@@ -61,7 +79,12 @@ public class NextcloudStorageService implements StorageService {
     public Resource load(String relativePath) throws Exception {
         String normalizedPath = normalizeRelativePath(relativePath);
         Sardine sardine = sardine();
-        InputStream inputStream = sardine.get(buildRemoteUrl(normalizedPath));
+        InputStream inputStream;
+        try {
+            inputStream = sardine.get(buildRemoteUrl(normalizedPath));
+        } catch (Exception ex) {
+            throw new IllegalStateException("No se pudo leer el archivo desde Nextcloud: " + normalizedPath, ex);
+        }
         return new InputStreamResource(inputStream) {
             @Override
             public String getFilename() {
@@ -74,7 +97,12 @@ public class NextcloudStorageService implements StorageService {
     @Override
     public void delete(String relativePath) throws Exception {
         Sardine sardine = sardine();
-        sardine.delete(buildRemoteUrl(normalizeRelativePath(relativePath)));
+        String normalizedPath = normalizeRelativePath(relativePath);
+        try {
+            sardine.delete(buildRemoteUrl(normalizedPath));
+        } catch (Exception ex) {
+            throw new IllegalStateException("No se pudo eliminar el archivo en Nextcloud: " + normalizedPath, ex);
+        }
     }
 
     private void ensureDirectoryExists(Sardine sardine, String relativeDirectory) throws Exception {

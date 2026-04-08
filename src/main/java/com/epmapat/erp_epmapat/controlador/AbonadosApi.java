@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.util.StringUtils;
 
 import com.epmapat.erp_epmapat.DTO.AbonadoGeoUploadItemDto;
+import com.epmapat.erp_epmapat.DTO.AbonadoMobileUpdateDto;
 import com.epmapat.erp_epmapat.DTO.EstadisticasAbonadosDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
@@ -37,7 +38,13 @@ import com.epmapat.erp_epmapat.interfaces.EstadisticasAbonados;
 import com.epmapat.erp_epmapat.interfaces.FacturasSinCobroInter;
 import com.epmapat.erp_epmapat.interfaces.mobile.AbonadosMobile;
 import com.epmapat.erp_epmapat.modelo.Abonados;
+import com.epmapat.erp_epmapat.repositorio.CategoriaR;
+import com.epmapat.erp_epmapat.repositorio.ClientesR;
+import com.epmapat.erp_epmapat.repositorio.EstadomR;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
+import com.epmapat.erp_epmapat.repositorio.RutasR;
+import com.epmapat.erp_epmapat.repositorio.TipopagoR;
+import com.epmapat.erp_epmapat.repositorio.UbicacionmR;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 import com.epmapat.erp_epmapat.servicio.AbonadoFotoStorageService;
 
@@ -58,6 +65,18 @@ public class AbonadosApi {
 
 	@Autowired
 	private AbonadoFotoStorageService abonadoFotoStorageService;
+	@Autowired
+	private ClientesR clientesR;
+	@Autowired
+	private CategoriaR categoriaR;
+	@Autowired
+	private RutasR rutasR;
+	@Autowired
+	private UbicacionmR ubicacionmR;
+	@Autowired
+	private TipopagoR tipopagoR;
+	@Autowired
+	private EstadomR estadomR;
 
 	private ResponseEntity<Resource> buildImageResponse(Resource resource, String storedPath) throws IOException {
 		if (resource == null || !resource.exists() || !resource.isReadable()) {
@@ -201,6 +220,74 @@ public class AbonadosApi {
 		return ResponseEntity.ok(updated);
 	}
 
+	private Abonados buildAbonadoFromMobileDto(Long idabonado, AbonadoMobileUpdateDto dto) {
+		Abonados original = idabonado == null ? null : aboServicio.findById(idabonado).orElse(null);
+		Abonados abonado = new Abonados();
+		abonado.setNromedidor(dto.getNromedidor());
+		abonado.setLecturainicial(dto.getLecturainicial());
+		abonado.setEstado(dto.getEstado());
+		abonado.setFechainstalacion(dto.getFechainstalacion());
+		abonado.setMarca(dto.getMarca());
+		abonado.setSecuencia(dto.getSecuencia());
+		abonado.setDireccionubicacion(dto.getDireccionubicacion());
+		abonado.setLocalizacion(dto.getLocalizacion());
+		abonado.setObservacion(dto.getObservacion());
+		abonado.setDepartamento(dto.getDepartamento());
+		abonado.setPiso(dto.getPiso());
+		abonado.setMedidorprincipal(dto.getMedidorprincipal());
+		abonado.setUsucrea(dto.getUsucrea());
+		abonado.setFeccrea(dto.getFeccrea());
+		abonado.setUsumodi(dto.getUsumodi());
+		abonado.setFecmodi(dto.getFecmodi());
+		abonado.setAdultomayor(dto.getAdultomayor());
+		abonado.setMunicipio(dto.getMunicipio());
+		abonado.setSwalcantarillado(dto.getSwalcantarillado());
+		abonado.setPromedio(dto.getPromedio());
+		abonado.setGeolocalizacion(dto.getGeolocalizacion());
+		abonado.setSwbasura(dto.getSwbasura());
+		abonado.setFotocasaPath(dto.getFotocasaPath());
+		abonado.setFotomedidorPath(dto.getFotomedidorPath());
+		abonado.setIdresponsable(dto.getIdresponsable() == null
+				? (original == null ? null : original.getIdresponsable())
+				: clientesR.findById(dto.getIdresponsable()).orElse(null));
+		abonado.setIdcategoria_categorias(dto.getIdcategoria_categorias() == null
+				? (original == null ? null : original.getIdcategoria_categorias())
+				: categoriaR.findById(dto.getIdcategoria_categorias()).orElse(null));
+		abonado.setIdruta_rutas(dto.getIdruta_rutas() == null
+				? (original == null ? null : original.getIdruta_rutas())
+				: rutasR.findById(dto.getIdruta_rutas()).orElse(null));
+		abonado.setIdcliente_clientes(dto.getIdcliente_clientes() == null
+				? (original == null ? null : original.getIdcliente_clientes())
+				: clientesR.findById(dto.getIdcliente_clientes()).orElse(null));
+		abonado.setIdubicacionm_ubicacionm(dto.getIdubicacionm_ubicacionm() == null
+				? (original == null ? null : original.getIdubicacionm_ubicacionm())
+				: ubicacionmR.findById(dto.getIdubicacionm_ubicacionm()).orElse(null));
+		abonado.setIdtipopago_tipopago(dto.getIdtipopago_tipopago() == null
+				? (original == null ? null : original.getIdtipopago_tipopago())
+				: tipopagoR.findById(dto.getIdtipopago_tipopago()).orElse(null));
+		abonado.setIdestadom_estadom(dto.getIdestadom_estadom() == null
+				? (original == null ? null : original.getIdestadom_estadom())
+				: estadomR.findById(dto.getIdestadom_estadom()).orElse(null));
+		return abonado;
+	}
+
+	@PutMapping("/{idabonado}/mobile")
+	public ResponseEntity<Abonados> updateAbonadosMobile(
+			@PathVariable Long idabonado,
+			@RequestBody AbonadoMobileUpdateDto abonadosm,
+			@RequestParam(required = false, defaultValue = "0") Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "Actualizacion de abonado desde mobile") String observacion) {
+
+		Abonados updated = aboServicio.actualizarAbonadoConAuditoria(
+				idabonado,
+				buildAbonadoFromMobileDto(idabonado, abonadosm),
+				usumodi,
+				observacion,
+				tipo);
+		return ResponseEntity.ok(updated);
+	}
+
 	@DeleteMapping(value = "/{idabonado}")
 	public ResponseEntity<Boolean> deleteAbonados(@PathVariable("idabonado") Long idabonado) {
 		aboServicio.deleteById(idabonado);
@@ -339,10 +426,15 @@ public class AbonadosApi {
 		return aboServicio.getAllAbonadosMobile();
 	}
 
+	@PostMapping("/mobile/by-rutas")
+	public List<AbonadosMobile> getAbonadosMobileByRutas(@RequestBody List<Long> idrutas) {
+		return aboServicio.getAbonadosMobileByRutas(idrutas);
+	}
+
 	@PostMapping("/mobile/upload-geolocalizacion")
 	public ResponseEntity<java.util.Map<String, Integer>> uploadGeolocalizacionMobile(
 			@RequestBody List<AbonadoGeoUploadItemDto> items,
-			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "0") Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
 			@RequestParam(required = false, defaultValue = "Upload geolocalizacion") String observacion) {
 		int ok = 0;

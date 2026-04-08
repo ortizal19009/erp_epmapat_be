@@ -3,6 +3,7 @@ package com.epmapat.erp_epmapat.controlador;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -35,6 +36,7 @@ import com.epmapat.erp_epmapat.interfaces.FecEmision;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
+import com.epmapat.erp_epmapat.mappers.LecturaMapper;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
 import com.epmapat.erp_epmapat.repositorio.NovedadR;
@@ -46,9 +48,11 @@ import com.epmapat.erp_epmapat.servicio.LecturaFotoStorageService;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.RequestParam;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/lecturas")
@@ -174,7 +178,7 @@ public class LecturasApi {
 	}
 
 	@PostMapping(value = "/{idlectura}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<Lecturas> uploadLecturaFoto(@PathVariable Long idlectura,
+	public ResponseEntity<LecturaDto> uploadLecturaFoto(@PathVariable Long idlectura,
 			@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
 			@RequestParam(required = false, defaultValue = "0") Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
@@ -186,7 +190,7 @@ public class LecturasApi {
 		String fotoPath = lecturaFotoStorageService.saveImageFile(idlectura, file, resolveLecturaFolder(lectura));
 		lectura = lecServicio.actualizarFotoConAuditoria(idlectura, fotoPath, usumodi, observacion, tipo);
 
-		return ResponseEntity.ok(lectura);
+		return ResponseEntity.ok(LecturaMapper.toDto(lectura));
 	}
 
 	@GetMapping("/{idlectura}/foto")
@@ -207,10 +211,59 @@ public class LecturasApi {
 
 	@PutMapping("/{idlectura}")
 	public ResponseEntity<Lecturas> update(@PathVariable Long idlectura, @RequestBody Lecturas x,
-			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "0") Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
 			@RequestParam(required = false, defaultValue = "Actualización de lectura") String observacion) {
 		Lecturas actualizar = lecServicio.actualizarLecturaConAuditoria(idlectura, x, usumodi, observacion, tipo);
+		return ResponseEntity.ok(actualizar);
+	}
+
+	private Lecturas buildLecturaFromMobileItem(Long idlectura, LecturaUploadItemDto item) {
+		Lecturas original = idlectura == null ? null : lecServicio.findById(idlectura).orElse(null);
+		Lecturas lectura = new Lecturas();
+		lectura.setIdlectura(item.getIdlectura());
+		lectura.setEstado(item.getEstado());
+		lectura.setFechaemision(item.getFechaemision());
+		lectura.setFechalectura(item.getFechalectura());
+		lectura.setLecturaanterior(item.getLecturaanterior());
+		lectura.setLecturaactual(item.getLecturaactual());
+		lectura.setLecturadigitada(item.getLecturadigitada());
+		lectura.setMesesmulta(item.getMesesmulta());
+		lectura.setObservaciones(item.getObservaciones());
+		lectura.setIdemision(item.getIdemision());
+		lectura.setIdcategoria(item.getIdcategoria());
+		lectura.setIdresponsable(original == null ? null : original.getIdresponsable());
+		lectura.setUsuariolectura(item.getUsuariolectura());
+		lectura.setIdfactura(item.getIdfactura());
+		lectura.setUsumodi(item.getUsumodi());
+		lectura.setFecmodi(item.getFecmodi());
+		lectura.setTotal1(item.getTotal1());
+		lectura.setTotal31(item.getTotal31());
+		lectura.setTotal32(item.getTotal32());
+		lectura.setFotoPath(item.getFotoPath());
+		lectura.setIdabonado_abonados(item.getIdabonado_abonados() == null
+				? (original == null ? null : original.getIdabonado_abonados())
+				: abonadosR.findById(item.getIdabonado_abonados()).orElse(null));
+		lectura.setIdnovedad_novedades(item.getIdnovedad() == null
+				? (original == null ? null : original.getIdnovedad_novedades())
+				: novedadR.findById(item.getIdnovedad()).orElse(null));
+		lectura.setIdrutaxemision_rutasxemision(item.getIdrutaxemision_rutasxemision() == null
+				? (original == null ? null : original.getIdrutaxemision_rutasxemision())
+				: rutasxemisionR.findById(item.getIdrutaxemision_rutasxemision()).orElse(null));
+		return lectura;
+	}
+
+	@PutMapping("/{idlectura}/mobile")
+	public ResponseEntity<Lecturas> updateMobile(@PathVariable Long idlectura, @RequestBody LecturaUploadItemDto item,
+			@RequestParam(required = false, defaultValue = "0") Long usumodi,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
+			@RequestParam(required = false, defaultValue = "ActualizaciÃ³n de lectura desde mobile") String observacion) {
+		Lecturas actualizar = lecServicio.actualizarLecturaConAuditoria(
+				idlectura,
+				buildLecturaFromMobileItem(idlectura, item),
+				usumodi,
+				observacion,
+				tipo);
 		return ResponseEntity.ok(actualizar);
 	}
 
@@ -390,55 +443,24 @@ public class LecturasApi {
 	 */
 
 	@PostMapping("/mobile/upload")
-	public ResponseEntity<java.util.Map<String, Integer>> uploadLecturasMobile(
+	public ResponseEntity<java.util.Map<String, Object>> uploadLecturasMobile(
 			@RequestBody List<LecturaUploadItemDto> items,
 			@RequestParam(required = false) Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
 			@RequestParam(required = false, defaultValue = "Upload lecturas mobile") String observacion) {
 		int ok = 0;
 		int err = 0;
+		java.util.List<String> details = new java.util.ArrayList<>();
 
 		for (LecturaUploadItemDto item : items) {
 			try {
 				if (item.getIdlectura() == null) {
 					err++;
+					details.add("Lectura sin idlectura");
 					continue;
 				}
 
-				Lecturas y = lecServicio.findById(item.getIdlectura())
-						.orElseThrow(() -> new ResourceNotFoundExcepciones(
-								"No existe la Lectura Id: " + item.getIdlectura()));
-
-				y.setEstado(item.getEstado());
-				y.setFechaemision(item.getFechaemision());
-				y.setFechalectura(item.getFechalectura());
-				y.setLecturaanterior(item.getLecturaanterior());
-				y.setLecturaactual(item.getLecturaactual());
-				y.setLecturadigitada(item.getLecturadigitada());
-				y.setMesesmulta(item.getMesesmulta());
-				y.setObservaciones(item.getObservaciones());
-				y.setIdemision(item.getIdemision());
-				y.setIdcategoria(item.getIdcategoria());
-				y.setUsuariolectura(item.getUsuariolectura());
-				y.setIdfactura(item.getIdfactura());
-				y.setUsumodi(item.getUsumodi());
-				y.setFecmodi(item.getFecmodi());
-				y.setTotal1(item.getTotal1());
-				y.setTotal31(item.getTotal31());
-				y.setTotal32(item.getTotal32());
-				y.setFotoPath(item.getFotoPath());
-
-				y.setIdabonado_abonados(item.getIdabonado_abonados() == null
-						? null
-						: abonadosR.findById(item.getIdabonado_abonados()).orElse(null));
-
-				y.setIdnovedad_novedades(item.getIdnovedad() == null
-						? null
-						: novedadR.findById(item.getIdnovedad()).orElse(null));
-
-				y.setIdrutaxemision_rutasxemision(item.getIdrutaxemision_rutasxemision() == null
-						? null
-						: rutasxemisionR.findById(item.getIdrutaxemision_rutasxemision()).orElse(null));
+				Lecturas y = buildLecturaFromMobileItem(item.getIdlectura(), item);
 
 				if (usumodi != null) {
 					lecServicio.actualizarLecturaConAuditoria(item.getIdlectura(), y, usumodi, observacion, tipo);
@@ -448,13 +470,17 @@ public class LecturasApi {
 				ok++;
 			} catch (Exception ex) {
 				err++;
+				String detail = "Lectura " + item.getIdlectura() + ": " + ex.getMessage();
+				details.add(detail);
+				log.warn("Error actualizando lectura mobile {}: {}", item.getIdlectura(), ex.getMessage(), ex);
 			}
 		}
 
-		java.util.Map<String, Integer> out = new java.util.HashMap<>();
+		java.util.Map<String, Object> out = new LinkedHashMap<>();
 		out.put("ok", ok);
 		out.put("error", err);
 		out.put("total", items.size());
+		out.put("details", details);
 		return ResponseEntity.ok(out);
 	}
 
