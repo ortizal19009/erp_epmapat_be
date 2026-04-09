@@ -58,6 +58,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/lecturas")
 public class LecturasApi {
 
+	private static final String NEXTCLOUD_LECTURAS_FOLDER = "LECTURAS";
+
 	private final LecturaServicio lecServicio;
 	private final EmisionServicioOptimizado emisionServicioOptimizado;
 	private final EmisionServicioOptimizadoV2 emisionServicioOptimizadoV2;
@@ -70,14 +72,14 @@ public class LecturasApi {
 	private String resolveLecturaFolder(Lecturas lectura) {
 		if (lectura.getIdrutaxemision_rutasxemision() == null
 				|| lectura.getIdrutaxemision_rutasxemision().getIdruta_rutas() == null) {
-			return "lecturas/emision/rutas/sin-ruta";
+			return NEXTCLOUD_LECTURAS_FOLDER + "/sin-ruta";
 		}
 
 		String codigoRuta = lectura.getIdrutaxemision_rutasxemision().getIdruta_rutas().getCodigo();
 		Long idruta = lectura.getIdrutaxemision_rutasxemision().getIdruta_rutas().getIdruta();
 		String folderName = StringUtils.hasText(codigoRuta) ? codigoRuta : "ruta-" + idruta;
 		folderName = folderName.trim().replaceAll("[^a-zA-Z0-9._-]", "_");
-		return "lecturas/emision/rutas/" + folderName;
+		return NEXTCLOUD_LECTURAS_FOLDER + "/" + folderName;
 	}
 
 	private ResponseEntity<Resource> buildImageResponse(Resource resource, String storedPath) throws IOException {

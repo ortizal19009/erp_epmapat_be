@@ -29,6 +29,9 @@ import com.epmapat.erp_epmapat.servicio.administracion.StorageService;
 @RequestMapping("/api/storage")
 public class StorageApi {
 
+    private static final String NEXTCLOUD_ABONADOS_CASAS_FOLDER = "ABONADOS/CASAS";
+    private static final String NEXTCLOUD_ABONADOS_MEDIDORES_FOLDER = "ABONADOS/MEDIDORES";
+
     private final StorageService storageService;
     private final AbonadoServicio abonadoServicio;
 
@@ -58,6 +61,15 @@ public class StorageApi {
                 "nextcloudUsername", nextcloudUsername,
                 "nextcloudBaseFolder", nextcloudBaseFolder
         ));
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> health() throws Exception {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("storageType", storageType);
+        body.put("implementation", storageService.getClass().getSimpleName());
+        body.putAll(storageService.health());
+        return ResponseEntity.ok(body);
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -109,10 +121,10 @@ public class StorageApi {
         String fotomedidorPath = null;
 
         if ("fotocasa".equals(tipoNormalizado) || "casa".equals(tipoNormalizado)) {
-            folder = "abonados/casas";
+            folder = NEXTCLOUD_ABONADOS_CASAS_FOLDER;
             fotocasaPath = storageService.store(file, folder);
         } else if ("fotomedidor".equals(tipoNormalizado) || "medidor".equals(tipoNormalizado)) {
-            folder = "abonados/medidores";
+            folder = NEXTCLOUD_ABONADOS_MEDIDORES_FOLDER;
             fotomedidorPath = storageService.store(file, folder);
         } else {
             return ResponseEntity.badRequest().body(Map.of("detail", "tipo debe ser fotocasa o fotomedidor"));

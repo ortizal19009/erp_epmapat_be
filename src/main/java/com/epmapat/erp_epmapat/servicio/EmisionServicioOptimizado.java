@@ -135,7 +135,7 @@ public class EmisionServicioOptimizado {
         BigDecimal multa = BigDecimal.ZERO;
 
         if(!swRefacturacion) {
-            multa = multas(cuenta);
+            multa = multas(cuenta, idfactura);
         }
        // BigDecimal multa_basura = multas_basura(cuenta);
 
@@ -724,13 +724,12 @@ public class EmisionServicioOptimizado {
 
     // ----------------- Multas -----------------
 
-    private BigDecimal multas(Long cuenta) {
-        List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuenta);
-        if (idfacturas == null)
+    private BigDecimal multas(Long cuenta, Long idfacturaActual) {
+        if (cuenta == null || idfacturaActual == null)
             return ZERO;
 
-        long nroPendientes = idfacturas.size();
-        if (nroPendientes < 2)
+        long nroPendientes = dao_facturas.countPendientesMultaExcluyendoFacturaActual(cuenta, idfacturaActual);
+        if (nroPendientes < 1)
             return ZERO;
 
         Definir definir = dao_definir.findTopByOrderByIddefinirDesc();

@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -64,6 +66,30 @@ public class LocalStorageService implements StorageService {
     public void delete(String relativePath) throws Exception {
         Path path = resolvePath(relativePath);
         Files.deleteIfExists(path);
+    }
+
+    @Override
+    public Map<String, Object> health() throws Exception {
+        String folder = "healthcheck";
+        String filename = "probe-" + UUID.randomUUID() + ".txt";
+        String relativePath = folder + "/" + filename;
+        Path target = resolvePath(relativePath);
+
+        Files.createDirectories(target.getParent());
+        Files.writeString(target, "ok");
+
+        boolean exists = Files.exists(target);
+        String content = exists ? Files.readString(target) : null;
+
+        Files.deleteIfExists(target);
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("ok", exists && "ok".equals(content));
+        out.put("mode", "local");
+        out.put("basePath", resolveBasePath());
+        out.put("probePath", relativePath);
+        out.put("readBack", content);
+        return out;
     }
 
     private Path resolveExistingPath(String relativePath) {

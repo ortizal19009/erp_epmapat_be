@@ -53,6 +53,9 @@ import com.epmapat.erp_epmapat.servicio.AbonadoFotoStorageService;
 
 public class AbonadosApi {
 
+	private static final String NEXTCLOUD_ABONADOS_CASAS_FOLDER = "ABONADOS/CASAS";
+	private static final String NEXTCLOUD_ABONADOS_MEDIDORES_FOLDER = "ABONADOS/MEDIDORES";
+
 	@Autowired
 	private AbonadoServicio aboServicio;
 
@@ -127,8 +130,10 @@ public class AbonadosApi {
 			return ResponseEntity.badRequest().build();
 		}
 
-		String fotocasaPath = abonadoFotoStorageService.saveImageFile(idabonado, fotocasa, "abonados/casas");
-		String fotomedidorPath = abonadoFotoStorageService.saveImageFile(idabonado, fotomedidor, "abonados/medidores");
+		String fotocasaPath = abonadoFotoStorageService.saveImageFile(idabonado, fotocasa,
+				NEXTCLOUD_ABONADOS_CASAS_FOLDER);
+		String fotomedidorPath = abonadoFotoStorageService.saveImageFile(idabonado, fotomedidor,
+				NEXTCLOUD_ABONADOS_MEDIDORES_FOLDER);
 
 		Abonados abonado = aboServicio.actualizarFotosAbonadoConAuditoria(
 				idabonado,

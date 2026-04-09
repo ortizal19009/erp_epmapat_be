@@ -213,6 +213,20 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null and (idmodulo = 3 or idmodulo = 4) ORDER BY idfactura", nativeQuery = true)
 	public List<Long> findSinCobroAbo(Long idabonado);
 
+	@Query(value = """
+			SELECT COUNT(*)
+			FROM facturas
+			WHERE totaltarifa > 0
+			  AND idabonado = ?1
+			  AND idfactura <> ?2
+			  AND (((estado = 1 OR estado = 2) AND fechacobro IS NULL) OR estado = 3)
+			  AND fechaconvenio IS NULL
+			  AND fechaanulacion IS NULL
+			  AND fechaeliminacion IS NULL
+			  AND (idmodulo = 3 OR idmodulo = 4)
+			""", nativeQuery = true)
+	long countPendientesMultaExcluyendoFacturaActual(Long idabonado, Long idfacturaActual);
+
 	@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Long> coutPendientes(Long idabonado);
 

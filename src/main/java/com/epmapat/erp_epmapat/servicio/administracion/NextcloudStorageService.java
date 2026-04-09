@@ -1,8 +1,11 @@
 package com.epmapat.erp_epmapat.servicio.administracion;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -103,6 +106,35 @@ public class NextcloudStorageService implements StorageService {
         } catch (Exception ex) {
             throw new IllegalStateException("No se pudo eliminar el archivo en Nextcloud: " + normalizedPath, ex);
         }
+    }
+
+    @Override
+    public Map<String, Object> health() throws Exception {
+        Sardine sardine = sardine();
+        String probeFolder = normalizeRelativePath(baseFolder + "/healthcheck");
+        String probePath = probeFolder + "/probe-" + UUID.randomUUID() + ".txt";
+        String probeUrl = buildRemoteUrl(probePath);
+        String payload = "ok";
+
+        ensureDirectoryExists(sardine, probeFolder);
+        sardine.put(probeUrl, payload.getBytes(StandardCharsets.UTF_8), "text/plain");
+
+        String readBack;
+        try (InputStream inputStream = sardine.get(probeUrl)) {
+            readBack = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+
+        sardine.delete(probeUrl);
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("ok", payload.equals(readBack));
+        out.put("mode", "nextcloud");
+        out.put("baseUrl", baseUrl);
+        out.put("username", username);
+        out.put("baseFolder", baseFolder);
+        out.put("probePath", probePath);
+        out.put("readBack", readBack);
+        return out;
     }
 
     private void ensureDirectoryExists(Sardine sardine, String relativeDirectory) throws Exception {
