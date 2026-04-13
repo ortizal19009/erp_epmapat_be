@@ -106,8 +106,9 @@ public class ClienteMergeService {
             lecturasRepo.reasignarCliente(dupId, masterId);
             LocalDate now = LocalDate.now();
             // Desactivar cliente duplicado
-            duplicado.setUsucrea(usuario);
+            duplicado.setUsumodi(usuario);
             duplicado.setFecmodi(now);
+            duplicado.setEstado(0L);
             duplicado.setActivo(false);
             clienteRepo.save(duplicado);
         }

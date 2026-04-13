@@ -14,6 +14,7 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 @Table(name = "cliente_merge_clientes")
 public class ClienteMergeCliente {
 

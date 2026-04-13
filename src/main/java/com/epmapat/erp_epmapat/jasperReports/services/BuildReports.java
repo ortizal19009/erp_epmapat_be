@@ -19,6 +19,8 @@ import java.io.File;
 @RequiredArgsConstructor
 @Service
 public class BuildReports {
+    private static final int RECEIPT_CUT_PADDING_POINTS = 15; // 0.5 cm aprox.
+
     private final ReportCache reportCache;
     private final JasperReportLoader loader;
 
@@ -42,6 +44,7 @@ public class BuildReports {
             // Configurar tema del gráfico
 
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, conn);
+            trimReceiptPaper(jasperDTO.getReportName(), jasperPrint);
 
             ByteArrayOutputStream pdfStream = new ByteArrayOutputStream();
             JasperExportManager.exportReportToPdfStream(jasperPrint, pdfStream);
@@ -56,7 +59,9 @@ public class BuildReports {
 
     public JasperPrint buildPrint(String reportName, Map<String, Object> params, Connection conn) throws JRException {
         JasperReport jr = reportCache.getCompiled(reportName);
-        return JasperFillManager.fillReport(jr, params, conn);
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jr, params, conn);
+        trimReceiptPaper(reportName, jasperPrint);
+        return jasperPrint;
     }
 
     public JasperPrint fillFromCompiled(String reportName, Map<String, Object> params, Connection conn)
@@ -74,6 +79,38 @@ public class BuildReports {
         }
 
         JasperReport jr = loader.load(reportName);
-        return JasperFillManager.fillReport(jr, params, conn);
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jr, params, conn);
+        trimReceiptPaper(reportName, jasperPrint);
+        return jasperPrint;
+    }
+
+    private void trimReceiptPaper(String reportName, JasperPrint jasperPrint) {
+        if (!isReceiptReport(reportName) || jasperPrint == null || jasperPrint.getPages() == null
+                || jasperPrint.getPages().isEmpty()) {
+            return;
+        }
+
+        int usedHeight = 0;
+        for (JRPrintPage page : jasperPrint.getPages()) {
+            if (page.getElements() == null) {
+                continue;
+            }
+            for (JRPrintElement element : page.getElements()) {
+                usedHeight = Math.max(usedHeight, element.getY() + element.getHeight());
+            }
+        }
+
+        if (usedHeight <= 0) {
+            return;
+        }
+
+        int currentHeight = jasperPrint.getPageHeight();
+        int trimmedHeight = Math.min(currentHeight, usedHeight + RECEIPT_CUT_PADDING_POINTS);
+        jasperPrint.setPageHeight(trimmedHeight);
+        jasperPrint.setBottomMargin(0);
+    }
+
+    private boolean isReceiptReport(String reportName) {
+        return reportName != null && reportName.startsWith("CompPago");
     }
 }

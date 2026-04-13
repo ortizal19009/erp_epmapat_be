@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.modelo;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import javax.persistence.Table;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 @Table(name = "cliente_merge_abonados")
 public class ClienteMergeAbonado {
 
