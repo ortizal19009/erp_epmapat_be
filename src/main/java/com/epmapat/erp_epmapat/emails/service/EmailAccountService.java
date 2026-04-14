@@ -106,7 +106,8 @@ public class EmailAccountService {
         account.setProvider(trimToNull(req.provider));
         account.setFromAddress(req.fromAddress.trim());
         account.setFromName(trimToNull(req.fromName));
-        account.setReplyTo(trimToNull(req.replyTo));
+        String replyTo = trimToNull(req.replyTo);
+        account.setReplyTo(replyTo == null ? account.getFromAddress() : replyTo);
         account.setTransportType(transportType);
         account.setHost(trimToNull(req.host));
         account.setPort(req.port);

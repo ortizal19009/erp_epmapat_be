@@ -167,6 +167,8 @@ public class MailSenderService {
         sender.setPort(account.getPort());
         sender.setProtocol(account.getProtocol());
         EmailAccountSecurityType effectiveSecurityType = resolveSecurityType(account);
+        boolean sslCompatibilityMode = effectiveSecurityType == EmailAccountSecurityType.SSL_TLS
+                && Integer.valueOf(465).equals(account.getPort());
 
         if (account.getUsername() != null && !account.getUsername().isBlank()) {
             sender.setUsername(account.getUsername());
@@ -178,10 +180,16 @@ public class MailSenderService {
         Properties props = sender.getJavaMailProperties();
         props.put("mail.transport.protocol", account.getProtocol());
         props.put("mail.smtp.auth", Boolean.toString(account.isAuthRequired()));
-        props.put("mail.smtp.starttls.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS));
+        props.put("mail.smtp.starttls.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS || sslCompatibilityMode));
         props.put("mail.smtp.starttls.required", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS));
         props.put("mail.smtp.ssl.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.SSL_TLS));
         props.put("mail.smtp.ssl.trust", account.getHost());
+        if (account.getUsername() != null && !account.getUsername().isBlank()) {
+            props.put("mail.smtp.user", account.getUsername());
+        }
+        if (account.getPassword() != null && !account.getPassword().isBlank()) {
+            props.put("mail.smtp.password", account.getPassword());
+        }
         if (effectiveSecurityType == EmailAccountSecurityType.SSL_TLS) {
             props.put("mail.smtp.socketFactory.port", Integer.toString(account.getPort()));
             props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");

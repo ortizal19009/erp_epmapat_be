@@ -4,6 +4,7 @@ import com.epmapat.erp_epmapat.emails.model.EmailStatus;
 import com.epmapat.erp_epmapat.emails.model.EmailType;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class EmailResponse {
@@ -20,4 +21,16 @@ public class EmailResponse {
     public String lastError;
     public OffsetDateTime createdAt;
     public OffsetDateTime sentAt;
+    public List<String> to;
+    public List<String> cc;
+    public List<String> bcc;
+    public String bodyHtml;
+    public String bodyText;
+    public List<EmailAttachmentResponse> attachments;
+
+    public static class EmailAttachmentResponse {
+        public String name;
+        public String contentType;
+        public long size;
+    }
 }

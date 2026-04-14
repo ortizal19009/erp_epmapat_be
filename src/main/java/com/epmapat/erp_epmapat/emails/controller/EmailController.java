@@ -2,10 +2,12 @@ package com.epmapat.erp_epmapat.emails.controller;
 
 import com.epmapat.erp_epmapat.emails.component.EmailSpecs;
 import com.epmapat.erp_epmapat.emails.dtos.EmailResponse;
+import com.epmapat.erp_epmapat.emails.model.EmailAttachment;
 import com.epmapat.erp_epmapat.emails.dtos.SendEmailRequest;
 import com.epmapat.erp_epmapat.emails.model.EmailMessage;
 import com.epmapat.erp_epmapat.emails.model.EmailStatus;
 import com.epmapat.erp_epmapat.emails.model.EmailType;
+import com.epmapat.erp_epmapat.emails.repository.EmailAttachmentR;
 import com.epmapat.erp_epmapat.emails.repository.EmailMessageR;
 import com.epmapat.erp_epmapat.emails.service.EmailComposerService;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -30,10 +34,12 @@ public class EmailController {
 
     private final EmailComposerService composer;
     private final EmailMessageR emailRepo;
+    private final EmailAttachmentR attachmentRepo;
 
-    public EmailController(EmailComposerService composer, EmailMessageR emailRepo) {
+    public EmailController(EmailComposerService composer, EmailMessageR emailRepo, EmailAttachmentR attachmentRepo) {
         this.composer = composer;
         this.emailRepo = emailRepo;
+        this.attachmentRepo = attachmentRepo;
     }
 
     // 1) Documentos (XML/PDF)
@@ -94,8 +100,10 @@ public class EmailController {
     @PostMapping("/{id}/retry")
     public ResponseEntity<?> retry(@PathVariable UUID id) {
         return emailRepo.findById(id).map(e -> {
+            e.setAttempts(0);
             e.setStatus(EmailStatus.PENDING);
             e.setLastError(null);
+            e.setSentAt(null);
             emailRepo.save(e);
             return ResponseEntity.accepted().body(new IdResponse(id));
         }).orElse(ResponseEntity.notFound().build());
@@ -131,7 +139,31 @@ public class EmailController {
         r.lastError = e.getLastError();
         r.createdAt = e.getCreatedAt();
         r.sentAt = e.getSentAt();
+        r.to = splitCsv(e.getToRecipients());
+        r.cc = splitCsv(e.getCcRecipients());
+        r.bcc = splitCsv(e.getBccRecipients());
+        r.bodyHtml = e.getBodyHtml();
+        r.bodyText = e.getBodyText();
+        r.attachments = attachmentRepo.findByEmailId(e.getId()).stream().map(this::toAttachmentResponse).toList();
         return r;
+    }
+
+    private EmailResponse.EmailAttachmentResponse toAttachmentResponse(EmailAttachment attachment) {
+        EmailResponse.EmailAttachmentResponse response = new EmailResponse.EmailAttachmentResponse();
+        response.name = attachment.getFilename();
+        response.contentType = attachment.getContentType();
+        response.size = attachment.getSize();
+        return response;
+    }
+
+    private List<String> splitCsv(String value) {
+        if (value == null || value.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(value.split("\\s*,\\s*"))
+                .map(String::trim)
+                .filter(item -> !item.isBlank())
+                .toList();
     }
 
     public record IdResponse(UUID id) {}
