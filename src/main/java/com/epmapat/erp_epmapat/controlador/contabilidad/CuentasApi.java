@@ -1,4 +1,4 @@
-/* package com.epmapat.erp_epmapat.controlador.contabilidad;
+package com.epmapat.erp_epmapat.controlador.contabilidad;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.DTO.contabilidad.CuentasReporte;
@@ -40,6 +41,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 @RestController
 @RequestMapping("/cuentas")
 @RequiredArgsConstructor
+
 
 public class CuentasApi {
 
@@ -148,6 +150,12 @@ public class CuentasApi {
 	}
 
 	// Cuentas asociadas a una partida
+	@GetMapping("/porAsodebe")
+	public ResponseEntity<List<Cuentas>> buscarPorAsodebe(
+			@RequestParam String asodebe) {
+		List<Cuentas> resultado = cueServicio.buscarPorAsodebe(asodebe);
+		return ResponseEntity.ok(resultado);
+	}
 
 	@PostMapping
 	public ResponseEntity<Cuentas> save(@RequestBody Cuentas x) {
@@ -292,4 +300,3 @@ public class CuentasApi {
 	}
 
 }
- */

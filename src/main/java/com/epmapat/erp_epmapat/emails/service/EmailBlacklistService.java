@@ -62,7 +62,7 @@ public class EmailBlacklistService {
         return toResponse(blacklistRepo.save(item));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, noRollbackFor = EmailBlacklistViolationException.class)
     public void validateRecipients(List<String> recipients) {
         if (recipients == null || recipients.isEmpty()) {
             return;

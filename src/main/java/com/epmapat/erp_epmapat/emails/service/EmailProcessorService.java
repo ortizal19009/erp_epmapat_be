@@ -60,5 +60,12 @@ public class EmailProcessorService {
         }
 
         emailRepo.saveAndFlush(msg);
+
+        if (msg.getStatus() == EmailStatus.SENT || msg.getStatus() == EmailStatus.FAILED || msg.getStatus() == EmailStatus.CANCELLED) {
+            try {
+                sender.cleanupAttachments(msg);
+            } catch (Exception ignored) {
+            }
+        }
     }
 }

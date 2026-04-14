@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.controlador.contabilidad;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.PresupueServicio;
 
 @RestController
 @RequestMapping("/ejecucio")
+
 public class EjecucioApi {
 
    private EjecucioServicio ejecuServicio;
@@ -82,6 +84,13 @@ public class EjecucioApi {
       return ejecuServicio.countByIntpre(intpre);
    }
 
+   // Contar las Partidas de un Trámite
+   @GetMapping("/countByIdtrami/{idtrami}")
+   public ResponseEntity<Short> contarPorIdtrami(@PathVariable Long idtrami) {
+      short total = ejecuServicio.contarPorIdtrami(idtrami);
+      return ResponseEntity.ok(total);
+   }
+
    // Partidas de un Trámite
    @GetMapping("/partixtrami")
    public List<Ejecucio> partixtrami(@Param(value = "idtrami") Long idtrami) {
@@ -113,6 +122,23 @@ public class EjecucioApi {
       return tdeven;
    }
 
+   // Compromisos de una partixcerti
+   @GetMapping("/poridparxcer/{idparxcer}")
+   public ResponseEntity<List<Ejecucio>> obtenerPorIdParxcer(@PathVariable Long idparxcer) {
+      List<Ejecucio> lista = ejecuServicio.obtenerPorIdParxcer(idparxcer);
+      if (lista == null || lista.isEmpty()) {
+         return ResponseEntity.noContent().build();
+      }
+      return ResponseEntity.ok(lista);
+   }
+
+   // Ultima Fecha
+   @GetMapping("/ultimafecha")
+   public ResponseEntity<LocalDate> obtenerUltimaFecha() {
+      LocalDate fecha = ejecuServicio.obtenerUltimaFechaEje();
+      return ResponseEntity.ok(fecha);
+   }
+
    // Ejecución de un Asiento
    @GetMapping("/idasiento/{idasiento}")
    public List<Ejecucio> findByIdasiento(@PathVariable Long idasiento) {
@@ -141,63 +167,42 @@ public class EjecucioApi {
       return ejecuServicio.getMisosPendientes(nomben, hasta);
    }
 
+   // Detalle de Devengados de un compromiso (Busca: ejecucio.idprmiso)
+   @GetMapping("/poridprmiso/{idprmiso}")
+   public ResponseEntity<List<Ejecucio>> obtenerPorIdPrmiso(@PathVariable Long idprmiso) {
+      List<Ejecucio> lista = ejecuServicio.obtenerPorIdPrmiso(idprmiso);
+      return ResponseEntity.ok(lista);
+   }
+
+   // Contar lo devengados de un compromiso
+   @GetMapping("/countidprmiso/{idprmiso}")
+   public short contarPorIdprmiso(@PathVariable Long idprmiso) {
+      return ejecuServicio.contarPorIdprmiso(idprmiso);
+   }
+
    @PostMapping
-   public ResponseEntity<Ejecucio> save(@RequestBody Ejecucio x) {
-      return ResponseEntity.ok(ejecuServicio.save(x));
+   public ResponseEntity<Ejecucio> save(@RequestBody Ejecucio ejecucio) {
+      return ResponseEntity.ok(ejecuServicio.save(ejecucio));
    }
 
    // Nueva con claves foraneas credas en el servicio
-   @PostMapping("/foraneas")
-   public ResponseEntity<Ejecucio> saveEjecu(@RequestBody Ejecucio ejecucio) {
-      Ejecucio saved = ejecuServicio.save(ejecucio);
-      return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+   // @PostMapping("/foraneas")
+   // public ResponseEntity<Ejecucio> saveEjecu(@RequestBody Ejecucio ejecucio) {
+   // Ejecucio saved = ejecuServicio.save(ejecucio);
+   // return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+   // }
+
+   // Actualiza solo los modificados
+   @PatchMapping("/{inteje}")
+   public ResponseEntity<Ejecucio> updateEjecucio(
+         @PathVariable Long inteje,
+         @RequestBody Ejecucio ejecucio) {
+      Ejecucio updated = ejecuServicio.updateEjecucio(inteje, ejecucio);
+      return ResponseEntity.ok(updated);
    }
 
-   @PutMapping("/{inteje}")
-   public ResponseEntity<Ejecucio> update(@PathVariable Long inteje, @RequestBody Ejecucio x) {
-      Ejecucio y = ejecuServicio.findById(inteje)
-            .orElseThrow(() -> new ResourceNotFoundExcepciones(
-                  ("No existe Ejecucion con Id: " + inteje)));
-      y.setCodpar(x.getCodpar());
-      y.setFecha_eje(x.getFecha_eje());
-      y.setTipeje(x.getTipeje());
-      y.setModifi(x.getModifi());
-      y.setPrmiso(x.getPrmiso());
-      y.setTotdeven(x.getTotdeven());
-      y.setDevengado(x.getDevengado());
-      y.setCobpagado(x.getCobpagado());
-      y.setConcep(x.getConcep());
-      y.setUsucrea(x.getUsucrea());
-      y.setFeccrea(x.getFeccrea());
-      y.setUsumodi(x.getUsumodi());
-      y.setFecmodi(x.getFecmodi());
-      y.setIdrefo(x.getIdrefo());
-      y.setIdtrami(x.getIdtrami());
-      y.setIdparxcer(x.getIdparxcer());
-      y.setIdasiento(x.getIdasiento());
-      y.setInttra(x.getInttra());
-      y.setIntpre(x.getIntpre());
-      y.setIdprmiso(x.getIdprmiso());
-      y.setIdevenga(x.getIdevenga());
-
-      Ejecucio actualizar = ejecuServicio.save(y);
-      return ResponseEntity.ok(actualizar);
-   }
-
-   // Actualiza totdeven de una ejecución
-   @PatchMapping("/totdeven")
-   public void updateTotdeven(@Param(value = "inteje") Long inteje,
-         @Param(value = "totdeven") BigDecimal totdeven) {
-      ejecuServicio.updateTotdeven(inteje, totdeven);
-   }
-
-   @DeleteMapping("/{inteje}")
-   private ResponseEntity<Boolean> deleteEjecucion(@PathVariable("inteje") Long inteje) {
-      ejecuServicio.deleteById(inteje);
-      return ResponseEntity.ok(!(ejecuServicio.findById(inteje) != null));
-   }
-
-   @PatchMapping("/{intpre}")
+   // Actualiza codpar
+   @PatchMapping("/codpar/{intpre}")
    public ResponseEntity<List<Ejecucio>> actualizarCodpar(@PathVariable Long intpre,
          @RequestParam String nuevoCodpar) {
       Optional<Presupue> presupueOptional = presuServicio.findById(intpre);
@@ -209,6 +214,19 @@ public class EjecucioApi {
       } else {
          return ResponseEntity.notFound().build();
       }
+   }
+
+   // Actualiza ejecucio.totdeven (Ya se actualiza en nuevo )
+   @PatchMapping("/totdeven")
+   public void updateTotdeven(@Param(value = "inteje") Long inteje,
+         @Param(value = "totdeven") BigDecimal totdeven) {
+      ejecuServicio.updateTotdeven(inteje, totdeven);
+   }
+
+   @DeleteMapping("/{inteje}")
+   private ResponseEntity<Boolean> deleteEjecucion(@PathVariable("inteje") Long inteje) {
+      ejecuServicio.deleteById(inteje);
+      return ResponseEntity.ok(!(ejecuServicio.findById(inteje) != null));
    }
 
 }

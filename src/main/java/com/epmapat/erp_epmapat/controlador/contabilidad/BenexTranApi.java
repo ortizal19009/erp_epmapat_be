@@ -26,7 +26,6 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.BenexTranServicio;
 @RestController
 @RequestMapping("/benextran")
 
-
 public class BenexTranApi {
 
 	@Autowired

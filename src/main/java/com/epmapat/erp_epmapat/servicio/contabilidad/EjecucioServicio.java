@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.servicio.contabilidad;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -20,10 +21,13 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+
 public class EjecucioServicio {
 
    private final EjecucioR dao;
-   // private final PresupueR daoPresupue;
+   private final TramipresuServicio tramiServicio;
+   private final PartixcertiServicio parxcerServicio;
+   private final PresupueServicio presuServicio;
 
    public List<Ejecucio> findByCodparFecha(String codpar, Date desdeFecha, Date hastaFecha) {
       return dao.findByCodparFecha(codpar, desdeFecha, hastaFecha);
@@ -38,7 +42,7 @@ public class EjecucioServicio {
       return dao.tieneEjecucio(codpar);
    }
 
-   // Cuenta por idparxcer
+   // Contar por idparxcer
    public short countByIdparxcer(Long idparxcer) {
       return dao.countByIdparxcer(idparxcer);
    }
@@ -48,15 +52,15 @@ public class EjecucioServicio {
       return dao.countByIntpre(intpre);
    }
 
-   // Partidas de un Trámite
-   public List<Ejecucio> partixtrami(Long idtrami) {
-      return dao.partixtrami(idtrami);
-   }
-
    // Reformas de una partida (desde/hasta)
    public Double totalModi(String codpar, Date desdeFecha, Date hastaFecha) {
       Double tmodi = dao.totalModi(codpar + "%", desdeFecha, hastaFecha);
       return tmodi;
+   }
+
+   // Partidas de un Trámite
+   public List<Ejecucio> partixtrami(Long idtrami) {
+      return dao.partixtrami(idtrami);
    }
 
    // Devengado de una partida (desde/hasta)
@@ -81,6 +85,16 @@ public class EjecucioServicio {
       return dao.findByIdasientoAndTippar(idasiento, tippar);
    }
 
+   // Compromisos de una partixcerti
+   public List<Ejecucio> obtenerPorIdParxcer(Long idparxcer) {
+      return dao.findByIdparxcer(idparxcer);
+   }
+
+   // Contar las Partidas de un Trámite
+   public short contarPorIdtrami(Long idtrami) {
+      return dao.countByIdtrami(idtrami);
+   }
+
    // Ejecucion de una transaci.inttra
    public Optional<Ejecucio> buscarPorInttra(Long inttra) {
       return dao.findByInttra(inttra);
@@ -91,22 +105,43 @@ public class EjecucioServicio {
       return dao.misosPendientes("%" + nomben.toLowerCase() + "%", hasta);
    }
 
+   // Devengados de un compromiso (Busca por: ejecucio.idprmiso)
+   public List<Ejecucio> obtenerPorIdPrmiso(Long idprmiso) {
+      return dao.findByIdprmiso(idprmiso);
+   }
+
+   // Contar lo devengados de un compromiso
+   public short contarPorIdprmiso(Long idprmiso) {
+      return dao.countByIdprmiso(idprmiso);
+   }
+
+   // Ultima Fecha
+   public LocalDate obtenerUltimaFechaEje() {
+      return dao.findLastFechaEje();
+   }
+
    public Optional<Ejecucio> findById(Long id) {
       return dao.findById(id);
    }
 
-   public <S extends Ejecucio> S save(S entity) {
-      return dao.save(entity);
+   // Guarda y actualiza Totales
+   @Transactional
+   public Ejecucio save(Ejecucio nueva) {
+      Ejecucio guardada = dao.save(nueva);
+      // Actualiza tramipresu.totmiso, partixcerti.totprmisos y presupue.totmisos
+      if (guardada.getIdparxcer() != null) { // Es compromiso
+         tramiServicio.actualizaTotmiso(guardada.getIdtrami());
+         parxcerServicio.actualizaTotprmisos(guardada.getIdparxcer());
+         presuServicio.actualizaTotmisos(guardada.getIntpre().getIntpre());
+      }
+      // Actualiza ejecucio.totdeven
+      if (guardada.getIdprmiso() != null) {
+         recalculaTotdeven(guardada.getIdprmiso(), guardada.getInteje());
+      }
+      return guardada;
    }
 
-   // nueva.setIntpre(daoPresupue.getReferenceById(nueva.getIntpre().getIntpre()));
-
-   // Guarda: Desde el front se envia dto
-   public Ejecucio saveEjecu(Ejecucio nueva) {
-      return dao.save(nueva);
-   }
-
-   // Actualiza totdeven de la Ejecución
+   // Actualiza totdeven de la Ejecución (Ya se actualiza en nuevo )
    public void updateTotdeven(Long inteje, BigDecimal totdeven) {
       dao.updateTotdeven(inteje, totdeven);
    }
@@ -141,20 +176,21 @@ public class EjecucioServicio {
       ejecucio.setUsumodi(data.getUsumodi());
       ejecucio.setFecmodi(data.getFecmodi());
       Ejecucio actualizada = dao.save(ejecucio);
-      // FALTA: Actualizar saldos y totales
-      return actualizada;
-   }
-
-   public Boolean deleteById(Long id) {
-      if (dao.existsById(id)) {
-         dao.deleteById(id);
-         return !dao.existsById(id);
+      // Actualiza totales
+      Integer tippar = actualizada.getIntpre().getTippar();
+      Long intpre = actualizada.getIntpre().getIntpre();
+      Long idtrami = actualizada.getIdtrami();
+      Long idparxcer = actualizada.getIdparxcer();
+      Long idprmiso = actualizada.getIdprmiso();
+      if (tippar != null && tippar == 2 && idparxcer != null) { // Es compromiso
+         tramiServicio.actualizaTotmiso(idtrami);
+         parxcerServicio.actualizaTotprmisos(idparxcer);
+         presuServicio.actualizaTotmisos(intpre);
       }
-      return false;
-   }
-
-   public void delete(Ejecucio entity) {
-      dao.delete(entity);
+      if (tippar != null && tippar == 2 && idprmiso != null && idprmiso > 0) {
+         recalculaTotdeven(idprmiso, 0L);
+      }
+      return actualizada;
    }
 
    // Actualizar codpar
@@ -168,6 +204,46 @@ public class EjecucioServicio {
       } else {
          throw new NoSuchElementException("No se encontraron registros para el intpre proporcionado");
       }
+   }
+
+   // Recalcula y actualiza ejecucio.totdeven
+   // @Transactional Ya está en la llamada
+   private void recalculaTotdeven(Long idprmiso, Long idevenga) {
+      BigDecimal totalDevengado = dao.sumaDevengadoPorIdprmiso(idprmiso);
+      dao.findById(idprmiso)
+            .ifPresent(compromiso -> {
+               compromiso.setTotdeven(totalDevengado);
+               compromiso.setIdevenga(idevenga);
+               dao.save(compromiso);
+            });
+   }
+
+   // Elimina
+   @Transactional
+   public Boolean deleteById(Long id) {
+      return dao.findById(id)
+            .map(ejecucio -> {
+               // Guardamos los datos para recalcular
+               Integer tippar = ejecucio.getIntpre().getTippar();
+               Long intpre = ejecucio.getIntpre().getIntpre();
+               Long idtrami = ejecucio.getIdtrami();
+               Long idparxcer = ejecucio.getIdparxcer();
+               Long idprmiso = ejecucio.getIdprmiso();
+               // Elimina
+               dao.deleteById(id);
+               // Actualiza tramipresu.totmiso, partixcerti.totprmisos y presupue.totmisos
+               if (tippar != null && tippar == 2 && idparxcer != null) { // Es compromiso
+                  tramiServicio.actualizaTotmiso(idtrami);
+                  parxcerServicio.actualizaTotprmisos(idparxcer);
+                  presuServicio.actualizaTotmisos(intpre);
+               }
+               // Si tippar = 2 e idprmiso != null recalcula ejecucio.totdeven
+               if (tippar != null && tippar == 2 && idprmiso != null && idprmiso > 0) {
+                  recalculaTotdeven(idprmiso, 0L);
+               }
+               return !dao.existsById(id);
+            })
+            .orElse(false);
    }
 
 }

@@ -21,4 +21,6 @@ public interface PagoscobrosR extends JpaRepository<Pagoscobros, Long> {
    // Pagoscobros de un benextran.idbenxtar
    List<Pagoscobros> findByIdbenxtra_Idbenxtra(Long idbenxtra);
 
+   // Cuenta los Pagoscobros de una transaci.inttra
+   short countByInttra_Inttra(Long inttra);
 }

@@ -113,6 +113,11 @@ public class CuentaServicio {
       dao.delete(entity);
    }
 
+   // Cuentas de un asodebe (Cuentas de una partida de gastos)
+   public List<Cuentas> buscarPorAsodebe(String asodebe) {
+      return dao.findByAsodebeOrderByCodcueAsc(asodebe);
+   }
+
    // Cuentas de costos
    public List<Cuentas> findCuecostos() {
       return dao.findCuecostos();

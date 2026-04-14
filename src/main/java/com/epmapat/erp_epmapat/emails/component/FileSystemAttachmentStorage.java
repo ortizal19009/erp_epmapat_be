@@ -16,9 +16,12 @@ public class FileSystemAttachmentStorage implements AttachmentStorage {
     private final Path basePath;
 
     public FileSystemAttachmentStorage(
-            @Value("${mailms.attachment-storage.base-path:${xml.storage.path:.//Files//mail-attachments//}}")
+            @Value("${mailms.attachment-storage.base-path:}")
             String basePath) {
-        this.basePath = Paths.get(basePath).toAbsolutePath().normalize();
+        String resolvedBasePath = (basePath == null || basePath.isBlank())
+                ? Paths.get(System.getProperty("java.io.tmpdir"), "epmapat-mail-attachments").toString()
+                : basePath;
+        this.basePath = Paths.get(resolvedBasePath).toAbsolutePath().normalize();
     }
 
     @Override
@@ -34,6 +37,17 @@ public class FileSystemAttachmentStorage implements AttachmentStorage {
             return new StoredObject(out.toString(), bytes.length, sha);
         } catch (IOException e) {
             throw new RuntimeException("No se pudo guardar adjunto en disco", e);
+        }
+    }
+
+    @Override
+    public void delete(String storageRef) {
+        if (storageRef == null || storageRef.isBlank()) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(Paths.get(storageRef));
+        } catch (IOException ignored) {
         }
     }
 

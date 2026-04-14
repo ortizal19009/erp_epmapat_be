@@ -6,6 +6,7 @@ import com.epmapat.erp_epmapat.emails.model.EmailAccountSecurityType;
 import com.epmapat.erp_epmapat.emails.model.EmailAccountTransportType;
 import com.epmapat.erp_epmapat.emails.model.EmailMessage;
 import com.epmapat.erp_epmapat.emails.repository.EmailAttachmentR;
+import com.epmapat.erp_epmapat.emails.interfaces.AttachmentStorage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
@@ -43,13 +44,16 @@ public class MailSenderService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final EmailBlacklistService blacklistService;
+    private final AttachmentStorage attachmentStorage;
 
     public MailSenderService(EmailAttachmentR attachRepo, RestTemplate restTemplate, ObjectMapper objectMapper,
-                             EmailBlacklistService blacklistService) {
+                             EmailBlacklistService blacklistService,
+                             AttachmentStorage attachmentStorage) {
         this.attachRepo = attachRepo;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.blacklistService = blacklistService;
+        this.attachmentStorage = attachmentStorage;
     }
 
     public void sendNow(EmailMessage msg) {
@@ -269,5 +273,12 @@ public class MailSenderService {
                 .map(String::trim)
                 .filter(value -> !value.isBlank())
                 .collect(Collectors.toList());
+    }
+
+    public void cleanupAttachments(EmailMessage msg) {
+        List<EmailAttachment> attachments = attachRepo.findByEmailId(msg.getId());
+        for (EmailAttachment attachment : attachments) {
+            attachmentStorage.delete(attachment.getStorageRef());
+        }
     }
 }

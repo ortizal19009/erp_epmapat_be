@@ -7,7 +7,9 @@ import com.epmapat.erp_epmapat.emails.dtos.SendEmailRequest;
 import com.epmapat.erp_epmapat.emails.model.EmailMessage;
 import com.epmapat.erp_epmapat.emails.model.EmailStatus;
 import com.epmapat.erp_epmapat.emails.model.EmailType;
+import com.epmapat.erp_epmapat.emails.repository.EmailAccountR;
 import com.epmapat.erp_epmapat.emails.repository.EmailAttachmentR;
+import com.epmapat.erp_epmapat.emails.repository.EmailBlacklistR;
 import com.epmapat.erp_epmapat.emails.repository.EmailMessageR;
 import com.epmapat.erp_epmapat.emails.service.EmailComposerService;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -35,11 +38,21 @@ public class EmailController {
     private final EmailComposerService composer;
     private final EmailMessageR emailRepo;
     private final EmailAttachmentR attachmentRepo;
+    private final EmailAccountR accountRepo;
+    private final EmailBlacklistR blacklistRepo;
 
-    public EmailController(EmailComposerService composer, EmailMessageR emailRepo, EmailAttachmentR attachmentRepo) {
+    public EmailController(
+            EmailComposerService composer,
+            EmailMessageR emailRepo,
+            EmailAttachmentR attachmentRepo,
+            EmailAccountR accountRepo,
+            EmailBlacklistR blacklistRepo
+    ) {
         this.composer = composer;
         this.emailRepo = emailRepo;
         this.attachmentRepo = attachmentRepo;
+        this.accountRepo = accountRepo;
+        this.blacklistRepo = blacklistRepo;
     }
 
     // 1) Documentos (XML/PDF)
@@ -75,12 +88,32 @@ public class EmailController {
             @RequestParam(required = false) EmailType type,
             @RequestParam(required = false) String correlationId,
             @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        var spec = EmailSpecs.filter(status, type, correlationId, accountId);
+        var spec = EmailSpecs.filter(
+                status,
+                type,
+                correlationId,
+                accountId,
+                search,
+                parseDate(dateFrom),
+                parseDate(dateTo)
+        );
         return emailRepo.findAll(spec, pageable).map(this::toResponse);
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<EmailSummaryResponse> summary() {
+        long pending = emailRepo.count(EmailSpecs.filter(EmailStatus.PENDING, null, null, null, null, null, null));
+        long failed = emailRepo.count(EmailSpecs.filter(EmailStatus.FAILED, null, null, null, null, null, null));
+        long activeAccounts = accountRepo.findByActive(true).size();
+        long blockedDomains = blacklistRepo.findByActive(true).size();
+        return ResponseEntity.ok(new EmailSummaryResponse(activeAccounts, pending, failed, blockedDomains));
     }
 
     @GetMapping("/pending/stale")
@@ -167,6 +200,7 @@ public class EmailController {
     }
 
     public record IdResponse(UUID id) {}
+    public record EmailSummaryResponse(long activeAccounts, long pendingEmails, long failedEmails, long blockedDomains) {}
 
     private ResponseEntity<?> enqueue(EmailType type, SendEmailRequest req) {
         try {
@@ -177,5 +211,12 @@ public class EmailController {
         } catch (IllegalStateException ex) {
             return ResponseEntity.status(409).body(ex.getMessage());
         }
+    }
+
+    private LocalDate parseDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return LocalDate.parse(value);
     }
 }

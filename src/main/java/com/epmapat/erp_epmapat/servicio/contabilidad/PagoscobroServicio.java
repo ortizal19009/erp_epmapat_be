@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
@@ -34,6 +33,11 @@ public class PagoscobroServicio {
    // Pagoscobros por idpagcob
    public Optional<Pagoscobros> findById(Long id) {
       return dao.findById(id);
+   }
+
+   // Cuenta los Pagoscobros de una transaci.inttra
+   public short countByInttra(Long inttra) {
+      return dao.countByInttra_Inttra(inttra);
    }
 
    // Guarda nueva y actualiza benextran.totpagcob

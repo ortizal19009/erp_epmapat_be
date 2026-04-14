@@ -1,23 +1,19 @@
 package com.epmapat.erp_epmapat.servicio.contabilidad;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Partixcerti;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.CertipresuR;
+import com.epmapat.erp_epmapat.repositorio.contabilidad.EjecucioR;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.PartixcertiR;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.PresupueR;
 
@@ -28,14 +24,15 @@ import lombok.RequiredArgsConstructor;
 public class PartixcertiServicio {
 
 	final private PartixcertiR dao;
-	private final CertipresuR daoCertipresu;
-	private final PresupueR daoPresupue;
+	private final CertipresuR certipresuDao;
+	private final PresupueR prespueDao;
 	private final CertipresuServicio certiServicio;
 	private final PresupueServicio presuServicio;
+	private final EjecucioR ejecucioDao;
 
 	// Partidas de una Certipresu
 	public List<Partixcerti> findByIdcerti(Long idcerti) {
-		return dao.findByIdcerti_Idcerti(idcerti);
+		return dao.findByIdcerti_IdcertiOrderByIntpre_Codpar(idcerti);
 	}
 
 	// Partixcerti por idparxcer
@@ -48,11 +45,16 @@ public class PartixcertiServicio {
 		return dao.countByIdcerti_Idcerti(idcerti);
 	}
 
+	// Partixcerti por intpre (Certificaciones de una partida)
+	public List<Partixcerti> buscaPorIntpreDesdeHasta(Long intpre, LocalDate desde, LocalDate hasta) {
+		return dao.findByIntpreDesdeHasta(intpre, desde, hasta);
+	}
+
 	// Guarda: Las Tablas foraneas se crean aqui, el front solo envia el ID
 	@Transactional
 	public Partixcerti save(Partixcerti nueva) {
-		nueva.setIdcerti(daoCertipresu.getReferenceById(nueva.getIdcerti().getIdcerti()));
-		nueva.setIntpre(daoPresupue.getReferenceById(nueva.getIntpre().getIntpre()));
+		nueva.setIdcerti(certipresuDao.getReferenceById(nueva.getIdcerti().getIdcerti()));
+		nueva.setIntpre(prespueDao.getReferenceById(nueva.getIntpre().getIntpre()));
 		Partixcerti saved = dao.save(nueva);
 		// Actualiza certipresu.valor (el total)
 		certiServicio.recalcularValorCertificacion(nueva.getIdcerti().getIdcerti());
@@ -65,7 +67,17 @@ public class PartixcertiServicio {
 		return saved;
 	}
 
-	// Actualiza (idcerti e intpre nunca se actualizan)
+	// Actualiza partixcerti.totprmisos
+	// @Transactional Ya se usa en la llamada
+	public void actualizaTotprmisos(Long idparxcer) {
+		BigDecimal totprmisos = ejecucioDao.sumaPrmisoPorIdparxcer(idparxcer);
+		Partixcerti partixcerti = dao.findById(idparxcer)
+				.orElseThrow(() -> new IllegalArgumentException("No existe Partixcerti con id " + idparxcer));
+		partixcerti.setTotprmisos(totprmisos);
+		dao.save(partixcerti);
+	}
+
+	// Actualiza partixcerti (idcerti e intpre nunca se actualizan)
 	@Transactional
 	public Partixcerti updatePartixcerti(Long idparxcer, Partixcerti data) {
 		Partixcerti partixcerti = findById(idparxcer)
@@ -91,7 +103,7 @@ public class PartixcertiServicio {
 		return updated;
 	}
 
-	// Recupera partixcedrti antes de eliminar (otro usuario pudo eliminar)
+	// Elimina: antes de eliminar verifica
 	@Transactional
 	public void deleteById(Long idparxcer) {
 		Partixcerti partixcerti = dao.findById(idparxcer)

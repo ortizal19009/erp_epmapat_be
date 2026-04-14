@@ -2,7 +2,6 @@ package com.epmapat.erp_epmapat.controlador.contabilidad;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/pagoscobros")
 @RequiredArgsConstructor
+
 public class PagoscobrosApi {
 
    private final PagoscobroServicio pagcobServicio;
@@ -55,6 +55,13 @@ public class PagoscobrosApi {
       return lista.isEmpty()
             ? ResponseEntity.noContent().build()
             : ResponseEntity.ok(lista);
+   }
+
+   // Cuenta los Benextran de una transaci.inttra
+   @GetMapping("/count/inttra/{inttra}")
+   public ResponseEntity<Short> countByInttra(@PathVariable Long inttra) {
+      short count = pagcobServicio.countByInttra(inttra);
+      return ResponseEntity.ok(count);
    }
 
    // Guardar nuevo
