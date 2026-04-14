@@ -24,8 +24,8 @@ import lombok.RequiredArgsConstructor;
 public class CertipresuServicio {
 
 	private final CertipresuR dao;
-	private final DocumentosR daoDocumentos;
-	private final BeneficiariosR daoBeneficiarios;
+	// private final DocumentosR daoDocumentos;
+	// private final BeneficiariosR daoBeneficiarios;
 	private final PartixcertiR daoPartixcerti;
 
 	// Busca Certificaciones o Reintegradas (desde/hasta)
@@ -57,11 +57,11 @@ public class CertipresuServicio {
 		return dao.findById(id);
 	}
 
-	// Guarda: Las Tablas foraneas se crean aqui, el front solo envia el ID
+	// Guarda
 	public Certipresu save(Certipresu nueva) {
-		nueva.setIntdoc(daoDocumentos.getReferenceById(nueva.getIntdoc().getIntdoc()));
-		nueva.setIdbene(daoBeneficiarios.getReferenceById(nueva.getIdbene().getIdbene()));
-		nueva.setIdbeneres(daoBeneficiarios.getReferenceById(nueva.getIdbeneres().getIdbene()));
+		// nueva.setIntdoc(daoDocumentos.getReferenceById(nueva.getIntdoc().getIntdoc()));
+		// nueva.setIdbene(daoBeneficiarios.getReferenceById(nueva.getIdbene().getIdbene()));
+		// nueva.setIdbeneres(daoBeneficiarios.getReferenceById(nueva.getIdbeneres().getIdbene()));
 		return dao.save(nueva);
 	}
 
@@ -92,7 +92,7 @@ public class CertipresuServicio {
 
 	// Suma partixcerti.valor y lo guarda en certipresu.valor
 	public void recalcularValorCertificacion(Long idcerti) {
-		BigDecimal total = daoPartixcerti.sumarValoresPorCertificacion(idcerti);
+		BigDecimal total = daoPartixcerti.sumaValoresPorCertificacion(idcerti);
 		Certipresu certipresu = dao.findById(idcerti)
 				.orElseThrow(() -> new RuntimeException("Certificación no encontrada: " + idcerti));
 		certipresu.setValor(total);
