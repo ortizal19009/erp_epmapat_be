@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.repositorio;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,6 +24,9 @@ public interface Fec_facturaR extends JpaRepository<Fec_factura, Long> {
 
     @Query(value = "select xmlautorizado, fechaemision from fec_factura where idfactura = ?1", nativeQuery = true)
     public fecFacturaDatos getNroFactura(Long idfactura);
+
+    @Query(value = "SELECT * FROM fec_factura WHERE estado IN ('A', 'O') AND fechaemision >= ?1 AND fechaemision < ?2 ORDER BY fechaemision ASC, idfactura ASC", nativeQuery = true)
+    public List<Fec_factura> findByFechaEmisionAndEstados(LocalDateTime desde, LocalDateTime hastaExclusive);
     
 
 }

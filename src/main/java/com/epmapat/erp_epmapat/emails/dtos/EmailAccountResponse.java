@@ -21,6 +21,7 @@ public class EmailAccountResponse {
     public EmailAccountSecurityType securityType;
     public boolean authRequired;
     public String username;
+    public String password;
     public boolean hasPassword;
     public String apiUrl;
     public String apiAuthHeader;

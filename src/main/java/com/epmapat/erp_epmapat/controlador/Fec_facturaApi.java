@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,6 +62,17 @@ public class Fec_facturaApi {
    @GetMapping("/cliente")
    public List<Fec_factura> getByNombreCliente(@RequestParam("cliente") String cliente) {
       return fecfacServicio.findByNombreCliente(cliente);
+   }
+
+   @GetMapping("/reenvio")
+   public List<Fec_factura> getByFechaEmisionReenvio(
+         @RequestParam("desde") String desde,
+         @RequestParam("hasta") String hasta) {
+      LocalDate fechaDesde = LocalDate.parse(desde);
+      LocalDate fechaHasta = LocalDate.parse(hasta);
+      return fecfacServicio.findByFechaEmisionAndEstados(
+            fechaDesde.atStartOfDay(),
+            fechaHasta.plusDays(1).atStartOfDay());
    }
 
    @GetMapping("/factura")

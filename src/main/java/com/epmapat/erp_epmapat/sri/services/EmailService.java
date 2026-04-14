@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.sri.services;
 
+import com.epmapat.erp_epmapat.emails.service.EmailBlacklistService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,10 +30,17 @@ import javax.mail.Transport;
 
 @Service
 public class EmailService {
+    private final EmailBlacklistService blacklistService;
+
+    public EmailService(EmailBlacklistService blacklistService) {
+        this.blacklistService = blacklistService;
+    }
+
     public boolean envioEmail(final String emisor, final String password, List<String> receptores,
             String asunto, String mensajeHtml, MultipartFile file) {
         boolean envioExitoso = true;
         String domiCorreo = "smtp.cmaginet.net";
+        blacklistService.validateRecipients(receptores);
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.host", domiCorreo);
@@ -107,6 +115,7 @@ public class EmailService {
             String asunto, String mensajeHtml) {
         boolean envioExitoso = true;
         String domiCorreo = "smtp.cmaginet.net";
+        blacklistService.validateRecipients(receptores);
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.host", domiCorreo);
@@ -180,6 +189,7 @@ public class EmailService {
     public boolean __envioArchivo(final String emisor, final String password, List<String> receptores, String asunto,
             List<String> adjuntos, final String domiCorreo) {
         boolean envioExitoso = true;
+        blacklistService.validateRecipients(receptores);
         Properties props = new Properties();
 
         // final String smtpUsername = "facturacion@emapasr.gob.ec";

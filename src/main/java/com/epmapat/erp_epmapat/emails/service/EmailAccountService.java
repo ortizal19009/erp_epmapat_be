@@ -24,13 +24,13 @@ public class EmailAccountService {
     public List<EmailAccountResponse> list(Boolean active) {
         List<EmailAccount> accounts = active == null ? accountRepo.findAll() : accountRepo.findByActive(active);
         return accounts.stream()
-                .map(this::toResponse)
+                .map(account -> toResponse(account, false))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public EmailAccountResponse get(Long id) {
-        return toResponse(getEntity(id));
+        return toResponse(getEntity(id), true);
     }
 
     @Transactional
@@ -45,7 +45,7 @@ public class EmailAccountService {
         account.setCode(code);
         account = accountRepo.save(account);
         ensureSingleDefaults(account);
-        return toResponse(account);
+        return toResponse(account, false);
     }
 
     @Transactional
@@ -60,7 +60,7 @@ public class EmailAccountService {
         account.setCode(code);
         account = accountRepo.save(account);
         ensureSingleDefaults(account);
-        return toResponse(account);
+        return toResponse(account, false);
     }
 
     @Transactional
@@ -68,7 +68,7 @@ public class EmailAccountService {
         EmailAccount account = getEntity(id);
         account.setActive(active);
         account = accountRepo.save(account);
-        return toResponse(account);
+        return toResponse(account, false);
     }
 
     @Transactional(readOnly = true)
@@ -219,7 +219,7 @@ public class EmailAccountService {
         }
     }
 
-    private EmailAccountResponse toResponse(EmailAccount account) {
+    private EmailAccountResponse toResponse(EmailAccount account, boolean includeSecrets) {
         EmailAccountResponse r = new EmailAccountResponse();
         r.id = account.getId();
         r.code = account.getCode();
@@ -235,6 +235,7 @@ public class EmailAccountService {
         r.securityType = account.getSecurityType();
         r.authRequired = account.isAuthRequired();
         r.username = account.getUsername();
+        r.password = includeSecrets ? account.getPassword() : null;
         r.hasPassword = account.getPassword() != null && !account.getPassword().isBlank();
         r.apiUrl = account.getApiUrl();
         r.apiAuthHeader = account.getApiAuthHeader();

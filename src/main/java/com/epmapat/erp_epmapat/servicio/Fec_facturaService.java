@@ -77,6 +77,10 @@ public class Fec_facturaService {
       return dao.findByNombreCliente(cliente);
    }
 
+   public List<Fec_factura> findByFechaEmisionAndEstados(LocalDateTime desde, LocalDateTime hastaExclusive) {
+      return dao.findByFechaEmisionAndEstados(desde, hastaExclusive);
+   }
+
    public <S extends Fec_factura> S save(S entity) {
       return dao.save(entity);
    }

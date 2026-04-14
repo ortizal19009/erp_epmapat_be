@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<autorizacion>
+  <estado>AUTORIZADO</estado>
+  <numeroAutorizacion>0203202601046002881000120010110001832800302692519</numeroAutorizacion>
+  <fechaAutorizacion>2026-03-02T15:23:01</fechaAutorizacion>
+  <ambiente>PRODUCCIÓN</ambiente>
+  <comprobante><![CDATA[<?xml version="1.0" encoding="UTF-8"?><factura id="comprobante" version="1.1.0">
+    <infoTributaria>
+        <ambiente>2</ambiente>
+        <tipoEmision>1</tipoEmision>
+        <razonSocial>EMPRESA PUBLICA MUNICIPAL DE AGUA POTABLE Y ALCANTARILLADO DE TULCAN</razonSocial>
+        <nombreComercial>EPMAPA-T</nombreComercial>
+        <ruc>0460028810001</ruc>
+        <claveAcceso>0203202601046002881000120010110001832800302692519</claveAcceso>
+        <codDoc>01</codDoc>
+        <estab>001</estab>
+        <ptoEmi>011</ptoEmi>
+        <secuencial>000183280</secuencial>
+        <dirMatriz>JUAN RAMON ARELLANO Y BOLIVAR</dirMatriz>
+    </infoTributaria>
+    <infoFactura>
+        <fechaEmision>02/03/2026</fechaEmision>
+        <obligadoContabilidad>SI</obligadoContabilidad>
+        <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+        <razonSocialComprador>ORTIZ VINUEZA  OSWALDO ENRIQU</razonSocialComprador>
+        <identificacionComprador>0400698429</identificacionComprador>
+        <direccionComprador>BOLIVAR</direccionComprador>
+        <totalSinImpuestos>28.73</totalSinImpuestos>
+        <totalDescuento>0.00</totalDescuento>
+        <totalConImpuestos>
+            <totalImpuesto>
+                <codigo>2</codigo>
+                <codigoPorcentaje>0</codigoPorcentaje>
+                <baseImponible>28.73</baseImponible>
+                <valor>0.00</valor>
+            </totalImpuesto>
+        </totalConImpuestos>
+        <propina>0</propina>
+        <importeTotal>28.73</importeTotal>
+        <moneda>DOLAR</moneda>
+        <pagos>
+            <pago>
+                <formaPago>20</formaPago>
+                <total>28.73</total>
+            </pago>
+        </pagos>
+    </infoFactura>
+    <detalles>
+        <detalle>
+            <codigoPrincipal>5</codigoPrincipal>
+            <codigoAuxiliar>5</codigoAuxiliar>
+            <descripcion>Intereses</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>0.00</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>0.00</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>0.00</baseImponible>
+                    <valor>0.00</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>6</codigoPrincipal>
+            <codigoAuxiliar>6</codigoAuxiliar>
+            <descripcion>Multa</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>2.41</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>2.41</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>2.41</baseImponible>
+                    <valor>0.00</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>1001</codigoPrincipal>
+            <codigoAuxiliar>1001</codigoAuxiliar>
+            <descripcion>Agua Potable</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>8.77</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>8.77</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>8.77</baseImponible>
+                    <valor>0.00</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>1002</codigoPrincipal>
+            <codigoAuxiliar>1002</codigoAuxiliar>
+            <descripcion>Alcantarillado</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>6.47</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>6.47</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>6.47</baseImponible>
+                    <valor>0.00</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>1003</codigoPrincipal>
+            <codigoAuxiliar>1003</codigoAuxiliar>
+            <descripcion>Saneamiento</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>1.76</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>1.76</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>1.76</baseImponible>
+                    <valor>0.00</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>1008</codigoPrincipal>
+            <codigoAuxiliar>1008</codigoAuxiliar>
+            <descripcion>Tasa Recolección de basura (GAD-MT)</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>8.17</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>8.17</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>8.17</baseImponible>
+                    <valor>0.00</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>1009</codigoPrincipal>
+            <codigoAuxiliar>1009</codigoAuxiliar>
+            <descripcion>Servicio administrativo Recolección de basura</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>0.50</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>0.50</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>0.50</baseImponible>
+                    <valor>0.00</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+        <detalle>
+            <codigoPrincipal>1004</codigoPrincipal>
+            <codigoAuxiliar>1004</codigoAuxiliar>
+            <descripcion>Conservación de fuentes</descripcion>
+            <cantidad>1.00</cantidad>
+            <precioUnitario>0.65</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>0.65</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>0</codigoPorcentaje>
+                    <tarifa>0</tarifa>
+                    <baseImponible>0.65</baseImponible>
+                    <valor>0.00</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+    </detalles>
+    <infoAdicional>
+        <campoAdicional nombre="e-mail">alexis.ortiz81@outlook.com</campoAdicional>
+        <campoAdicional nombre="Teléfono">0985096366</campoAdicional>
+        <campoAdicional nombre="Fecha emisión">02/03/2026</campoAdicional>
+        <campoAdicional nombre="Recaudador">CARDENAS JEFFERSON</campoAdicional>
+        <campoAdicional nombre="Cuenta">1105</campoAdicional>
+        <campoAdicional nombre="Concepto">M3: 13.0 Emision: enero 2026 Nro medidor: 0000</campoAdicional>
+    </infoAdicional>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="signature-112ad744-c3f0-434d-8f5f-e4d7a38b741a">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference URI="#comprobante">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>xchSjX7cDdkXjkdtCeuMRJhRmNnIst68gRXI4toQps4=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#signedproperties-d6789538-2d9f-476a-ab58-ef0af46299c3">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>HdHrPfnHY0SU/aHpAzHNUW4tjwrbGqqy/I6e4k1G5Ds=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue>
+jVEskR7ngNQdgxGw19hZ5UgF7cg+8AIvTjnZtdtQOg/b9DXrTWIRqk8E0jy2NAutPdlcI4mgxebs
+XSwWVVdghN5dv+F58QZ8D7l+X1nxyrPvYyp+EBj2wDSw4XZCdtgP2x4sGib4PHgKrx+pd5dlbK9y
+NNr3MT0v9rFBUn1DYJVwLqbErU1j10+epcKN+T8K9LBv4472yWjMAmrp+VV59qdSqqw5Ujr+6IhD
+0/+ZowTEfPDLiyXA2tZDHJ22i+9sObPmsEhzU63ZBI1UDZedT97kmeABswcOO9u2KhzMouu4o3et
+GiZkbKjj8nened+S0GacY0R8URyJUOZNvuM+uA==
+</ds:SignatureValue>
+<ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+<ds:X509Data>
+<ds:X509Certificate>
+MIIKLTCCCBWgAwIBAgIIJEkKkbxfx/QwDQYJKoZIhvcNAQELBQAwgbgxCzAJBgNVBAYTAkVTMUQw
+QgYDVQQHDDtCYXJjZWxvbmEgKHNlZSBjdXJyZW50IGFkZHJlc3MgYXQgd3d3LnVhbmF0YWNhLmNv
+bS9hZGRyZXNzKTEWMBQGA1UECgwNVUFOQVRBQ0EgUy5BLjEVMBMGA1UECwwMVFNQLVVBTkFUQUNB
+MRowGAYDVQQDDBFVQU5BVEFDQSBDQTIgMjAxNjEYMBYGA1UEYQwPVkFURVMtQTY2NzIxNDk5MB4X
+DTI0MDUxMzIyMTMwMFoXDTI3MDUxMzIyMTMwMFowggEHMQswCQYDVQQGEwJFQzFNMEsGA1UECgxE
+RU1QUkVTQSBQVUJMSUNBIE1VTklDSVBBTCBERSBBR1VBIFBPVEFCTEUgWSBBTENBTlRBUklMTEFE
+TyBERSBUVUxDQU4xGDAWBgNVBAwMD0dFUkVOVEUgR0VORVJBTDEWMBQGA1UEBAwNQlVSQkFOTyBP
+UlRJWjEXMBUGA1UEKgwOTk9SVEhPTiBSQU1JUk8xGTAXBgNVBAUTEElEQ0VDLTA0MDA5OTM4Mzgx
+JTAjBgNVBAMMHE5PUlRIT04gUkFNSVJPIEJVUkJBTk8gT1JUSVoxHDAaBgNVBGEME1ZBVEVDLTA0
+NjAwMjg4MTAwMDEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCjhKUFd4rjEpfrzvkn
+YiuKjexWujm7/aCnctNxL0HOnv+Hn/tLyWRvAWnDNZtNj0GLEOb4r13dqCazSZDgkcOviSWbScOl
+2lsGme3y3YHlcC77HYxs1v8DBNI+vWJL0k0Yg2Yf3eUX+QT2asimIlEEe00QZ2diU911S0UsVlHE
+4PjvOBi/WeIwI93xRBARMNgYyZQ0qCCn1CoGjaH64t8xATEJZWSOzxCdcr6c4MAVbqNJRgz+RIW8
+4O3Lnd/N5RI47WqF00/dWiuct77fkbBX8bpL/XzCuY8GsKiHF8Ml32eRdHf3Z/daR8TGNxL+Xl0Z
++F62nb/gccT5GeG63NlHAgMBAAGjggTnMIIE4zAbBgsrBgEEAYLxNmYDAQQMDAowNDAwOTkzODM4
+MB4GCysGAQQBgvE2ZgMLBA8MDTA0NjAwMjg4MTAwMDEwgdcGCCsGAQUFBwEBBIHKMIHHMFUGCCsG
+AQUFBzAChklodHRwOi8vd3d3LnVhbmF0YWNhLmNvbS9wdWJsaWMvZG93bmxvYWQvdHNwX2NlcnRp
+ZmljYXRlcy9zdWJvcmRpbmF0ZTEuY3J0MDYGCCsGAQUFBzABhipodHRwOi8vb2NzcDEudWFuYXRh
+Y2EuY29tL3B1YmxpYy9wa2kvb2NzcC8wNgYIKwYBBQUHMAGGKmh0dHA6Ly9vY3NwMi51YW5hdGFj
+YS5jb20vcHVibGljL3BraS9vY3NwLzAdBgNVHQ4EFgQUboDUdoHF2pukLL809Cduazs/IQMwDAYD
+VR0TAQH/BAIwADAfBgNVHSMEGDAWgBR9V+dgc84HRqnio2jw4RGydJJz/TCBjgYDVR0gBIGGMIGD
+MIGABgwrBgEEAYLxNmYCAwEwcDA3BggrBgEFBQcCARYraHR0cHM6Ly93d3cudWFuYXRhY2EuY29t
+L3B1YmxpYy9wa2kvZHBjLWVjLzA1BggrBgEFBQcCAjApDCdDRVJUSUZJQ0FETyBERSBSRVBSRVNF
+TlRBTlRFIEVOIEFSQ0hJVk8wgY8GA1UdHwSBhzCBhDBAoD6gPIY6aHR0cDovL2NybDEudWFuYXRh
+Y2EuY29tL3B1YmxpYy9wa2kvY3JsL0NBMnN1Ym9yZGluYWRhLmNybDBAoD6gPIY6aHR0cDovL2Ny
+bDIudWFuYXRhY2EuY29tL3B1YmxpYy9wa2kvY3JsL0NBMnN1Ym9yZGluYWRhLmNybDAOBgNVHQ8B
+Af8EBAMCBeAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMEMIICKAYDVR0RBIICHzCCAhuB
+GGVwbWFwYXR1bGNhbkBob3RtYWlsLmNvbaAbBgsrBgEEAYLxNmYDAaAMDAowNDAwOTkzODM4oB8G
+CysGAQQBgvE2ZgMCoBAMDk5PUlRIT04gUkFNSVJPoBgGCysGAQQBgvE2ZgMDoAkMB0JVUkJBTk+g
+FgYLKwYBBAGC8TZmAwSgBwwFT1JUSVqgIAYLKwYBBAGC8TZmAwWgEQwPR0VSRU5URSBHRU5FUkFM
+oGYGCysGAQQBgvE2ZgMHoFcMVUpVQU4gUkFNT04gQVJFTExBTk8gSU5URVJTRUNDSU46IEJPTElW
+QVIgUkVGRVJFTkNJQTogRlJFTlRFIEFMIFRFUk1JTkFMIFRFUlJFU1RSRSBESVKgHwYLKwYBBAGC
+8TZmAwigEAwOMDA1OTM5NjM5Njc3MzmgGAYLKwYBBAGC8TZmAwmgCQwHVFVMQ8OBTqBVBgsrBgEE
+AYLxNmYDCqBGDERFTVBSRVNBIFBVQkxJQ0EgTVVOSUNJUEFMIERFIEFHVUEgUE9UQUJMRSBZIEFM
+Q0FOVEFSSUxMQURPIERFIFRVTENBTqAeBgsrBgEEAYLxNmYDC6APDA0wNDYwMDI4ODEwMDAxoBMG
+CysGAQQBgvE2ZgMMoAQMAkVDoCQGCysGAQQBgvE2ZgMyoBUME1JFUFJFU0VOVEFOVEUgTEVHQUyg
+GAYLKwYBBAGC8TZmAzOgCQwHQVJDSElWTzANBgkqhkiG9w0BAQsFAAOCAgEARvr3hU4dABo6L/Re
+kCu9nrZy0EGK7Mc222Px1y001bKOB71+zsj/yHu2pFH/sjqNlXSyinRErqESHl02A6kIKomwPttr
+7cENw1a14lqPLTLTKImd35P+nkKissx/DjOczeFXrmmTG0fCDEbcZp6O7UrUBmiRswi1BZLPZf7g
+KA5xmCFif2seJJbBWFK+fx0De1hJn1ozE1DPx0f30TpxSbfp9eL02SkjZE8rpwcLuwrU0da8/wzC
+HzSZqIRcDYFPiuxOmbiJfJXTrEfrKSVzG1X/X1FLXn17POug9UhU4md65FVI1KRoEXwqlPewKyl6
+FooI/dJI5HiIOpOLwaRfxTz3bqwY4tKyBuvGp8Ucnu5jBgrDLzVRdj7CkmjeZlCCVAHXFYHNiys+
+a3NyqjVbGYpdLO1e0up87xwzCQgNmGwf4pTWNk1qyP2eajzrWrhiEgA2eRiSESKxJFyRtmNPrcVU
+oAEoGOqf+GPiox5t+dw7fTXmupCbRshMDs48/+ksf+wijl80fx8J35hsF6O7zg7fSdljx4CtSezU
+3nJJCNdugD2CbNYs4mQByG5QsLFToVP05sDgYwwycruth6sfyfGMHHJvwrm3zcM5P7baz9crJBqj
+FOXIX6GjbYPqbtIs/VRmaL0a4u0xoszsQBrDG1+7gkw6hMgs1tSxcqOgFBo=
+</ds:X509Certificate>
+</ds:X509Data>
+</ds:KeyInfo>
+<ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" xmlns:xades141="http://uri.etsi.org/01903/v1.4.1#" Target="#signature-112ad744-c3f0-434d-8f5f-e4d7a38b741a"><xades:SignedProperties Id="signedproperties-d6789538-2d9f-476a-ab58-ef0af46299c3"><xades:SignedSignatureProperties><xades:SigningTime>2026-03-02T20:23:00.785Z</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>ccyuHTOuBzqkiNpefoJn/fLHj/zFbe0oiD2oo3jxk9o=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>2.5.4.97=VATES-A66721499,cn=UANATACA CA2 2016,ou=TSP-UANATACA,o=UANATACA S.A.,l=Barcelona (see current address at www.uanataca.com/address),c=ES</ds:X509IssuerName><ds:X509SerialNumber>2614632679712212980</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate></xades:SignedSignatureProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object>
+</ds:Signature></factura>]]></comprobante>
+</autorizacion>
