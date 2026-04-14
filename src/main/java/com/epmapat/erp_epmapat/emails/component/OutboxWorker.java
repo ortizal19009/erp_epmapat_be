@@ -1,53 +1,48 @@
 package com.epmapat.erp_epmapat.emails.component;
 
+import com.epmapat.erp_epmapat.emails.model.EmailMessage;
 import com.epmapat.erp_epmapat.emails.model.EmailStatus;
 import com.epmapat.erp_epmapat.emails.repository.EmailMessageR;
-import com.epmapat.erp_epmapat.emails.service.EmailBlacklistViolationException;
-import com.epmapat.erp_epmapat.emails.service.MailSenderService;
-import javax.transaction.Transactional;
+import com.epmapat.erp_epmapat.emails.service.EmailProcessorService;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.OffsetDateTime;
-
 @Component
 public class OutboxWorker {
 
     private final EmailMessageR emailRepo;
-    private final MailSenderService sender;
+    private final EmailProcessorService emailProcessorService;
 
     @Value("${mailms.outbox.batch-size:20}")
     private int batchSize;
 
-    @Value("${mailms.outbox.max-attempts:5}")
+    @Value("${mailms.outbox.max-attempts:1}")
     private int maxAttempts;
 
-    public OutboxWorker(EmailMessageR emailRepo, MailSenderService sender) {
+    public OutboxWorker(EmailMessageR emailRepo,
+                        EmailProcessorService emailProcessorService) {
         this.emailRepo = emailRepo;
-        this.sender = sender;
+        this.emailProcessorService = emailProcessorService;
     }
 
     @Scheduled(fixedDelayString = "${mailms.outbox.scheduler-fixed-delay-ms:15000}")
-    @Transactional
     public void process() {
-        var list = emailRepo.lockNextPending(EmailStatus.PENDING, maxAttempts, PageRequest.of(0, batchSize));
-        for (var msg : list) {
+
+        var ids = emailRepo.findNextPendingIds(
+                EmailStatus.PENDING,
+                maxAttempts,
+                PageRequest.of(0, batchSize)
+        );
+
+        for (var emailId : ids) {
             try {
-                msg.setAttempts(msg.getAttempts() + 1);
-                sender.sendNow(msg);
-                msg.setStatus(EmailStatus.SENT);
-                msg.setSentAt(OffsetDateTime.now());
-                msg.setLastError(null);
-            } catch (EmailBlacklistViolationException e) {
-                msg.setLastError(e.getMessage());
-                msg.setStatus(EmailStatus.FAILED);
+                emailProcessorService.procesarEmail(emailId, maxAttempts);
             } catch (Exception e) {
-                msg.setLastError(e.getMessage());
-                if (msg.getAttempts() >= maxAttempts) {
-                    msg.setStatus(EmailStatus.FAILED);
-                }
+                System.err.println("Error procesando email ID: " + emailId);
+                e.printStackTrace();
             }
         }
     }
