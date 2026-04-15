@@ -69,6 +69,26 @@ public class LecturasApi {
 	private final RutasxemisionR rutasxemisionR;
 	private final LecturaFotoStorageService lecturaFotoStorageService;
 
+	private String resolveIncomingFotoPath(LecturaUploadItemDto item, Lecturas original) {
+		String incomingFotoPath = item.getFotoPath();
+		if (!StringUtils.hasText(incomingFotoPath)) {
+			return original == null ? null : original.getFotoPath();
+		}
+
+		String normalized = incomingFotoPath.trim();
+		if (normalized.startsWith("content://")
+				|| normalized.startsWith("/")
+				|| normalized.startsWith("\\")) {
+			return original == null ? null : original.getFotoPath();
+		}
+
+		if (normalized.matches("^[a-zA-Z]:[\\\\/].*")) {
+			return original == null ? null : original.getFotoPath();
+		}
+
+		return normalized;
+	}
+
 	private String resolveLecturaFolder(Lecturas lectura) {
 		if (lectura.getIdrutaxemision_rutasxemision() == null
 				|| lectura.getIdrutaxemision_rutasxemision().getIdruta_rutas() == null) {
@@ -242,7 +262,7 @@ public class LecturasApi {
 		lectura.setTotal1(item.getTotal1());
 		lectura.setTotal31(item.getTotal31());
 		lectura.setTotal32(item.getTotal32());
-		lectura.setFotoPath(item.getFotoPath());
+		lectura.setFotoPath(resolveIncomingFotoPath(item, original));
 		lectura.setIdabonado_abonados(item.getIdabonado_abonados() == null
 				? (original == null ? null : original.getIdabonado_abonados())
 				: abonadosR.findById(item.getIdabonado_abonados()).orElse(null));
