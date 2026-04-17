@@ -9,9 +9,9 @@ services:
       - SPRING_DATASOURCE_PASSWORD=3pmapaT24
       - SPRING_PROFILES_ACTIVE=prod
       - STORAGE_TYPE=nextcloud
-      - NEXTCLOUD_BASE_URL=http://192.168.0.52/nextcloud
-      - NEXTCLOUD_USERNAME=EpmapaUser
-      - NEXTCLOUD_PASSWORD=6wocX-8s8qP-d5BrE-HyYHa-oneXy
+      - NEXTCLOUD_BASE_URL=https://192.168.0.52
+      - NEXTCLOUD_USERNAME=admin
+      - NEXTCLOUD_PASSWORD=Epmapat2026
       - NEXTCLOUD_BASE_FOLDER=/EPMAPAT-PHOTOS/
     ports:
       - "8080:8080"

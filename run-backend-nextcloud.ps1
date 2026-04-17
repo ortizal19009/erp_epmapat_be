@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 param(
-    [string]$NextcloudBaseUrl = "http://192.168.0.52/nextcloud",
+    [string]$NextcloudBaseUrl = "https://192.168.0.52",
     [string]$NextcloudUsername = "",
     [string]$NextcloudAppToken = "",
     [string]$NextcloudBaseFolder = "/epmapat",

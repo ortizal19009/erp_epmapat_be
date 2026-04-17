@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.DTO.LoginRequest;
 import com.epmapat.erp_epmapat.DTO.LoginResponse;
+import com.epmapat.erp_epmapat.config.AESUtil;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.UsuarioI;
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
@@ -230,6 +231,9 @@ public class UsuariosApi {
       return ResponseEntity.ok(usuarios);
    }
 
+   @GetMapping("/descifrar")
+   public ResponseEntity<?> getPassword(@RequestParam String pass) throws Exception {
+      return ResponseEntity.ok(AESUtil.descifrar(pass));
+   }
+
 }
-
-
