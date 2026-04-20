@@ -6,7 +6,7 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.0.55:5432/ErpEpmapaT
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=3pmapaT24
+      - SPRING_DATASOURCE_PASSWORD=12345
       - SPRING_PROFILES_ACTIVE=prod
       - STORAGE_TYPE=nextcloud
       - NEXTCLOUD_BASE_URL=https://192.168.0.52
