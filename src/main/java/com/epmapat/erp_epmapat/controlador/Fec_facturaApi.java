@@ -162,7 +162,7 @@ public class Fec_facturaApi {
             .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
 
       try {
-         String url = "http://192.168.0.165:8080/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
+         String url = "http://192.168.0.33:8080/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
          String xml = restTemplate.getForObject(url, String.class);
 
          factura.setXmlautorizado(xml);
