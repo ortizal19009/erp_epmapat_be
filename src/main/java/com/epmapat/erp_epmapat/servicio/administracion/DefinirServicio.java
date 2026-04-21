@@ -28,6 +28,10 @@ public class DefinirServicio {
         return dao.save(entity);
     }
 
+    public Definir ultima() {
+        return dao.findTopByOrderByIddefinirDesc();
+    }
+
     public Definir guardarFirma(Long id, MultipartFile archivo, String claveFirma) throws Exception {
         // Validar parámetros de entrada
         if (id == null) {

@@ -11,9 +11,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 
 /**
  * @author <a href="mailto:4softwaredevelopers@gmail.com">Jordy Rodríguezr</a>
@@ -42,9 +44,19 @@ public class JasperReportManager {
 	public ByteArrayOutputStream export(String fileName, Map<String, Object> params,
 			Connection con) throws JRException, IOException {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		ClassPathResource resource = new ClassPathResource(REPORT_FOLDER + File.separator + fileName + JASPER);
-		InputStream inputStream = resource.getInputStream();
-		JasperPrint jasperPrint = JasperFillManager.fillReport(inputStream, params, con);
+		ClassPathResource jasperResource = new ClassPathResource(REPORT_FOLDER + File.separator + fileName + JASPER);
+		JasperPrint jasperPrint;
+		if (jasperResource.exists()) {
+			try (InputStream inputStream = jasperResource.getInputStream()) {
+				jasperPrint = JasperFillManager.fillReport(inputStream, params, con);
+			}
+		} else {
+			ClassPathResource jrxmlResource = new ClassPathResource(REPORT_FOLDER + File.separator + fileName + ".jrxml");
+			try (InputStream inputStream = jrxmlResource.getInputStream()) {
+				JasperReport report = JasperCompileManager.compileReport(inputStream);
+				jasperPrint = JasperFillManager.fillReport(report, params, con);
+			}
+		}
 		/* if (tipoReporte.equalsIgnoreCase(tipoReporte.toString())) {
 			JRXlsxExporter exporter = new JRXlsxExporter();
 			exporter.setExporterInput(new SimpleExporterInput(jasperPrint));

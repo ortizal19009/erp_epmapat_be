@@ -174,6 +174,19 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "select f.idfactura , sum((rf.cantidad * rf.valorunitario)*?1) as iva from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro where idfactura = ?2 and r.swiva = true group by f.idfactura", nativeQuery = true)
 	List<Object[]> getIva(BigDecimal iva, Long idfactura);
 
+	@Query(value = """
+			select
+			  f.idfactura as idfactura,
+			  round(cast(sum((rf.cantidad * rf.valorunitario) * :iva) as numeric), 2) as iva
+			from rubroxfac rf
+			join facturas f on rf.idfactura_facturas = f.idfactura
+			join rubros r on rf.idrubro_rubros = r.idrubro
+			where f.idfactura in (:ids)
+			  and r.swiva = true
+			group by f.idfactura
+			""", nativeQuery = true)
+	List<Object[]> getIvaByFacturas(@Param("iva") BigDecimal iva, @Param("ids") Collection<Long> ids);
+
 	/* FACTURACION ELECTRONICA */
 
 	// @Query(value = "select rf from rubroxfac rf join facturas f on

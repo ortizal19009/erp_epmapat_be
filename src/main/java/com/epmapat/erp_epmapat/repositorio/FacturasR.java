@@ -143,7 +143,10 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			      f.estado,
 			      f.pagado,
 			      f.swcondonar,
-				  m.descripcion as modulo
+				  m.descripcion as modulo,
+				  c.nombre as nombre,
+				  c.cedula as cedula,
+				  a.direccionubicacion as direccionubicacion
 
 			    FROM facturas f
 			    LEFT JOIN rubroxfac rf
@@ -151,6 +154,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			    LEFT JOIN tmpinteresxfac ti
 			      ON ti.idfactura = f.idfactura
 				LEFT JOIN modulos m ON f.idmodulo = m.idmodulo
+				LEFT JOIN clientes c ON f.idcliente = c.idcliente
+				LEFT JOIN abonados a ON f.idabonado = a.idabonado
 
 			    WHERE
 			      f.totaltarifa > 0
@@ -164,7 +169,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 			    GROUP BY
 			      f.idfactura, f.idmodulo, f.idcliente, f.idabonado,
-			      f.formapago, f.feccrea, f.estado, f.pagado, f.swcondonar,m.descripcion
+			      f.formapago, f.feccrea, f.estado, f.pagado, f.swcondonar,m.descripcion,
+			      c.nombre, c.cedula, a.direccionubicacion
 
 			    ORDER BY
 			      f.idabonado ASC, f.feccrea ASC

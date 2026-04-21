@@ -60,7 +60,7 @@
 	<subDataset name="DetallesFactura" uuid="25e7cfb9-414f-486c-953b-ebd40ba49c33">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
-		<parameter name="idfactura" class="java.lang.Integer"/>
+		<parameter name="idfactura" class="java.lang.Long"/>
 		<queryString language="SQL">
 			<![CDATA[SELECT r.descripcion,
 	rf.cantidad,
@@ -110,7 +110,7 @@ WHERE
 	<subDataset name="FacturaTotales" uuid="4cdfb0b5-5c2d-48be-bf5d-dd1a1cf954c8">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<parameter name="idfactura" class="java.lang.Integer"/>
+		<parameter name="idfactura" class="java.lang.Long"/>
 		<queryString>
 			<![CDATA[SELECT 
     rf.idfactura_facturas,
@@ -184,7 +184,7 @@ LIMIT 8]]>
 			<groupExpression><![CDATA[$F{m3}]]></groupExpression>
 		</group>
 	</subDataset>
-	<parameter name="idfactura" class="java.lang.Integer"/>
+	<parameter name="idfactura" class="java.lang.Long"/>
 	<queryString language="SQL">
 		<![CDATA[select
 	f.nrofactura,

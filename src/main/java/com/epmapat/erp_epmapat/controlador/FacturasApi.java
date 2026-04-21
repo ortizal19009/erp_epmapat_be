@@ -481,9 +481,20 @@ public class FacturasApi {
 	@GetMapping("/comprobante/pago")
 	public ResponseEntity<Resource> comprobantePago(
 			@RequestParam Long idfactura) throws JRException, IOException, SQLException {
+		Facturas factura = facServicio.findById(idfactura)
+				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe la Factura Id: " + idfactura)));
+		String fileName;
+		Long idmodulo = factura.getIdmodulo() != null ? factura.getIdmodulo().getIdmodulo() : null;
+		if (factura.getIdabonado() != null && factura.getIdabonado() > 0 && (Long.valueOf(3).equals(idmodulo) || Long.valueOf(4).equals(idmodulo))) {
+			fileName = "CompPagoConsumoAgua";
+		} else if (Long.valueOf(27).equals(idmodulo)) {
+			fileName = "CompPagoConvenios";
+		} else {
+			fileName = "CompPagoServicios";
+		}
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("idfactura", idfactura);
-		params.put("fileName", "ComprobantePago");
+		params.put("fileName", fileName);
 		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
 		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
 		MediaType mediaType = MediaType.APPLICATION_PDF;

@@ -28,4 +28,10 @@ public interface FacSinCobrar {
 
 	BigDecimal getInteres();
 
+	String getNombre();
+
+	String getCedula();
+
+	String getDireccionubicacion();
+
 }

@@ -279,7 +279,7 @@ public class LecturasApi {
 	public ResponseEntity<Lecturas> updateMobile(@PathVariable Long idlectura, @RequestBody LecturaUploadItemDto item,
 			@RequestParam(required = false, defaultValue = "0") Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
-			@RequestParam(required = false, defaultValue = "ActualizaciÃ³n de lectura desde mobile") String observacion) {
+			@RequestParam(required = false, defaultValue = "Actualización de lectura desde mobile") String observacion) {
 		Lecturas actualizar = lecServicio.actualizarLecturaConAuditoria(
 				idlectura,
 				buildLecturaFromMobileItem(idlectura, item),
