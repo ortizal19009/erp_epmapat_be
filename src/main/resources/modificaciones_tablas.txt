@@ -67,3 +67,37 @@ CREATE TABLE public.recargosxcuenta_audit (
 );
 ALTER TABLE public.recargosxcuenta_audit ADD CONSTRAINT recargosxcuenta_audit_recargos_fk FOREIGN KEY (idrecargoxcuenta_recargosxcuenta) REFERENCES public.recargosxcuenta(idrecargoxcuenta);
 
+-- RETENCIONES SRI
+CREATE TABLE public.fec_retenciones (
+    idretencion bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+    claveacceso varchar NULL,
+    secuencial varchar NULL,
+    xmlautorizado text NULL,
+    errores text NULL,
+    estado varchar NULL,
+    establecimiento varchar NULL,
+    puntoemision varchar NULL,
+    direccionestablecimiento varchar NULL,
+    fechaemision date NULL,
+    tipoidentificacionsujetoretenid varchar NULL,
+    razonsocialsujetoretenido varchar NULL,
+    identificacionsujetoretenido varchar NULL,
+    periodofiscal varchar NULL,
+    telefonosujetoretenido varchar NULL,
+    emailsujetoretenido varchar NULL,
+    CONSTRAINT fec_retenciones_pk PRIMARY KEY (idretencion)
+);
+
+CREATE TABLE public.fec_retenciones_impuestos (
+    idretencionesimpuestos bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+    idretencion bigint NOT NULL,
+    codigo varchar NULL,
+    codigoporcentaje varchar NULL,
+    baseimponible numeric(18,2) NULL,
+    codigodocumentosustento varchar NULL,
+    numerodocumentosustento varchar NULL,
+    fechaemisiondocumentosustento date NULL,
+    CONSTRAINT fec_retenciones_impuestos_pk PRIMARY KEY (idretencionesimpuestos),
+    CONSTRAINT fec_retenciones_impuestos_retencion_fk FOREIGN KEY (idretencion) REFERENCES public.retenciones(idrete) ON DELETE CASCADE
+);
+

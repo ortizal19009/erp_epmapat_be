@@ -69,13 +69,17 @@ public class RecaudacionCobroServicio {
 
     @Transactional
     public List<ValorFactDTO> getSincobroByCuenta(Long cuenta) {
-        Long idcliente = resolverIdClientePorCuenta(cuenta);
-        if (idcliente != null) {
-            return getSincobroByCliente(idcliente);
-        }
+        Map<Long, ValorFactDTO> pendientesPorId = new java.util.LinkedHashMap<>();
 
-        List<ValorFactDTO> pendientes = facturaServicio.findSincobroDatos(cuenta);
-        pendientes.sort(Comparator.comparing(ValorFactDTO::getIdfactura, Comparator.nullsLast(Long::compareTo)));
+        agregarPendientesDeCliente(pendientesPorId, resolverIdClienteTitularPorCuenta(cuenta));
+        agregarPendientesDeCliente(pendientesPorId, resolverIdClienteResponsablePorCuenta(cuenta));
+        agregarPendientesDeCuenta(pendientesPorId, cuenta);
+
+        List<ValorFactDTO> pendientes = new ArrayList<>(pendientesPorId.values());
+        pendientes.sort(Comparator
+                .comparing(ValorFactDTO::getCuenta, Comparator.nullsLast(Long::compareTo))
+                .thenComparing(ValorFactDTO::getFeccrea, Comparator.nullsLast(java.time.LocalDate::compareTo))
+                .thenComparing(ValorFactDTO::getIdfactura, Comparator.nullsLast(Long::compareTo)));
         cargarIvasMasivos(pendientes);
         return pendientes;
     }
@@ -117,7 +121,7 @@ public class RecaudacionCobroServicio {
         return respuesta;
     }
 
-    private Long resolverIdClientePorCuenta(Long cuenta) {
+    private Long resolverIdClienteTitularPorCuenta(Long cuenta) {
         if (cuenta == null) {
             return null;
         }
@@ -133,6 +137,83 @@ public class RecaudacionCobroServicio {
         }
 
         return abonado.getIdcliente_clientes().getIdcliente();
+    }
+
+    private Long resolverIdClienteResponsablePorCuenta(Long cuenta) {
+        if (cuenta == null) {
+            return null;
+        }
+
+        Optional<Abonados> abonadoOpt = abonadoServicio.findById(cuenta);
+        if (abonadoOpt.isEmpty()) {
+            return null;
+        }
+
+        Abonados abonado = abonadoOpt.get();
+        if (abonado.getIdresponsable() == null) {
+            return null;
+        }
+
+        return abonado.getIdresponsable().getIdcliente();
+    }
+
+    private void agregarPendientesDeCliente(Map<Long, ValorFactDTO> pendientesPorId, Long idcliente) {
+        if (idcliente == null) {
+            return;
+        }
+
+        List<FacSinCobrar> pendientes = facturaServicio.findFacSincobro(idcliente);
+        for (FacSinCobrar item : pendientes) {
+            if (item == null || item.getIdfactura() == null) {
+                continue;
+            }
+
+            ValorFactDTO dto = new ValorFactDTO();
+            dto.setIdfactura(item.getIdfactura());
+            dto.setIdcliente(item.getIdCliente() != null ? item.getIdCliente() : idcliente);
+            dto.setCuenta(item.getIdAbonado());
+            dto.setNombre(item.getNombre());
+            dto.setCedula(item.getCedula());
+            dto.setDireccionubicacion(item.getDireccionubicacion());
+            dto.setFeccrea(toLocalDate(item.getFeccrea()));
+            dto.setFormapago(item.getFormaPago());
+            dto.setEstado(item.getEstado());
+            dto.setPagado(item.getPagado() != null ? item.getPagado().intValue() : null);
+            dto.setModulo(item.getModulo());
+            dto.setSubtotal(item.getTotal() != null ? item.getTotal().floatValue() : 0f);
+            dto.setTotal(item.getTotal() != null ? item.getTotal() : BigDecimal.ZERO);
+            dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
+            dto.setIva(BigDecimal.ZERO);
+            pendientesPorId.putIfAbsent(dto.getIdfactura(), dto);
+        }
+    }
+
+    private void agregarPendientesDeCuenta(Map<Long, ValorFactDTO> pendientesPorId, Long cuenta) {
+        if (cuenta == null) {
+            return;
+        }
+
+        List<ValorFactDTO> pendientes = facturaServicio.findSincobroDatos(cuenta);
+        for (ValorFactDTO item : pendientes) {
+            if (item == null || item.getIdfactura() == null) {
+                continue;
+            }
+
+            ValorFactDTO dto = new ValorFactDTO();
+            dto.setIdfactura(item.getIdfactura());
+            dto.setCuenta(item.getCuenta());
+            dto.setNombre(item.getNombre());
+            dto.setCedula(item.getCedula());
+            dto.setDireccionubicacion(item.getDireccionubicacion());
+            dto.setFeccrea(item.getFeccrea());
+            dto.setFormapago(item.getFormapago());
+            dto.setSubtotal(item.getSubtotal() != null ? item.getSubtotal() : 0f);
+            dto.setTotal(item.getTotal() != null ? item.getTotal() : BigDecimal.ZERO);
+            dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
+            dto.setModulo(null);
+            dto.setIva(BigDecimal.ZERO);
+            pendientesPorId.putIfAbsent(dto.getIdfactura(), dto);
+        }
     }
 
     @Transactional
