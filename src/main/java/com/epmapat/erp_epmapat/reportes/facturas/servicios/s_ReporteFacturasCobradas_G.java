@@ -3,28 +3,26 @@ package com.epmapat.erp_epmapat.reportes.facturas.servicios;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
 import javax.sql.DataSource;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.commons.JasperReportManager;
 import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
 import com.epmapat.erp_epmapat.reportes.facturas.interfaces.i_ReporteFacturasCobradas_G;
 
 import net.sf.jasperreports.engine.JRException;
-
-@Service
 public class s_ReporteFacturasCobradas_G implements i_ReporteFacturasCobradas_G {
 
-	@Autowired
-	private JasperReportManager reportManager;
+	private final JasperReportManager reportManager;
+	private final DataSource dataSource;
 
-	@Autowired
-	private DataSource dataSource;
+	public s_ReporteFacturasCobradas_G(JasperReportManager reportManager, DataSource dataSource) {
+		this.reportManager = reportManager;
+		this.dataSource = dataSource;
+	}
 
 	/**
 	 * @param params
@@ -43,12 +41,13 @@ public class s_ReporteFacturasCobradas_G implements i_ReporteFacturasCobradas_G 
 				: ".pdf"; */
 		dto.setFileName(fileName + ".pdf");
 
-		ByteArrayOutputStream stream = reportManager.export(fileName, params,
-				dataSource.getConnection());
+		try (Connection connection = dataSource.getConnection()) {
+			ByteArrayOutputStream stream = reportManager.export(fileName, params, connection);
 
-		byte[] bs = stream.toByteArray();
-		dto.setStream(new ByteArrayInputStream(bs));
-		dto.setLength(bs.length);
+			byte[] bs = stream.toByteArray();
+			dto.setStream(new ByteArrayInputStream(bs));
+			dto.setLength(bs.length);
+		}
 
 		return dto;
 	}

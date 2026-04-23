@@ -120,6 +120,7 @@ public class RetencionesServicio {
       retenciones.setCodretair(data.getCodretair());
       retenciones.setPorcentajeair(data.getPorcentajeair());
       retenciones.setValretair(data.getValretair());
+      retenciones.setEstado(data.getEstado());
       retenciones.setNumautoriza(data.getNumautoriza());
       retenciones.setNumserie(data.getNumserie());
       retenciones.setFechacaduca(data.getFechacaduca());

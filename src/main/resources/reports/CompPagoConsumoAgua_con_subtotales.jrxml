@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="226" pageHeight="842" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="LocalErp"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
@@ -818,7 +818,7 @@ where l.idfactura = $P{idfactura}]]>
 	<columnHeader>
 		<band height="41" splitType="Stretch">
 			<componentElement>
-				<reportElement x="0" y="10" width="180" height="30" uuid="eca64775-0ca0-4cd9-b321-f8e42e4c0022">
+				<reportElement x="0" y="10" width="226" height="30" uuid="eca64775-0ca0-4cd9-b321-f8e42e4c0022">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
@@ -832,10 +832,10 @@ where l.idfactura = $P{idfactura}]]>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						<returnValue fromVariable="VAR_SUBTOTAL_1" toVariable="SUB_TOTAL_1"/>
 					</datasetRun>
-					<jr:column width="90" uuid="86412e07-5d7c-4235-aa0d-7c6fe8231fc1">
+					<jr:column width="121" uuid="86412e07-5d7c-4235-aa0d-7c6fe8231fc1">
 						<jr:tableHeader style="Table_TD" height="15">
 							<staticText>
-								<reportElement x="0" y="0" width="90" height="15" uuid="2ddf06e5-6ec2-43eb-b878-3630fc7d4e86"/>
+								<reportElement x="0" y="0" width="121" height="15" uuid="2ddf06e5-6ec2-43eb-b878-3630fc7d4e86"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
@@ -844,19 +844,19 @@ where l.idfactura = $P{idfactura}]]>
 						</jr:tableHeader>
 						<jr:detailCell style="Table_TD" height="15">
 							<textField textAdjust="StretchHeight">
-								<reportElement positionType="Float" x="0" y="0" width="90" height="15" uuid="b436cb7f-e3f2-42b1-8f2e-06699a8ab7ab"/>
-								<box leftPadding="5"/>
+								<reportElement positionType="Float" x="0" y="0" width="121" height="15" uuid="b436cb7f-e3f2-42b1-8f2e-06699a8ab7ab"/>
+								<box leftPadding="1"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle">
-									<font size="7" isBold="true"/>
+									<font size="9" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$F{descripcion}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="30" uuid="02acb846-5be4-45eb-b789-84426eebe0fa">
+					<jr:column width="35" uuid="02acb846-5be4-45eb-b789-84426eebe0fa">
 						<jr:tableHeader style="Table_TD" height="15">
 							<staticText>
-								<reportElement x="0" y="0" width="30" height="15" uuid="37c129d9-a75d-4317-a341-a56d70aa8cef"/>
+								<reportElement x="0" y="0" width="35" height="15" uuid="37c129d9-a75d-4317-a341-a56d70aa8cef"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
@@ -865,19 +865,19 @@ where l.idfactura = $P{idfactura}]]>
 						</jr:tableHeader>
 						<jr:detailCell style="Table_TD" height="15">
 							<textField>
-								<reportElement x="0" y="0" width="30" height="15" uuid="be187a24-752c-4eca-9158-7a13e3c886b0"/>
+								<reportElement x="0" y="0" width="35" height="15" uuid="be187a24-752c-4eca-9158-7a13e3c886b0"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font size="7"/>
+									<font size="8"/>
 								</textElement>
 								<textFieldExpression><![CDATA[String.format("%.0f", $F{cantidad})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="30" uuid="6da5e4cc-496d-445d-ac40-39bd0a5ada27">
+					<jr:column width="35" uuid="6da5e4cc-496d-445d-ac40-39bd0a5ada27">
 						<jr:tableHeader style="Table_TD" height="15">
 							<staticText>
-								<reportElement x="0" y="0" width="30" height="15" uuid="783235f9-c23d-439e-a8fd-20ca8ace5dd4"/>
+								<reportElement x="0" y="0" width="35" height="15" uuid="783235f9-c23d-439e-a8fd-20ca8ace5dd4"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
@@ -886,19 +886,19 @@ where l.idfactura = $P{idfactura}]]>
 						</jr:tableHeader>
 						<jr:detailCell style="Table_TD" height="15">
 							<textField>
-								<reportElement x="0" y="0" width="30" height="15" uuid="4311c6dd-ae10-496a-a7cd-bc74fbc200d8"/>
+								<reportElement x="0" y="0" width="35" height="15" uuid="4311c6dd-ae10-496a-a7cd-bc74fbc200d8"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
-									<font size="7"/>
+									<font size="8"/>
 								</textElement>
 								<textFieldExpression><![CDATA[String.format("%.2f", $F{valorunitario}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="30" uuid="7142b0b6-5ed8-49ad-9d12-602f8f06d703">
+					<jr:column width="35" uuid="7142b0b6-5ed8-49ad-9d12-602f8f06d703">
 						<jr:tableHeader style="Table_TD" height="15">
 							<staticText>
-								<reportElement x="0" y="0" width="30" height="15" uuid="49ba919a-2ed1-46f4-ad6e-8912289a2b14"/>
+								<reportElement x="0" y="0" width="35" height="15" uuid="49ba919a-2ed1-46f4-ad6e-8912289a2b14"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
@@ -907,10 +907,10 @@ where l.idfactura = $P{idfactura}]]>
 						</jr:tableHeader>
 						<jr:detailCell style="Table_TD" height="15">
 							<textField>
-								<reportElement x="0" y="0" width="30" height="15" uuid="9197e41c-a6d0-4175-a163-ca5fc0e68a57"/>
+								<reportElement x="0" y="0" width="35" height="15" uuid="9197e41c-a6d0-4175-a163-ca5fc0e68a57"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
-									<font size="7"/>
+									<font size="8"/>
 								</textElement>
 								<textFieldExpression><![CDATA[String.format("%.2f", $F{total}) + " $"]]></textFieldExpression>
 							</textField>
@@ -919,7 +919,7 @@ where l.idfactura = $P{idfactura}]]>
 				</jr:table>
 			</componentElement>
 			<staticText>
-				<reportElement x="0" y="0" width="180" height="10" uuid="51961705-991e-4332-9d91-47741f876927"/>
+				<reportElement x="0" y="0" width="226" height="10" uuid="51961705-991e-4332-9d91-47741f876927"/>
 				<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="0">
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
@@ -1337,6 +1337,7 @@ where l.idfactura = $P{idfactura}]]>
 	<summary>
 		<band height="174" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
 			<barChart>
 				<chart isShowLegend="false" evaluationTime="Report" hyperlinkTarget="Blank" renderType="image" theme="aegean">
 					<reportElement mode="Opaque" x="0" y="3" width="180" height="140" uuid="e7d9662a-ee8b-40ce-ac0c-e5598142d74f"/>

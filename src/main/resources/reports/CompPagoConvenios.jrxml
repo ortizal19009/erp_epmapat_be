@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="226" pageHeight="842" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
@@ -392,7 +392,7 @@ where
 		<groupFooter>
 			<band height="105">
 				<componentElement>
-					<reportElement x="0" y="1" width="180" height="75" uuid="07cebbfa-d15e-4498-8766-e4bb7cbbfbbf">
+					<reportElement x="20" y="-3" width="180" height="75" uuid="07cebbfa-d15e-4498-8766-e4bb7cbbfbbf">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
@@ -587,7 +587,7 @@ where
 					</ns2:table>
 				</componentElement>
 				<componentElement>
-					<reportElement x="0" y="89" width="180" height="15" uuid="5866e74e-c03a-4a82-9e57-dd6647847d95">
+					<reportElement x="20" y="85" width="180" height="15" uuid="5866e74e-c03a-4a82-9e57-dd6647847d95">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
@@ -651,7 +651,7 @@ where
 	<title>
 		<band height="43" splitType="Stretch">
 			<image scaleImage="FillFrame">
-				<reportElement x="0" y="-20" width="180" height="60" uuid="dfa0bb5c-a08a-419f-a1e5-4f900780b02d"/>
+				<reportElement x="20" y="-24" width="180" height="60" uuid="dfa0bb5c-a08a-419f-a1e5-4f900780b02d"/>
 				<imageExpression><![CDATA["logo_epmapat-01.png"]]></imageExpression>
 			</image>
 		</band>
@@ -659,7 +659,7 @@ where
 	<pageHeader>
 		<band height="162" splitType="Stretch">
 			<staticText>
-				<reportElement x="0" y="0" width="80" height="20" uuid="cdf755d8-b20c-4a9e-a745-341f76ed1c57"/>
+				<reportElement x="20" y="-4" width="80" height="20" uuid="cdf755d8-b20c-4a9e-a745-341f76ed1c57"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -673,7 +673,7 @@ where
 				<text><![CDATA[Nro. comprobante:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="20" width="80" height="20" uuid="fe5a1066-80a2-463b-a2d9-d8f1a7dcb1c6"/>
+				<reportElement x="20" y="16" width="80" height="20" uuid="fe5a1066-80a2-463b-a2d9-d8f1a7dcb1c6"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -687,7 +687,7 @@ where
 				<text><![CDATA[Nro. planilla:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="40" width="80" height="20" uuid="130e7c63-3188-434c-a305-acb86022367d"/>
+				<reportElement x="20" y="36" width="80" height="20" uuid="130e7c63-3188-434c-a305-acb86022367d"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -701,7 +701,7 @@ where
 				<text><![CDATA[Ruc/Cédula:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="60" width="80" height="20" uuid="85e74fd7-ce42-4fa4-abfa-b85ee5fb57ea"/>
+				<reportElement x="20" y="56" width="80" height="20" uuid="85e74fd7-ce42-4fa4-abfa-b85ee5fb57ea"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -715,7 +715,7 @@ where
 				<text><![CDATA[Cliente:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="80" width="80" height="20" uuid="770df8f3-5f0f-4a0c-adf8-1bbdeca94874"/>
+				<reportElement x="20" y="76" width="80" height="20" uuid="770df8f3-5f0f-4a0c-adf8-1bbdeca94874"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -729,7 +729,7 @@ where
 				<text><![CDATA[Dirección:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="140" width="80" height="20" uuid="ba2b233f-0d4f-4f38-86e7-fab1aed6bd1e"/>
+				<reportElement x="20" y="136" width="80" height="20" uuid="ba2b233f-0d4f-4f38-86e7-fab1aed6bd1e"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -743,7 +743,7 @@ where
 				<text><![CDATA[Módulo:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="120" width="80" height="20" uuid="92eebb7d-ea1a-46c1-93de-53edba6b3f88"/>
+				<reportElement x="20" y="116" width="80" height="20" uuid="92eebb7d-ea1a-46c1-93de-53edba6b3f88"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -757,7 +757,7 @@ where
 				<text><![CDATA[Fec. Cobro:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="100" width="80" height="20" uuid="dd84d322-cbc9-4a6c-9809-0231ef40d8a5"/>
+				<reportElement x="20" y="96" width="80" height="20" uuid="dd84d322-cbc9-4a6c-9809-0231ef40d8a5"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -771,7 +771,7 @@ where
 				<text><![CDATA[Recaudador:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="80" y="0" width="100" height="20" uuid="8a10a91b-ba0c-426c-8786-592523a1dcea"/>
+				<reportElement x="100" y="-4" width="100" height="20" uuid="8a10a91b-ba0c-426c-8786-592523a1dcea"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -785,7 +785,7 @@ where
 				<textFieldExpression><![CDATA[$F{nrofactura}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="20" width="100" height="20" uuid="f74ff3e9-9fd3-4d98-bc65-b97506065ec2"/>
+				<reportElement x="100" y="16" width="100" height="20" uuid="f74ff3e9-9fd3-4d98-bc65-b97506065ec2"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -799,7 +799,7 @@ where
 				<textFieldExpression><![CDATA[$F{idfactura}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="40" width="100" height="20" uuid="2a3fb0e6-ff1d-483f-bf8f-a4b2a9b424e0"/>
+				<reportElement x="100" y="36" width="100" height="20" uuid="2a3fb0e6-ff1d-483f-bf8f-a4b2a9b424e0"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -813,7 +813,7 @@ where
 				<textFieldExpression><![CDATA[$F{cedula}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="60" width="100" height="20" uuid="54890eda-ce12-405b-b57c-efa232e205d7"/>
+				<reportElement x="100" y="56" width="100" height="20" uuid="54890eda-ce12-405b-b57c-efa232e205d7"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -827,7 +827,7 @@ where
 				<textFieldExpression><![CDATA[$F{nombre}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="80" width="100" height="20" uuid="60bd7891-29b1-4811-951a-cb2a9fd8156d"/>
+				<reportElement x="100" y="76" width="100" height="20" uuid="60bd7891-29b1-4811-951a-cb2a9fd8156d"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -841,7 +841,7 @@ where
 				<textFieldExpression><![CDATA[$F{direccion}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="100" width="100" height="20" uuid="3c7d0b8d-3c58-47de-afb5-e60316a1f2f7"/>
+				<reportElement x="100" y="96" width="100" height="20" uuid="3c7d0b8d-3c58-47de-afb5-e60316a1f2f7"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -855,7 +855,7 @@ where
 				<textFieldExpression><![CDATA[$F{nomusu}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="120" width="100" height="20" uuid="664ad43c-fd64-447d-a6c2-aa8245f53045"/>
+				<reportElement x="100" y="116" width="100" height="20" uuid="664ad43c-fd64-447d-a6c2-aa8245f53045"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -869,7 +869,7 @@ where
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd").format($F{fechacobro})]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="140" width="100" height="20" uuid="ce86168c-0c87-413e-8826-381e53b01208"/>
+				<reportElement x="100" y="136" width="100" height="20" uuid="ce86168c-0c87-413e-8826-381e53b01208"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -887,7 +887,7 @@ where
 	<columnHeader>
 		<band height="33" splitType="Stretch">
 			<componentElement>
-				<reportElement x="0" y="0" width="180" height="30" uuid="664142f2-bcc0-40d3-b62f-16cefe9a8649">
+				<reportElement x="20" y="-4" width="180" height="30" uuid="664142f2-bcc0-40d3-b62f-16cefe9a8649">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 2_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 2_CH"/>
@@ -953,7 +953,7 @@ where
 	<detail>
 		<band height="31" splitType="Stretch">
 			<componentElement>
-				<reportElement x="0" y="10" width="180" height="15" uuid="eca64775-0ca0-4cd9-b321-f8e42e4c0022">
+				<reportElement x="20" y="6" width="180" height="15" uuid="eca64775-0ca0-4cd9-b321-f8e42e4c0022">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
@@ -1053,7 +1053,7 @@ where
 				</ns2:table>
 			</componentElement>
 			<staticText>
-				<reportElement x="0" y="0" width="180" height="10" uuid="9dd64193-a519-4bde-996e-a428e69bbf3c"/>
+				<reportElement x="20" y="-4" width="180" height="10" uuid="9dd64193-a519-4bde-996e-a428e69bbf3c"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -1066,7 +1066,7 @@ where
 		<band height="25">
 			<printWhenExpression><![CDATA[$F{cnt_ajenos} != null && $F{cnt_ajenos} > 0]]></printWhenExpression>
 			<componentElement>
-				<reportElement x="0" y="10" width="180" height="15" uuid="f5284dea-492c-4ae6-a9e7-e7fe254c5d65">
+				<reportElement x="20" y="6" width="180" height="15" uuid="f5284dea-492c-4ae6-a9e7-e7fe254c5d65">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
@@ -1170,7 +1170,7 @@ where
 				</ns2:table>
 			</componentElement>
 			<staticText>
-				<reportElement x="0" y="0" width="180" height="10" uuid="11f7eefd-1ef9-42b1-8f4e-677fb8de8a9d"/>
+				<reportElement x="20" y="-4" width="180" height="10" uuid="11f7eefd-1ef9-42b1-8f4e-677fb8de8a9d"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -1191,7 +1191,7 @@ where
 		<band height="32" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<staticText>
-				<reportElement x="0" y="0" width="180" height="24" uuid="3464ec4c-2699-4132-bf44-d0ab030e66ff"/>
+				<reportElement x="20" y="-4" width="180" height="24" uuid="3464ec4c-2699-4132-bf44-d0ab030e66ff"/>
 				<textElement>
 					<font size="6" isItalic="true"/>
 				</textElement>

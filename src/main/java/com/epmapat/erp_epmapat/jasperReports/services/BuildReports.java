@@ -19,7 +19,8 @@ import java.io.File;
 @RequiredArgsConstructor
 @Service
 public class BuildReports {
-    private static final int RECEIPT_CUT_PADDING_POINTS = 15; // 0.5 cm aprox.
+    private static final int RECEIPT_CUT_PADDING_POINTS = 2;
+    private static final int MAX_RECEIPT_HEIGHT_POINTS = 567;
 
     private final ReportCache reportCache;
     private final JasperReportLoader loader;
@@ -106,8 +107,12 @@ public class BuildReports {
 
         int currentHeight = jasperPrint.getPageHeight();
         int trimmedHeight = Math.min(currentHeight, usedHeight + RECEIPT_CUT_PADDING_POINTS);
+        trimmedHeight = Math.min(trimmedHeight, MAX_RECEIPT_HEIGHT_POINTS);
         jasperPrint.setPageHeight(trimmedHeight);
+        jasperPrint.setTopMargin(0);
         jasperPrint.setBottomMargin(0);
+        jasperPrint.setLeftMargin(0);
+        jasperPrint.setRightMargin(0);
     }
 
     private boolean isReceiptReport(String reportName) {

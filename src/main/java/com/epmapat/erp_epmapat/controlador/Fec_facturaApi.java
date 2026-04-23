@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.epmapat.erp_epmapat.DTO.FecFacturaUpdateDto;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
@@ -40,6 +41,9 @@ public class Fec_facturaApi {
    private Fec_facturaService fecfacServicio;
    @Autowired
    private RestTemplate restTemplate;
+
+   @Value("${sri.microservice.base-url:http://192.168.0.33:9096}")
+   private String sriMicroserviceBaseUrl;
 
    @Value("${eureka.service-url}")
    private String eurekaServiceUrl;
@@ -162,7 +166,7 @@ public class Fec_facturaApi {
             .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
 
       try {
-         String url = "http://192.168.0.33:8080/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
+         String url = sriMicroserviceBaseUrl + "/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
          String xml = restTemplate.getForObject(url, String.class);
 
          factura.setXmlautorizado(xml);

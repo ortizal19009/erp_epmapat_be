@@ -1,7 +1,6 @@
 package com.epmapat.erp_epmapat.sri.services;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
@@ -19,6 +18,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.epmapat.erp_epmapat.commons.JasperReportManager;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Beneficiarios;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Fec_reteimpu;
@@ -27,7 +27,6 @@ import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.Fec_reteimpuR;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.RetencionesR;
 
-import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -43,6 +42,8 @@ public class RetencionPdfService {
    private Fec_reteimpuR fecReteimpuR;
    @Autowired
    private DefinirR definirR;
+   @Autowired
+   private JasperReportManager reportManager;
 
    public ByteArrayOutputStream generarPdf(Long idretencion) {
       try {
@@ -57,8 +58,7 @@ public class RetencionPdfService {
          Map<String, Object> parameters = construirParametros(retencion, definir);
          List<LineaRetencionPdf> lineas = construirLineas(retencion, impuestos);
 
-         InputStream jrxml = new ClassPathResource("reports/retencion_template.jrxml").getInputStream();
-         JasperReport report = JasperCompileManager.compileReport(jrxml);
+         JasperReport report = reportManager.getCompiledReport("retencion_template");
          JasperPrint print = JasperFillManager.fillReport(report, parameters, new JRBeanCollectionDataSource(lineas));
 
          ByteArrayOutputStream pdf = new ByteArrayOutputStream();
@@ -81,7 +81,7 @@ public class RetencionPdfService {
       Map<String, Object> parameters = new LinkedHashMap<>();
       Beneficiarios beneficiario = retencion.getIdbene();
 
-      parameters.put("estado", valueOf(retencion.getEstado(), "GENERADA"));
+      parameters.put("estado", estadoEtiqueta(retencion.getEstado()));
       parameters.put("numeroAutorizacion", firstNonBlank(retencion.getNumautoriza_e(), retencion.getNumautoriza(), retencion.getClaveacceso()));
       parameters.put("fechaAutorizacion", valueOf(retencion.getFecautoriza()));
       parameters.put("ambienteAutorizacion", valueOf(retencion.getAmbiente()));
@@ -323,6 +323,16 @@ public class RetencionPdfService {
          }
       }
       return "";
+   }
+
+   private String estadoEtiqueta(Integer estado) {
+      if (estado == null) {
+         return "GENERADA";
+      }
+      if (estado == 1) {
+         return "AUTORIZADA";
+      }
+      return "GENERADA";
    }
 
    public static class LineaRetencionPdf {

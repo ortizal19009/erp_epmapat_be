@@ -166,20 +166,15 @@ public class BuildReportsApi {
         if (value instanceof Integer) {
             return value;
         } else if (value instanceof Long) {
-            Long longVal = (Long) value;
-            if (longVal >= Integer.MIN_VALUE && longVal <= Integer.MAX_VALUE) {
-                return longVal.intValue();
-            } else {
-                throw new IllegalArgumentException("El valor Long excede el rango de Integer");
-            }
+            return value;
         } else if (value instanceof java.util.Date) {
             return value; // Devuelve la fecha tal cual
         } else if (value instanceof String) {
             try {
-                Integer intVal = Integer.valueOf((String) value);
-                return intVal;
+                Long longVal = Long.valueOf(((String) value).trim());
+                return longVal;
             } catch (NumberFormatException e) {
-                return value; // o lanza excepción si sabes que debe ser Integer
+                return value; // o lanza excepción si sabes que debe ser numérico
             }
         }
         return value;
@@ -249,7 +244,7 @@ public class BuildReportsApi {
 
                 Map<String, Object> params = new HashMap<>();
                 // Si tu reporte espera Integer:
-                params.put("idfactura", it.getIdfactura().intValue());
+                params.put("idfactura", it.getIdfactura());
                 dto.setParameters(params);
 
                 ByteArrayOutputStream os = buildReports.buildReport(dto, conn);
@@ -383,7 +378,7 @@ public class BuildReportsApi {
                 String reportName = pickReportName(info.idAbonado(), info.idmodulo());
 
                 Map<String, Object> params = new HashMap<>();
-                params.put("idfactura", it.getIdfactura().intValue());
+                params.put("idfactura", it.getIdfactura());
 
                 JasperPrint jp = buildReports.fillFromCompiled(reportName, params, conn);
                 prints.add(jp);

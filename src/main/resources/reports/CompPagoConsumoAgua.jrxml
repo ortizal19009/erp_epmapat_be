@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="226" pageHeight="842" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="LocalErp"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
@@ -382,9 +382,9 @@ where l.idfactura = $P{idfactura}]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="43" splitType="Stretch">
+		<band height="39" splitType="Stretch">
 			<image scaleImage="FillFrame">
-				<reportElement x="0" y="-20" width="180" height="60" uuid="dfa0bb5c-a08a-419f-a1e5-4f900780b02d"/>
+				<reportElement x="21" y="-21" width="180" height="60" uuid="dfa0bb5c-a08a-419f-a1e5-4f900780b02d"/>
 				<imageExpression><![CDATA["logo_epmapat-01.png"]]></imageExpression>
 			</image>
 		</band>
@@ -392,7 +392,7 @@ where l.idfactura = $P{idfactura}]]>
 	<pageHeader>
 		<band height="186" splitType="Stretch">
 			<staticText>
-				<reportElement x="0" y="0" width="80" height="14" uuid="cdf755d8-b20c-4a9e-a745-341f76ed1c57">
+				<reportElement x="21" y="3" width="80" height="14" uuid="cdf755d8-b20c-4a9e-a745-341f76ed1c57">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box leftPadding="5" rightPadding="2">
@@ -408,7 +408,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Nro. comprobante:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="14" width="80" height="14" uuid="fe5a1066-80a2-463b-a2d9-d8f1a7dcb1c6"/>
+				<reportElement x="21" y="17" width="80" height="14" uuid="fe5a1066-80a2-463b-a2d9-d8f1a7dcb1c6"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -422,7 +422,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Nro. planilla:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="28" width="80" height="14" uuid="55a47860-f772-4f48-a9c3-38c3fb46dccf"/>
+				<reportElement x="21" y="31" width="80" height="14" uuid="55a47860-f772-4f48-a9c3-38c3fb46dccf"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -436,7 +436,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[CUENTA:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="42" width="80" height="14" uuid="130e7c63-3188-434c-a305-acb86022367d"/>
+				<reportElement x="21" y="45" width="80" height="14" uuid="130e7c63-3188-434c-a305-acb86022367d"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -450,7 +450,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Ruc/Cédula:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="56" width="80" height="14" uuid="90534fd1-6ab2-422a-9bf7-8d0f07d672d1"/>
+				<reportElement x="21" y="59" width="80" height="14" uuid="90534fd1-6ab2-422a-9bf7-8d0f07d672d1"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -464,7 +464,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Mes pagado:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="70" width="80" height="14" uuid="85e74fd7-ce42-4fa4-abfa-b85ee5fb57ea"/>
+				<reportElement x="21" y="73" width="80" height="14" uuid="85e74fd7-ce42-4fa4-abfa-b85ee5fb57ea"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -478,7 +478,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Cliente:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="84" width="80" height="14" uuid="770df8f3-5f0f-4a0c-adf8-1bbdeca94874"/>
+				<reportElement x="21" y="87" width="80" height="14" uuid="770df8f3-5f0f-4a0c-adf8-1bbdeca94874"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -492,7 +492,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Dirección:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="98" width="40" height="14" uuid="7cf3e0c3-142e-4ea8-9cde-cf971f7b1c34"/>
+				<reportElement x="21" y="101" width="40" height="14" uuid="7cf3e0c3-142e-4ea8-9cde-cf971f7b1c34"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -506,7 +506,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[M3:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="168" width="80" height="14" uuid="ba2b233f-0d4f-4f38-86e7-fab1aed6bd1e"/>
+				<reportElement x="21" y="171" width="80" height="14" uuid="ba2b233f-0d4f-4f38-86e7-fab1aed6bd1e"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -520,7 +520,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Módulo:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="154" width="80" height="14" uuid="92eebb7d-ea1a-46c1-93de-53edba6b3f88"/>
+				<reportElement x="21" y="157" width="80" height="14" uuid="92eebb7d-ea1a-46c1-93de-53edba6b3f88"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -534,7 +534,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Fec. Cobro:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="140" width="80" height="14" uuid="dd84d322-cbc9-4a6c-9809-0231ef40d8a5"/>
+				<reportElement x="21" y="143" width="80" height="14" uuid="dd84d322-cbc9-4a6c-9809-0231ef40d8a5"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -548,7 +548,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Recaudador:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="126" width="80" height="14" uuid="60cb0ffa-d524-427b-b925-628d38349f9f"/>
+				<reportElement x="21" y="129" width="80" height="14" uuid="60cb0ffa-d524-427b-b925-628d38349f9f"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -562,7 +562,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Categoría:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="112" width="40" height="14" uuid="4e071562-d59f-495a-931d-0542bc139021"/>
+				<reportElement x="21" y="115" width="40" height="14" uuid="4e071562-d59f-495a-931d-0542bc139021"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -576,7 +576,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[L.Ant:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="80" y="0" width="100" height="14" uuid="8a10a91b-ba0c-426c-8786-592523a1dcea"/>
+				<reportElement x="101" y="3" width="100" height="14" uuid="8a10a91b-ba0c-426c-8786-592523a1dcea"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -590,7 +590,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{nrofactura}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="14" width="100" height="14" uuid="f74ff3e9-9fd3-4d98-bc65-b97506065ec2"/>
+				<reportElement x="101" y="17" width="100" height="14" uuid="f74ff3e9-9fd3-4d98-bc65-b97506065ec2"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -604,7 +604,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{idfactura}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="28" width="100" height="14" uuid="6c944074-07b9-45ec-a42f-3a05a3379c7f"/>
+				<reportElement x="101" y="31" width="100" height="14" uuid="6c944074-07b9-45ec-a42f-3a05a3379c7f"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -618,7 +618,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{cuenta}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="42" width="100" height="14" uuid="2a3fb0e6-ff1d-483f-bf8f-a4b2a9b424e0"/>
+				<reportElement x="101" y="45" width="100" height="14" uuid="2a3fb0e6-ff1d-483f-bf8f-a4b2a9b424e0"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -632,7 +632,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{cedula}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="56" width="100" height="14" uuid="0a4f85ba-f275-4e40-8644-b1e0531015d2"/>
+				<reportElement x="101" y="59" width="100" height="14" uuid="0a4f85ba-f275-4e40-8644-b1e0531015d2"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -646,7 +646,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("MMMM yyyy", new java.util.Locale("es", "EC")).format($F{fechaemision})]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="70" width="100" height="14" uuid="54890eda-ce12-405b-b57c-efa232e205d7"/>
+				<reportElement x="101" y="73" width="100" height="14" uuid="54890eda-ce12-405b-b57c-efa232e205d7"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -660,7 +660,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{nombre}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="84" width="100" height="14" uuid="60bd7891-29b1-4811-951a-cb2a9fd8156d"/>
+				<reportElement x="101" y="87" width="100" height="14" uuid="60bd7891-29b1-4811-951a-cb2a9fd8156d"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -674,7 +674,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{direccionubicacion}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="40" y="98" width="40" height="14" uuid="a61615d2-41de-49b9-bb7a-e53c71d38637"/>
+				<reportElement x="61" y="101" width="40" height="14" uuid="a61615d2-41de-49b9-bb7a-e53c71d38637"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -688,7 +688,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{m3}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="40" y="112" width="40" height="14" uuid="134cc733-566e-457d-8f02-e9a616bba44d"/>
+				<reportElement x="61" y="115" width="40" height="14" uuid="134cc733-566e-457d-8f02-e9a616bba44d"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -702,7 +702,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{lecturaanterior}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="126" width="100" height="14" uuid="72f37d8f-d009-4332-bdfe-75b04e4d5baa"/>
+				<reportElement x="101" y="129" width="100" height="14" uuid="72f37d8f-d009-4332-bdfe-75b04e4d5baa"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -716,7 +716,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="140" width="100" height="14" uuid="3c7d0b8d-3c58-47de-afb5-e60316a1f2f7"/>
+				<reportElement x="101" y="143" width="100" height="14" uuid="3c7d0b8d-3c58-47de-afb5-e60316a1f2f7"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -730,7 +730,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{nomusu}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="154" width="100" height="14" uuid="664ad43c-fd64-447d-a6c2-aa8245f53045"/>
+				<reportElement x="101" y="157" width="100" height="14" uuid="664ad43c-fd64-447d-a6c2-aa8245f53045"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -744,7 +744,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{fechacobro}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="80" y="168" width="100" height="14" uuid="ce86168c-0c87-413e-8826-381e53b01208"/>
+				<reportElement x="101" y="171" width="100" height="14" uuid="ce86168c-0c87-413e-8826-381e53b01208"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -758,7 +758,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{modulo}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="80" y="112" width="50" height="14" uuid="2b8c62b2-2415-45d8-842f-658d8fe9dcfd"/>
+				<reportElement x="101" y="115" width="50" height="14" uuid="2b8c62b2-2415-45d8-842f-658d8fe9dcfd"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -772,7 +772,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[L.Act:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="130" y="112" width="50" height="14" uuid="b0fed768-0487-492a-8878-b54cc9db8ed9"/>
+				<reportElement x="151" y="115" width="50" height="14" uuid="b0fed768-0487-492a-8878-b54cc9db8ed9"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -786,7 +786,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{lecturaactual}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="130" y="98" width="50" height="14" uuid="f2b79cab-41de-4da0-bff1-43804b359dc0"/>
+				<reportElement x="151" y="101" width="50" height="14" uuid="f2b79cab-41de-4da0-bff1-43804b359dc0"/>
 				<box leftPadding="3">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -800,7 +800,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[$F{emision}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="80" y="98" width="50" height="14" uuid="a6f02de3-c86d-4b60-b847-6d3015896354"/>
+				<reportElement x="101" y="101" width="50" height="14" uuid="a6f02de3-c86d-4b60-b847-6d3015896354"/>
 				<box leftPadding="5" rightPadding="2">
 					<pen lineWidth="0.5" lineStyle="Dotted"/>
 					<topPen lineWidth="0.5" lineStyle="Dotted" lineColor="#000000"/>
@@ -818,7 +818,7 @@ where l.idfactura = $P{idfactura}]]>
 	<columnHeader>
 		<band height="45" splitType="Stretch">
 			<componentElement>
-				<reportElement x="0" y="15" width="180" height="30" uuid="eca64775-0ca0-4cd9-b321-f8e42e4c0022">
+				<reportElement x="21" y="15" width="179" height="30" uuid="eca64775-0ca0-4cd9-b321-f8e42e4c0022">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
@@ -845,9 +845,9 @@ where l.idfactura = $P{idfactura}]]>
 						<jr:detailCell style="Table_TD" height="15">
 							<textField textAdjust="StretchHeight">
 								<reportElement positionType="Float" x="0" y="0" width="90" height="15" uuid="b436cb7f-e3f2-42b1-8f2e-06699a8ab7ab"/>
-								<box leftPadding="5"/>
+								<box leftPadding="1"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle">
-									<font size="7" isBold="true"/>
+									<font size="9" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$F{descripcion}]]></textFieldExpression>
 							</textField>
@@ -868,7 +868,7 @@ where l.idfactura = $P{idfactura}]]>
 								<reportElement x="0" y="0" width="30" height="15" uuid="be187a24-752c-4eca-9158-7a13e3c886b0"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font size="7" isBold="true"/>
+									<font size="8" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[String.format("%.0f", $F{cantidad})]]></textFieldExpression>
 							</textField>
@@ -889,16 +889,16 @@ where l.idfactura = $P{idfactura}]]>
 								<reportElement x="0" y="0" width="30" height="15" uuid="4311c6dd-ae10-496a-a7cd-bc74fbc200d8"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
-									<font size="7" isBold="true"/>
+									<font size="8" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[String.format("%.2f", $F{valorunitario}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="30" uuid="7142b0b6-5ed8-49ad-9d12-602f8f06d703">
+					<jr:column width="29" uuid="7142b0b6-5ed8-49ad-9d12-602f8f06d703">
 						<jr:tableHeader style="Table_TD" height="15">
 							<staticText>
-								<reportElement x="0" y="0" width="30" height="15" uuid="49ba919a-2ed1-46f4-ad6e-8912289a2b14"/>
+								<reportElement x="0" y="0" width="29" height="15" uuid="49ba919a-2ed1-46f4-ad6e-8912289a2b14"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
@@ -907,10 +907,10 @@ where l.idfactura = $P{idfactura}]]>
 						</jr:tableHeader>
 						<jr:detailCell style="Table_TD" height="15">
 							<textField>
-								<reportElement x="0" y="0" width="30" height="15" uuid="9197e41c-a6d0-4175-a163-ca5fc0e68a57"/>
+								<reportElement x="0" y="0" width="29" height="15" uuid="9197e41c-a6d0-4175-a163-ca5fc0e68a57"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
-									<font size="7" isBold="true"/>
+									<font size="8" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[String.format("%.2f", $F{total}) + " $"]]></textFieldExpression>
 							</textField>
@@ -919,7 +919,7 @@ where l.idfactura = $P{idfactura}]]>
 				</jr:table>
 			</componentElement>
 			<staticText>
-				<reportElement x="0" y="0" width="180" height="15" uuid="51961705-991e-4332-9d91-47741f876927">
+				<reportElement x="21" y="0" width="180" height="15" uuid="51961705-991e-4332-9d91-47741f876927">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
@@ -935,7 +935,7 @@ where l.idfactura = $P{idfactura}]]>
 	<detail>
 		<band height="16" splitType="Stretch">
 			<textField evaluationTime="Report">
-				<reportElement x="90" y="0" width="90" height="10" uuid="1955a990-dcc8-4f54-884d-5063b79641fb"/>
+				<reportElement x="111" y="3" width="90" height="10" uuid="1955a990-dcc8-4f54-884d-5063b79641fb"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -949,7 +949,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textFieldExpression><![CDATA[String.format("%.2f", ($V{SUB_TOTAL_1}==null?0:$V{SUB_TOTAL_1})) + " $"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="0" width="90" height="10" uuid="a71d6b8a-09a9-4a24-a043-bbb607fb97a0"/>
+				<reportElement x="21" y="3" width="90" height="10" uuid="a71d6b8a-09a9-4a24-a043-bbb607fb97a0"/>
 				<box rightPadding="5">
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -966,7 +966,7 @@ where l.idfactura = $P{idfactura}]]>
 		<band height="45">
 			<printWhenExpression><![CDATA[$F{cnt_ajenos} != null && $F{cnt_ajenos} > 0]]></printWhenExpression>
 			<staticText>
-				<reportElement x="0" y="0" width="180" height="15" uuid="ec930c45-470a-4d12-8446-a487d6e58258">
+				<reportElement x="21" y="0" width="180" height="15" uuid="ec930c45-470a-4d12-8446-a487d6e58258">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
@@ -978,7 +978,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[Detalles pago GAD-MUNICIPAL DE TULCAN (GADMT)]]></text>
 			</staticText>
 			<componentElement>
-				<reportElement x="0" y="15" width="180" height="30" uuid="1b872a27-3eba-4999-95be-9e91590ae644">
+				<reportElement x="21" y="15" width="180" height="30" uuid="1b872a27-3eba-4999-95be-9e91590ae644">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
@@ -1086,7 +1086,7 @@ where l.idfactura = $P{idfactura}]]>
 		<band height="15" splitType="Stretch">
 			<printWhenExpression><![CDATA[$F{cnt_ajenos} != null && $F{cnt_ajenos} > 0]]></printWhenExpression>
 			<staticText>
-				<reportElement x="0" y="0" width="90" height="10" isRemoveLineWhenBlank="true" uuid="975a18a5-8fe1-484c-99e4-df7505251521"/>
+				<reportElement x="21" y="3" width="90" height="10" isRemoveLineWhenBlank="true" uuid="975a18a5-8fe1-484c-99e4-df7505251521"/>
 				<box rightPadding="5">
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1100,7 +1100,7 @@ where l.idfactura = $P{idfactura}]]>
 				<text><![CDATA[SUB TOTAL 2:]]></text>
 			</staticText>
 			<textField evaluationTime="Report">
-				<reportElement x="90" y="0" width="90" height="10" isRemoveLineWhenBlank="true" uuid="d214d96a-e616-4e51-8c6e-ca01e4e1715d"/>
+				<reportElement x="111" y="3" width="90" height="10" isRemoveLineWhenBlank="true" uuid="d214d96a-e616-4e51-8c6e-ca01e4e1715d"/>
 				<box>
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1116,7 +1116,7 @@ where l.idfactura = $P{idfactura}]]>
 		</band>
 		<band height="63">
 			<componentElement>
-				<reportElement x="0" y="0" width="180" height="60" uuid="07cebbfa-d15e-4498-8766-e4bb7cbbfbbf">
+				<reportElement x="21" y="3" width="180" height="60" uuid="07cebbfa-d15e-4498-8766-e4bb7cbbfbbf">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
@@ -1278,7 +1278,7 @@ where l.idfactura = $P{idfactura}]]>
 		</band>
 		<band height="16">
 			<componentElement>
-				<reportElement x="0" y="0" width="180" height="15" uuid="5866e74e-c03a-4a82-9e57-dd6647847d95">
+				<reportElement x="21" y="1" width="180" height="15" uuid="5866e74e-c03a-4a82-9e57-dd6647847d95">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
@@ -1344,9 +1344,10 @@ where l.idfactura = $P{idfactura}]]>
 	<summary>
 		<band height="174" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
 			<barChart>
 				<chart isShowLegend="false" evaluationTime="Report" hyperlinkTarget="Blank" renderType="image" theme="aegean">
-					<reportElement mode="Opaque" x="0" y="3" width="180" height="140" uuid="e7d9662a-ee8b-40ce-ac0c-e5598142d74f"/>
+					<reportElement mode="Opaque" x="21" y="6" width="180" height="140" uuid="e7d9662a-ee8b-40ce-ac0c-e5598142d74f"/>
 					<chartTitle>
 						<font size="8"/>
 						<titleExpression><![CDATA["Historial de consumo"]]></titleExpression>
@@ -1384,7 +1385,7 @@ where l.idfactura = $P{idfactura}]]>
 				</barPlot>
 			</barChart>
 			<staticText>
-				<reportElement x="0" y="146" width="180" height="24" uuid="3464ec4c-2699-4132-bf44-d0ab030e66ff"/>
+				<reportElement x="21" y="149" width="180" height="24" uuid="3464ec4c-2699-4132-bf44-d0ab030e66ff"/>
 				<textElement>
 					<font size="6" isItalic="true"/>
 				</textElement>
