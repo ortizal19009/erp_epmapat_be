@@ -382,9 +382,9 @@ where l.idfactura = $P{idfactura}]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="39" splitType="Stretch">
+		<band height="60" splitType="Stretch">
 			<image scaleImage="FillFrame">
-				<reportElement x="21" y="-21" width="180" height="60" uuid="dfa0bb5c-a08a-419f-a1e5-4f900780b02d"/>
+				<reportElement x="20" y="0" width="180" height="60" uuid="dfa0bb5c-a08a-419f-a1e5-4f900780b02d"/>
 				<imageExpression><![CDATA["logo_epmapat-01.png"]]></imageExpression>
 			</image>
 		</band>

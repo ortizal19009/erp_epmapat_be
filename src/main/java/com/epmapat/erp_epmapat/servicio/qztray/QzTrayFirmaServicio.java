@@ -60,7 +60,7 @@ public class QzTrayFirmaServicio {
 
     public String sign(String request) {
         if (request == null) {
-            throw new IllegalArgumentException("La peticiÃ³n a firmar no puede ser nula.");
+            throw new IllegalArgumentException("La petición a firmar no puede ser nula.");
         }
 
         try {
@@ -69,7 +69,7 @@ public class QzTrayFirmaServicio {
             signature.update(request.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(signature.sign());
         } catch (Exception e) {
-            throw new IllegalStateException("No se pudo firmar la peticiÃ³n para QZ Tray.", e);
+            throw new IllegalStateException("No se pudo firmar la petición para QZ Tray.", e);
         }
     }
 

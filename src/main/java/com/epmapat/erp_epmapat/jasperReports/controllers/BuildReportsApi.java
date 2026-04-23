@@ -86,7 +86,7 @@ public class BuildReportsApi {
                 } else if ("hdesde".equalsIgnoreCase(key) || "hhasta".equalsIgnoreCase(key)) {
                     params.put(key, parseToSqlTime(value.toString()));
                 } else {
-                    params.put(key, normalizeParameterValue(key, value));
+                    params.put(key, normalizeParameterValue(dto.getReportName(), key, value));
                 }
 
             }
@@ -128,7 +128,7 @@ public class BuildReportsApi {
                 SimpleDateFormat sdf = new SimpleDateFormat(format);
                 sdf.setLenient(false);
                 Date parsed = sdf.parse(value.trim());
-                // 🔹 SIEMPRE devolver Timestamp, no Date
+                // ðŸ”¹ SIEMPRE devolver Timestamp, no Date
                 return new java.sql.Timestamp(parsed.getTime());
             } catch (ParseException ignored) {
             }
@@ -162,22 +162,42 @@ public class BuildReportsApi {
                 "'. Expected formats: HH:mm:ss or HH:mm");
     }
 
-    private Object normalizeParameterValue(String key, Object value) {
-        if (value instanceof Integer) {
+    private Object normalizeParameterValue(String reportName, String key, Object value) {
+        if (value instanceof Long) {
             return value;
-        } else if (value instanceof Long) {
-            return value;
+        } else if (value instanceof Integer) {
+            return shouldPromoteToLong(reportName, key) ? Long.valueOf(((Integer) value).longValue()) : value;
         } else if (value instanceof java.util.Date) {
             return value; // Devuelve la fecha tal cual
         } else if (value instanceof String) {
             try {
-                Long longVal = Long.valueOf(((String) value).trim());
-                return longVal;
+                String trimmed = ((String) value).trim();
+                if (shouldPromoteToLong(reportName, key)) {
+                    return Long.valueOf(trimmed);
+                }
+                return value;
             } catch (NumberFormatException e) {
                 return value; // o lanza excepción si sabes que debe ser numérico
             }
         }
         return value;
+    }
+
+    private boolean shouldPromoteToLong(String reportName, String key) {
+        if (key == null) {
+            return false;
+        }
+        String normalizedKey = key.trim().toLowerCase();
+        String normalizedReport = reportName == null ? "" : reportName.trim();
+        if (normalizedReport.startsWith("CompPago")) {
+            return true;
+        }
+        return "idfactura".equals(normalizedKey)
+                || "cuenta".equals(normalizedKey)
+                || "idabonado".equals(normalizedKey)
+                || "idntacredito".equals(normalizedKey)
+                || "idntacredito_ntacredito".equals(normalizedKey)
+                || normalizedKey.endsWith("_id");
     }
 
     @PostMapping("/comprobante")
@@ -702,3 +722,5 @@ public class BuildReportsApi {
         }
     }
 }
+
+

@@ -20,6 +20,7 @@ import org.springframework.data.repository.query.Param;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.ResEmisiones;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
+import com.epmapat.erp_epmapat.servicio.EmisionMantenimientoServicio;
 import com.epmapat.erp_epmapat.servicio.EmisionServicio;
 import com.epmapat.erp_epmapat.servicio.MultaBasuraRepairService;
 
@@ -32,6 +33,8 @@ public class EmisionesApi {
 	private EmisionServicio emiServicio;
 	@Autowired
 	private MultaBasuraRepairService multaBasuraRepairService;
+	@Autowired
+	private EmisionMantenimientoServicio emisionMantenimientoServicio;
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
@@ -100,6 +103,20 @@ public class EmisionesApi {
 			@PathVariable Long idrutaxemision) {
 		var resultado = multaBasuraRepairService.recalcularPorRuta(idemision, idrutaxemision);
 		return ResponseEntity.ok(resultado);
+	}
+
+	@PostMapping("/{idemision}/reabrir")
+	public ResponseEntity<?> reabrirEmision(
+			@PathVariable Long idemision,
+			@RequestParam(required = false, defaultValue = "0") Long usumodi) {
+		return ResponseEntity.ok(emisionMantenimientoServicio.reabrirEmision(idemision, usumodi));
+	}
+
+	@PostMapping("/{idemision}/eliminar")
+	public ResponseEntity<?> eliminarEmision(
+			@PathVariable Long idemision,
+			@RequestParam(required = false, defaultValue = "0") Long usumodi) {
+		return ResponseEntity.ok(emisionMantenimientoServicio.eliminarEmision(idemision, usumodi));
 	}
 
 }

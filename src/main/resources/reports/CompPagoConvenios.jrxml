@@ -649,9 +649,9 @@ where
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="43" splitType="Stretch">
+		<band height="57" splitType="Stretch">
 			<image scaleImage="FillFrame">
-				<reportElement x="20" y="-24" width="180" height="60" uuid="dfa0bb5c-a08a-419f-a1e5-4f900780b02d"/>
+				<reportElement x="20" y="-3" width="180" height="60" uuid="dfa0bb5c-a08a-419f-a1e5-4f900780b02d"/>
 				<imageExpression><![CDATA["logo_epmapat-01.png"]]></imageExpression>
 			</image>
 		</band>
@@ -1188,7 +1188,7 @@ where
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band height="32" splitType="Stretch">
+		<band height="21" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<staticText>
 				<reportElement x="20" y="-4" width="180" height="24" uuid="3464ec4c-2699-4132-bf44-d0ab030e66ff"/>

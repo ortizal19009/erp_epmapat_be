@@ -394,10 +394,11 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	@Modifying
 	@Transactional
 	@Query(value = """
-			DELETE FROM rubroxfac r
-			USING lecturas l
+			UPDATE rubroxfac r
+			SET estado = 0
+			FROM lecturas l
 			WHERE l.idfactura = r.idfactura_facturas
 			  AND l.idemision = :idemision
 			""", nativeQuery = true)
-	void eliminarRubrosByEmision(@Param("idemision") Long idemision);
+	int eliminarRubrosByEmision(@Param("idemision") Long idemision);
 }
