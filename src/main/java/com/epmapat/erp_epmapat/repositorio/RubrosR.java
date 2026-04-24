@@ -14,7 +14,7 @@ public interface RubrosR extends JpaRepository<Rubros, Long> {
 	public List<Rubros> findByIdmodulo(Long idmodulo);
 
 	// Por Módulo y Descripción
-	@Query(value = "SELECT * FROM rubros WHERE idmodulo_modulos=?1 and LOWER(descripcion) like %?2% and estado=true order by descripcion", nativeQuery = true)
+	@Query(value = "SELECT * FROM rubros WHERE idmodulo_modulos=?1 and LOWER(descripcion) like %?2% and CAST(estado AS text) IN ('1', 'true', 't') order by descripcion", nativeQuery = true)
 	public List<Rubros> findByModulo(Long idmodulo, String descripcion);
 
 	// Validar por Nombre y Sección

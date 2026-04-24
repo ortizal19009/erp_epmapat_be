@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat"/>
@@ -73,11 +73,12 @@ WHERE
 			<property name="com.jaspersoft.studio.field.tree.path" value="usuarios"/>
 		</field>
 	</subDataset>
-	<subDataset name="Lecturas" uuid="42f6dbcb-ce49-414b-a427-875f5ef2f900">
+	<subDataset name="DetallesRubros" uuid="42f6dbcb-ce49-414b-a427-875f5ef2f900">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="idemision" class="java.lang.Integer"/>
-		<queryString>
+		<parameter name="ORACLE_REF_CURSOR" class="interface java.sql.ResultSet" isForPrompting="false"/>
+		<queryString language="plsql">
 			<![CDATA[select
     r.descripcion as rubro, 
     CEIL(sum(rf.valorunitario * rf.cantidad) * 100) / 100 as valor, 
@@ -111,8 +112,61 @@ group by
 			<variableExpression><![CDATA[$F{valor}]]></variableExpression>
 		</variable>
 	</subDataset>
+	<subDataset name="DetallesCategorias" uuid="bbd27ba7-eadd-400e-ae64-f96a49128888">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="SERVIDOR EPMAPAT"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="idemision" class="java.lang.Integer"/>
+		<queryString>
+			<![CDATA[SELECT
+    CASE
+        WHEN c.idcategoria = 9 AND a.adultomayor = true THEN 'ADULTO MAYOR'
+        WHEN c.idcategoria = 9 AND a.adultomayor = false THEN 'DISCAPACITADO'
+        WHEN c.idcategoria = 4 AND a.municipio = true THEN 'MUNICIPAL'
+        WHEN c.idcategoria = 4 AND a.municipio = false THEN 'NO MUNICIPAL'
+        ELSE c.descripcion
+    END AS categoria,
+
+    ROUND(SUM((rf.valorunitario * rf.cantidad)::numeric), 2) AS valor,
+
+    COUNT(l.idabonado_abonados) AS numabonados
+
+FROM lecturas l
+JOIN rubroxfac rf ON l.idfactura = rf.idfactura_facturas
+JOIN categorias c ON l.idcategoria = c.idcategoria 
+JOIN abonados a ON l.idabonado_abonados = a.idabonado 
+
+WHERE
+    l.idemision =  $P{idemision} 
+    AND rf.idrubro_rubros NOT IN (5,165)
+
+GROUP BY
+    CASE
+        WHEN c.idcategoria = 9 AND a.adultomayor = true THEN 'ADULTO MAYOR'
+        WHEN c.idcategoria = 9 AND a.adultomayor = false THEN 'DISCAPACITADO'
+        WHEN c.idcategoria = 4 AND a.municipio = true THEN 'MUNICIPAL'
+        WHEN c.idcategoria = 4 AND a.municipio = false THEN 'NO MUNICIPAL'
+        ELSE c.descripcion
+    END;]]>
+		</queryString>
+		<field name="categoria" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="categoria"/>
+			<property name="com.jaspersoft.studio.field.label" value="categoria"/>
+		</field>
+		<field name="valor" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.name" value="valor"/>
+			<property name="com.jaspersoft.studio.field.label" value="valor"/>
+		</field>
+		<field name="numabonados" class="java.lang.Long">
+			<property name="com.jaspersoft.studio.field.name" value="numabonados"/>
+			<property name="com.jaspersoft.studio.field.label" value="numabonados"/>
+		</field>
+		<variable name="sumaTotal" class="java.lang.Double" calculation="Sum">
+			<variableExpression><![CDATA[$F{valor}]]></variableExpression>
+		</variable>
+	</subDataset>
 	<parameter name="idusuario" class="java.lang.Integer"/>
 	<parameter name="idemision" class="java.lang.Integer"/>
+	<parameter name="ORACLE_REF_CURSOR" class="interface java.sql.ResultSet" isForPrompting="false"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT * FROM emisiones where idemision =  $P{idemision}]]>
 	</queryString>
@@ -295,14 +349,14 @@ group by
 		</band>
 		<band height="91">
 			<componentElement>
-				<reportElement x="80" y="30" width="380" height="61" uuid="4192da95-31a5-4abf-9627-37f0261b3b31">
+				<reportElement x="57" y="30" width="440" height="61" uuid="4192da95-31a5-4abf-9627-37f0261b3b31">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="Lecturas" uuid="94235b0a-c5db-4961-a22b-e85245e37b54">
+					<datasetRun subDataset="DetallesRubros" uuid="94235b0a-c5db-4961-a22b-e85245e37b54">
 						<datasetParameter name="idemision">
 							<datasetParameterExpression><![CDATA[$P{idemision}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -419,7 +473,7 @@ group by
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="90" uuid="281ab585-211a-4188-9ded-2ad665c419f8">
+					<jr:column width="150" uuid="281ab585-211a-4188-9ded-2ad665c419f8">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
 						<jr:columnHeader height="20" rowSpan="1">
 							<box>
@@ -430,7 +484,7 @@ group by
 								<rightPen lineWidth="1.0" lineStyle="Solid"/>
 							</box>
 							<staticText>
-								<reportElement x="0" y="0" width="90" height="20" uuid="126af90c-c498-43a1-b436-ca02bb2fa165"/>
+								<reportElement x="0" y="0" width="150" height="20" uuid="126af90c-c498-43a1-b436-ca02bb2fa165"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="12" isBold="true"/>
 								</textElement>
@@ -457,7 +511,7 @@ group by
 								<rightPen lineWidth="1.0" lineStyle="Solid"/>
 							</box>
 							<textField>
-								<reportElement x="0" y="0" width="90" height="20" uuid="da041525-7a92-41ba-85a3-8cb6c5862ae0"/>
+								<reportElement x="0" y="0" width="150" height="20" uuid="da041525-7a92-41ba-85a3-8cb6c5862ae0"/>
 								<box leftPadding="5" rightPadding="5"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="12"/>
@@ -469,9 +523,9 @@ group by
 				</jr:table>
 			</componentElement>
 			<staticText>
-				<reportElement x="86" y="5" width="380" height="23" uuid="4c124f65-2133-4af4-9eac-27f8f78b11bb"/>
+				<reportElement x="57" y="7" width="440" height="23" uuid="4c124f65-2133-4af4-9eac-27f8f78b11bb"/>
 				<box>
-					<pen lineWidth="0.75"/>
+					<pen lineWidth="0.75" lineStyle="Solid"/>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
 					<bottomPen lineWidth="0.5"/>
@@ -485,9 +539,9 @@ group by
 		</band>
 		<band height="95">
 			<staticText>
-				<reportElement x="86" y="5" width="380" height="23" uuid="ac5970bb-d1cf-4db8-8594-13c72317ce85"/>
+				<reportElement x="57" y="5" width="440" height="23" uuid="ac5970bb-d1cf-4db8-8594-13c72317ce85"/>
 				<box>
-					<pen lineWidth="0.75"/>
+					<pen lineWidth="0.75" lineStyle="Solid"/>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
 					<bottomPen lineWidth="0.5"/>
@@ -499,14 +553,14 @@ group by
 				<text><![CDATA[Detalles de rubros de emisión]]></text>
 			</staticText>
 			<componentElement>
-				<reportElement x="86" y="28" width="380" height="61" uuid="463fc51d-5bf8-416d-9a54-2c8b6d211221">
+				<reportElement x="57" y="28" width="440" height="61" uuid="463fc51d-5bf8-416d-9a54-2c8b6d211221">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="Lecturas" uuid="1e24bb5a-13e5-4ff5-b701-9828b36635ce">
+					<datasetRun subDataset="DetallesCategorias" uuid="07077d68-14e9-48f1-967a-59fc85e9af04">
 						<datasetParameter name="idemision">
 							<datasetParameterExpression><![CDATA[$P{idemision}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -528,7 +582,7 @@ group by
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="12" isBold="true"/>
 								</textElement>
-								<text><![CDATA[Rubro]]></text>
+								<text><![CDATA[Categoría]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:columnFooter height="20" rowSpan="1">
@@ -564,7 +618,7 @@ group by
 								<textElement verticalAlignment="Middle">
 									<font size="12"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$F{rubro}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -601,7 +655,7 @@ group by
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="12" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[SUM($V{sumaRubros}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[SUM($V{sumaTotal}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:columnFooter>
 						<jr:detailCell height="20">
@@ -623,7 +677,7 @@ group by
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="90" uuid="76f7ec22-0301-4e45-b848-7d6c765780ba">
+					<jr:column width="150" uuid="76f7ec22-0301-4e45-b848-7d6c765780ba">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
 						<jr:columnHeader height="20" rowSpan="1">
 							<box>
@@ -634,7 +688,7 @@ group by
 								<rightPen lineWidth="1.0" lineStyle="Solid"/>
 							</box>
 							<staticText>
-								<reportElement x="0" y="0" width="90" height="20" uuid="d7b34f3f-cdb5-4a18-a0de-506ac29a0512"/>
+								<reportElement x="0" y="0" width="150" height="20" uuid="d7b34f3f-cdb5-4a18-a0de-506ac29a0512"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="12" isBold="true"/>
 								</textElement>
@@ -661,7 +715,7 @@ group by
 								<rightPen lineWidth="1.0" lineStyle="Solid"/>
 							</box>
 							<textField>
-								<reportElement x="0" y="0" width="90" height="20" uuid="77060367-fae5-4280-9074-935be8e86869"/>
+								<reportElement x="0" y="0" width="150" height="20" uuid="77060367-fae5-4280-9074-935be8e86869"/>
 								<box leftPadding="5" rightPadding="5"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="12"/>
@@ -719,7 +773,7 @@ group by
 					</datasetRun>
 					<jr:column width="90" uuid="12401a71-18d5-42c9-b18e-7a82b6e173f7">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
-						<jr:columnFooter style="Table_TH" height="30" rowSpan="1">
+						<jr:columnFooter height="30" rowSpan="1">
 							<staticText>
 								<reportElement x="0" y="0" width="90" height="30" uuid="c0e55437-7380-4725-a2b5-985de3994912">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -731,7 +785,7 @@ group by
 								<text><![CDATA[Fecha imprime]]></text>
 							</staticText>
 						</jr:columnFooter>
-						<jr:detailCell style="Table_TD" height="30">
+						<jr:detailCell height="30">
 							<staticText>
 								<reportElement x="0" y="0" width="90" height="30" uuid="0a6b5b57-fe3c-4522-9d10-3facaa559eea">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -746,7 +800,7 @@ group by
 					</jr:column>
 					<jr:column width="200" uuid="0c999659-e50f-4d3d-9e3d-f7e166ae200b">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
-						<jr:columnFooter style="Table_TH" height="30" rowSpan="1">
+						<jr:columnFooter height="30" rowSpan="1">
 							<textField>
 								<reportElement x="0" y="0" width="200" height="30" uuid="22f1aff2-2704-4b9e-b6ac-f557e3acb6cf"/>
 								<box leftPadding="5" rightPadding="5"/>
@@ -756,7 +810,7 @@ group by
 								<textFieldExpression><![CDATA[(new java.text.SimpleDateFormat("EEEE, dd MM YYYY", new java.util.Locale("es", "ES"))).format(new java.util.Date())]]></textFieldExpression>
 							</textField>
 						</jr:columnFooter>
-						<jr:detailCell style="Table_TD" height="30">
+						<jr:detailCell height="30">
 							<textField>
 								<reportElement x="0" y="0" width="200" height="30" uuid="7bd338c6-9009-4bab-8294-a22871a539bb"/>
 								<box leftPadding="5" rightPadding="5"/>
