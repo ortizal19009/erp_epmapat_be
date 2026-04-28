@@ -36,7 +36,7 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
                         "join rubroxfac rf on rf.idfactura_facturas = f.idfactura and rf.estado = 1 " +
                         "join rubros rb on rf.idrubro_rubros = rb.idrubro " +
                         "join clientes c on c.idcliente = f.idcliente " +
-                        "where r.fechacobro between ?1 and ?2 and not rf.idrubro_rubros = 165 and CAST(rb.estado AS text) IN ('1', 'true', 't') " +
+                        "where r.fechacobro between ?1 and ?2 and not rf.idrubro_rubros = 165 " +
                         "group by f.idfactura, c.nombre, f.nrofactura, f.estado, f.formapago, f.fechacobro, u.nomusu " +
                         "order by f.nrofactura asc", nativeQuery = true)
         public List<RecaudaFacturasI> findFacturasToReport(LocalDateTime d, LocalDateTime h);
@@ -47,7 +47,7 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
                         "join facturas f on fr.idfactura = f.idfactura " +
                         "join rubroxfac rf on rf.idfactura_facturas = f.idfactura and rf.estado = 1 " +
                         "join rubros rb on rf.idrubro_rubros = rb.idrubro " +
-                        "where r.fechacobro between ?1 and ?2 and f.feccrea <= ?3 and not rf.idrubro_rubros = 165 and CAST(rb.estado AS text) IN ('1', 'true', 't')  " +
+                        "where r.fechacobro between ?1 and ?2 and f.feccrea <= ?3 and not rf.idrubro_rubros = 165  " +
                         "group by rf.idrubro_rubros, rb.descripcion", nativeQuery = true)
         public Object[] findRubrosAnterioresToReport(LocalDateTime d, LocalDateTime h, LocalDate t);
 
@@ -57,11 +57,12 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
                         "join facturas f on fr.idfactura = f.idfactura " +
                         "join rubroxfac rf on rf.idfactura_facturas = f.idfactura and rf.estado = 1 " +
                         "join rubros rb on rf.idrubro_rubros = rb.idrubro " +
-                        "where r.fechacobro between ?1 and ?2 and f.feccrea > ?3 and rf.idrubro_rubros = 165 and CAST(rb.estado AS text) IN ('1', 'true', 't') " +
+                        "where r.fechacobro between ?1 and ?2 and f.feccrea > ?3 and rf.idrubro_rubros = 165 " +
                         "group by rf.idrubro_rubros, rb.descripcion", nativeQuery = true)
         public Object[] findRubrosActualesToReport(LocalDateTime d, LocalDateTime h, LocalDate t);
 
 }
+
 
 
 

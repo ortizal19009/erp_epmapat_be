@@ -26,8 +26,7 @@ public interface EmisionesR extends JpaRepository<Emisiones, Long> {
 					rf.idfactura_facturas,
 					SUM(rf.cantidad * rf.valorunitario) AS total_rubro
 				FROM rubroxfac rf
-				JOIN rubros r ON r.idrubro = rf.idrubro_rubros
-				WHERE rf.estado = 1 AND CAST(r.estado AS text) IN ('1', 'true', 't')
+				WHERE rf.estado = 1
 				GROUP BY rf.idfactura_facturas
 			)
 
@@ -87,6 +86,7 @@ public interface EmisionesR extends JpaRepository<Emisiones, Long> {
 	List<EmisionesInterface> getSwAguapotable(Long idemision);
 
 }
+
 
 
 

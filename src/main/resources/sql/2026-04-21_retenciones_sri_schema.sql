@@ -2,7 +2,7 @@
 -- Ejecutar una sola vez en la base de datos correspondiente
 
 CREATE TABLE IF NOT EXISTS public.fec_retenciones (
-    idretencion bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+    idretencion bigint NOT NULL,
     claveacceso varchar NULL,
     secuencial varchar NULL,
     xmlautorizado text NULL,
@@ -20,6 +20,10 @@ CREATE TABLE IF NOT EXISTS public.fec_retenciones (
     emailsujetoretenido varchar NULL,
     CONSTRAINT fec_retenciones_pk PRIMARY KEY (idretencion)
 );
+
+ALTER TABLE public.fec_retenciones
+    ADD CONSTRAINT fec_retenciones_retencion_fk
+    FOREIGN KEY (idretencion) REFERENCES public.retenciones(idrete) ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS public.fec_retenciones_impuestos (
     idretencionesimpuestos bigint GENERATED ALWAYS AS IDENTITY NOT NULL,

@@ -64,7 +64,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 			+ " join modulos m on f.idmodulo = m.idmodulo "
 			+ " where f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and f.feccrea <= ?1 and ( f.fechacobro >= ?1 or f.fechacobro is null)) or f.estado = 3 )"
 			+ " and f.fechaconvenio is null and f.fechaeliminacion is null AND rf.idrubro_rubros NOT IN (79, 5, 165)"
-			+ " and rf.estado = 1 and CAST(r.estado AS text) IN ('1', 'true', 't') "
+			+ " and rf.estado = 1 "
 			+ " group by rf.idfactura_facturas, c.nombre, c.cedula , c.direccion , c.email, c.idcliente, m.descripcion order by c.nombre asc", nativeQuery = true)
 	List<CVClientes> getCVByCliente(LocalDate fecha);
 
@@ -97,7 +97,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 				and f.fechaconvenio is null
 				and f.fechaeliminacion is null
 			AND rf.idrubro_rubros NOT IN (79, 5, 165)
-			AND rf.estado = 1 AND CAST(r.estado AS text) IN ('1', 'true', 't')
+			AND rf.estado = 1
 			group by
 			c.idcliente,
 				c.nombre,
@@ -126,7 +126,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 						or f.estado = 3 )
 						and f.fechaconvenio is null
 						and f.fechaeliminacion is null
-						and rf.estado = 1 and CAST(r.estado AS text) IN ('1', 'true', 't')
+						and rf.estado = 1
 					group by
 					c.idcliente,
 						c.nombre,
@@ -168,7 +168,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 				and f.fechaconvenio is null
 				and f.fechaeliminacion is null
 			    AND rf.idrubro_rubros NOT IN (79, 5, 165)
-			    AND rf.estado = 1 AND CAST(r.estado AS text) IN ('1', 'true', 't')
+			    AND rf.estado = 1
 				group by
 			c.idcliente,
 				c.nombre,
@@ -198,7 +198,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 						or f.estado = 3 )
 						and f.fechaconvenio is null
 						and f.fechaeliminacion is null
-						and rf.estado = 1 and CAST(r.estado AS text) IN ('1', 'true', 't')
+						and rf.estado = 1
 					group by
 					c.idcliente,
 						c.nombre,
@@ -308,6 +308,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 	List<ClientesMobile> findAllBy();
 
 }
+
 
 
 

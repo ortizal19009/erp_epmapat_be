@@ -69,7 +69,7 @@ ALTER TABLE public.recargosxcuenta_audit ADD CONSTRAINT recargosxcuenta_audit_re
 
 -- RETENCIONES SRI
 CREATE TABLE public.fec_retenciones (
-    idretencion bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+    idretencion bigint NOT NULL,
     claveacceso varchar NULL,
     secuencial varchar NULL,
     xmlautorizado text NULL,
@@ -87,6 +87,8 @@ CREATE TABLE public.fec_retenciones (
     emailsujetoretenido varchar NULL,
     CONSTRAINT fec_retenciones_pk PRIMARY KEY (idretencion)
 );
+
+ALTER TABLE public.fec_retenciones ADD CONSTRAINT fec_retenciones_retencion_fk FOREIGN KEY (idretencion) REFERENCES public.retenciones(idrete) ON DELETE CASCADE;
 
 CREATE TABLE public.fec_retenciones_impuestos (
     idretencionesimpuestos bigint GENERATED ALWAYS AS IDENTITY NOT NULL,

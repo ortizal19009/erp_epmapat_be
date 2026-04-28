@@ -5,8 +5,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.transaction.Transactional;
@@ -30,6 +31,8 @@ import com.epmapat.erp_epmapat.repositorio.contabilidad.RetencionesR;
 import com.epmapat.erp_epmapat.servicio.administracion.CorreosEnviadosServicio;
 import com.epmapat.erp_epmapat.servicio.contabilidad.Fec_retencionesServicio;
 import com.epmapat.erp_epmapat.servicio.contabilidad.RetencionesServicio;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class RetencionProcesamientoSRIService {
@@ -42,6 +45,8 @@ public class RetencionProcesamientoSRIService {
    private final RetencionesR retencionesR;
    private final RestTemplate restTemplate;
    private final CorreosEnviadosServicio correosEnviadosServicio;
+   private final ObjectMapper objectMapper;
+   private final RetencionSseService retencionSseService;
 
    @Value("${sri.microservice.base-url:http://192.168.0.33:9090}")
    private String sriMicroserviceBaseUrl;
@@ -54,7 +59,9 @@ public class RetencionProcesamientoSRIService {
          Fec_retencionesServicio fecRetencionesServicio,
          RetencionesR retencionesR,
          RestTemplate restTemplate,
-         CorreosEnviadosServicio correosEnviadosServicio) {
+         CorreosEnviadosServicio correosEnviadosServicio,
+         ObjectMapper objectMapper,
+         RetencionSseService retencionSseService) {
       this.retencionSRIService = retencionSRIService;
       this.retencionPdfService = retencionPdfService;
       this.retencionEmailService = retencionEmailService;
@@ -63,6 +70,8 @@ public class RetencionProcesamientoSRIService {
       this.retencionesR = retencionesR;
       this.restTemplate = restTemplate;
       this.correosEnviadosServicio = correosEnviadosServicio;
+      this.objectMapper = objectMapper;
+      this.retencionSseService = retencionSseService;
    }
 
    @Transactional
@@ -84,20 +93,30 @@ public class RetencionProcesamientoSRIService {
       AutorizacionResultado resultado = enviarFirmarYAutorizar(xmlPlano);
       if (resultado.limiteDiario) {
          retencionSRIService.actualizarEstado(idretencion, "LIMITE_INTENTOS_DIARIO", resultado.mensaje);
-         return Map.of(
+         Map<String, Object> response = Map.of(
                "idretencion", idretencion,
                "estado", "LIMITE_INTENTOS_DIARIO",
                "detalle", resultado.mensaje,
                "xmlautorizado", "",
                "errores", resultado.detalle);
+         publicarActualizacion(response);
+         return response;
+      }
+      if (resultado.noAutorizado) {
+         retencionSRIService.actualizarEstado(idretencion, "NO_AUTORIZADO", resultado.mensaje);
+         Map<String, Object> response = construirRespuestaNoAutorizada(idretencion, resultado);
+         publicarActualizacion(response);
+         return response;
       }
       if (resultado.pendiente) {
          retencionSRIService.actualizarEstado(idretencion, "PENDIENTE_AUTORIZACION", resultado.mensaje);
-         return Map.of(
+         Map<String, Object> response = Map.of(
                "idretencion", idretencion,
                "estado", "PENDIENTE_AUTORIZACION",
                "detalle", resultado.mensaje,
                "xmlautorizado", "");
+         publicarActualizacion(response);
+         return response;
       }
 
       String xmlAutorizado = resultado.xmlAutorizado;
@@ -132,13 +151,73 @@ public class RetencionProcesamientoSRIService {
             "ENVIADO",
             "Retencion autorizada y enviada por correo");
 
-      return Map.of(
+      Map<String, Object> response = Map.of(
             "idretencion", idretencion,
             "estado", "AUTORIZADA",
             "numeroAutorizacion", numeroAutorizacion,
             "fechaAutorizacion", fechaAutorizacion,
             "xmlautorizado", xmlAutorizado,
             "email", safeValue(mail.get("email"), destinatario));
+      publicarActualizacion(response);
+      return response;
+   }
+
+   @Transactional
+   public Map<String, Object> consultarEstadoPendiente(Long idretencion) {
+      Retenciones retencion = retencionesR.findById(idretencion)
+            .orElseThrow(() -> new IllegalArgumentException("No existe la retencion " + idretencion));
+
+      String claveAcceso = firstNonBlank(retencion.getClaveacceso(), retencion.getNumautoriza(), retencion.getNumautoriza_e());
+      if (!StringUtils.hasText(claveAcceso)) {
+         throw new IllegalStateException("La retencion " + idretencion + " no tiene clave de acceso para consultar.");
+      }
+
+      AutorizacionResultado resultado = consultarAutorizacionPorClave(claveAcceso);
+      if (resultado.noAutorizado) {
+         retencionSRIService.actualizarEstado(idretencion, "NO_AUTORIZADO", resultado.mensaje);
+         Map<String, Object> response = construirRespuestaNoAutorizada(idretencion, resultado);
+         publicarActualizacion(response);
+         return response;
+      }
+      if (resultado.pendiente) {
+         retencionSRIService.actualizarEstado(idretencion, "PENDIENTE_AUTORIZACION", resultado.mensaje);
+         Map<String, Object> response = Map.of(
+               "idretencion", idretencion,
+               "estado", "PENDIENTE_AUTORIZACION",
+               "detalle", resultado.mensaje,
+               "claveAcceso", claveAcceso,
+               "xmlautorizado", "",
+               "errores", safeValue(resultado.detalle, ""));
+         publicarActualizacion(response);
+         return response;
+      }
+
+      String xmlAutorizado = resultado.xmlAutorizado;
+      if (!StringUtils.hasText(xmlAutorizado)) {
+         throw new IllegalStateException("La consulta del SRI no devolvio XML autorizado para la retencion " + idretencion);
+      }
+
+      String numeroAutorizacion = firstNonBlank(
+            extraerTag(xmlAutorizado, "numeroAutorizacion"),
+            resultado.numeroAutorizacion);
+      String fechaAutorizacion = firstNonBlank(
+            extraerTag(xmlAutorizado, "fechaAutorizacion"),
+            resultado.fechaAutorizacion);
+
+      aplicarAutorizacion(retencion, xmlAutorizado, numeroAutorizacion, fechaAutorizacion);
+      retencion.setEstado(1);
+      retencionesServicio.updateRetencion(idretencion, retencion);
+      retencionSRIService.actualizarXmlAutorizado(idretencion, xmlAutorizado, "AUTORIZADA", null);
+
+      Map<String, Object> response = Map.of(
+            "idretencion", idretencion,
+            "estado", "AUTORIZADA",
+            "claveAcceso", claveAcceso,
+            "numeroAutorizacion", safeValue(numeroAutorizacion, ""),
+            "fechaAutorizacion", safeValue(fechaAutorizacion, ""),
+            "xmlautorizado", xmlAutorizado);
+      publicarActualizacion(response);
+      return response;
    }
 
    private Map<String, Object> validarRetencionYaProcesada(Retenciones retencion) {
@@ -150,7 +229,7 @@ public class RetencionProcesamientoSRIService {
          return Map.of(
                "idretencion", retencion.getIdrete(),
                "estado", "YA_AUTORIZADA",
-               "detalle", "La retención ya fue enviada/autorizada previamente.",
+               "detalle", "La retencion ya fue enviada/autorizada previamente.",
                "claveAcceso", claveAcceso,
                "numeroAutorizacion", numeroAutorizacion);
       }
@@ -163,7 +242,7 @@ public class RetencionProcesamientoSRIService {
             return Map.of(
                   "idretencion", retencion.getIdrete(),
                   "estado", "CLAVE_DUPLICADA",
-                  "detalle", "La clave de acceso ya existe en otra retención autorizada o enviada.",
+                  "detalle", "La clave de acceso ya existe en otra retencion autorizada o enviada.",
                   "claveAcceso", claveAcceso);
          }
       }
@@ -204,19 +283,81 @@ public class RetencionProcesamientoSRIService {
          String responseBody = ex.getResponseBodyAsString();
          if (ex.getStatusCode().value() == 502 && contieneAutorizadoSinXml(responseBody)) {
             return AutorizacionResultado.pendiente(
-                  "El microservicio SRI devolvio 502 porque la autorizacion todavia no contiene XML autorizado",
+                  "La retencion sigue pendiente de autorizacion: el SRI aun no devuelve el XML autorizado. Intente consultarla nuevamente en unos minutos.",
                   ex.getStatusCode().value(),
                   responseBody);
          }
          if (ex.getStatusCode().value() == 400 && contieneLimiteDiario(responseBody)) {
             return AutorizacionResultado.limiteDiario(
-                  "El SRI ya alcanzó el límite diario de intentos para esta retención. Intente nuevamente el siguiente día.",
+                  "El SRI ya alcanzo el limite diario de intentos para esta retencion. Intente nuevamente el siguiente dia.",
                   ex.getStatusCode().value(),
                   responseBody);
+         }
+         if (ex.getStatusCode().value() == 400 && contieneNoAutorizado(responseBody)) {
+            return AutorizacionResultado.noAutorizado(
+                  construirMensajeNoAutorizado(responseBody),
+                  ex.getStatusCode().value(),
+                  responseBody,
+                  extraerCampoJson(responseBody, "claveAcceso"),
+                  extraerCampoJson(responseBody, "numeroAutorizacion"),
+                  extraerCampoJson(responseBody, "fechaAutorizacion"));
          }
          throw new IllegalStateException(
                "El microservicio SRI devolvio " + ex.getStatusCode().value() + ": "
                      + (responseBody == null || responseBody.isBlank() ? ex.getMessage() : responseBody),
+               ex);
+      }
+   }
+
+   private AutorizacionResultado consultarAutorizacionPorClave(String claveAcceso) {
+      String url = sriMicroserviceBaseUrl + "/api/singsend/retenciones/xml?claveAcceso=" + claveAcceso;
+      try {
+         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, String.class);
+         String body = response.getBody() == null ? "" : response.getBody().trim();
+
+         if (response.getStatusCode().is2xxSuccessful() && body.startsWith("<")) {
+            return AutorizacionResultado.autorizado(body);
+         }
+         if (response.getStatusCode().value() == 202 || contienePendiente(body)) {
+            return AutorizacionResultado.pendiente(
+                  "La autorizacion aun sigue pendiente en el SRI",
+                  response.getStatusCode().value(),
+                  body);
+         }
+         if (response.getStatusCode().value() == 502 && contieneAutorizadoSinXml(body)) {
+            return AutorizacionResultado.pendiente(
+                  "El SRI reporta autorizacion, pero todavia no entrega el XML autorizado",
+                  response.getStatusCode().value(),
+                  body);
+         }
+
+         throw new IllegalStateException("Respuesta inesperada al consultar el SRI (" + response.getStatusCode() + "): " + body);
+      } catch (HttpStatusCodeException ex) {
+         String responseBody = ex.getResponseBodyAsString();
+         if (ex.getStatusCode().value() == 502 && contieneAutorizadoSinXml(responseBody)) {
+            return AutorizacionResultado.pendiente(
+                  "La retencion sigue pendiente de autorizacion: el SRI aun no devuelve el XML autorizado. Intente consultarla nuevamente en unos minutos.",
+                  ex.getStatusCode().value(),
+                  responseBody);
+         }
+         if (ex.getStatusCode().value() == 400 && contieneNoAutorizado(responseBody)) {
+            return AutorizacionResultado.noAutorizado(
+                  construirMensajeNoAutorizado(responseBody),
+                  ex.getStatusCode().value(),
+                  responseBody,
+                  firstNonBlank(extraerCampoJson(responseBody, "claveAcceso"), claveAcceso),
+                  extraerCampoJson(responseBody, "numeroAutorizacion"),
+                  extraerCampoJson(responseBody, "fechaAutorizacion"));
+         }
+         if (ex.getStatusCode().value() == 202 || contienePendiente(responseBody)) {
+            return AutorizacionResultado.pendiente(
+                  "La autorizacion aun sigue pendiente en el SRI",
+                  ex.getStatusCode().value(),
+                  responseBody);
+         }
+         throw new IllegalStateException(
+               "El microservicio SRI devolvio " + ex.getStatusCode().value() + " al consultar clave "
+                     + claveAcceso + ": " + (responseBody == null || responseBody.isBlank() ? ex.getMessage() : responseBody),
                ex);
       }
    }
@@ -229,15 +370,19 @@ public class RetencionProcesamientoSRIService {
       return contieneTexto(value, "autorizado_sin_xml")
             || contieneTexto(value, "sin <comprobante>")
             || contieneTexto(value, "sin comprobante")
-            || contieneTexto(value, "autorizacion no devolvio xml autorizado")
             || contieneTexto(value, "autorizacion no devolvio xml autorizado");
    }
 
    private boolean contieneLimiteDiario(String value) {
       return contieneTexto(value, "limite de intentos no autorizados por dia")
-            || contieneTexto(value, "límite de intentos no autorizados por día")
-            || contieneTexto(value, "superado el limite diario")
-            || contieneTexto(value, "superado el límite diario");
+            || contieneTexto(value, "limite de intentos no autorizados por dia")
+            || contieneTexto(value, "superado el limite diario");
+   }
+
+   private boolean contieneNoAutorizado(String value) {
+      return contieneTexto(value, "\"estadoAutorizacion\":\"NO AUTORIZADO\"")
+            || contieneTexto(value, "\"estadoautorizacion\":\"no autorizado\"")
+            || contieneTexto(value, "no autorizado");
    }
 
    private boolean contieneTexto(String value, String needle) {
@@ -312,34 +457,93 @@ public class RetencionProcesamientoSRIService {
       return "";
    }
 
+   private Map<String, Object> construirRespuestaNoAutorizada(Long idretencion, AutorizacionResultado resultado) {
+      Map<String, Object> respuesta = new LinkedHashMap<>();
+      respuesta.put("idretencion", idretencion);
+      respuesta.put("estado", "NO_AUTORIZADO");
+      respuesta.put("detalle", resultado.mensaje);
+      respuesta.put("claveAcceso", safeValue(resultado.claveAcceso, ""));
+      respuesta.put("numeroAutorizacion", safeValue(resultado.numeroAutorizacion, ""));
+      respuesta.put("fechaAutorizacion", safeValue(resultado.fechaAutorizacion, ""));
+      respuesta.put("xmlautorizado", "");
+      respuesta.put("errores", resultado.detalle);
+      return respuesta;
+   }
+
+   private String construirMensajeNoAutorizado(String responseBody) {
+      String ambiente = extraerCampoJson(responseBody, "ambiente");
+      String claveAcceso = extraerCampoJson(responseBody, "claveAcceso");
+      String base = "El SRI devolvio la retencion como NO AUTORIZADO.";
+      if (StringUtils.hasText(ambiente)) {
+         base += " Ambiente: " + ambiente + ".";
+      }
+      if (StringUtils.hasText(claveAcceso)) {
+         base += " Clave de acceso: " + claveAcceso + ".";
+      }
+      return base;
+   }
+
+   private String extraerCampoJson(String responseBody, String fieldName) {
+      if (!StringUtils.hasText(responseBody) || !StringUtils.hasText(fieldName)) {
+         return "";
+      }
+      try {
+         Map<String, Object> payload = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {
+         });
+         Object value = payload.get(fieldName);
+         return value == null ? "" : String.valueOf(value).trim();
+      } catch (Exception e) {
+         return "";
+      }
+   }
+
+   private void publicarActualizacion(Map<String, Object> payload) {
+      retencionSseService.publishEstadoActualizado(payload);
+   }
+
    private static final class AutorizacionResultado {
       private final boolean pendiente;
       private final boolean limiteDiario;
+      private final boolean noAutorizado;
       private final String xmlAutorizado;
       private final String mensaje;
       private final int codigoHttp;
       private final String detalle;
+      private final String claveAcceso;
+      private final String numeroAutorizacion;
+      private final String fechaAutorizacion;
 
-      private AutorizacionResultado(boolean pendiente, boolean limiteDiario, String xmlAutorizado, String mensaje, int codigoHttp,
-            String detalle) {
+      private AutorizacionResultado(boolean pendiente, boolean limiteDiario, boolean noAutorizado, String xmlAutorizado,
+            String mensaje, int codigoHttp, String detalle, String claveAcceso, String numeroAutorizacion,
+            String fechaAutorizacion) {
          this.pendiente = pendiente;
          this.limiteDiario = limiteDiario;
+         this.noAutorizado = noAutorizado;
          this.xmlAutorizado = xmlAutorizado;
          this.mensaje = mensaje;
          this.codigoHttp = codigoHttp;
          this.detalle = detalle;
+         this.claveAcceso = claveAcceso;
+         this.numeroAutorizacion = numeroAutorizacion;
+         this.fechaAutorizacion = fechaAutorizacion;
       }
 
       private static AutorizacionResultado autorizado(String xmlAutorizado) {
-         return new AutorizacionResultado(false, false, xmlAutorizado, null, 200, null);
+         return new AutorizacionResultado(false, false, false, xmlAutorizado, null, 200, null, "", "", "");
       }
 
       private static AutorizacionResultado pendiente(String mensaje, int codigoHttp, String detalle) {
-         return new AutorizacionResultado(true, false, null, mensaje, codigoHttp, detalle);
+         return new AutorizacionResultado(true, false, false, null, mensaje, codigoHttp, detalle, "", "", "");
       }
 
       private static AutorizacionResultado limiteDiario(String mensaje, int codigoHttp, String detalle) {
-         return new AutorizacionResultado(false, true, null, mensaje, codigoHttp, detalle);
+         return new AutorizacionResultado(false, true, false, null, mensaje, codigoHttp, detalle, "", "", "");
+      }
+
+      private static AutorizacionResultado noAutorizado(String mensaje, int codigoHttp, String detalle, String claveAcceso,
+            String numeroAutorizacion, String fechaAutorizacion) {
+         return new AutorizacionResultado(false, false, true, null, mensaje, codigoHttp, detalle, claveAcceso,
+               numeroAutorizacion, fechaAutorizacion);
       }
    }
 }

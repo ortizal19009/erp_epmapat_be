@@ -17,6 +17,8 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.transaction.Transactional;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -49,6 +51,8 @@ public class RetencionSRIService {
    private DefinirR definirR;
    @Autowired
    private RetencionesServicio retencionesServicio;
+   @PersistenceContext
+   private EntityManager entityManager;
 
    public String generarXml(Long idretencion) {
       Retenciones retencion = cargarRetencion(idretencion);
@@ -83,8 +87,7 @@ public class RetencionSRIService {
       fec.setPeriodofiscal(formatearPeriodoFiscal(retencion.getFechaemision()));
       fec.setTelefonosujetoretenido(obtenerTelefono(retencion));
       fec.setEmailsujetoretenido(obtenerEmail(retencion));
-      fecRetencionesR.save(fec);
-      return fec;
+      return guardarFecRetencion(fec);
    }
 
    @Transactional
@@ -96,7 +99,7 @@ public class RetencionSRIService {
       }
       fec.setEstado(estado);
       fec.setErrores(errores);
-      return fecRetencionesR.save(fec);
+      return guardarFecRetencion(fec);
    }
 
    public List<Fec_retenciones> listarTodas() {
@@ -124,7 +127,57 @@ public class RetencionSRIService {
       if (email != null && !email.isBlank()) {
          fec.setEmailsujetoretenido(email.trim());
       }
-      return fecRetencionesR.save(fec);
+      return guardarFecRetencion(fec);
+   }
+
+   private Fec_retenciones guardarFecRetencion(Fec_retenciones fec) {
+      entityManager.createNativeQuery(
+            "INSERT INTO public.fec_retenciones ("
+                  + "idretencion, claveacceso, secuencial, xmlautorizado, errores, estado, "
+                  + "establecimiento, puntoemision, direccionestablecimiento, fechaemision, "
+                  + "tipoidentificacionsujetoretenid, razonsocialsujetoretenido, "
+                  + "identificacionsujetoretenido, periodofiscal, telefonosujetoretenido, emailsujetoretenido"
+                  + ") OVERRIDING SYSTEM VALUE VALUES ("
+                  + ":idretencion, :claveacceso, :secuencial, :xmlautorizado, :errores, :estado, "
+                  + ":establecimiento, :puntoemision, :direccionestablecimiento, :fechaemision, "
+                  + ":tipoidentificacionsujetoretenid, :razonsocialsujetoretenido, "
+                  + ":identificacionsujetoretenido, :periodofiscal, :telefonosujetoretenido, :emailsujetoretenido"
+                  + ") ON CONFLICT (idretencion) DO UPDATE SET "
+                  + "claveacceso = EXCLUDED.claveacceso, "
+                  + "secuencial = EXCLUDED.secuencial, "
+                  + "xmlautorizado = EXCLUDED.xmlautorizado, "
+                  + "errores = EXCLUDED.errores, "
+                  + "estado = EXCLUDED.estado, "
+                  + "establecimiento = EXCLUDED.establecimiento, "
+                  + "puntoemision = EXCLUDED.puntoemision, "
+                  + "direccionestablecimiento = EXCLUDED.direccionestablecimiento, "
+                  + "fechaemision = EXCLUDED.fechaemision, "
+                  + "tipoidentificacionsujetoretenid = EXCLUDED.tipoidentificacionsujetoretenid, "
+                  + "razonsocialsujetoretenido = EXCLUDED.razonsocialsujetoretenido, "
+                  + "identificacionsujetoretenido = EXCLUDED.identificacionsujetoretenido, "
+                  + "periodofiscal = EXCLUDED.periodofiscal, "
+                  + "telefonosujetoretenido = EXCLUDED.telefonosujetoretenido, "
+                  + "emailsujetoretenido = EXCLUDED.emailsujetoretenido")
+            .setParameter("idretencion", fec.getIdretencion())
+            .setParameter("claveacceso", fec.getClaveacceso())
+            .setParameter("secuencial", fec.getSecuencial())
+            .setParameter("xmlautorizado", fec.getXmlautorizado())
+            .setParameter("errores", fec.getErrores())
+            .setParameter("estado", fec.getEstado())
+            .setParameter("establecimiento", fec.getEstablecimiento())
+            .setParameter("puntoemision", fec.getPuntoemision())
+            .setParameter("direccionestablecimiento", fec.getDireccionestablecimiento())
+            .setParameter("fechaemision", fec.getFechaemision())
+            .setParameter("tipoidentificacionsujetoretenid", fec.getTipoidentificacionsujetoretenid())
+            .setParameter("razonsocialsujetoretenido", fec.getRazonsocialsujetoretenido())
+            .setParameter("identificacionsujetoretenido", fec.getIdentificacionsujetoretenido())
+            .setParameter("periodofiscal", fec.getPeriodofiscal())
+            .setParameter("telefonosujetoretenido", fec.getTelefonosujetoretenido())
+            .setParameter("emailsujetoretenido", fec.getEmailsujetoretenido())
+            .executeUpdate();
+
+      return fecRetencionesR.findById(fec.getIdretencion())
+            .orElseThrow(() -> new IllegalStateException("No se pudo guardar fec_retenciones " + fec.getIdretencion()));
    }
 
    private Retenciones cargarRetencion(Long idretencion) {
@@ -470,10 +523,10 @@ public class RetencionSRIService {
    private void asegurarClaveAcceso(Retenciones retencion) {
       String fechaEmision = formatearFechaClave(retencion.getFechaemision());
       String claveActual = normalizarNumero(retencion.getClaveacceso());
-      if (claveActual.length() == 49 && claveActual.startsWith(fechaEmision)) {
+      Definir definir = getDefinir();
+      if (esClaveAccesoRetencionValida(claveActual, retencion, definir, fechaEmision)) {
          return;
       }
-      Definir definir = getDefinir();
       String nuevaClave = generarClaveAcceso(retencion, definir, fechaEmision);
       retencion.setClaveacceso(nuevaClave);
       retencionesR.save(retencion);
@@ -495,6 +548,30 @@ public class RetencionSRIService {
          throw new IllegalStateException("La base de la clave de acceso debe contener 48 dígitos numéricos");
       }
       return base48 + calcularDigitoVerificadorModulo11(base48);
+   }
+
+   private boolean esClaveAccesoRetencionValida(String claveActual, Retenciones retencion, Definir definir, String fechaEmision) {
+      if (claveActual.length() != 49 || !claveActual.chars().allMatch(Character::isDigit)) {
+         return false;
+      }
+      String tipoComprobante = "07";
+      String ruc = normalizarNumero(definir != null ? definir.getRuc() : null);
+      if (ruc.length() != 13) {
+         ruc = String.format("%013d", 0);
+      }
+      String ambiente = valueOf(definir != null ? definir.getTipoambiente() : null, "1");
+      String serie = obtenerEstablecimiento(retencion) + obtenerPuntoEmision(retencion);
+      String secuencial = formatearSecuencial(retencion.getSecretencion1(), retencion.getIdrete());
+      String prefijoEsperado = fechaEmision + tipoComprobante + ruc + ambiente + serie + secuencial;
+      if (!claveActual.startsWith(prefijoEsperado)) {
+         return false;
+      }
+      String base48 = claveActual.substring(0, 48);
+      if (base48.charAt(47) != '1') {
+         return false;
+      }
+      char digitoEsperado = calcularDigitoVerificadorModulo11(base48);
+      return claveActual.charAt(48) == digitoEsperado;
    }
 
    private String formatearFechaClave(Date date) {

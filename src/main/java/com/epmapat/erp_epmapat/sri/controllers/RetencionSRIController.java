@@ -17,12 +17,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.epmapat.erp_epmapat.modelo.contabilidad.Fec_retenciones;
 import com.epmapat.erp_epmapat.sri.services.RetencionProcesamientoSRIService;
 import com.epmapat.erp_epmapat.sri.services.RetencionEmailService;
 import com.epmapat.erp_epmapat.sri.services.RetencionPdfService;
 import com.epmapat.erp_epmapat.sri.services.RetencionSRIService;
+import com.epmapat.erp_epmapat.sri.services.RetencionSseService;
 
 @RestController
 @RequestMapping("/api/sri/retenciones")
@@ -36,6 +38,8 @@ public class RetencionSRIController {
    private RetencionEmailService retencionEmailService;
    @Autowired
    private RetencionProcesamientoSRIService retencionProcesamientoSRIService;
+   @Autowired
+   private RetencionSseService retencionSseService;
 
    @GetMapping
    public List<Fec_retenciones> listar(@RequestParam(required = false) String estado) {
@@ -52,6 +56,11 @@ public class RetencionSRIController {
             .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=retencion.xml")
             .contentType(MediaType.APPLICATION_XML)
             .body(xml);
+   }
+
+   @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+   public SseEmitter streamRetenciones() {
+      return retencionSseService.subscribe();
    }
 
    @Transactional
@@ -83,6 +92,12 @@ public class RetencionSRIController {
          @RequestParam(required = false) String mensaje) {
       Map<String, Object> resultado = retencionProcesamientoSRIService.procesar(idretencion, destinatario, asunto,
             mensaje);
+      return ResponseEntity.ok(resultado);
+   }
+
+   @PostMapping("/consultar")
+   public ResponseEntity<Map<String, Object>> consultarRetencionPendiente(@RequestParam Long idretencion) {
+      Map<String, Object> resultado = retencionProcesamientoSRIService.consultarEstadoPendiente(idretencion);
       return ResponseEntity.ok(resultado);
    }
 
