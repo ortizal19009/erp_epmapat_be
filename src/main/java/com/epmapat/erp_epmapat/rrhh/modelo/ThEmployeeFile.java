@@ -10,6 +10,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +23,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "th_employee_files")
 public class ThEmployeeFile {
     @Id
@@ -28,6 +32,13 @@ public class ThEmployeeFile {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idpersonal_personal", nullable = false)
+    @JsonIgnoreProperties({
+            "hibernateLazyInitializer",
+            "handler",
+            "idcontemergencia_contemergencias",
+            "idcargo_cargos",
+            "idtpcontrato_tpcontratos"
+    })
     private Personal idpersonal_personal;
 
     private String tipo_doc;
