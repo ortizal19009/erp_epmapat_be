@@ -402,7 +402,9 @@ public class RetencionProcesamientoSRIService {
       retencion.setNumautoriza(numero);
       retencion.setNumautoriza_e(numero);
       retencion.setFecautoriza(fecha);
-      retencion.setAutorizacion(xmlAutorizado);
+      // El XML autorizado completo se conserva en fec_retenciones.xmlautorizado.
+      // En retenciones solo dejamos metadatos cortos para evitar desbordar columnas legacy.
+      retencion.setAutorizacion(null);
    }
 
    private String extraerTag(String xml, String tagName) {

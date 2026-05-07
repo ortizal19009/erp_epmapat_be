@@ -41,7 +41,7 @@ public class RetencionEmailService {
             .orElseThrow(() -> new IllegalArgumentException("No existe la retención " + idretencion));
       Fec_retenciones generada = actualizarEstado
             ? retencionSRIService.generarYGuardar(idretencion)
-            : retencionSRIService.actualizarXmlAutorizado(idretencion, retencion.getAutorizacion(), "AUTORIZADA", null);
+            : retencionSRIService.actualizarXmlAutorizado(idretencion, null, "AUTORIZADA", null);
       Definir definir = definirServicio.findById(1L)
             .orElseThrow(() -> new IllegalArgumentException("No existe la configuración general para correo"));
 
@@ -106,7 +106,7 @@ public class RetencionEmailService {
             "Correo enviado correctamente");
       Fec_retenciones actualizado = actualizarEstado
             ? retencionSRIService.actualizarEstado(idretencion, "ENVIADA", null, correoConcatenado)
-            : retencionSRIService.actualizarXmlAutorizado(idretencion, retencion.getAutorizacion(), "AUTORIZADA", null);
+            : retencionSRIService.actualizarXmlAutorizado(idretencion, null, "AUTORIZADA", null);
       return Map.of(
             "idretencion", actualizado.getIdretencion(),
             "estado", actualizado.getEstado(),
