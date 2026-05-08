@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="SERVIDOR EPMAPAT"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -103,10 +103,8 @@ WHERE
 	<subDataset name="RubrosAntiguos" uuid="4735d036-d653-47fd-a06c-29c0d71a7d3d">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<parameter name="desde" class="java.util.Date"/>
-		<parameter name="hasta" class="java.util.Date"/>
-		<parameter name="hdesde" class="java.sql.Time"/>
-		<parameter name="hhasta" class="java.sql.Time"/>
+		<parameter name="desde" class="java.sql.Timestamp"/>
+		<parameter name="hasta" class="java.sql.Timestamp"/>
 		<parameter name="tope" class="java.sql.Date"/>
 		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
@@ -114,8 +112,14 @@ WHERE
 FROM Rubroxfac rf 
 JOIN Facturas f ON f.idfactura = rf.idfactura_facturas 
 JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
-WHERE (date(f.fechacobro) BETWEEN $P{desde} AND $P{hasta} and f.horacobro between $P{hdesde} and $P{hhasta} )  AND f.usuariocobro = $P{usuariocobro}
- AND f.feccrea <= $P{tope} AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=$P{desde} or f.fechaanulacion IS NULL) 
+WHERE f.fechacobro >= date_trunc('day', CAST($P{desde} AS timestamp))
+ AND f.fechacobro < date_trunc('day', CAST($P{hasta} AS timestamp)) + interval '1 day'
+ AND f.usuariocobro = $P{usuariocobro}
+ AND rf.idrubro_rubros NOT IN (79, 165)
+ AND f.feccrea <= $P{tope}
+ AND NOT f.estado = 3
+ AND f.fechaeliminacion IS NULL
+ AND (f.fechaanulacion IS NULL OR f.fechaanulacion < date_trunc('day', CAST($P{desde} AS timestamp)) + interval '1 day') 
 GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 		</queryString>
 		<field name="idrubro" class="java.lang.Integer">
@@ -144,10 +148,8 @@ GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 	<subDataset name="RubrosAcuales" uuid="b651149e-0b5f-4eca-bf51-0189e06bf0dc">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<parameter name="desde" class="java.util.Date"/>
-		<parameter name="hasta" class="java.util.Date"/>
-		<parameter name="hdesde" class="java.sql.Time"/>
-		<parameter name="hhasta" class="java.sql.Time"/>
+		<parameter name="desde" class="java.sql.Timestamp"/>
+		<parameter name="hasta" class="java.sql.Timestamp"/>
 		<parameter name="tope" class="java.sql.Date"/>
 		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
@@ -155,8 +157,14 @@ GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 FROM Rubroxfac rf 
 JOIN Facturas f ON f.idfactura = rf.idfactura_facturas 
 JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
-WHERE (date(f.fechacobro) BETWEEN $P{desde} AND $P{hasta} and f.horacobro between $P{hdesde} and $P{hhasta} )    AND f.usuariocobro = $P{usuariocobro}
- AND f.feccrea > $P{tope} AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=$P{desde} or f.fechaanulacion IS NULL) 
+WHERE f.fechacobro >= date_trunc('day', CAST($P{desde} AS timestamp))
+ AND f.fechacobro < date_trunc('day', CAST($P{hasta} AS timestamp)) + interval '1 day'
+ AND f.usuariocobro = $P{usuariocobro}
+ AND rf.idrubro_rubros NOT IN (79, 165)
+ AND f.feccrea > $P{tope}
+ AND NOT f.estado = 3
+ AND f.fechaeliminacion IS NULL
+ AND (f.fechaanulacion IS NULL OR f.fechaanulacion < date_trunc('day', CAST($P{desde} AS timestamp)) + interval '1 day') 
 GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 		</queryString>
 		<field name="idrubro" class="java.lang.Integer">
@@ -185,66 +193,56 @@ GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro]]>
 	<subDataset name="FacFPCobros" uuid="7a0b6bcd-59e4-45b5-adf9-85de4e17f077">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<parameter name="desde" class="java.util.Date"/>
-		<parameter name="hasta" class="java.util.Date"/>
-		<parameter name="hdesde" class="java.sql.Time"/>
-		<parameter name="hhasta" class="java.sql.Time"/>
+		<parameter name="desde" class="java.sql.Timestamp"/>
+		<parameter name="hasta" class="java.sql.Timestamp"/>
 		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
-			<![CDATA[-----
-WITH iva_total AS (
+			<![CDATA[WITH facturas_filtradas AS (
     SELECT 
+        f.idfactura,
         f.formapago,
-        SUM(ROUND(f.swiva::numeric, 2)) AS sumaiva
-    FROM Facturas f
-    WHERE 
-        f.fechacobro BETWEEN $P{desde} AND $P{hasta}
-        AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
-        AND f.estado <> 3 and f.usuariocobro = $P{usuariocobro}
-        AND f.fechaeliminacion IS NULL
-        AND (f.fechaanulacion IS NULL)
-    GROUP BY f.formapago
-),
-
-facturas_filtradas AS (
-    SELECT 
-        f.idfactura, 
-        f.formapago,
-        fc.descripcion, 
-        COALESCE(f.valornotacredito, 0) AS valornotacredito,
+        fc.descripcion,
+        COALESCE(f.valornotacredito, 0)::numeric AS valornotacredito,
+        COALESCE(f.swiva, 0)::numeric AS sumaiva,
         f.swcondonar
     FROM Facturas f
     JOIN Formacobro fc ON f.formapago = fc.idformacobro
     WHERE 
-        f.fechacobro BETWEEN $P{desde} AND $P{hasta}
-        AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
-        AND f.estado <> 3  and f.usuariocobro = $P{usuariocobro}
+        f.fechacobro >= date_trunc('day', CAST($P{desde} AS timestamp))
+        AND f.fechacobro < date_trunc('day', CAST($P{hasta} AS timestamp)) + interval '1 day'
+        AND f.estado <> 3
+        AND f.usuariocobro = $P{usuariocobro}
         AND f.fechaeliminacion IS NULL 
-        AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
+        AND (f.fechaanulacion IS NULL OR f.fechaanulacion < date_trunc('day', CAST($P{desde} AS timestamp)) + interval '1 day')
+),
+factura_totales AS (
+    SELECT
+        ff.idfactura,
+        ff.formapago,
+        ff.descripcion,
+        ff.valornotacredito,
+        ff.sumaiva,
+        ROUND(SUM(
+            CASE
+                WHEN ff.swcondonar IS TRUE AND rf.idrubro_rubros = 6 THEN 0
+                ELSE (rf.valorunitario * rf.cantidad)::numeric
+            END
+        ), 2) AS subtotal
+    FROM facturas_filtradas ff
+    JOIN Rubroxfac rf ON ff.idfactura = rf.idfactura_facturas
+    WHERE rf.idrubro_rubros NOT IN (79, 165)
+    GROUP BY ff.idfactura, ff.formapago, ff.descripcion, ff.valornotacredito, ff.sumaiva
 )
-
 SELECT 
-    f.formapago,
-    f.descripcion,
-    COUNT(f.idfactura) AS nfacturas,
-    
-    ROUND(SUM(CASE 
-        WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 
-        THEN 0 
-        ELSE rf.valorunitario * rf.cantidad 
-    END)::numeric, 2) AS subtotal,
-
-    ROUND(it.sumaiva, 2) AS sumaiva,
-
-    ROUND(SUM(f.valornotacredito)::numeric, 2) AS valornotacredito
-
-FROM facturas_filtradas f
-JOIN Rubroxfac rf ON f.idfactura = rf.idfactura_facturas
-JOIN Rubros r ON r.idrubro = rf.idrubro_rubros
-LEFT JOIN iva_total it ON f.formapago = it.formapago
-
-GROUP BY 
-    f.formapago, f.descripcion, it.sumaiva;]]>
+    ft.formapago,
+    ft.descripcion,
+    COUNT(ft.idfactura) AS nfacturas,
+    ROUND(SUM(ft.subtotal), 2) AS subtotal,
+    ROUND(SUM(ft.sumaiva), 2) AS sumaiva,
+    ROUND(SUM(ft.valornotacredito), 2) AS valornotacredito
+FROM factura_totales ft
+GROUP BY ft.formapago, ft.descripcion
+ORDER BY ft.formapago;]]>
 		</queryString>
 		<field name="formapago" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.name" value="formapago"/>
@@ -273,50 +271,47 @@ GROUP BY
 			<property name="com.jaspersoft.studio.field.label" value="valornotacredito"/>
 		</field>
 	</subDataset>
-	<parameter name="desde" class="java.util.Date"/>
-	<parameter name="hasta" class="java.util.Date"/>
+	<parameter name="desde" class="java.sql.Timestamp"/>
+	<parameter name="hasta" class="java.sql.Timestamp"/>
 	<parameter name="idusuario" class="java.lang.Integer"/>
 	<parameter name="tope" class="java.util.Date"/>
-	<parameter name="hdesde" class="java.sql.Time"/>
-	<parameter name="hhasta" class="java.sql.Time"/>
 	<parameter name="usuariocobro" class="java.lang.Integer"/>
 	<queryString language="SQL">
 		<![CDATA[WITH facturas_validas AS (
-    SELECT DISTINCT f.idfactura, f.swiva
+    SELECT DISTINCT f.idfactura, COALESCE(f.swiva, 0)::numeric AS swiva
     FROM Facturas f
-    WHERE f.fechacobro  BETWEEN $P{desde} AND $P{hasta}
-      AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
+    WHERE f.fechacobro >= date_trunc('day', CAST($P{desde} AS timestamp))
+      AND f.fechacobro < date_trunc('day', CAST($P{hasta} AS timestamp)) + interval '1 day'
       AND f.estado <> 3 and f.usuariocobro = $P{usuariocobro}
       AND f.fechaeliminacion IS NULL 
-      AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
+      AND (f.fechaanulacion IS NULL OR f.fechaanulacion < date_trunc('day', CAST($P{desde} AS timestamp)) + interval '1 day')
+),
+factura_subtotales AS (
+    SELECT
+        f.idfactura,
+        ROUND(SUM(
+            CASE 
+                WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 
+                THEN 0 
+                ELSE (rf.valorunitario * rf.cantidad)::numeric 
+            END
+        ), 2) AS subtotal
+    FROM Rubroxfac rf 
+    JOIN Facturas f ON f.idfactura = rf.idfactura_facturas 
+    JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
+    WHERE 
+        f.fechacobro >= date_trunc('day', CAST($P{desde} AS timestamp))
+        AND f.fechacobro < date_trunc('day', CAST($P{hasta} AS timestamp)) + interval '1 day'
+        AND f.estado <> 3 and f.usuariocobro = $P{usuariocobro}
+        AND rf.idrubro_rubros NOT IN (79, 165)
+        AND f.fechaeliminacion IS NULL 
+        AND (f.fechaanulacion IS NULL OR f.fechaanulacion < date_trunc('day', CAST($P{desde} AS timestamp)) + interval '1 day')
+    GROUP BY f.idfactura
 )
-
 SELECT 
-    COUNT(DISTINCT f.idfactura) AS nfacturas, 
-
-ROUND(
-    SUM(
-        CASE 
-            WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 
-            THEN 0 
-            ELSE (rf.valorunitario * rf.cantidad)::numeric 
-        END
-    ), 2
-) AS subtotal,
-
-
-    (SELECT SUM(ROUND(swiva::numeric, 2)) FROM facturas_validas) AS sumaIva
-
-FROM Rubroxfac rf 
-JOIN Facturas f ON f.idfactura = rf.idfactura_facturas 
-JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
-
-WHERE 
-    f.fechacobro BETWEEN $P{desde} AND $P{hasta}
-    AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
-    AND f.estado <> 3 and f.usuariocobro = $P{usuariocobro}
-    AND f.fechaeliminacion IS NULL 
-    AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde});]]>
+    (SELECT COUNT(*) FROM facturas_validas) AS nfacturas,
+    COALESCE((SELECT SUM(fs.subtotal) FROM factura_subtotales fs), 0) AS subtotal,
+    COALESCE((SELECT SUM(fv.swiva) FROM facturas_validas fv), 0) AS sumaIva;]]>
 	</queryString>
 	<field name="nfacturas" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.name" value="nfacturas"/>
@@ -358,11 +353,8 @@ WHERE
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{desde}) + " " +
-(new java.text.SimpleDateFormat("HH:mm")).format($P{hdesde}) + 
-" - " +
-(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta}) + " " +
-(new java.text.SimpleDateFormat("HH:mm")).format($P{hhasta})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{desde}) + " - " +
+(new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta})]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -390,12 +382,6 @@ WHERE
 						</datasetParameter>
 						<datasetParameter name="hasta">
 							<datasetParameterExpression><![CDATA[$P{hasta}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="hdesde">
-							<datasetParameterExpression><![CDATA[$P{hdesde}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="hhasta">
-							<datasetParameterExpression><![CDATA[$P{hhasta}]]></datasetParameterExpression>
 						</datasetParameter>
 						<datasetParameter name="tope">
 							<datasetParameterExpression><![CDATA[$P{tope}]]></datasetParameterExpression>
@@ -505,12 +491,6 @@ WHERE
 						</datasetParameter>
 						<datasetParameter name="hasta">
 							<datasetParameterExpression><![CDATA[$P{hasta}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="hdesde">
-							<datasetParameterExpression><![CDATA[$P{hdesde}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="hhasta">
-							<datasetParameterExpression><![CDATA[$P{hhasta}]]></datasetParameterExpression>
 						</datasetParameter>
 						<datasetParameter name="tope">
 							<datasetParameterExpression><![CDATA[$P{tope}]]></datasetParameterExpression>
@@ -726,12 +706,6 @@ WHERE
 						</datasetParameter>
 						<datasetParameter name="hasta">
 							<datasetParameterExpression><![CDATA[$P{hasta}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="hdesde">
-							<datasetParameterExpression><![CDATA[$P{hdesde}]]></datasetParameterExpression>
-						</datasetParameter>
-						<datasetParameter name="hhasta">
-							<datasetParameterExpression><![CDATA[$P{hhasta}]]></datasetParameterExpression>
 						</datasetParameter>
 						<datasetParameter name="usuariocobro">
 							<datasetParameterExpression><![CDATA[$P{usuariocobro}]]></datasetParameterExpression>
