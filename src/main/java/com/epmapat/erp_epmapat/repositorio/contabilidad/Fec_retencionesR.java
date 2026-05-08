@@ -14,6 +14,10 @@ public interface Fec_retencionesR extends JpaRepository<Fec_retenciones, Long> {
 
    Fec_retenciones findFirstByClaveaccesoOrderByIdretencionDesc(String claveacceso);
 
+   boolean existsByClaveacceso(String claveacceso);
+
+   boolean existsByClaveaccesoAndIdretencionNot(String claveacceso, Long idretencion);
+
    boolean existsByClaveaccesoAndEstadoIn(String claveacceso, List<String> estados);
 
 }

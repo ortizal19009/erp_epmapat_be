@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.epmapat.erp_epmapat.modelo.contabilidad.Fec_retenciones;
+import com.epmapat.erp_epmapat.modelo.contabilidad.Retenciones;
+import com.epmapat.erp_epmapat.sri.dtos.ClaveAccesoValidationResult;
+import com.epmapat.erp_epmapat.sri.services.RetencionClaveAccesoService;
 import com.epmapat.erp_epmapat.sri.services.RetencionProcesamientoSRIService;
 import com.epmapat.erp_epmapat.sri.services.RetencionEmailService;
 import com.epmapat.erp_epmapat.sri.services.RetencionPdfService;
@@ -32,6 +35,8 @@ public class RetencionSRIController {
 
    @Autowired
    private RetencionSRIService retencionSRIService;
+   @Autowired
+   private RetencionClaveAccesoService retencionClaveAccesoService;
    @Autowired
    private RetencionPdfService retencionPdfService;
    @Autowired
@@ -123,5 +128,20 @@ public class RetencionSRIController {
          @RequestParam(required = false) String errores) {
       Fec_retenciones actualizado = retencionSRIService.actualizarEstado(idretencion, estado, errores);
       return ResponseEntity.ok(actualizado);
+   }
+
+   @GetMapping("/clave-acceso/validar")
+   public ResponseEntity<ClaveAccesoValidationResult> validarClaveAcceso(@RequestParam String claveAcceso) {
+      return ResponseEntity.ok(retencionClaveAccesoService.validarClaveAcceso(claveAcceso));
+   }
+
+   @PostMapping("/{idretencion}/clave-acceso/regenerar")
+   public ResponseEntity<Map<String, Object>> regenerarClaveAcceso(@PathVariable Long idretencion) {
+      Retenciones retencion = retencionClaveAccesoService.regenerarClaveAcceso(idretencion);
+      Fec_retenciones guardado = retencionSRIService.generarYGuardar(idretencion);
+      return ResponseEntity.ok(Map.of(
+            "idretencion", idretencion,
+            "claveAcceso", retencion.getClaveacceso(),
+            "estado", guardado.getEstado()));
    }
 }

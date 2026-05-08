@@ -22,6 +22,8 @@ import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
@@ -38,6 +40,7 @@ import com.epmapat.erp_epmapat.servicio.contabilidad.RetencionesServicio;
 @Service
 public class RetencionSRIService {
 
+   private static final Logger log = LoggerFactory.getLogger(RetencionSRIService.class);
    private static final String VERSION = "1.0.0";
    private static final String COD_DOC_RETENCION = "07";
 
@@ -51,6 +54,10 @@ public class RetencionSRIService {
    private DefinirR definirR;
    @Autowired
    private RetencionesServicio retencionesServicio;
+   @Autowired
+   private RetencionClaveAccesoService retencionClaveAccesoService;
+   @Autowired
+   private RetencionValidator retencionValidator;
    @PersistenceContext
    private EntityManager entityManager;
 
@@ -64,11 +71,13 @@ public class RetencionSRIService {
 
    @Transactional
    public Fec_retenciones generarYGuardar(Long idretencion) {
+      long inicio = System.currentTimeMillis();
       Retenciones retencion = cargarRetencion(idretencion);
       asegurarClaveAcceso(retencion);
       retencion.setEstado(0);
       retencion = retencionesServicio.updateRetencion(idretencion, retencion);
       String xml = generarXml(idretencion);
+      retencionValidator.validarXmlAntesDeFirmar(xml);
 
       Fec_retenciones fec = fecRetencionesR.findById(idretencion).orElseGet(Fec_retenciones::new);
       fec.setIdretencion(idretencion);
@@ -87,11 +96,15 @@ public class RetencionSRIService {
       fec.setPeriodofiscal(formatearPeriodoFiscal(retencion.getFechaemision()));
       fec.setTelefonosujetoretenido(obtenerTelefono(retencion));
       fec.setEmailsujetoretenido(obtenerEmail(retencion));
-      return guardarFecRetencion(fec);
+      Fec_retenciones guardada = guardarFecRetencion(fec);
+      log.info("Retencion {} generada. claveAcceso={}, estado={}, tiempoMs={}",
+            idretencion, guardada.getClaveacceso(), guardada.getEstado(), System.currentTimeMillis() - inicio);
+      return guardada;
    }
 
    @Transactional
-   public Fec_retenciones actualizarXmlAutorizado(Long idretencion, String xmlAutorizado, String estado, String errores) {
+   public Fec_retenciones actualizarXmlAutorizado(Long idretencion, String xmlAutorizado, String estado,
+         String errores) {
       Fec_retenciones fec = fecRetencionesR.findById(idretencion).orElseGet(Fec_retenciones::new);
       fec.setIdretencion(idretencion);
       if (xmlAutorizado != null) {
@@ -223,9 +236,12 @@ public class RetencionSRIService {
                   obtenerCodigoRetencionDesdeRetencion(retencion, referencia),
                   "1");
             linea.baseImponible = sumarBaseImponible(grupo, retencion, referencia);
-            linea.porcentajeRetener = resolverPorcentajeRetener(retencion, referencia, linea.codigoRetencion, linea.baseImponible);
-            linea.valorRetenido = resolverValorRetenido(retencion, referencia, linea.codigoRetencion, linea.baseImponible, linea.porcentajeRetener);
-            linea.codDocSustento = firstNonBlank(referencia.getCodigodocumentosustento(), obtenerCodigoSustento(retencion));
+            linea.porcentajeRetener = resolverPorcentajeRetener(retencion, referencia, linea.codigoRetencion,
+                  linea.baseImponible);
+            linea.valorRetenido = resolverValorRetenido(retencion, referencia, linea.codigoRetencion,
+                  linea.baseImponible, linea.porcentajeRetener);
+            linea.codDocSustento = firstNonBlank(referencia.getCodigodocumentosustento(),
+                  obtenerCodigoSustento(retencion));
             linea.numDocSustento = formatearNumeroDocumentoSustento(
                   firstNonBlank(referencia.getNumerodocumentosustento(), retencion.getNumdoc()));
             linea.fechaEmisionDocSustento = referencia.getFechaemisiondocumentosustento() != null
@@ -236,18 +252,27 @@ public class RetencionSRIService {
          return resultado;
       }
 
-      agregarLineaDesdeRetencion(resultado, retencion, retencion.getCodretair(), retencion.getBaseimpair(), retencion.getPorcentajeair(),
-            retencion.getValretair(), "1", obtenerCodigoSustento(retencion), retencion.getNumdoc(), retencion.getFechaemision());
-      agregarLineaDesdeRetencion(resultado, retencion, retencion.getCodretbienes(), retencion.getMontoivabienes(), retencion.getPorretbienes(),
-            retencion.getValorretbienes(), "2", obtenerCodigoSustento(retencion), retencion.getNumdoc(), retencion.getFechaemision());
-      agregarLineaDesdeRetencion(resultado, retencion, retencion.getCodretservicios(), retencion.getMontoivaservicios(), retencion.getPorretservicios(),
-            retencion.getValorretservicios(), "2", obtenerCodigoSustento(retencion), retencion.getNumdoc(), retencion.getFechaemision());
-      agregarLineaDesdeRetencion(resultado, retencion, retencion.getCodretserv100(), retencion.getMontoivaserv100(), retencion.getPorretserv100(),
-            retencion.getValretserv100(), "2", obtenerCodigoSustento(retencion), retencion.getNumdoc(), retencion.getFechaemision());
+      agregarLineaDesdeRetencion(resultado, retencion, retencion.getCodretair(), retencion.getBaseimpair(),
+            retencion.getPorcentajeair(),
+            retencion.getValretair(), "1", obtenerCodigoSustento(retencion), retencion.getNumdoc(),
+            retencion.getFechaemision());
+      agregarLineaDesdeRetencion(resultado, retencion, retencion.getCodretbienes(), retencion.getMontoivabienes(),
+            retencion.getPorretbienes(),
+            retencion.getValorretbienes(), "2", obtenerCodigoSustento(retencion), retencion.getNumdoc(),
+            retencion.getFechaemision());
+      agregarLineaDesdeRetencion(resultado, retencion, retencion.getCodretservicios(), retencion.getMontoivaservicios(),
+            retencion.getPorretservicios(),
+            retencion.getValorretservicios(), "2", obtenerCodigoSustento(retencion), retencion.getNumdoc(),
+            retencion.getFechaemision());
+      agregarLineaDesdeRetencion(resultado, retencion, retencion.getCodretserv100(), retencion.getMontoivaserv100(),
+            retencion.getPorretserv100(),
+            retencion.getValretserv100(), "2", obtenerCodigoSustento(retencion), retencion.getNumdoc(),
+            retencion.getFechaemision());
       return resultado;
    }
 
-   private void agregarLineaDesdeRetencion(List<ImpuestoRetencionXml> resultado, Retenciones retencion, String codigoRetencion,
+   private void agregarLineaDesdeRetencion(List<ImpuestoRetencionXml> resultado, Retenciones retencion,
+         String codigoRetencion,
          BigDecimal baseImponible, Number porcentajeRetener, BigDecimal valorRetenido, String codigo,
          String codDocSustento, String numDocSustento, Date fechaEmisionDocSustento) {
       if (codigoRetencion == null && baseImponible == null && valorRetenido == null) {
@@ -255,10 +280,13 @@ public class RetencionSRIService {
       }
       ImpuestoRetencionXml linea = new ImpuestoRetencionXml();
       linea.codigo = firstNonBlank(codigo, "2");
-      linea.codigoRetencion = firstNonBlank(codigoRetencion, obtenerCodigoRetencionDesdeRetencion(retencion, null), "1");
+      linea.codigoRetencion = firstNonBlank(codigoRetencion, obtenerCodigoRetencionDesdeRetencion(retencion, null),
+            "1");
       linea.baseImponible = baseImponible != null ? baseImponible : BigDecimal.ZERO;
-      linea.porcentajeRetener = porcentajeRetener != null ? new BigDecimal(String.valueOf(porcentajeRetener)) : BigDecimal.ZERO;
-      linea.valorRetenido = valorRetenido != null ? valorRetenido : calcularValorRetenido(linea.baseImponible, linea.porcentajeRetener);
+      linea.porcentajeRetener = porcentajeRetener != null ? new BigDecimal(String.valueOf(porcentajeRetener))
+            : BigDecimal.ZERO;
+      linea.valorRetenido = valorRetenido != null ? valorRetenido
+            : calcularValorRetenido(linea.baseImponible, linea.porcentajeRetener);
       linea.codDocSustento = codDocSustento;
       linea.numDocSustento = formatearNumeroDocumentoSustento(numDocSustento);
       linea.fechaEmisionDocSustento = fechaEmisionDocSustento;
@@ -268,14 +296,18 @@ public class RetencionSRIService {
    private String construirXml(Retenciones retencion, Definir definir, List<ImpuestoRetencionXml> lineas) {
       StringBuilder xml = new StringBuilder();
       xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-      xml.append("<comprobanteRetencion id=\"comprobante\" version=\"").append(VERSION).append("\">\n");
+      xml.append(
+            "<comprobanteRetencion id=\"comprobante\" version=\"1.0.0\" "
+                  + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                  + "xsi:noNamespaceSchemaLocation=\"comprobanteRetencion_v1.0.0.xsd\">\n");
       xml.append("  <infoTributaria>\n");
       appendTag(xml, "    ", "ambiente", valueOf(definir != null ? definir.getTipoambiente() : null, "1"));
       appendTag(xml, "    ", "tipoEmision", "1");
       appendTag(xml, "    ", "razonSocial", valueOf(definir != null ? definir.getRazonsocial() : null));
       appendTag(xml, "    ", "nombreComercial", valueOf(definir != null ? definir.getNombrecomercial() : null));
       appendTag(xml, "    ", "ruc", valueOf(definir != null ? definir.getRuc() : null));
-      appendTag(xml, "    ", "claveAcceso", valueOf(retencion.getClaveacceso() != null ? retencion.getClaveacceso() : retencion.getNumautoriza()));
+      appendTag(xml, "    ", "claveAcceso",
+            valueOf(retencion.getClaveacceso() != null ? retencion.getClaveacceso() : retencion.getNumautoriza()));
       appendTag(xml, "    ", "codDoc", COD_DOC_RETENCION);
       appendTag(xml, "    ", "estab", obtenerEstablecimiento(retencion));
       appendTag(xml, "    ", "ptoEmi", obtenerPuntoEmision(retencion));
@@ -383,7 +415,8 @@ public class RetencionSRIService {
                retencion != null ? retencion.getCodretserv100() : null,
                "1");
       }
-      if (retencion != null && matchesAny(codigo, retencion.getCodretair(), retencion.getCodretbienes(), retencion.getCodretservicios(), retencion.getCodretserv100())) {
+      if (retencion != null && matchesAny(codigo, retencion.getCodretair(), retencion.getCodretbienes(),
+            retencion.getCodretservicios(), retencion.getCodretserv100())) {
          return codigo;
       }
       return firstNonBlank(
@@ -419,7 +452,8 @@ public class RetencionSRIService {
       return retencion.getBaseimponible() != null ? retencion.getBaseimponible() : BigDecimal.ZERO;
    }
 
-   private BigDecimal resolverPorcentajeRetener(Retenciones retencion, Fec_reteimpu detalle, String codigoRetencion, BigDecimal baseImponible) {
+   private BigDecimal resolverPorcentajeRetener(Retenciones retencion, Fec_reteimpu detalle, String codigoRetencion,
+         BigDecimal baseImponible) {
       if (codigoRetencion != null) {
          if (codigoRetencion.equals(retencion.getCodretair()) && retencion.getPorcentajeair() != null) {
             return retencion.getPorcentajeair().setScale(2, RoundingMode.HALF_UP);
@@ -440,7 +474,8 @@ public class RetencionSRIService {
       }
 
       if (baseImponible != null && baseImponible.compareTo(BigDecimal.ZERO) > 0) {
-         BigDecimal valorRet = resolverValorRetenido(retencion, detalle, codigoRetencion, baseImponible, BigDecimal.ZERO);
+         BigDecimal valorRet = resolverValorRetenido(retencion, detalle, codigoRetencion, baseImponible,
+               BigDecimal.ZERO);
          if (valorRet.compareTo(BigDecimal.ZERO) > 0) {
             return valorRet.multiply(BigDecimal.valueOf(100)).divide(baseImponible, 2, RoundingMode.HALF_UP);
          }
@@ -521,15 +556,7 @@ public class RetencionSRIService {
    }
 
    private void asegurarClaveAcceso(Retenciones retencion) {
-      String fechaEmision = formatearFechaClave(retencion.getFechaemision());
-      String claveActual = normalizarNumero(retencion.getClaveacceso());
-      Definir definir = getDefinir();
-      if (esClaveAccesoRetencionValida(claveActual, retencion, definir, fechaEmision)) {
-         return;
-      }
-      String nuevaClave = generarClaveAcceso(retencion, definir, fechaEmision);
-      retencion.setClaveacceso(nuevaClave);
-      retencionesR.save(retencion);
+      retencionClaveAccesoService.asegurarClaveAcceso(retencion);
    }
 
    private String generarClaveAcceso(Retenciones retencion, Definir definir, String fechaEmision) {
@@ -543,14 +570,16 @@ public class RetencionSRIService {
       String secuencial = formatearSecuencial(retencion.getSecretencion1(), retencion.getIdrete());
       String codigoNumerico = String.format("%08d", ThreadLocalRandom.current().nextInt(0, 100000000));
       String tipoEmision = "1";
-      String base48 = fechaEmision + tipoComprobante + ruc + ambiente + serie + secuencial + codigoNumerico + tipoEmision;
+      String base48 = fechaEmision + tipoComprobante + ruc + ambiente + serie + secuencial + codigoNumerico
+            + tipoEmision;
       if (base48.length() != 48 || !base48.chars().allMatch(Character::isDigit)) {
          throw new IllegalStateException("La base de la clave de acceso debe contener 48 dígitos numéricos");
       }
       return base48 + calcularDigitoVerificadorModulo11(base48);
    }
 
-   private boolean esClaveAccesoRetencionValida(String claveActual, Retenciones retencion, Definir definir, String fechaEmision) {
+   private boolean esClaveAccesoRetencionValida(String claveActual, Retenciones retencion, Definir definir,
+         String fechaEmision) {
       if (claveActual.length() != 49 || !claveActual.chars().allMatch(Character::isDigit)) {
          return false;
       }
@@ -581,7 +610,8 @@ public class RetencionSRIService {
       if (date instanceof java.sql.Date) {
          return ((java.sql.Date) date).toLocalDate().format(DateTimeFormatter.ofPattern("ddMMyyyy"));
       }
-      return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+      return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+            .format(DateTimeFormatter.ofPattern("ddMMyyyy"));
    }
 
    private String obtenerEstablecimiento(Retenciones retencion) {
