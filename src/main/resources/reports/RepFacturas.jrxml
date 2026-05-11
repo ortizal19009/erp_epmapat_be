@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -115,11 +115,11 @@ WHERE
     SUM(CASE WHEN ei.idlecturaanterior IS NOT NULL THEN (rf2.cantidad * rf2.valorunitario) - (rf.cantidad * rf.valorunitario) ELSE 0 END) AS diferencia
 FROM lecturas l
 JOIN facturas f ON l.idfactura = f.idfactura
-JOIN rubroxfac rf ON l.idfactura = rf.idfactura_facturas
+JOIN rubroxfac rf ON l.idfactura = rf.idfactura_facturas AND (rf.estado IS NULL OR rf.estado <> 0)
 JOIN rubros r ON rf.idrubro_rubros = r.idrubro
 LEFT JOIN emisionindividual ei ON l.idlectura = ei.idlecturaanterior 
 LEFT JOIN lecturas l2 ON ei.idlecturanueva = l2.idlectura
-LEFT JOIN rubroxfac rf2 ON l2.idfactura = rf2.idfactura_facturas AND rf2.idrubro_rubros = rf.idrubro_rubros  
+LEFT JOIN rubroxfac rf2 ON l2.idfactura = rf2.idfactura_facturas AND rf2.idrubro_rubros = rf.idrubro_rubros AND (rf2.estado IS NULL OR rf2.estado <> 0)  
 WHERE f.fechaeliminacion BETWEEN $P{desde}  AND $P{hasta}
   AND rf.idrubro_rubros NOT IN (5, 165)
 GROUP BY 
@@ -150,14 +150,14 @@ ORDER BY
 			<![CDATA[WITH valor_anterior AS (
     SELECT idfactura_facturas, SUM(cantidad * valorunitario) AS total_anterior
     FROM rubroxfac
-    WHERE idrubro_rubros NOT IN (5, 165)
+    WHERE (estado IS NULL OR estado <> 0) AND idrubro_rubros NOT IN (5, 165)
     GROUP BY idfactura_facturas
 ),
 valor_nuevo AS (
     SELECT l2.idfactura, SUM(rf2.cantidad * rf2.valorunitario) AS total_nuevo
     FROM lecturas l2
     JOIN rubroxfac rf2 ON l2.idfactura = rf2.idfactura_facturas
-    WHERE rf2.idrubro_rubros NOT IN (5, 165)
+    WHERE (rf2.estado IS NULL OR rf2.estado <> 0) AND rf2.idrubro_rubros NOT IN (5, 165)
     GROUP BY l2.idfactura
 )
 SELECT
@@ -307,7 +307,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<text><![CDATA[CÓDIGO]]></text>
+								<text><![CDATA[CÃ“DIGO]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell height="15">
@@ -933,7 +933,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="7" isBold="true"/>
 								</textElement>
-								<text><![CDATA[RAZÓN ELIMINACIÓN]]></text>
+								<text><![CDATA[RAZÃ“N ELIMINACIÃ“N]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell height="15">
@@ -989,7 +989,7 @@ ORDER BY c.nombre, e.emision;]]>
 					<textElement verticalAlignment="Middle">
 						<font size="10" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["© " + new java.text.SimpleDateFormat("yyyy").format(new java.util.Date()) + " EPMAPA-Tulcán - Todos los derechos reservados"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Â© " + new java.text.SimpleDateFormat("yyyy").format(new java.util.Date()) + " EPMAPA-TulcÃ¡n - Todos los derechos reservados"]]></textFieldExpression>
 				</textField>
 			</frame>
 			<componentElement>
@@ -1090,3 +1090,8 @@ ORDER BY c.nombre, e.emision;]]>
 		</band>
 	</summary>
 </jasperReport>
+
+
+
+
+

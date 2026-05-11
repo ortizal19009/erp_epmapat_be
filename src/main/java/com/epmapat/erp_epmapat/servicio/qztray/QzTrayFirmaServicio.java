@@ -11,10 +11,12 @@ import java.util.Base64;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConditionalOnProperty(prefix = "qztray", name = "enabled", havingValue = "true")
 public class QzTrayFirmaServicio {
 
     private static final String KEYSTORE_RESOURCE = "qztray/qztray.p12";

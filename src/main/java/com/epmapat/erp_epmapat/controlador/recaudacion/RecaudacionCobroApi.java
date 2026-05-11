@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.DTO.LoginRequest;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaDTO;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaOperacionResponse;
@@ -46,6 +47,11 @@ public class RecaudacionCobroApi {
             @RequestParam String username,
             @RequestParam String password) {
         return ResponseEntity.ok(recaudacionCobroServicio.abrirCaja(username, password));
+    }
+
+    @PostMapping("/caja/abrir")
+    public ResponseEntity<RecaudacionCajaOperacionResponse> abrirCajaPost(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(recaudacionCobroServicio.abrirCaja(request.getUsername(), request.getPassword()));
     }
 
     @PutMapping("/caja/cerrar")

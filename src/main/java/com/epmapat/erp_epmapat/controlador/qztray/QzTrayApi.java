@@ -2,6 +2,7 @@ package com.epmapat.erp_epmapat.controlador.qztray;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,6 +12,7 @@ import com.epmapat.erp_epmapat.servicio.qztray.QzTrayFirmaServicio;
 
 @RestController
 @RequestMapping("/qz")
+@ConditionalOnProperty(prefix = "qztray", name = "enabled", havingValue = "true")
 public class QzTrayApi {
 
     private final QzTrayFirmaServicio firmaServicio;

@@ -28,6 +28,7 @@ import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroResponse;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.interfaces.FacturasSinCobroInter;
+import com.epmapat.erp_epmapat.excepciones.CredencialesInvalidasException;
 import com.epmapat.erp_epmapat.modelo.Cajas;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.Facxrecauda;
@@ -248,12 +249,12 @@ public class RecaudacionCobroServicio {
 
         var login = usuarioServicio.chargeLogin(username.trim());
         if (login == null || login.getNomusu() == null || login.getCodusu() == null) {
-            throw new IllegalArgumentException("Credenciales incorrectas.");
+            throw new CredencialesInvalidasException("Credenciales incorrectas.");
         }
 
         if (!Objects.equals(login.getNomusu(), username.trim())
                 || !Objects.equals(login.getCodusu(), encriptarClave(password))) {
-            throw new IllegalArgumentException("Credenciales incorrectas.");
+            throw new CredencialesInvalidasException("Credenciales incorrectas.");
         }
 
         Usuarios usuario = usuarioServicio.findById(login.getIdusuario())

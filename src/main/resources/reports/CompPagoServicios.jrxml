@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="226" pageHeight="842" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -70,7 +70,7 @@ FROM rubroxfac rf
 	join rubros r ON 
 	 rf.idrubro_rubros = r.idrubro 
 WHERE 
-	 rf.idfactura_facturas = $P{idfactura} 
+	 rf.idfactura_facturas = $P{idfactura} AND (rf.estado IS NULL OR rf.estado <> 0) 
 	 AND NOT  ( 
 	 rf.idrubro_rubros = 165 
 	 OR rf.idrubro_rubros = 5)]]>
@@ -122,7 +122,7 @@ WHERE
 FROM facturas f
 JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas 
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros 
-WHERE rf.idrubro_rubros NOT IN (165, 5)
+WHERE (rf.estado IS NULL OR rf.estado <> 0) AND rf.idrubro_rubros NOT IN (165, 5)
   AND f.idfactura = $P{idfactura}
 GROUP BY rf.idfactura_facturas, f.swiva, f.interescobrado, f.valornotacredito]]>
 		</queryString>
@@ -320,7 +320,7 @@ where
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Ruc/Cédula:]]></text>
+				<text><![CDATA[Ruc/CÃ©dula:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="20" y="60" width="80" height="20" uuid="85e74fd7-ce42-4fa4-abfa-b85ee5fb57ea"/>
@@ -348,7 +348,7 @@ where
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Dirección:]]></text>
+				<text><![CDATA[DirecciÃ³n:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="20" y="140" width="80" height="20" uuid="ba2b233f-0d4f-4f38-86e7-fab1aed6bd1e"/>
@@ -362,7 +362,7 @@ where
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Módulo:]]></text>
+				<text><![CDATA[MÃ³dulo:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="20" y="120" width="80" height="20" uuid="92eebb7d-ea1a-46c1-93de-53edba6b3f88"/>
@@ -529,7 +529,7 @@ where
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<text><![CDATA[DESCRIPCIÓN]]></text>
+								<text><![CDATA[DESCRIPCIÃ“N]]></text>
 							</staticText>
 						</jr:tableHeader>
 						<jr:detailCell style="Table_TD" height="15">
@@ -662,7 +662,7 @@ where
 								<textElement verticalAlignment="Middle">
 									<font size="7" isBold="true"/>
 								</textElement>
-								<text><![CDATA[NOTA CRÉDITO:]]></text>
+								<text><![CDATA[NOTA CRÃ‰DITO:]]></text>
 							</staticText>
 						</jr:tableFooter>
 						<jr:columnHeader style="Table 1_TD" height="15" rowSpan="1">
@@ -714,7 +714,7 @@ where
 								<textElement verticalAlignment="Middle">
 									<font size="7" isBold="true"/>
 								</textElement>
-								<text><![CDATA[INTERÉS:]]></text>
+								<text><![CDATA[INTERÃ‰S:]]></text>
 							</staticText>
 						</jr:detailCell>
 					</jr:column>
@@ -880,8 +880,14 @@ where
 					<font size="6" isItalic="true"/>
 				</textElement>
 				<text><![CDATA[
-Para mas información visita: www.epmapatulcan.gob.ec]]></text>
+Para mas informaciÃ³n visita: www.epmapatulcan.gob.ec]]></text>
 			</staticText>
 		</band>
 	</summary>
 </jasperReport>
+
+
+
+
+
+

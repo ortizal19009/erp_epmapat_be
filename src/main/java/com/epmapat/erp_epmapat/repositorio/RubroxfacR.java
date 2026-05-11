@@ -1,4 +1,4 @@
-package com.epmapat.erp_epmapat.repositorio;
+﻿package com.epmapat.erp_epmapat.repositorio;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,7 +28,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	// nativeQuery=true)
 	// public List<Rubroxfac> findByFactura(Long nrofactura);
 
-	// Campos específicos: Rubro y Valor de una Factura (Planilla)
+	// Campos especÃ­ficos: Rubro y Valor de una Factura (Planilla)
 	@Query("SELECT new map(" +
 			"r.descripcion as descripcion, " + "rf.valorunitario as valorunitario) " +
 			"FROM Rubroxfac rf INNER JOIN Rubros r ON r.idrubro = rf.idrubro_rubros WHERE rf.idfactura_facturas=?1 AND rf.estado = 1 order by rf.idrubro_rubros")
@@ -76,6 +76,10 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and r.estado = 1 order by idrubro_rubros", nativeQuery = true)
 	public List<Rubroxfac> findByIdfactura(Long idfactura);
 
+	// Rubros de una Planilla para detalle historico
+	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and (r.estado is null or r.estado <> 0) order by idrubro_rubros", nativeQuery = true)
+	public List<Rubroxfac> findDetalleByIdfactura(Long idfactura);
+
 	// Rubros de una Planilla (Sin rubro 165 (Iva del siim 'esiva'))
 	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and r.estado = 1 and idrubro_rubros <> 165 order by idrubro_rubros", nativeQuery = true)
 	public List<Rubroxfac> findByIdfactura1(Long idfactura);
@@ -116,7 +120,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro", nativeQuery = true)
 	List<Object[]> totalRubrosAnteriorRangos(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
 
-	// Recaudcion diaria - Total por Rubro Año actual (Desde Facturas)
+	// Recaudcion diaria - Total por Rubro AÃ±o actual (Desde Facturas)
 	@Query(value = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , r.swiva AS iva "
 			+
 			"FROM Rubroxfac rf " +
@@ -138,7 +142,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro", nativeQuery = true)
 	List<Object[]> totalRubrosAnteriorByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
 
-	// Recaudcion diaria - Total por Rubro Año actual (Desde Facturas)
+	// Recaudcion diaria - Total por Rubro AÃ±o actual (Desde Facturas)
 	@Query(value = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , r.swiva AS iva "
 			+
 			"FROM Rubroxfac rf " +
@@ -160,7 +164,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro", nativeQuery = true)
 	List<Object[]> totalRubrosAnterior(LocalDate fecha, LocalDate hasta);
 
-	// Recaudcion diaria - Total por Rubro Año actual (Desde Facturas)
+	// Recaudcion diaria - Total por Rubro AÃ±o actual (Desde Facturas)
 	@Query(value = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , r.swiva AS iva "
 			+
 			"FROM Rubroxfac rf " +
@@ -369,6 +373,8 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			@Param("idrubro") Long idrubro);
 
 }
+
+
 
 
 

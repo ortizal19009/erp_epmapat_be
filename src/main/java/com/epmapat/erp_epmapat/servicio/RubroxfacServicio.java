@@ -52,6 +52,11 @@ public class RubroxfacServicio {
 		return dao.findByIdfactura(idfactura);
 	}
 
+	// Rubros de una Planilla para detalle historico
+	public List<Rubroxfac> getDetalleByIdfactura(Long idfactura) {
+		return dao.findDetalleByIdfactura(idfactura);
+	}
+
 	// Rubros de una Planilla
 	public List<Rubroxfac> getByIdfactura1(Long idfactura) {
 		return dao.findByIdfactura1(idfactura);

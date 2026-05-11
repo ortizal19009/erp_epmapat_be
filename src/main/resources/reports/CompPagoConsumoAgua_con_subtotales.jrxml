@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="226" pageHeight="842" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -38,13 +38,13 @@
 			<![CDATA[-- 1) CONSOLIDADO: 1006 + 1007 => 1004 (UNA SOLA FILA)
 SELECT
     1004 AS idrubro,
-    'Conservación de fuentes' AS descripcion,
+    'ConservaciÃ³n de fuentes' AS descripcion,
     1::numeric AS cantidad,
     COALESCE(SUM(rf.valorunitario), 0)::numeric AS valorunitario,
     COALESCE(SUM(rf.valorunitario), 0)::numeric AS total
 FROM rubroxfac rf
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros
-WHERE rf.idfactura_facturas = $P{idfactura}
+WHERE rf.idfactura_facturas = $P{idfactura} AND (rf.estado IS NULL OR rf.estado <> 0)
   AND r.ajenos = false
   AND rf.idrubro_rubros IN (1006, 1007)
 
@@ -59,7 +59,7 @@ SELECT
     COALESCE(SUM(rf.cantidad * rf.valorunitario), 0)::numeric AS total
 FROM rubroxfac rf
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros
-WHERE rf.idfactura_facturas = $P{idfactura}
+WHERE rf.idfactura_facturas = $P{idfactura} AND (rf.estado IS NULL OR rf.estado <> 0)
   AND r.ajenos = false
   AND rf.idrubro_rubros <> 165 
   AND rf.idrubro_rubros NOT IN (1006, 1007)
@@ -118,7 +118,7 @@ ORDER BY idrubro;]]>
 FROM facturas f
 JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas 
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros 
-WHERE rf.idrubro_rubros NOT IN (165, 5)
+WHERE (rf.estado IS NULL OR rf.estado <> 0) AND rf.idrubro_rubros NOT IN (165, 5)
   AND f.idfactura = $P{idfactura}
 GROUP BY rf.idfactura_facturas, f.swiva, f.interescobrado, f.valornotacredito]]>
 		</queryString>
@@ -189,7 +189,7 @@ FROM rubroxfac rf
 	join rubros r ON 
 	 rf.idrubro_rubros = r.idrubro 
 WHERE 
-	 rf.idfactura_facturas = $P{idfactura} AND r.ajenos = true
+	 rf.idfactura_facturas = $P{idfactura} AND (rf.estado IS NULL OR rf.estado <> 0) AND r.ajenos = true
 	 AND NOT  ( 
 	 rf.idrubro_rubros = 165 
 	 OR rf.idrubro_rubros = 5)]]>
@@ -235,7 +235,7 @@ WHERE
  (SELECT COUNT(*)
     FROM rubroxfac rf2
     JOIN rubros r2 ON r2.idrubro = rf2.idrubro_rubros
-   WHERE rf2.idfactura_facturas = f.idfactura
+   WHERE rf2.idfactura_facturas = f.idfactura AND (rf2.estado IS NULL OR rf2.estado <> 0)
      AND r2.ajenos = true
      AND rf2.idrubro_rubros NOT IN (165, 5)
  ) AS cnt_ajenos
@@ -447,7 +447,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Ruc/Cédula:]]></text>
+				<text><![CDATA[Ruc/CÃ©dula:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="56" width="80" height="14" uuid="90534fd1-6ab2-422a-9bf7-8d0f07d672d1"/>
@@ -489,7 +489,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Dirección:]]></text>
+				<text><![CDATA[DirecciÃ³n:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="98" width="40" height="14" uuid="7cf3e0c3-142e-4ea8-9cde-cf971f7b1c34"/>
@@ -517,7 +517,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Módulo:]]></text>
+				<text><![CDATA[MÃ³dulo:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="154" width="80" height="14" uuid="92eebb7d-ea1a-46c1-93de-53edba6b3f88"/>
@@ -559,7 +559,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Categoría:]]></text>
+				<text><![CDATA[CategorÃ­a:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="112" width="40" height="14" uuid="4e071562-d59f-495a-931d-0542bc139021"/>
@@ -811,7 +811,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Emisión:]]></text>
+				<text><![CDATA[EmisiÃ³n:]]></text>
 			</staticText>
 		</band>
 	</pageHeader>
@@ -839,7 +839,7 @@ where l.idfactura = $P{idfactura}]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<text><![CDATA[DESCRIPCIÓN]]></text>
+								<text><![CDATA[DESCRIPCIÃ“N]]></text>
 							</staticText>
 						</jr:tableHeader>
 						<jr:detailCell style="Table_TD" height="15">
@@ -996,7 +996,7 @@ where l.idfactura = $P{idfactura}]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<text><![CDATA[DESCRIPCIÓN]]></text>
+								<text><![CDATA[DESCRIPCIÃ“N]]></text>
 							</staticText>
 						</jr:tableHeader>
 						<jr:detailCell style="Table_TD" height="15">
@@ -1147,7 +1147,7 @@ where l.idfactura = $P{idfactura}]]>
 								<textElement verticalAlignment="Middle">
 									<font size="7" isBold="true"/>
 								</textElement>
-								<text><![CDATA[NOTA CRÉDITO:]]></text>
+								<text><![CDATA[NOTA CRÃ‰DITO:]]></text>
 							</staticText>
 						</jr:columnFooter>
 						<jr:detailCell height="15">
@@ -1383,8 +1383,12 @@ where l.idfactura = $P{idfactura}]]>
 					<font size="6" isItalic="true"/>
 				</textElement>
 				<text><![CDATA[
-Para más información visita: www.epmapatulcan.gob.ec]]></text>
+Para mÃ¡s informaciÃ³n visita: www.epmapatulcan.gob.ec]]></text>
 			</staticText>
 		</band>
 	</summary>
 </jasperReport>
+
+
+
+
