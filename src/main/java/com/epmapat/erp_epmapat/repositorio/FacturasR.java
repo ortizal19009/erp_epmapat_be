@@ -62,6 +62,44 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	// Planillas por Cliente (sinCobrar para cartera vencida)
 	@Query(value = """
+			SELECT
+			    rf.idfactura_facturas AS factura,
+			    c.nombre AS nombre,
+			    c.idcliente AS idcliente,
+			    m.descripcion AS modulo,
+			    CAST(SUM(rf.cantidad * rf.valorunitario) AS numeric(18,2)) AS total,
+			    f.idabonado AS cuenta,
+			    CAST(tf.totalFactura AS numeric(18,2)) AS totalFactura,
+			    f.feccrea AS feccrea
+			FROM rubroxfac rf
+			JOIN facturas f ON rf.idfactura_facturas = f.idfactura
+			JOIN rubros r ON rf.idrubro_rubros = r.idrubro
+			JOIN clientes c ON f.idcliente = c.idcliente
+			JOIN modulos m ON f.idmodulo = m.idmodulo
+			JOIN (
+			    SELECT
+			        rf2.idfactura_facturas,
+			        SUM(rf2.cantidad * rf2.valorunitario) AS totalFactura
+			    FROM rubroxfac rf2
+			    WHERE rf2.estado = 1
+			    GROUP BY rf2.idfactura_facturas
+			) tf ON tf.idfactura_facturas = f.idfactura
+			WHERE f.totaltarifa > 0
+			  AND f.idcliente = ?1
+			  AND f.feccrea <= ?2
+			  AND (((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?2 OR f.fechacobro IS NULL)) OR f.estado = 3)
+			  AND NOT ((f.idmodulo = 3 AND f.idabonado > 0) OR f.idmodulo = 4)
+			  AND f.fechaconvenio IS NULL
+			  AND f.fechaeliminacion IS NULL
+			  AND rf.idrubro_rubros NOT IN (79, 5, 165)
+			  AND rf.estado = 1
+			GROUP BY
+			    rf.idfactura_facturas, c.nombre, c.idcliente, m.descripcion, f.idabonado, tf.totalFactura, f.feccrea
+			ORDER BY total DESC
+			""", nativeQuery = true)
+	public List<CVFacturasNoConsumo> SinCobroOfCV(Long idcliente, LocalDate date);
+
+	@Query(value = """
 			    SELECT
 			      f.idfactura,
 			      f.idmodulo,
