@@ -15,7 +15,6 @@ import com.epmapat.erp_epmapat.DTO.RecargosxcuentaAuditDTO;
 import com.epmapat.erp_epmapat.DTO.ValidarRecargosRequest;
 import com.epmapat.erp_epmapat.DTO.ValidarRecargosResponse;
 import com.epmapat.erp_epmapat.excepciones.BusinessConflictException;
-import com.epmapat.erp_epmapat.modelo.AuditoriaGenerica;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.modelo.Recargosxcuenta;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
@@ -26,7 +25,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
 public class RecargosxcuentaService {

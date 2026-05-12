@@ -3,7 +3,6 @@ package com.epmapat.erp_epmapat.emails.service;
 import com.epmapat.erp_epmapat.emails.dtos.EmailBlacklistRequest;
 import com.epmapat.erp_epmapat.emails.dtos.EmailBlacklistResponse;
 import com.epmapat.erp_epmapat.emails.model.EmailBlacklist;
-import com.epmapat.erp_epmapat.emails.model.EmailBlacklistType;
 import com.epmapat.erp_epmapat.emails.repository.EmailBlacklistR;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

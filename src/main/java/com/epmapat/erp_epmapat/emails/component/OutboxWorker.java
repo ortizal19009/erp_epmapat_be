@@ -1,6 +1,5 @@
 package com.epmapat.erp_epmapat.emails.component;
 
-import com.epmapat.erp_epmapat.emails.model.EmailMessage;
 import com.epmapat.erp_epmapat.emails.model.EmailStatus;
 import com.epmapat.erp_epmapat.emails.repository.EmailMessageR;
 import com.epmapat.erp_epmapat.emails.service.EmailProcessorService;

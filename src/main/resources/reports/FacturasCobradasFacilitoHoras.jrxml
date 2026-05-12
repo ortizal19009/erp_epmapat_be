@@ -92,6 +92,7 @@ WHERE
   WHERE f.usuariocobro = $P{usuariocobro}
     AND (f.fechacobro::timestamp + COALESCE(f.horacobro, '00:00'::time))
           BETWEEN $P{desde} AND $P{hasta}
+    AND (rf.estado IS NULL OR rf.estado = 1)
     AND rf.idrubro_rubros NOT IN (5, 165)
 )
 SELECT
@@ -110,7 +111,8 @@ SELECT
 
 FROM facturas_validas fv
 JOIN rubroxfac rf ON rf.idfactura_facturas = fv.idfactura
-WHERE rf.idrubro_rubros NOT IN (5, 165);
+WHERE rf.idrubro_rubros NOT IN (5, 165)
+  AND (rf.estado IS NULL OR rf.estado = 1);
 ]]>
 		</queryString>
 		<field name="nfacturas" class="java.lang.Long">
@@ -158,6 +160,7 @@ WHERE
   AND (f.fechacobro::timestamp + COALESCE(f.horacobro, '00:00'::time))
         BETWEEN $P{desde} AND $P{hasta}
   AND rf.idrubro_rubros NOT IN (5, 165)
+  AND (rf.estado IS NULL OR rf.estado = 1)
 GROUP BY
   f.idfactura, f.nrofactura, f.fechacobro, f.horacobro, f.swiva,
   f.interescobrado, c.nombre, c.cedula, u.nomusu, m.descripcion, fc.descripcion

@@ -18,7 +18,6 @@ import org.hibernate.annotations.TypeDef;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vladmihalcea.hibernate.type.json.JsonType;
-import com.fasterxml.jackson.databind.JsonNode;    //No eliminar
 import org.hibernate.annotations.Type;
 
 import lombok.Data;

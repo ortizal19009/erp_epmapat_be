@@ -58,7 +58,6 @@ public class Transaci {
 	
 	public Transaci() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Long getInttra() {

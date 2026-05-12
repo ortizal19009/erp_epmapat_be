@@ -423,7 +423,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			" AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL) OR f.estado = 3)" +
 			" AND f.fechaconvenio IS NULL" +
 			" AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" +
-			" AND rf.estado = 1" +
+			" AND (rf.estado = 1 OR rf.estado IS NULL)" +
 			" GROUP BY rf.idfactura_facturas, c.nombre, c.idcliente, m.descripcion, l.idlectura, l.idabonado_abonados, e.emision ORDER BY total DESC", countQuery = "SELECT COUNT(DISTINCT rf.idfactura_facturas) "
 					+
 					"FROM rubroxfac rf " +
@@ -434,7 +434,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 					"AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL) OR f.estado = 3) "
 					+
 					"AND f.fechaconvenio IS NULL " +
-					"AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165) AND rf.estado = 1",
+					"AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165) AND (rf.estado = 1 OR rf.estado IS NULL)",
 
 			nativeQuery = true)
 	Page<CarteraVencidaFacturas> getCVByConsumo(LocalDate fecha, Pageable pageable);
@@ -458,7 +458,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"    and not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 )" + //
 			"    AND f.fechaconvenio IS NULL" + //
 			"    AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" + //
-			"    AND rf.estado = 1" + //
+			"    AND (rf.estado = 1 OR rf.estado IS NULL)" + //
 			" GROUP BY" + //
 			"     rf.idfactura_facturas, c.nombre, m.descripcion, f.idabonado  " + //
 			" ORDER BY" + //
@@ -497,7 +497,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 					+ //
 					"AND not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 ) " + //
 					"AND f.fechaconvenio IS NULL " + //
-					"AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165) AND rf.estado = 1", nativeQuery = true)
+					"AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165) AND (rf.estado = 1 OR rf.estado IS NULL)", nativeQuery = true)
 	public Page<CVFacturasNoConsumo> getCVByNoConsumo(LocalDate fecha, Pageable pageable);
 
 	/* CONSULTA PARA LAS REMISIONES DE MULTAS HE INTERESES */
@@ -513,7 +513,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"AND f.fechaeliminacion IS NULL " +
 			"AND f.fechaconvenio IS NULL " +
 			"AND rf.idrubro_rubros NOT IN (165, 5, 6) " +
-			"AND rf.estado = 1 " +
+			"AND (rf.estado = 1 OR rf.estado IS NULL) " +
 			"AND m.idmodulo IN (3, 4, 27) " +
 			"AND f.feccrea <= ?2 " +
 			"GROUP BY f.idfactura, m.descripcion, f.feccrea " +
@@ -534,7 +534,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"AND f.fechaeliminacion IS NULL " +
 			"AND f.fechaconvenio IS NULL " +
 			"AND rf.idrubro_rubros NOT IN (165, 5, 6) " +
-			"AND rf.estado = 1 " +
+			"AND (rf.estado = 1 OR rf.estado IS NULL) " +
 			"AND m.idmodulo IN (3, 4, 27) " +
 			"AND f.feccrea <= ?3 " +
 			"GROUP BY f.idfactura, m.descripcion, f.feccrea, f.nrofactura " +
@@ -576,13 +576,13 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			FROM
 			    facturas f
 			JOIN clientes c ON f.idcliente = c.idcliente
-			JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura AND rf.estado = 1
+			JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura AND (rf.estado = 1 OR rf.estado IS NULL)
 			JOIN rubros r ON rf.idrubro_rubros = r.idrubro
 			JOIN (
 			    SELECT rf2.idfactura_facturas, SUM(rf2.cantidad * rf2.valorunitario) AS totalFactura
 			    FROM rubroxfac rf2
 			    JOIN rubros r2 ON r2.idrubro = rf2.idrubro_rubros
-			    WHERE rf2.estado = 1
+			    WHERE (rf2.estado = 1 OR rf2.estado IS NULL)
 			    GROUP BY rf2.idfactura_facturas
 			) tf ON tf.idfactura_facturas = f.idfactura
 			WHERE
@@ -596,7 +596,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			    AND f.fechaconvenio IS NULL
 			    AND f.fechaeliminacion IS NULL
 				AND rf.idrubro_rubros NOT IN (79, 5, 165)
-				AND rf.estado = 1
+				AND (rf.estado = 1 OR rf.estado IS NULL)
 			GROUP BY
 			    f.idfactura, c.nombre, tf.totalFactura
 			ORDER BY total DESC
@@ -690,7 +690,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			      END                                       AS fecCrea,
 			      f.fechatransferencia                      AS fecTransfer
 			    FROM facturas f
-			    JOIN rubroxfac  rf ON rf.idfactura_facturas = f.idfactura AND rf.estado = 1
+			    JOIN rubroxfac  rf ON rf.idfactura_facturas = f.idfactura AND (rf.estado = 1 OR rf.estado IS NULL)
 			    JOIN rubros r ON r.idrubro = rf.idrubro_rubros
 			    JOIN lecturas   l  ON l.idfactura           = f.idfactura
 			    JOIN emisiones  e  ON e.idemision           = l.idemision
@@ -701,7 +701,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			          )
 			      AND f.fechaconvenio   IS NULL
 			      AND f.fechaeliminacion IS NULL
-			      AND rf.estado = 1
+			      AND (rf.estado = 1 OR rf.estado IS NULL)
 			    GROUP BY
 			      f.idfactura, f.formapago, e.feccrea, f.fechatransferencia
 			""", nativeQuery = true)
@@ -734,7 +734,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			    CAST(SUM(rf.cantidad * rf.valorunitario) AS numeric(18,2)) AS subtotal
 			  FROM rubroxfac rf
 			  JOIN rubros r ON r.idrubro = rf.idrubro_rubros
-			  WHERE rf.estado = 1
+			  WHERE (rf.estado = 1 OR rf.estado IS NULL)
 			  GROUP BY rf.idfactura_facturas
 			),
 			intereses_por_factura AS (
@@ -829,7 +829,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				l.idfactura
 				FROM lecturas l
 				JOIN rubroxfac r
-				ON r.idfactura_facturas = l.idfactura and r.estado = 1
+				ON r.idfactura_facturas = l.idfactura and (r.estado = 1 OR r.estado IS NULL)
 				JOIN rubros rb
 				ON rb.idrubro = r.idrubro_rubros
 				WHERE l.idemision = ?1
@@ -857,7 +857,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				join emisiones e ON
 				 l.idemision = e.idemision
 				join rubroxfac rf ON
-				 l.idfactura = rf.idfactura_facturas and rf.estado = 1
+				 l.idfactura = rf.idfactura_facturas and (rf.estado = 1 OR rf.estado IS NULL)
 				join rubros r ON
 				 r.idrubro = rf.idrubro_rubros
 				join usuarios u ON
@@ -869,7 +869,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			WHERE
 				 l.idemision = ?1
 				 AND f.pagado = 1
-				 AND rf.estado = 1
+				 AND (rf.estado = 1 OR rf.estado IS NULL)
 			GROUP BY f.idfactura,
 				e.emision,
 				l.idabonado_abonados,

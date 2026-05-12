@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpLocal"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -74,7 +74,7 @@ WHERE
 		</field>
 	</subDataset>
 	<subDataset name="DetallesRubros" uuid="42f6dbcb-ce49-414b-a427-875f5ef2f900">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpLocal"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="idemision" class="java.lang.Integer"/>
 		<parameter name="ORACLE_REF_CURSOR" class="interface java.sql.ResultSet" isForPrompting="false"/>
@@ -92,6 +92,7 @@ join rubros r on
 where
     idemision =  $P{idemision} 
     and rf.idrubro_rubros not in (5,165)
+and (rf.estado = 1 or rf.estado is null)
 group by 
     r.descripcion]]>
 		</queryString>
@@ -138,6 +139,7 @@ JOIN abonados a ON l.idabonado_abonados = a.idabonado
 WHERE
     l.idemision =  $P{idemision} 
     AND rf.idrubro_rubros NOT IN (5,165)
+    AND (rf.estado IS NULL OR rf.estado <> 0)
 
 GROUP BY
     CASE
@@ -161,6 +163,79 @@ GROUP BY
 			<property name="com.jaspersoft.studio.field.label" value="numabonados"/>
 		</field>
 		<variable name="sumaTotal" class="java.lang.Double" calculation="Sum">
+			<variableExpression><![CDATA[$F{valor}]]></variableExpression>
+		</variable>
+	</subDataset>
+	<subDataset name="DetallesCategoriasF" uuid="9ed0837a-5118-48d1-b2bf-f3d7eb6fd44e">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="SERVIDOR EPMAPAT"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="idemision" class="java.lang.Integer"/>
+		<queryString>
+			<![CDATA[SELECT
+    CASE
+        WHEN c.idcategoria = 9 AND a.adultomayor = true THEN 'ADULTO MAYOR'
+        WHEN c.idcategoria = 9 AND a.adultomayor = false THEN 'DISCAPACITADO'
+        WHEN c.idcategoria = 4 AND a.municipio = true THEN 'MUNICIPAL'
+        WHEN c.idcategoria = 4 AND a.municipio = false THEN 'NO MUNICIPAL'
+        ELSE c.descripcion
+    END AS categoria,
+
+    ROUND(SUM((rf.valorunitario * rf.cantidad)::numeric), 2) AS valor,
+
+    COUNT(l.idabonado_abonados) AS numabonados
+
+FROM lecturas l
+JOIN rubroxfac rf ON l.idfactura = rf.idfactura_facturas
+JOIN categorias c ON l.idcategoria = c.idcategoria 
+JOIN abonados a ON l.idabonado_abonados = a.idabonado 
+
+WHERE
+    l.idemision =  $P{idemision} 
+    AND rf.idrubro_rubros NOT IN (5,165)
+    AND rf.estado = 0
+
+GROUP BY
+    CASE
+        WHEN c.idcategoria = 9 AND a.adultomayor = true THEN 'ADULTO MAYOR'
+        WHEN c.idcategoria = 9 AND a.adultomayor = false THEN 'DISCAPACITADO'
+        WHEN c.idcategoria = 4 AND a.municipio = true THEN 'MUNICIPAL'
+        WHEN c.idcategoria = 4 AND a.municipio = false THEN 'NO MUNICIPAL'
+        ELSE c.descripcion
+    END;]]>
+		</queryString>
+		<field name="categoria" class="java.lang.String"/>
+		<field name="valor" class="java.math.BigDecimal"/>
+		<field name="numabonados" class="java.lang.Long"/>
+		<variable name="sumaTotal" class="java.lang.Double" calculation="Sum">
+			<variableExpression><![CDATA[$F{valor}]]></variableExpression>
+		</variable>
+	</subDataset>
+	<subDataset name="DetallesRubrosF" uuid="b3b06830-2322-4566-a252-8bbd9dcf4a77">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpLocal"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="idemision" class="java.lang.Integer"/>
+		<queryString>
+			<![CDATA[select
+    r.descripcion as rubro, 
+    CEIL(sum(rf.valorunitario * rf.cantidad) * 100) / 100 as valor, 
+    count(l.idabonado_abonados) as numabonados
+from
+    lecturas l
+join rubroxfac rf on
+    l.idfactura = rf.idfactura_facturas
+join rubros r on
+    rf.idrubro_rubros = r.idrubro
+where
+    idemision =  $P{idemision} 
+    and rf.idrubro_rubros not in (5,165)
+and rf.estado = 0
+group by 
+    r.descripcion]]>
+		</queryString>
+		<field name="rubro" class="java.lang.String"/>
+		<field name="valor" class="java.lang.Double"/>
+		<field name="numabonados" class="java.lang.Long"/>
+		<variable name="sumaRubros" class="java.lang.Double" calculation="Sum">
 			<variableExpression><![CDATA[$F{valor}]]></variableExpression>
 		</variable>
 	</subDataset>
@@ -347,7 +422,7 @@ GROUP BY
 				<textFieldExpression><![CDATA[$F{fechacierre}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="91">
+		<band height="95">
 			<componentElement>
 				<reportElement x="57" y="30" width="440" height="61" uuid="4192da95-31a5-4abf-9627-37f0261b3b31">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
@@ -356,7 +431,7 @@ GROUP BY
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="DetallesRubros" uuid="94235b0a-c5db-4961-a22b-e85245e37b54">
+					<datasetRun subDataset="DetallesRubros" uuid="85255b71-870f-4c42-ba90-6ff4efe91571">
 						<datasetParameter name="idemision">
 							<datasetParameterExpression><![CDATA[$P{idemision}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -534,7 +609,197 @@ GROUP BY
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Detalles por rubros emitidos]]></text>
+				<text><![CDATA[Detalles por rubros emitidos activos]]></text>
+			</staticText>
+		</band>
+		<band height="91">
+			<componentElement>
+				<reportElement x="60" y="30" width="440" height="61" uuid="af6b24e7-fe05-490f-95f8-63a1d6cad4b1">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
+					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
+					<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="DetallesRubrosF" uuid="534ddea0-ac4c-4387-84a4-060a3225ec64">
+						<datasetParameter name="idemision">
+							<datasetParameterExpression><![CDATA[$P{idemision}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="180" uuid="f9bf0953-09be-45b0-861b-ecb2e047331b">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<jr:columnHeader height="20" rowSpan="1">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="180" height="20" uuid="5915061a-674d-4f6b-ae5a-51085241f1c2"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Rubro]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:columnFooter height="20" rowSpan="1">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="180" height="20" uuid="a72e53d8-57b0-4622-94a7-c0594dcf2f3a"/>
+								<box rightPadding="12"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<text><![CDATA[TOTAL]]></text>
+							</staticText>
+						</jr:columnFooter>
+						<jr:detailCell height="20">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="180" height="20" uuid="b3c5054c-83b7-4bd6-8d41-3b03688ead3b"/>
+								<box leftPadding="5" rightPadding="5"/>
+								<textElement verticalAlignment="Middle">
+									<font size="12"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{rubro}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="110" uuid="706b4abc-a7f6-43c6-a51c-ab0c7ba6ea1a">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+						<jr:columnHeader height="20" rowSpan="1">
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="110" height="20" uuid="69b00bb1-b4a0-4d74-a9dd-66c86a67070b"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Valor]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:columnFooter height="20" rowSpan="1">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="110" height="20" uuid="3adfb105-0afc-45cc-906a-22260a29f163"/>
+								<box leftPadding="6" rightPadding="6"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<textFieldExpression><![CDATA[SUM($V{sumaRubros}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:columnFooter>
+						<jr:detailCell height="20">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="110" height="20" uuid="9150baa3-4ed7-4dfb-af39-4e989fe8210e"/>
+								<box leftPadding="5" rightPadding="5"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="12"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{valor}) +" $"]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="150" uuid="47f6a7dc-9ec4-4a5d-860c-61bd08cd54ee">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+						<jr:columnHeader height="20" rowSpan="1">
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="150" height="20" uuid="a8504fb1-bfc5-4df8-927c-8cde13cd9e97"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Num. Abonados]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:columnFooter height="20" rowSpan="1">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+						</jr:columnFooter>
+						<jr:detailCell height="20">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="150" height="20" uuid="5cf2a287-5786-4fb0-bead-77ba919fe0c7"/>
+								<box leftPadding="5" rightPadding="5"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="12"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{numabonados}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<staticText>
+				<reportElement x="60" y="7" width="440" height="23" uuid="5d160da6-6fab-4fa0-8ebf-326e4f2aee65"/>
+				<box>
+					<pen lineWidth="0.75" lineStyle="Solid"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Detalles por rubros emitidos eliminados]]></text>
 			</staticText>
 		</band>
 		<band height="95">
@@ -716,6 +981,196 @@ GROUP BY
 							</box>
 							<textField>
 								<reportElement x="0" y="0" width="150" height="20" uuid="77060367-fae5-4280-9074-935be8e86869"/>
+								<box leftPadding="5" rightPadding="5"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="12"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{numabonados}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+		</band>
+		<band height="95">
+			<staticText>
+				<reportElement x="57" y="5" width="440" height="23" uuid="1e54d56c-3757-4fa8-8ef8-5b44231e5bd5"/>
+				<box>
+					<pen lineWidth="0.75" lineStyle="Solid"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Detalles por categorías emitidas eliminadas]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement x="57" y="28" width="440" height="61" uuid="324e3744-ebfe-4d38-9675-2cd1bf50257d">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
+					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
+					<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="DetallesCategoriasF" uuid="fd65baae-bcc0-46d8-ae72-cb455d92c866">
+						<datasetParameter name="idemision">
+							<datasetParameterExpression><![CDATA[$P{idemision}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="180" uuid="1612d653-df58-434c-a0da-0084596676ca">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<jr:columnHeader height="20" rowSpan="1">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="180" height="20" uuid="afe2fd69-2dc2-4821-b0b5-edb0d22f4c71"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Categoría]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:columnFooter height="20" rowSpan="1">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="180" height="20" uuid="0d5cc8b9-40bf-493f-b7f7-b19a663a4025"/>
+								<box rightPadding="12"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<text><![CDATA[TOTAL]]></text>
+							</staticText>
+						</jr:columnFooter>
+						<jr:detailCell height="20">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="180" height="20" uuid="64a890dc-3677-48b5-b79f-0b31b1e9b236"/>
+								<box leftPadding="5" rightPadding="5"/>
+								<textElement verticalAlignment="Middle">
+									<font size="12"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="110" uuid="5ea30153-41a8-4578-8780-e7077f22dc5d">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+						<jr:columnHeader height="20" rowSpan="1">
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="110" height="20" uuid="8ca240a2-a0cb-44d2-bb5b-4139db66ed3d"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Valor]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:columnFooter height="20" rowSpan="1">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="110" height="20" uuid="25231716-d35c-4297-874e-cba0f2b02d65"/>
+								<box leftPadding="6" rightPadding="6"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<textFieldExpression><![CDATA[SUM($V{sumaTotal}) + " $"]]></textFieldExpression>
+							</textField>
+						</jr:columnFooter>
+						<jr:detailCell height="20">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="110" height="20" uuid="10bbd12b-8566-4221-95c0-4d13a0d874b4"/>
+								<box leftPadding="5" rightPadding="5"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font size="12"/>
+								</textElement>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{valor}) +" $"]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="150" uuid="900fc46a-1fd3-4b4c-b0f1-cd7fece14f89">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+						<jr:columnHeader height="20" rowSpan="1">
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="150" height="20" uuid="f0d7a1f8-284d-4821-bb75-6a93dd1f879e"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="12" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Num. Abonados]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:columnFooter height="20" rowSpan="1">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+						</jr:columnFooter>
+						<jr:detailCell height="20">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<pen lineWidth="0.5"/>
+								<topPen lineWidth="1.0" lineStyle="Solid"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="150" height="20" uuid="5b2449eb-d469-4eb1-af00-82d9c89281e4"/>
 								<box leftPadding="5" rightPadding="5"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="12"/>

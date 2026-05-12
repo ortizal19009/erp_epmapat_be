@@ -26,7 +26,7 @@ public interface EmisionesR extends JpaRepository<Emisiones, Long> {
 					rf.idfactura_facturas,
 					SUM(rf.cantidad * rf.valorunitario) AS total_rubro
 				FROM rubroxfac rf
-				WHERE rf.estado = 1
+				WHERE (rf.estado = 1 OR rf.estado IS NULL)
 				GROUP BY rf.idfactura_facturas
 			)
 

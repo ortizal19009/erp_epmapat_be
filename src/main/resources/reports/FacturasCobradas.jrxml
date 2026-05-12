@@ -105,6 +105,8 @@ FROM facturas f
 JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas
 JOIN rubros r     ON r.idrubro   = rf.idrubro_rubros
 WHERE 
+    (rf.estado IS NULL OR rf.estado = 1)
+    AND
     f.idfactura IN (SELECT idfactura FROM facturas_validas);]]>
 		</queryString>
 		<field name="nfacturas" class="java.lang.Long">
@@ -157,6 +159,7 @@ JOIN modulos    m  ON f.idmodulo = m.idmodulo
 WHERE
 f.fechacobro BETWEEN $P{desde}
         AND $P{hasta}  AND rf.idrubro_rubros NOT IN (5, 165)
+        AND (rf.estado IS NULL OR rf.estado = 1)
 GROUP BY
   f.idfactura, f.nrofactura, f.fechacobro, f.horacobro, f.swiva,
   f.interescobrado, c.nombre, c.cedula, u.nomusu, m.descripcion, fc.descripcion

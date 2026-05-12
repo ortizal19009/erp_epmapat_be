@@ -5,7 +5,6 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 
-import java.io.File;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 

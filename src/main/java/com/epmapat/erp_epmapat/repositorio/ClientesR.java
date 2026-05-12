@@ -59,12 +59,12 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 	@Query(value = "select rf.idfactura_facturas as planilla, c.idcliente, c.nombre, sum(rf.cantidad * rf.valorunitario) as valor, c.cedula , c.direccion, c.email, m.descripcion as modulo"
 			+ " from clientes c "
 			+ " join facturas f on c.idcliente = f.idcliente "
-			+ " join rubroxfac rf on rf.idfactura_facturas = f.idfactura and rf.estado = 1  "
+			+ " join rubroxfac rf on rf.idfactura_facturas = f.idfactura and (rf.estado = 1 or rf.estado is null)  "
 			+ " join rubros r on r.idrubro = rf.idrubro_rubros "
 			+ " join modulos m on f.idmodulo = m.idmodulo "
 			+ " where f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and f.feccrea <= ?1 and ( f.fechacobro >= ?1 or f.fechacobro is null)) or f.estado = 3 )"
 			+ " and f.fechaconvenio is null and f.fechaeliminacion is null AND rf.idrubro_rubros NOT IN (79, 5, 165)"
-			+ " and rf.estado = 1 "
+			+ " and (rf.estado = 1 or rf.estado is null) "
 			+ " group by rf.idfactura_facturas, c.nombre, c.cedula , c.direccion , c.email, c.idcliente, m.descripcion order by c.nombre asc", nativeQuery = true)
 	List<CVClientes> getCVByCliente(LocalDate fecha);
 
@@ -83,7 +83,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 			join facturas f on
 				c.idcliente = f.idcliente
 			join rubroxfac rf on
-				rf.idfactura_facturas = f.idfactura and rf.estado = 1
+				rf.idfactura_facturas = f.idfactura and (rf.estado = 1 or rf.estado is null)
 			join rubros r on
 				r.idrubro = rf.idrubro_rubros
 			where
@@ -97,7 +97,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 				and f.fechaconvenio is null
 				and f.fechaeliminacion is null
 			AND rf.idrubro_rubros NOT IN (79, 5, 165)
-			AND rf.estado = 1
+			AND (rf.estado = 1 or rf.estado is null)
 			group by
 			c.idcliente,
 				c.nombre,
@@ -114,7 +114,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 					select 1
 					from clientes c
 					join facturas f on c.idcliente = f.idcliente
-					join rubroxfac rf on rf.idfactura_facturas = f.idfactura and rf.estado = 1
+					join rubroxfac rf on rf.idfactura_facturas = f.idfactura and (rf.estado = 1 or rf.estado is null)
 					join rubros r on r.idrubro = rf.idrubro_rubros
 					where
 						f.totaltarifa > 0
@@ -126,7 +126,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 						or f.estado = 3 )
 						and f.fechaconvenio is null
 						and f.fechaeliminacion is null
-						and rf.estado = 1
+						and (rf.estado = 1 or rf.estado is null)
 					group by
 					c.idcliente,
 						c.nombre,
@@ -153,7 +153,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 			join facturas f on
 				c.idcliente = f.idcliente
 			join rubroxfac rf on
-				rf.idfactura_facturas = f.idfactura and rf.estado = 1
+				rf.idfactura_facturas = f.idfactura and (rf.estado = 1 or rf.estado is null)
 			join rubros r on
 				r.idrubro = rf.idrubro_rubros
 			where
@@ -168,7 +168,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 				and f.fechaconvenio is null
 				and f.fechaeliminacion is null
 			    AND rf.idrubro_rubros NOT IN (79, 5, 165)
-			    AND rf.estado = 1
+			    AND (rf.estado = 1 or rf.estado is null)
 				group by
 			c.idcliente,
 				c.nombre,
@@ -185,7 +185,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 					select 1
 					from clientes c
 					join facturas f on c.idcliente = f.idcliente
-					join rubroxfac rf on rf.idfactura_facturas = f.idfactura and rf.estado = 1
+					join rubroxfac rf on rf.idfactura_facturas = f.idfactura and (rf.estado = 1 or rf.estado is null)
 					join rubros r on r.idrubro = rf.idrubro_rubros
 					where
 						(LOWER(c.nombre) like %?2% OR c.cedula like %?2%) and
@@ -198,7 +198,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 						or f.estado = 3 )
 						and f.fechaconvenio is null
 						and f.fechaeliminacion is null
-						and rf.estado = 1
+						and (rf.estado = 1 or rf.estado is null)
 					group by
 					c.idcliente,
 						c.nombre,

@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Certipresu;
-import com.epmapat.erp_epmapat.repositorio.administracion.DocumentosR;
-import com.epmapat.erp_epmapat.repositorio.contabilidad.BeneficiariosR;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.CertipresuR;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.PartixcertiR;
 

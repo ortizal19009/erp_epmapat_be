@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.epmapat.erp_epmapat.rrhh.dto.DashboardResponse;
-import com.epmapat.erp_epmapat.rrhh.modelo.RrhhBenefit;
-import com.epmapat.erp_epmapat.rrhh.modelo.RrhhCandidate;
 import com.epmapat.erp_epmapat.rrhh.modelo.RrhhClimateSurvey;
 import com.epmapat.erp_epmapat.rrhh.modelo.RrhhConflictCase;
 import com.epmapat.erp_epmapat.rrhh.modelo.RrhhEmployee;
@@ -27,7 +25,6 @@ import com.epmapat.erp_epmapat.rrhh.modelo.RrhhTrainingPlan;
 import com.epmapat.erp_epmapat.rrhh.modelo.RrhhVacancy;
 import com.epmapat.erp_epmapat.rrhh.modelo.RrhhWellbeingProgram;
 import com.epmapat.erp_epmapat.rrhh.repositorio.RrhhBenefitRepository;
-import com.epmapat.erp_epmapat.rrhh.repositorio.RrhhCandidateRepository;
 import com.epmapat.erp_epmapat.rrhh.repositorio.RrhhClimateSurveyRepository;
 import com.epmapat.erp_epmapat.rrhh.repositorio.RrhhConflictCaseRepository;
 import com.epmapat.erp_epmapat.rrhh.repositorio.RrhhEmployeeLeaveRepository;
@@ -49,7 +46,6 @@ public class RrhhDashboardService {
     private final RrhhEmployeeRepository employeeRepository;
     private final RrhhEmployeeLeaveRepository leaveRepository;
     private final RrhhVacancyRepository vacancyRepository;
-    private final RrhhCandidateRepository candidateRepository;
     private final RrhhOnboardingRepository onboardingRepository;
     private final RrhhPerformanceReviewRepository reviewRepository;
     private final RrhhTrainingPlanRepository trainingRepository;

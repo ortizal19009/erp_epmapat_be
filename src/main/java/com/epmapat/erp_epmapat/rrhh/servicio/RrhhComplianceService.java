@@ -1,7 +1,6 @@
 package com.epmapat.erp_epmapat.rrhh.servicio;
 
 import static com.epmapat.erp_epmapat.rrhh.servicio.RrhhSupport.applyAudit;
-import static com.epmapat.erp_epmapat.rrhh.servicio.RrhhSupport.getOrThrow;
 import static com.epmapat.erp_epmapat.rrhh.servicio.RrhhSupport.pageable;
 
 import java.util.UUID;

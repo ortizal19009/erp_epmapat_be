@@ -27,7 +27,6 @@ import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroRequest;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroResponse;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
-import com.epmapat.erp_epmapat.interfaces.FacturasSinCobroInter;
 import com.epmapat.erp_epmapat.excepciones.CredencialesInvalidasException;
 import com.epmapat.erp_epmapat.modelo.Cajas;
 import com.epmapat.erp_epmapat.modelo.Facturas;

@@ -59,7 +59,6 @@ public class Fec_factura_detalles {
 	}
 	public Fec_factura_detalles() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 	
 

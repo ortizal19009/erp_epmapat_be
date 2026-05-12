@@ -23,7 +23,6 @@ public class InteresFacDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate fectransferencia;
     public void setSuma(Float subtotal2) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'setSuma'");
     }
 }

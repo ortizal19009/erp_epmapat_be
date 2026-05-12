@@ -31,14 +31,14 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	// Campos especÃ­ficos: Rubro y Valor de una Factura (Planilla)
 	@Query("SELECT new map(" +
 			"r.descripcion as descripcion, " + "rf.valorunitario as valorunitario) " +
-			"FROM Rubroxfac rf INNER JOIN Rubros r ON r.idrubro = rf.idrubro_rubros WHERE rf.idfactura_facturas=?1 AND rf.estado = 1 order by rf.idrubro_rubros")
+			"FROM Rubroxfac rf INNER JOIN Rubros r ON r.idrubro = rf.idrubro_rubros WHERE rf.idfactura_facturas=?1 AND (rf.estado = 1 OR rf.estado IS NULL) order by rf.idrubro_rubros")
 	List<Map<String, Object>> rubrosByIdfactura(Long idfactura);
 
-	@Query(value = "select sum(valorunitario)  from rubroxfac r where idfactura_facturas = ?1 and r.estado = 1", nativeQuery = true)
+	@Query(value = "select sum(valorunitario)  from rubroxfac r where idfactura_facturas = ?1 and (r.estado = 1 or r.estado is null)", nativeQuery = true)
 	Double findSuma(Long idfactura);
 
 	/* Obtener suma de rubros x factura */
-	@Query(value = "select sum(valorunitario) from rubroxfac rf where idfactura_facturas = ?1 and rf.estado = 1", nativeQuery = true)
+	@Query(value = "select sum(valorunitario) from rubroxfac rf where idfactura_facturas = ?1 and (rf.estado = 1 or rf.estado is null)", nativeQuery = true)
 	Double sumaRubros(Long idfactura);
 
 	/*
@@ -48,13 +48,13 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	 * void deleteRubroDuplicado(@Param("idrubroxfac") Long idrubroxfac);
 	 */
 
-	@Query(value = " select * from rubroxfac rf where rf.idfactura_facturas = ?1 and rf.estado = 1 and rf.idrubro_rubros = ?2", nativeQuery = true)
+	@Query(value = " select * from rubroxfac rf where rf.idfactura_facturas = ?1 and (rf.estado = 1 or rf.estado is null) and rf.idrubro_rubros = ?2", nativeQuery = true)
 	List<Rubroxfac> getOneFxR(Long idfactura, Long idrubro);
 
 	@Query("SELECT r FROM Rubroxfac r " +
 			"WHERE r.idfactura_facturas.idfactura = :idFactura " +
 			"AND r.idrubro_rubros.idrubro = :idRubro " +
-			"AND r.estado = 1")
+			"AND (r.estado = 1 OR r.estado IS NULL)")
 	Rubroxfac findOneFxR(@Param("idFactura") Long idfactura, @Param("idRubro") Long idrubro);
 
 	/*
@@ -62,44 +62,44 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	 * "select * from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where f.fechacobro = ?1 group by rf.idrubro_rubros"
 	 * , nativeQuery = true)
 	 */
-	@Query(value = "select rf.idrubro_rubros , sum(rf.valorunitario * rf.cantidad) from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura and rf.estado = 1 where f.fechacobro = ?1 group by rf.idrubro_rubros ", nativeQuery = true)
+	@Query(value = "select rf.idrubro_rubros , sum(rf.valorunitario * rf.cantidad) from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura and (rf.estado = 1 or rf.estado is null) where f.fechacobro = ?1 group by rf.idrubro_rubros ", nativeQuery = true)
 	List<RubroxfacI> getByFechaCobro(Date d, Date h);
 
-	@Query(value = "SELECT * FROM rubroxfac rf JOIN facturas f ON rf.idfactura_facturas = f.idfactura WHERE rf.estado = 1 and f.fechacobro between ?1 and ?2", nativeQuery = true)
+	@Query(value = "SELECT * FROM rubroxfac rf JOIN facturas f ON rf.idfactura_facturas = f.idfactura WHERE (rf.estado = 1 or rf.estado is null) and f.fechacobro between ?1 and ?2", nativeQuery = true)
 	public List<Rubroxfac> findByFecha(Date d, Date h);
 
 	/* SIN COBRO 2.0 */
-	@Query(value = "select * from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where rf.estado = 1 and totaltarifa > 0 and idcliente=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaanulacion is null and f.fechaeliminacion is null ORDER BY f.idabonado, f.idfactura ", nativeQuery = true)
+	@Query(value = "select * from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura where (rf.estado = 1 or rf.estado is null) and totaltarifa > 0 and idcliente=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaanulacion is null and f.fechaeliminacion is null ORDER BY f.idabonado, f.idfactura ", nativeQuery = true)
 	public List<Rubroxfac> findSinCobroRF(Long cuenta);
 
 	// Rubros de una Planilla
-	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and r.estado = 1 order by idrubro_rubros", nativeQuery = true)
+	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and (r.estado = 1 or r.estado is null) order by idrubro_rubros", nativeQuery = true)
 	public List<Rubroxfac> findByIdfactura(Long idfactura);
 
 	// Rubros de una Planilla para detalle historico
-	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and (r.estado is null or r.estado <> 0) order by idrubro_rubros", nativeQuery = true)
+	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and (r.estado = 1 or r.estado is null) order by idrubro_rubros", nativeQuery = true)
 	public List<Rubroxfac> findDetalleByIdfactura(Long idfactura);
 
 	// Rubros de una Planilla (Sin rubro 165 (Iva del siim 'esiva'))
-	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and r.estado = 1 and idrubro_rubros <> 165 order by idrubro_rubros", nativeQuery = true)
+	@Query(value = "SELECT * FROM rubroxfac AS r WHERE r.idfactura_facturas=?1 and (r.estado = 1 or r.estado is null) and idrubro_rubros <> 165 order by idrubro_rubros", nativeQuery = true)
 	public List<Rubroxfac> findByIdfactura1(Long idfactura);
 
 	// Rubroxfac de un Rubro (movimientos de un Rubro)
-	@Query(value = "SELECT * FROM rubroxfac WHERE idrubro_rubros =?1 and estado = 1 order by idrubroxfac desc limit 100", nativeQuery = true)
+	@Query(value = "SELECT * FROM rubroxfac WHERE idrubro_rubros =?1 and (estado = 1 or estado is null) order by idrubroxfac desc limit 100", nativeQuery = true)
 	public List<Rubroxfac> findByIdrubro(Long idrubro);
 
 	// Rubro.descripcion y rubroxfac.valorunitario
 	@Query(value = "SELECT r.descripcion, rf.valorunitario "
 			+ "FROM rubroxfac rf "
 			+ "INNER JOIN rubros r ON rf.idrubro_rubros = r.idrubro "
-			+ "WHERE rf.idfactura_facturas = :idFactura AND rf.estado = 1", nativeQuery = true)
+			+ "WHERE rf.idfactura_facturas = :idFactura AND (rf.estado = 1 OR rf.estado IS NULL)", nativeQuery = true)
 	List<Object[]> findRubros(@Param("idFactura") Long idFactura);
 
 	// Multa en Planilla
-	@Query(value = "SELECT EXISTS (SELECT 1 FROM rubroxfac WHERE idrubro_rubros = 6 and idfactura_facturas = ?1 and estado = 1)", nativeQuery = true)
+	@Query(value = "SELECT EXISTS (SELECT 1 FROM rubroxfac WHERE idrubro_rubros = 6 and idfactura_facturas = ?1 and (estado = 1 or estado is null))", nativeQuery = true)
 	boolean findMulta(Long idfactura);
 
-	@Query("SELECT r.idrubro, r.descripcion, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf INNER JOIN rf.idrubro_rubros r WHERE rf.estado = 1 GROUP BY r.idrubro, r.descripcion")
+	@Query("SELECT r.idrubro, r.descripcion, SUM(rf.cantidad * rf.valorunitario) AS total FROM Rubroxfac rf INNER JOIN rf.idrubro_rubros r WHERE (rf.estado = 1 OR rf.estado IS NULL) GROUP BY r.idrubro, r.descripcion")
 	List<Object[]> findRubroTotalByRubroxfac();
 
 	// Recaudcion diaria - Total por Rubro (Todas)
@@ -107,7 +107,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			+
 			"INNER JOIN rf.idrubro_rubros r " +
 			"INNER JOIN rf.idfactura_facturas f " +
-			"WHERE f.fechacobro = :fechacobro and rf.estado = 1 and not r.idrubro = 165 GROUP BY r.idrubro, r.descripcion", nativeQuery = true)
+			"WHERE f.fechacobro = :fechacobro and (rf.estado = 1 or rf.estado is null) and not r.idrubro = 165 GROUP BY r.idrubro, r.descripcion", nativeQuery = true)
 	List<Object[]> findRubroTotalByRubroxfacAndFechacobro(@Param("fechacobro") LocalDate fechacobro);
 
 	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
@@ -115,7 +115,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) AND rf.estado = 1 "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) AND (rf.estado = 1 or rf.estado is null) "
 			+
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro", nativeQuery = true)
 	List<Object[]> totalRubrosAnteriorRangos(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
@@ -126,7 +126,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"FROM Rubroxfac rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND rf.estado = 1  "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (rf.estado = 1 or rf.estado is null)  "
 			+
 			"GROUP BY r.descripcion, r.idrubro " +
 			"ORDER BY r.idrubro", nativeQuery = true)
@@ -137,7 +137,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND rf.estado = 1 "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea <= ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND (rf.estado = 1 or rf.estado is null) "
 			+
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro", nativeQuery = true)
 	List<Object[]> totalRubrosAnteriorByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
@@ -148,7 +148,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"FROM Rubroxfac rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) AND rf.estado = 1 "
+			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) AND (rf.estado = 1 or rf.estado is null) "
 			+
 			"GROUP BY r.descripcion, r.idrubro " +
 			"ORDER BY r.idrubro", nativeQuery = true)
@@ -159,7 +159,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE date(f.fechacobro) = ?1 AND f.feccrea <= ?2 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) AND rf.estado = 1 "
+			"WHERE date(f.fechacobro) = ?1 AND f.feccrea <= ?2 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) AND (rf.estado = 1 or rf.estado is null) "
 			+
 			"GROUP BY r.descripcion, r.idrubro ORDER BY r.idrubro", nativeQuery = true)
 	List<Object[]> totalRubrosAnterior(LocalDate fecha, LocalDate hasta);
@@ -170,13 +170,13 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"FROM Rubroxfac rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
-			"WHERE date(f.fechacobro) = ?1 AND f.feccrea > ?2 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) AND rf.estado = 1 "
+			"WHERE date(f.fechacobro) = ?1 AND f.feccrea > ?2 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) AND (rf.estado = 1 or rf.estado is null) "
 			+
 			"GROUP BY r.descripcion, r.idrubro " +
 			"ORDER BY r.idrubro", nativeQuery = true)
 	List<Object[]> totalRubrosActual(LocalDate fecha, LocalDate hasta);
 
-	@Query(value = "select f.idfactura , sum((rf.cantidad * rf.valorunitario)*?1) as iva from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro where idfactura = ?2 and r.swiva = true and rf.estado = 1 group by f.idfactura", nativeQuery = true)
+	@Query(value = "select f.idfactura , sum((rf.cantidad * rf.valorunitario)*?1) as iva from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro where idfactura = ?2 and r.swiva = true and (rf.estado = 1 or rf.estado is null) group by f.idfactura", nativeQuery = true)
 	List<Object[]> getIva(BigDecimal iva, Long idfactura);
 
 	@Query(value = """
@@ -188,7 +188,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			join rubros r on rf.idrubro_rubros = r.idrubro
 			where f.idfactura in (:ids)
 			  and r.swiva = true
-			  and rf.estado = 1
+			  and (rf.estado = 1 or rf.estado is null)
 			group by f.idfactura
 			""", nativeQuery = true)
 	List<Object[]> getIvaByFacturas(@Param("iva") BigDecimal iva, @Param("ids") Collection<Long> ids);
@@ -199,14 +199,14 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	// rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros =
 	// r.idrubro where f.idfactura = ?1 and not r.idrubro = 165 and f.pagado = 1",
 	// nativeQuery = true)
-	@Query(value = "select * from rubroxfac rf where rf.idfactura_facturas = ?1 and rf.estado = 1 and not rf.idrubro_rubros = 165 order by idrubro_rubros asc", nativeQuery = true)
+	@Query(value = "select * from rubroxfac rf where rf.idfactura_facturas = ?1 and (rf.estado = 1 or rf.estado is null) and not rf.idrubro_rubros = 165 order by idrubro_rubros asc", nativeQuery = true)
 	List<Rubroxfac> getRubrosByFactura(Long idfactura);
 
-	@Query(value = "select rf.idrubro_rubros, r.descripcion, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas and rf.estado = 1 join rubros r on rf.idrubro_rubros = r.idrubro where f.idabonado > 0 and (f.idmodulo = 3 or f.idmodulo = 4 )and f.totaltarifa > 0 and f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165 group by rf.idrubro_rubros, r.descripcion", nativeQuery = true)
+	@Query(value = "select rf.idrubro_rubros, r.descripcion, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas and (rf.estado = 1 or rf.estado is null) join rubros r on rf.idrubro_rubros = r.idrubro where f.idabonado > 0 and (f.idmodulo = 3 or f.idmodulo = 4 )and f.totaltarifa > 0 and f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165 group by rf.idrubro_rubros, r.descripcion", nativeQuery = true)
 	List<RubroxfacIReport> getRubrosByAbonado(Long idabonado);
 
 	/* FIND MULTAS BY ID FACUTA */
-	@Query(value = "select * from rubroxfac where idfactura_facturas = ?1 and estado = 1 and idrubro_rubros = 6", nativeQuery = true)
+	@Query(value = "select * from rubroxfac where idfactura_facturas = ?1 and (estado = 1 or estado is null) and idrubro_rubros = 6", nativeQuery = true)
 	List<Rubroxfac> getMultaByIdFactura(Long idfactura);
 
 	/* REPORTE DE CARTERA VENCIDA POR RUBROS */
@@ -230,13 +230,13 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			    AND f.fechaconvenio IS NULL
 			    AND f.fechaeliminacion IS NULL
 			    AND rf.idrubro_rubros NOT IN (79, 5, 165)
-			    AND rf.estado = 1
+			    AND (rf.estado = 1 OR rf.estado IS NULL)
 			GROUP BY
 			    rf.idrubro_rubros, r.descripcion, r.idrubro
 			""", nativeQuery = true)
 	List<CarteraVencidaRubros_int> getCarteraVencidaxRubros(LocalDate fechacobro);
 
-	@Query(value = "SELECT sum(rf.cantidad * rf.valorunitario) as interes FROM rubroxfac rf where rf.idfactura_facturas = ?1 and rf.estado = 1 and rf.idrubro_rubros = 5", nativeQuery = true)
+	@Query(value = "SELECT sum(rf.cantidad * rf.valorunitario) as interes FROM rubroxfac rf where rf.idfactura_facturas = ?1 and (rf.estado = 1 or rf.estado is null) and rf.idrubro_rubros = 5", nativeQuery = true)
 	BigDecimal getTotalInteres(Long idfactura);
 	/* CONSULTA PARA REMISIONES */
 
@@ -263,7 +263,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"\tand f.fechaeliminacion is null\r\n" + //
 			"\tand f.fechaconvenio is null\r\n" + //
 			"\tand not rf.idrubro_rubros = 165\r\n" + //
-			"\tand rf.estado = 1\r\n" + //
+			"\tand (rf.estado = 1 or rf.estado is null)\r\n" + //
 			"\tand f.feccrea <= ?2\r\n" + //
 			"\tand (f.idmodulo = 3\r\n" + //
 			"\t\tor f.idmodulo = 4\r\n" + //
@@ -342,7 +342,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	Optional<Rubroxfac> findByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
 			@Param("idrubro") Long idrubro);
 
-	@Query("select rf from Rubroxfac rf where rf.estado = 1 and rf.idfactura_facturas.idfactura = :idfactura")
+	@Query("select rf from Rubroxfac rf where (rf.estado = 1 OR rf.estado IS NULL) and rf.idfactura_facturas.idfactura = :idfactura")
 	List<Rubroxfac> findAllByFacturaId(@Param("idfactura") Long idfactura);
 
 	@Query("""
@@ -358,7 +358,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			    SELECT COALESCE(SUM(r.valorunitario * r.cantidad), 0)
 			    FROM Rubroxfac r
 			    WHERE r.idfactura_facturas.idfactura = :idfactura
-			      AND r.estado = 1
+			      AND (r.estado = 1 OR r.estado IS NULL)
 			""")
 	BigDecimal sumRubrosFactura(@Param("idfactura") Long idfactura);
 

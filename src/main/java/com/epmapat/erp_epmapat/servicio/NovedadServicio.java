@@ -1,11 +1,6 @@
 package com.epmapat.erp_epmapat.servicio;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.mobile.NovedadesMobile;
@@ -14,7 +9,6 @@ import com.epmapat.erp_epmapat.repositorio.NovedadR;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 @Service
 public class NovedadServicio {

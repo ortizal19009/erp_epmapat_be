@@ -112,6 +112,8 @@ JOIN facturas f ON f.idfactura = rf.idfactura_facturas
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros
 
 WHERE
+    (rf.estado IS NULL OR rf.estado = 1)
+    AND
   f.usuariocobro = $P{usuariocobro}
    AND fechacompensacion between $P{desde} AND $P{hasta}
     AND f.estado <> 3
@@ -162,6 +164,7 @@ WHERE
   f.usuariocobro = $P{usuariocobro}
    AND fechacompensacion between $P{desde} AND $P{hasta}
   AND rf.idrubro_rubros NOT IN (5, 165)
+  AND (rf.estado IS NULL OR rf.estado = 1)
 GROUP BY
   f.idfactura, f.nrofactura, f.fechacobro, f.horacobro, f.swiva,
   f.interescobrado, c.nombre, c.cedula, u.nomusu, m.descripcion, fc.descripcion

@@ -1,7 +1,6 @@
 package com.epmapat.erp_epmapat.modelo;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.*;
@@ -41,7 +40,6 @@ public class Fec_factura implements Serializable {
    private String recaudador;
 
 public Fec_factura orElseThrow(Object object) {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
 }
 
