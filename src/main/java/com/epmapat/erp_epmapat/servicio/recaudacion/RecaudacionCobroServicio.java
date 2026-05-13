@@ -26,23 +26,30 @@ import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaOperacionResponse;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroRequest;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroResponse;
 import com.epmapat.erp_epmapat.modelo.Abonados;
+import com.epmapat.erp_epmapat.modelo.Facxnc;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
+import com.epmapat.erp_epmapat.interfaces.NtaCreditoSaldos;
 import com.epmapat.erp_epmapat.excepciones.CredencialesInvalidasException;
 import com.epmapat.erp_epmapat.modelo.Cajas;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.Facxrecauda;
+import com.epmapat.erp_epmapat.modelo.Ntacredito;
 import com.epmapat.erp_epmapat.modelo.Recaudacion;
 import com.epmapat.erp_epmapat.modelo.Recaudaxcaja;
+import com.epmapat.erp_epmapat.modelo.Valoresnc;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 import com.epmapat.erp_epmapat.servicio.CajaServicio;
 import com.epmapat.erp_epmapat.servicio.FacturaServicio;
 import com.epmapat.erp_epmapat.servicio.Fec_facturaService;
+import com.epmapat.erp_epmapat.servicio.FacxncService;
 import com.epmapat.erp_epmapat.servicio.FacxrecaudaServicio;
+import com.epmapat.erp_epmapat.servicio.NtacreditoServicio;
 import com.epmapat.erp_epmapat.servicio.RecaudacionServicio;
 import com.epmapat.erp_epmapat.servicio.RecaudaxcajaServicio;
 import com.epmapat.erp_epmapat.servicio.RubroxfacServicio;
+import com.epmapat.erp_epmapat.servicio.ValoresncServicio;
 import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
 import com.epmapat.erp_epmapat.servicio.administracion.UsuarioServicio;
 
@@ -69,6 +76,12 @@ public class RecaudacionCobroServicio {
     private UsuarioServicio usuarioServicio;
     @Autowired
     private Fec_facturaService fecFacturaService;
+    @Autowired
+    private NtacreditoServicio ntacreditoServicio;
+    @Autowired
+    private ValoresncServicio valoresncServicio;
+    @Autowired
+    private FacxncService facxncService;
 
     @Transactional
     public List<ValorFactDTO> getSincobroByCuenta(Long cuenta) {
@@ -430,6 +443,9 @@ public class RecaudacionCobroServicio {
         Definir definir = definirServicio.ultima();
         BigDecimal tasaIva = obtenerTasaIva(definir);
         String numeroFacturaSiguiente = null;
+        BigDecimal saldoNotaCreditoPendiente = recaudacion.getNcvalor() != null
+                ? recaudacion.getNcvalor().max(BigDecimal.ZERO)
+                : BigDecimal.ZERO;
 
         for (Facturas factura : facturas) {
             ValorFactDTO pendiente = pendientesPorId.get(factura.getIdfactura());
@@ -447,17 +463,22 @@ public class RecaudacionCobroServicio {
 
             BigDecimal interes = pendiente.getInteres() != null ? pendiente.getInteres() : BigDecimal.ZERO;
             BigDecimal iva = pendiente.getIva() != null ? pendiente.getIva() : calcularIva(factura.getIdfactura(), tasaIva);
+            BigDecimal totalFactura = calcularTotalFacturaParaCobro(pendiente, interes, iva);
+            BigDecimal valorNotaCreditoAplicado = calcularValorNotaCreditoAplicado(totalFactura, saldoNotaCreditoPendiente);
 
             factura.setFechacobro(LocalDate.now());
             factura.setHoracobro(LocalTime.now());
             factura.setUsuariocobro(idusuario);
             factura.setInterescobrado(interes);
             factura.setSwiva(iva);
+            factura.setValornotacredito(valorNotaCreditoAplicado);
             factura.setPagado(1);
             factura.setFormapago(resolveFormaPago(recaudacion));
             factura.setEstado(Objects.equals(factura.getEstado(), 2L) ? 2L : 1L);
             facturaServicio.save(factura);
+            registrarAplicacionNotaCredito(factura, valorNotaCreditoAplicado);
             fecFacturaService.asegurarFecFactura(factura.getIdfactura());
+            saldoNotaCreditoPendiente = saldoNotaCreditoPendiente.subtract(valorNotaCreditoAplicado).max(BigDecimal.ZERO);
 
             Facxrecauda facxrecauda = new Facxrecauda();
             facxrecauda.setIdrecaudacion(recaudacionGuardada);
@@ -627,6 +648,79 @@ public class RecaudacionCobroServicio {
             return 3L;
         }
         return recaudacion.getFormapago();
+    }
+
+    private BigDecimal calcularTotalFacturaParaCobro(ValorFactDTO pendiente, BigDecimal interes, BigDecimal iva) {
+        BigDecimal subtotal = pendiente != null && pendiente.getTotal() != null ? pendiente.getTotal() : BigDecimal.ZERO;
+        return subtotal
+                .add(interes != null ? interes : BigDecimal.ZERO)
+                .add(iva != null ? iva : BigDecimal.ZERO);
+    }
+
+    private BigDecimal calcularValorNotaCreditoAplicado(BigDecimal totalFactura, BigDecimal saldoNotaCreditoPendiente) {
+        if (totalFactura == null || saldoNotaCreditoPendiente == null) {
+            return BigDecimal.ZERO;
+        }
+        if (totalFactura.compareTo(BigDecimal.ZERO) <= 0 || saldoNotaCreditoPendiente.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return totalFactura.min(saldoNotaCreditoPendiente).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private void registrarAplicacionNotaCredito(Facturas factura, BigDecimal valorAplicado) {
+        if (factura == null || factura.getIdabonado() == null || valorAplicado == null
+                || valorAplicado.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+
+        BigDecimal pendientePorAplicar = valorAplicado;
+        List<NtaCreditoSaldos> notasCreditoDisponibles = ntacreditoServicio.findSaldosByCuenta(factura.getIdabonado());
+
+        for (NtaCreditoSaldos saldoNc : notasCreditoDisponibles) {
+            if (saldoNc == null || saldoNc.getIdntacredito() == null || saldoNc.getSaldo() == null) {
+                continue;
+            }
+            if (pendientePorAplicar.compareTo(BigDecimal.ZERO) <= 0) {
+                break;
+            }
+
+            BigDecimal saldoDisponible = saldoNc.getSaldo();
+            if (saldoDisponible.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+
+            BigDecimal valorUso = saldoDisponible.min(pendientePorAplicar).setScale(2, RoundingMode.HALF_UP);
+            if (valorUso.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+
+            Ntacredito notaCredito = ntacreditoServicio.findById(saldoNc.getIdntacredito())
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No se encontró la nota de crédito " + saldoNc.getIdntacredito()));
+
+            BigDecimal devengadoActual = notaCredito.getDevengado() != null ? notaCredito.getDevengado() : BigDecimal.ZERO;
+            notaCredito.setDevengado(devengadoActual.add(valorUso).setScale(2, RoundingMode.HALF_UP));
+            ntacreditoServicio.save(notaCredito);
+
+            Valoresnc valoresnc = new Valoresnc();
+            valoresnc.setEstado(1L);
+            valoresnc.setValor(valorUso);
+            valoresnc.setFechaaplicado(LocalDate.now());
+            valoresnc.setSaldo(saldoDisponible.subtract(valorUso).setScale(2, RoundingMode.HALF_UP));
+            valoresnc.setIdntacredito_ntacredito(notaCredito);
+            Valoresnc valoresncGuardado = valoresncServicio.save(valoresnc);
+
+            Facxnc facxnc = new Facxnc();
+            facxnc.setIdfactura_facturas(factura);
+            facxnc.setIdvaloresnc_valoresnc(valoresncGuardado);
+            facxncService.save(facxnc);
+
+            pendientePorAplicar = pendientePorAplicar.subtract(valorUso).max(BigDecimal.ZERO);
+        }
+
+        if (pendientePorAplicar.compareTo(BigDecimal.ZERO) > 0) {
+            throw new IllegalStateException("La nota de crédito no tiene saldo suficiente para cubrir el valor aplicado.");
+        }
     }
 
     private BigDecimal toBigDecimal(Object value) {

@@ -3,6 +3,10 @@ package com.epmapat.erp_epmapat.jasperReports.services;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.core.io.ClassPathResource;
@@ -26,7 +30,7 @@ public class BuildReports {
     private final JasperReportLoader loader;
 
     public ByteArrayOutputStream buildReport(Jasper_DTO jasperDTO, Connection conn) {
-        Map<String, Object> parameters = jasperDTO.getParameters();
+        Map<String, Object> parameters = new HashMap<>(jasperDTO.getParameters());
 
         try (
                 // Connection conn = dataSource.getConnection(); // Se cierra automáticamente
@@ -39,6 +43,7 @@ public class BuildReports {
             parameters.put(JRParameter.REPORT_CONNECTION, conn); // Pasamos la conexión a los subreportes
 
             JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
+            parameters = normalizeParametersForReport(jasperReport, parameters);
 
             // Usa JREmptyDataSource si el reporte principal no usa datos directamente
             // JRDataSource emptyDataSource = new JREmptyDataSource();
@@ -60,7 +65,7 @@ public class BuildReports {
 
     public JasperPrint buildPrint(String reportName, Map<String, Object> params, Connection conn) throws JRException {
         JasperReport jr = reportCache.getCompiled(reportName);
-        JasperPrint jasperPrint = JasperFillManager.fillReport(jr, params, conn);
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jr, normalizeParametersForReport(jr, params), conn);
         trimReceiptPaper(reportName, jasperPrint);
         return jasperPrint;
     }
@@ -80,9 +85,85 @@ public class BuildReports {
         }
 
         JasperReport jr = loader.load(reportName);
-        JasperPrint jasperPrint = JasperFillManager.fillReport(jr, params, conn);
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jr, normalizeParametersForReport(jr, params), conn);
         trimReceiptPaper(reportName, jasperPrint);
         return jasperPrint;
+    }
+
+    private Map<String, Object> normalizeParametersForReport(JasperReport report, Map<String, Object> inputParams) {
+        Map<String, Object> normalized = new HashMap<>();
+        if (inputParams != null) {
+            normalized.putAll(inputParams);
+        }
+
+        if (report == null || report.getParameters() == null) {
+            return normalized;
+        }
+
+        for (JRParameter parameter : report.getParameters()) {
+            if (parameter == null || parameter.isSystemDefined()) {
+                continue;
+            }
+
+            String name = parameter.getName();
+            if (!normalized.containsKey(name)) {
+                continue;
+            }
+
+            Object value = normalized.get(name);
+            Object converted = convertValue(value, parameter.getValueClass());
+            normalized.put(name, converted);
+        }
+
+        return normalized;
+    }
+
+    private Object convertValue(Object value, Class<?> targetType) {
+        if (value == null || targetType == null || targetType.isInstance(value)) {
+            return value;
+        }
+
+        if (targetType == Integer.class) {
+            if (value instanceof Number number) {
+                return number.intValue();
+            }
+            return Integer.valueOf(value.toString().trim());
+        }
+
+        if (targetType == Long.class) {
+            if (value instanceof Number number) {
+                return number.longValue();
+            }
+            return Long.valueOf(value.toString().trim());
+        }
+
+        if (targetType == Double.class) {
+            if (value instanceof Number number) {
+                return number.doubleValue();
+            }
+            return Double.valueOf(value.toString().trim());
+        }
+
+        if (targetType == Float.class) {
+            if (value instanceof Number number) {
+                return number.floatValue();
+            }
+            return Float.valueOf(value.toString().trim());
+        }
+
+        if (targetType == String.class) {
+            return value.toString();
+        }
+
+        if (targetType == Timestamp.class && value instanceof Date date) {
+            return new Timestamp(date.getTime());
+        }
+
+        if (targetType == Time.class && value instanceof Date date) {
+            return new Time(date.getTime());
+        }
+
+        return value;
     }
 
     private void trimReceiptPaper(String reportName, JasperPrint jasperPrint) {
