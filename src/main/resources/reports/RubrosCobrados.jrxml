@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapatServer"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="SERVIDOR EPMAPAT"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -271,7 +271,7 @@ ORDER BY ft.formapago;]]>
 	<parameter name="hasta" class="java.sql.Timestamp"/>
 	<parameter name="idusuario" class="java.lang.Integer"/>
 	<parameter name="tope" class="java.util.Date"/>
-		<queryString language="SQL">
+	<queryString language="SQL">
 		<![CDATA[WITH facturas_validas AS (
     SELECT DISTINCT f.idfactura, COALESCE(f.swiva, 0)::numeric AS swiva
     FROM Facturas f

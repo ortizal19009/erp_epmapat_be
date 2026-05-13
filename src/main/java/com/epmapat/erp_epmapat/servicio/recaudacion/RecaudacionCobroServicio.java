@@ -38,6 +38,7 @@ import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 import com.epmapat.erp_epmapat.servicio.CajaServicio;
 import com.epmapat.erp_epmapat.servicio.FacturaServicio;
+import com.epmapat.erp_epmapat.servicio.Fec_facturaService;
 import com.epmapat.erp_epmapat.servicio.FacxrecaudaServicio;
 import com.epmapat.erp_epmapat.servicio.RecaudacionServicio;
 import com.epmapat.erp_epmapat.servicio.RecaudaxcajaServicio;
@@ -66,6 +67,8 @@ public class RecaudacionCobroServicio {
     private DefinirServicio definirServicio;
     @Autowired
     private UsuarioServicio usuarioServicio;
+    @Autowired
+    private Fec_facturaService fecFacturaService;
 
     @Transactional
     public List<ValorFactDTO> getSincobroByCuenta(Long cuenta) {
@@ -454,6 +457,7 @@ public class RecaudacionCobroServicio {
             factura.setFormapago(resolveFormaPago(recaudacion));
             factura.setEstado(Objects.equals(factura.getEstado(), 2L) ? 2L : 1L);
             facturaServicio.save(factura);
+            fecFacturaService.asegurarFecFactura(factura.getIdfactura());
 
             Facxrecauda facxrecauda = new Facxrecauda();
             facxrecauda.setIdrecaudacion(recaudacionGuardada);

@@ -17,7 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="rubroxfac")
-@Where(clause = "(estado = 1 or estado is null)")
+@Where(clause = "(estado <> 0 or estado is null)")
 public class Rubroxfac {
 
 	@Id

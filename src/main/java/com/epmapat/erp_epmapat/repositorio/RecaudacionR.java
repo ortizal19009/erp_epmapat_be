@@ -33,7 +33,7 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
                         "join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
                         "join facturas f on fr.idfactura = f.idfactura " +
                         "join usuarios u on f.usuariocobro = u.idusuario "+
-                        "join rubroxfac rf on rf.idfactura_facturas = f.idfactura and (rf.estado = 1 or rf.estado is null) " +
+                        "join rubroxfac rf on rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 or rf.estado is null) " +
                         "join rubros rb on rf.idrubro_rubros = rb.idrubro " +
                         "join clientes c on c.idcliente = f.idcliente " +
                         "where r.fechacobro between ?1 and ?2 and not rf.idrubro_rubros = 165 " +
@@ -45,7 +45,7 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
                         +
                         "from recaudacion r join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
                         "join facturas f on fr.idfactura = f.idfactura " +
-                        "join rubroxfac rf on rf.idfactura_facturas = f.idfactura and (rf.estado = 1 or rf.estado is null) " +
+                        "join rubroxfac rf on rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 or rf.estado is null) " +
                         "join rubros rb on rf.idrubro_rubros = rb.idrubro " +
                         "where r.fechacobro between ?1 and ?2 and f.feccrea <= ?3 and not rf.idrubro_rubros = 165  " +
                         "group by rf.idrubro_rubros, rb.descripcion", nativeQuery = true)
@@ -55,7 +55,7 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
                         +
                         "from recaudacion r join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
                         "join facturas f on fr.idfactura = f.idfactura " +
-                        "join rubroxfac rf on rf.idfactura_facturas = f.idfactura and (rf.estado = 1 or rf.estado is null) " +
+                        "join rubroxfac rf on rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 or rf.estado is null) " +
                         "join rubros rb on rf.idrubro_rubros = rb.idrubro " +
                         "where r.fechacobro between ?1 and ?2 and f.feccrea > ?3 and rf.idrubro_rubros = 165 " +
                         "group by rf.idrubro_rubros, rb.descripcion", nativeQuery = true)

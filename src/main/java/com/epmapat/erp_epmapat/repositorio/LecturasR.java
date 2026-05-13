@@ -273,7 +273,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			    a.adultomayor AS swAdultoMayor
 			FROM lecturas l
 			JOIN abonados a ON l.idabonado_abonados = a.idabonado
-			LEFT JOIN rubroxfac rf ON l.idfactura = rf.idfactura_facturas AND (rf.estado = 1 OR rf.estado IS NULL)
+			LEFT JOIN rubroxfac rf ON l.idfactura = rf.idfactura_facturas AND (rf.estado <> 0 OR rf.estado IS NULL)
 			WHERE l.idemision = ?1
 			GROUP BY
 			    l.idfactura, a.idabonado, l.idcategoria,
@@ -295,7 +295,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			    COUNT(DISTINCT rf.idrubroxfac)                   AS totalRubros
 			  FROM lecturas l
 			  JOIN facturas  f  ON l.idfactura = f.idfactura
-			  JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas AND (rf.estado = 1 OR rf.estado IS NULL)
+			  JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas AND (rf.estado <> 0 OR rf.estado IS NULL)
 			  JOIN abonados  a  ON l.idabonado_abonados = a.idabonado
 			  WHERE l.idemision = :idemision
 			  GROUP BY

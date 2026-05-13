@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -98,7 +99,7 @@ public class Fec_facturaService {
    public Map<String, Object> generarFecFactura(Long idfactura) {
       Map<String, Object> response = new HashMap<>();
       Fecfactura factura = facturasR.forFecfactura(idfactura);
-      Fec_factura fecFactura = new Fec_factura();
+      Fec_factura fecFactura = dao.findById(idfactura).orElseGet(Fec_factura::new);
       DefinirProjection definir = definirR.findDefinirWithoutFirma(1L);
       String concepto = "OTROS SERVICIOS";
       if (factura.getNrofactura() == null || factura.getNrofactura().isEmpty()) {
@@ -122,6 +123,7 @@ public class Fec_facturaService {
 
       }
       fecFactura.setConcepto(concepto);
+      limpiarEstructuraFacturaElectronica(idfactura);
       // BUILD FECFACTURA
       fecFactura.setIdfactura(factura.getIdfactura());
       fecFactura.setDireccionestablecimiento(definir.getDirmatriz());
@@ -139,10 +141,35 @@ public class Fec_facturaService {
       fecFactura.setDireccioncomprador(factura.getDireccion());
       fecFactura.setClaveacceso(generarClaveAcceso(fecFactura, definir));
       fecFactura.setEstado("I");
+      fecFactura.setXmlautorizado(null);
+      fecFactura.setErrores(null);
       dao.save(fecFactura);
       generarFecFacturaDetalles(idfactura);
       generarFecFacturaPagos(idfactura, (long) m3);
+      response.put("idfactura", idfactura);
+      response.put("claveacceso", fecFactura.getClaveacceso());
+      response.put("estado", fecFactura.getEstado());
+      response.put("message", "Factura electronica generada correctamente");
       return response;
+   }
+
+   @Transactional
+   public Map<String, Object> asegurarFecFactura(Long idfactura) {
+      return generarFecFactura(idfactura);
+   }
+
+   private void limpiarEstructuraFacturaElectronica(Long idfactura) {
+      List<Long> detalleIds = fecFacturaDetallesR.findByIdfactura(idfactura).stream()
+            .map(Fec_factura_detalles::getIdfacturadetalle)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+      if (!detalleIds.isEmpty()) {
+         fecFacturaDetallesImpuestosR.deleteByIdfacturadetalleIn(detalleIds);
+      }
+
+      fecFacturaDetallesR.deleteByIdfactura(idfactura);
+      fecFacturaPagosR.deleteByIdfactura(idfactura);
    }
 
    // CREAR FACTURA DETALLE
