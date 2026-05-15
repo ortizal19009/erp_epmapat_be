@@ -38,6 +38,10 @@ public class Fec_factura implements Serializable {
    private String concepto;
    private String referencia;
    private String recaudador;
+   private Integer intentosAutorizacion;
+   private LocalDateTime fechaUltimoIntento;
+   private LocalDateTime fechaAutorizacion;
+   private Boolean mailEnviado;
 
 public Fec_factura orElseThrow(Object object) {
     throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");

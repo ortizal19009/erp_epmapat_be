@@ -1,4 +1,4 @@
-﻿package com.epmapat.erp_epmapat.repositorio;
+package com.epmapat.erp_epmapat.repositorio;
 
 import java.time.LocalDate;
 import java.util.Date;

@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.controlador;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,12 +20,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.epmapat.erp_epmapat.DTO.FecFacturaUpdateDto;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.Fec_factura;
+import com.epmapat.erp_epmapat.modelo.Fec_factura_log;
+import com.epmapat.erp_epmapat.servicio.FecFacturaLogService;
 import com.epmapat.erp_epmapat.servicio.Fec_facturaService;
 import com.epmapat.erp_epmapat.sri.interfaces.fecFacturaDatos;
 
@@ -39,13 +41,12 @@ public class Fec_facturaApi {
    @Autowired
    private Fec_facturaService fecfacServicio;
    @Autowired
+   private FecFacturaLogService fecFacturaLogService;
+   @Autowired
    private RestTemplate restTemplate;
 
    @Value("${sri.microservice.base-url:http://192.168.0.33:9096}")
    private String sriMicroserviceBaseUrl;
-
-   @Value("${eureka.service-url}")
-   private String eurekaServiceUrl;
 
    @GetMapping
    public List<Fec_factura> getAll() {
@@ -124,6 +125,10 @@ public class Fec_facturaApi {
       factura.setConcepto(fecfactura.getConcepto());
       factura.setReferencia(fecfactura.getReferencia());
       factura.setRecaudador(fecfactura.getRecaudador());
+      factura.setIntentosAutorizacion(fecfactura.getIntentosAutorizacion());
+      factura.setFechaUltimoIntento(fecfactura.getFechaUltimoIntento());
+      factura.setFechaAutorizacion(fecfactura.getFechaAutorizacion());
+      factura.setMailEnviado(fecfactura.getMailEnviado());
       Fec_factura upfecfactura = fecfacServicio.save(factura);
       return ResponseEntity.ok(upfecfactura);
    }
@@ -159,26 +164,38 @@ public class Fec_facturaApi {
       return ResponseEntity.ok(fecfacServicio.findById(idfactura));
    }
 
-   @PutMapping("/setxml")
-   public ResponseEntity<Fec_factura> setXmlToFactura(@RequestParam Long idfactura, @RequestBody Fec_factura ff) {
+   @GetMapping("/{idfactura}/seguimiento")
+   public ResponseEntity<Map<String, Object>> seguimientoFactura(@PathVariable Long idfactura) {
       Fec_factura factura = fecfacServicio.findById(idfactura)
             .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
+      List<Fec_factura_log> historial = fecFacturaLogService.listarPorFactura(idfactura);
 
+      Map<String, Object> response = new LinkedHashMap<>();
+      response.put("idfactura", idfactura);
+      response.put("estado", factura.getEstado());
+      response.put("claveacceso", factura.getClaveacceso());
+      response.put("mailEnviado", factura.getMailEnviado());
+      response.put("intentosAutorizacion", factura.getIntentosAutorizacion());
+      response.put("fechaUltimoIntento", factura.getFechaUltimoIntento());
+      response.put("fechaAutorizacion", factura.getFechaAutorizacion());
+      response.put("errores", factura.getErrores());
+      response.put("factura", factura);
+      response.put("historial", historial);
+      return ResponseEntity.ok(response);
+   }
+
+   @PutMapping("/setxml")
+   public ResponseEntity<Fec_factura> setXmlToFactura(@RequestParam Long idfactura, @RequestBody Fec_factura ff) {
       try {
-         String url = sriMicroserviceBaseUrl + "/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
-         String xml = restTemplate.getForObject(url, String.class);
-
-         factura.setXmlautorizado(xml);
-         factura.setEstado("A");
-         fecfacServicio.save(factura);
-
-         return ResponseEntity.ok(factura);
-      } catch (HttpServerErrorException e) {
-         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-               .body(factura);
+         return fecfacServicio.recuperarXmlAutorizado(idfactura)
+               .map(ResponseEntity::ok)
+               .orElseGet(() -> fecfacServicio.findById(idfactura)
+                     .map(facturaPendiente -> ResponseEntity.status(HttpStatus.ACCEPTED).body(facturaPendiente))
+                     .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura)));
       } catch (Exception e) {
-         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-               .body(factura);
+         Fec_factura factura = fecfacServicio.findById(idfactura)
+               .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
+         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(factura);
       }
    }
 
