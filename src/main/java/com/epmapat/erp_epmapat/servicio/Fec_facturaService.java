@@ -23,8 +23,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.epmapat.erp_epmapat.DTO.FecFacturaGestionFiltroDto;
 import com.epmapat.erp_epmapat.interfaces.DefinirProjection;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
+import com.epmapat.erp_epmapat.interfaces.FecFacturaGestionProjection;
 import com.epmapat.erp_epmapat.interfaces.Fecfactura;
 import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.modelo.Fec_factura_detalles;
@@ -92,6 +94,29 @@ public class Fec_facturaService {
       return dao.findByFechaEmisionAndEstados(desde, hastaExclusive);
    }
 
+   public List<FecFacturaGestionProjection> buscarGestion(FecFacturaGestionFiltroDto filtro) {
+      Integer limit = filtro.getLimit() == null || filtro.getLimit() <= 0 ? 300 : filtro.getLimit();
+      return dao.buscarGestion(
+            clean(filtro.getNumeroFactura()),
+            clean(filtro.getClaveAcceso()),
+            clean(filtro.getEstadoSri()),
+            clean(filtro.getCliente()),
+            clean(filtro.getIdentificacion()),
+            clean(filtro.getEstablecimiento()),
+            clean(filtro.getPuntoEmision()),
+            filtro.getIdusuario(),
+            digits(filtro.getSecuencialDesde()),
+            digits(filtro.getSecuencialHasta()),
+            clean(filtro.getFechaDesde()),
+            clean(filtro.getFechaHasta()),
+            clean(filtro.getEmailEstado()),
+            filtro.getSwmail(),
+            filtro.getMailIntentos(),
+            clean(filtro.getMailError()),
+            filtro.getSoloFallidos(),
+            limit);
+   }
+
    public <S extends Fec_factura> S save(S entity) {
       return dao.save(entity);
    }
@@ -157,6 +182,10 @@ public class Fec_facturaService {
       fecFactura.setFechaUltimoIntento(null);
       fecFactura.setFechaAutorizacion(null);
       fecFactura.setMailEnviado(Boolean.FALSE);
+      fecFactura.setMailIntentos(0);
+      fecFactura.setMailError(null);
+      fecFactura.setEmailEstado("NO_ENVIADO");
+      fecFactura.setFechaReenvio(null);
       dao.save(fecFactura);
       generarFecFacturaDetalles(idfactura);
       generarFecFacturaPagos(idfactura, (long) m3);
@@ -214,14 +243,22 @@ public class Fec_facturaService {
 
    public Fec_factura marcarCorreoEnviado(Fec_factura factura) {
       factura.setMailEnviado(Boolean.TRUE);
-      factura.setEstado("C");
+      if ("O".equals(String.valueOf(factura.getEstado()))) {
+         factura.setEstado("A");
+      }
       factura.setErrores(null);
+      factura.setEmailEstado("ENVIADO");
+      factura.setMailError(null);
+      factura.setMailIntentos(factura.getMailIntentos() == null ? 1 : factura.getMailIntentos());
+      factura.setFechaReenvio(LocalDateTime.now());
       return dao.save(factura);
    }
 
    public Fec_factura marcarErrorPostAutorizacion(Fec_factura factura, String motivo) {
       factura.setErrores(motivo);
       factura.setEstado("E");
+      factura.setMailError(motivo);
+      factura.setEmailEstado("ERROR_ENVIO");
       return dao.save(factura);
    }
 
@@ -666,6 +703,23 @@ public class Fec_facturaService {
 
    public void delete(Long id) {
       dao.deleteById(id);
+   }
+
+   private String clean(String value) {
+      if (value == null) {
+         return null;
+      }
+      String trimmed = value.trim();
+      return trimmed.isEmpty() ? null : trimmed;
+   }
+
+   private String digits(String value) {
+      String cleaned = clean(value);
+      if (cleaned == null) {
+         return null;
+      }
+      String onlyDigits = cleaned.replaceAll("\\D", "");
+      return onlyDigits.isEmpty() ? null : onlyDigits;
    }
 
 }

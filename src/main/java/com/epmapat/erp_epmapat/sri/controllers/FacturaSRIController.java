@@ -114,6 +114,16 @@ public class FacturaSRIController {
             return ResponseEntity.noContent().build();
         }
         String xmlAutorizado = fecFactura.getXmlautorizado();
+        if (esRespuestaPendienteSri(xmlAutorizado)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .header("X-Error-Message", "La factura aun no tiene XML autorizado disponible en el SRI")
+                    .body(null);
+        }
+        if (!pareceXml(xmlAutorizado)) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .header("X-Error-Message", "El contenido almacenado en xmlautorizado no corresponde a un XML valido")
+                    .body(null);
+        }
         LocalDate fehchaemision = fecFactura.getFechaemision();
         LocalDate fechaLimite = LocalDate.of(2025, 5, 6);
 
@@ -151,6 +161,18 @@ public class FacturaSRIController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(null);
         }
+    }
+
+    private boolean esRespuestaPendienteSri(String valor) {
+        String texto = String.valueOf(valor == null ? "" : valor).trim();
+        return texto.startsWith("{")
+                && texto.contains("\"estado\"")
+                && texto.toUpperCase().contains("PENDIENTE");
+    }
+
+    private boolean pareceXml(String valor) {
+        String texto = String.valueOf(valor == null ? "" : valor).trim();
+        return texto.startsWith("<");
     }
 
     @PostMapping("/sendMail")

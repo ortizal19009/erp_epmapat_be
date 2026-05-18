@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
@@ -24,8 +26,6 @@ import com.epmapat.erp_epmapat.servicio.AguaTramiteServicio;
 
 @RestController
 @RequestMapping("/aguatramite")
-
-
 public class AguaTramiteApi {
 
    @Autowired
@@ -53,6 +53,19 @@ public class AguaTramiteApi {
          @PathVariable("estado") Long estado, @PathVariable("d") @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
          @PathVariable("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
       return ResponseEntity.ok(aguatServicio.findByIdTipTramite(idtipotramite, estado, d, h));
+   }
+
+   @GetMapping("/buscar")
+   public ResponseEntity<Page<AguaTramite>> buscarPageable(
+         @RequestParam("idtipotramite") Long idtipotramite,
+         @RequestParam(value = "estado", required = false) Integer estado,
+         @RequestParam(value = "cliente", required = false) String cliente,
+         @RequestParam(value = "fechaDesde", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechaDesde,
+         @RequestParam(value = "fechaHasta", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechaHasta,
+         @RequestParam(value = "page", defaultValue = "0") Integer page,
+         @RequestParam(value = "size", defaultValue = "10") Integer size) {
+      return ResponseEntity.ok(
+            aguatServicio.buscarPageable(idtipotramite, estado, cliente, fechaDesde, fechaHasta, page, size));
    }
 
    @PostMapping

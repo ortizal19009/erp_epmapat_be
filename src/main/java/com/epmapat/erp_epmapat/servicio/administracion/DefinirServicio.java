@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.epmapat.erp_epmapat.config.AESUtil;
+import com.epmapat.erp_epmapat.interfaces.DefinirProjection;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
 
@@ -30,6 +31,10 @@ public class DefinirServicio {
 
     public Definir ultima() {
         return dao.findTopByOrderByIddefinirDesc();
+    }
+
+    public DefinirProjection findDefinirWithoutFirma(Long id) {
+        return dao.findDefinirWithoutFirma(id);
     }
 
     public Definir guardarFirma(Long id, MultipartFile archivo, String claveFirma) throws Exception {

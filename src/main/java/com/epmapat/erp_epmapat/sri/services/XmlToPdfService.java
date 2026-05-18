@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -78,21 +80,11 @@ public class XmlToPdfService {
                 }
             };
 
-            // Parsear el XML original
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            InputSource inputSource = new InputSource(new StringReader(xmlAutorizado));
-            inputSource.setEncoding("UTF-8");
-            Document document = builder.parse(inputSource);
-            String numeroAutorizacion = getNodeText(document, "numeroAutorizacion");
-            String fechaAutorizacion = getNodeText(document, "fechaAutorizacion");
-            // Extraer nodo <comprobante> si existe
-            NodeList comprobanteNodes = document.getElementsByTagName("comprobante");
-            if (comprobanteNodes.getLength() > 0) {
-                String innerXml = comprobanteNodes.item(0).getTextContent();
-                document = builder.parse(new InputSource(new StringReader(innerXml)));
-            }
+            ParsedAuthorizedXml parsed = parseAuthorizedXmlData(xmlAutorizado);
+            Document document = parsed.documentoComprobante;
+            String numeroAutorizacion = parsed.numeroAutorizacion;
+            String fechaAutorizacion = parsed.fechaAutorizacion;
+            String claveAcceso = safeValue(parsed.claveAcceso, getNodeText(document, "claveAcceso"));
 
             // Validar documento
             if (document == null) {
@@ -192,6 +184,7 @@ public class XmlToPdfService {
             parameters.put("Ruc", ruc);
             parameters.put("NumeroAutorizacion", safeValue(numeroAutorizacion, "0000000000"));
             parameters.put("FechaAutorizacion", fechaAutorizacion);
+            parameters.put("ClaveAcceso", claveAcceso);
             parameters.put("FechaEmision", fechaEmision);
             parameters.put("TotalSinImpuestos", totalSinImpuestos);
             parameters.put("DireccionMatriz", direccionMatriz);
@@ -206,7 +199,7 @@ public class XmlToPdfService {
             parameters.put("RazonSocialComprador", razonSocialComprador);
             parameters.put("IdentificacionComprador", identificacionComprador);
             parameters.put("DireccionComprador", direccionComprador);
-            parameters.put("GuiaRemision", guiaRemision);
+            parameters.put("GuiaRemision", safeValue(guiaRemision, "NO APLICA"));
             parameters.put("FormaPago", formaPago);
             parameters.put("TotalDescuento", safeBigDecimal.apply(totalDescuento));
             parameters.put("Propina", safeBigDecimal.apply(propina));
@@ -268,12 +261,8 @@ public class XmlToPdfService {
                 }
             };
 
-            // Parseo del XML
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            InputSource inputSource = new InputSource(new StringReader(xmlAutorizado));
-            inputSource.setEncoding("UTF-8");
-            Document document = builder.parse(inputSource);
+            ParsedAuthorizedXml parsed = parseAuthorizedXmlData(xmlAutorizado);
+            Document document = parsed.documentoComprobante;
             if (document == null) {
                 throw new RuntimeException("El documento XML no se ha podido transformar.");
             }
@@ -281,8 +270,9 @@ public class XmlToPdfService {
             // Extraer datos generales
             String razonSocial = getNodeText(document, "razonSocial");
             String ruc = getNodeText(document, "ruc");
-            String numeroAutorizacion = getNodeText(document, "numeroAutorizacion");
-            String fechaAutorizacion = getNodeText(document, "fechaAutorizacion");
+            String numeroAutorizacion = parsed.numeroAutorizacion;
+            String fechaAutorizacion = parsed.fechaAutorizacion;
+            String claveAcceso = safeValue(parsed.claveAcceso, getNodeText(document, "claveAcceso"));
             String fechaEmision = getNodeText(document, "fechaEmision");
             String totalSinImpuestos = getNodeText(document, "totalSinImpuestos");
             String importeTotal = getNodeText(document, "importeTotal");
@@ -370,8 +360,9 @@ public class XmlToPdfService {
             // Parámetros para Jasper
             parameters.put("RazonSocial", razonSocial);
             parameters.put("Ruc", ruc);
-            parameters.put("NumeroAutorizacion", numeroAutorizacion);
+            parameters.put("NumeroAutorizacion", safeValue(numeroAutorizacion, "0000000000"));
             parameters.put("FechaAutorizacion", fechaAutorizacion);
+            parameters.put("ClaveAcceso", claveAcceso);
             parameters.put("FechaEmision", fechaEmision);
             parameters.put("TotalSinImpuestos", totalSinImpuestos);
             parameters.put("DireccionMatriz", direccionMatriz);
@@ -386,7 +377,7 @@ public class XmlToPdfService {
             parameters.put("RazonSocialComprador", razonSocialComprador);
             parameters.put("IdentificacionComprador", identificacionComprador);
             parameters.put("DireccionComprador", direccionComprador);
-            parameters.put("GuiaRemision", guiaRemision);
+            parameters.put("GuiaRemision", safeValue(guiaRemision, "NO APLICA"));
             parameters.put("FormaPago", formaPago);
             parameters.put("TotalDescuento", safeBigDecimal.apply(totalDescuento));
             parameters.put("Propina", safeBigDecimal.apply(propina));
@@ -433,6 +424,144 @@ public class XmlToPdfService {
     private String getChildText(Element element, String tagName) {
         NodeList nodes = element.getElementsByTagName(tagName);
         return nodes.getLength() > 0 ? nodes.item(0).getTextContent() : "";
+    }
+
+    private Document parseAuthorizedXml(String xmlAutorizado) throws Exception {
+        return parseAuthorizedXmlData(xmlAutorizado).documentoComprobante;
+    }
+
+    private ParsedAuthorizedXml parseAuthorizedXmlData(String xmlAutorizado) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+
+        String xmlLimpio = normalizarXmlInterno(xmlAutorizado);
+        Document document;
+        try {
+            document = parseXml(builder, xmlLimpio);
+        } catch (Exception ex) {
+            String extraido = extraerPrimerXml(xmlLimpio);
+            if (extraido == null || extraido.isBlank()) {
+                System.err.println("XML no parseable. Inicio recibido: " + resumirInicio(xmlLimpio));
+                throw ex;
+            }
+            document = parseXml(builder, extraido);
+        }
+
+        ParsedAuthorizedXml parsed = new ParsedAuthorizedXml();
+        parsed.numeroAutorizacion = safeValue(getNodeText(document, "numeroAutorizacion"), "");
+        parsed.fechaAutorizacion = safeValue(getNodeText(document, "fechaAutorizacion"), "");
+        parsed.claveAcceso = safeValue(getNodeText(document, "claveAcceso"), "");
+
+        NodeList comprobanteNodes = document.getElementsByTagName("comprobante");
+        if (comprobanteNodes.getLength() == 0) {
+            parsed.documentoComprobante = document;
+            return parsed;
+        }
+
+        String comprobanteContenido = normalizarXmlInterno(comprobanteNodes.item(0).getTextContent());
+        if (comprobanteContenido.isBlank()) {
+            parsed.documentoComprobante = document;
+            return parsed;
+        }
+
+        String xmlInterno = normalizarXmlInterno(comprobanteContenido);
+        Document documentoComprobante = parseXml(builder, xmlInterno);
+        parsed.documentoComprobante = documentoComprobante;
+        if (parsed.claveAcceso == null || parsed.claveAcceso.isBlank()) {
+            parsed.claveAcceso = safeValue(getNodeText(documentoComprobante, "claveAcceso"), "");
+        }
+        return parsed;
+    }
+
+    private Document parseXml(DocumentBuilder builder, String xml) throws Exception {
+        InputSource inputSource = new InputSource(new StringReader(xml));
+        inputSource.setEncoding("UTF-8");
+        return builder.parse(inputSource);
+    }
+
+    private String limpiarXmlRobusto(String xml) {
+        if (xml == null) {
+            return "";
+        }
+
+        String limpio = xml
+                .replace("\uFEFF", "")
+                .replace("ï»¿", "")
+                .replace("\u0000", "")
+                .trim();
+        limpio = limpio.replaceAll("^(ï»¿|Ã¯Â»Â¿)+", "");
+
+        int inicioXml = limpio.indexOf('<');
+        if (inicioXml > 0) {
+            limpio = limpio.substring(inicioXml);
+        }
+
+        return limpio.trim();
+    }
+
+    private String normalizarXmlInterno(String xml) {
+        String normalizado = limpiarXmlRobusto(xml);
+
+        if (!normalizado.startsWith("<")) {
+            normalizado = unescapeXmlBasico(normalizado);
+            normalizado = limpiarXmlRobusto(normalizado);
+        }
+
+        Pattern pattern = Pattern.compile("(?is)<\\?xml.*|<factura\\b.*|<notaCredito\\b.*|<liquidacionCompra\\b.*|<autorizacion\\b.*");
+        Matcher matcher = pattern.matcher(normalizado);
+        if (matcher.find()) {
+            if (matcher.start() > 0) {
+                normalizado = normalizado.substring(matcher.start());
+            }
+            return normalizado;
+        }
+        String extraido = extraerPrimerXml(normalizado);
+        return extraido == null || extraido.isBlank() ? normalizado : extraido;
+    }
+
+    private String unescapeXmlBasico(String value) {
+        return value
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&quot;", "\"")
+                .replace("&apos;", "'")
+                .replace("&amp;", "&");
+    }
+
+    private String extraerPrimerXml(String valor) {
+        String texto = limpiarXmlRobusto(unescapeXmlBasico(valor));
+        Pattern[] patrones = new Pattern[] {
+                Pattern.compile("(?is)(<\\?xml[^>]*\\?>.*)"),
+                Pattern.compile("(?is)(<(factura|notaCredito|liquidacionCompra|autorizacion)\\b.*)")
+        };
+
+        for (Pattern patron : patrones) {
+            Matcher matcher = patron.matcher(texto);
+            if (matcher.find()) {
+                String extraido = texto.substring(matcher.start(1)).trim();
+                if (extraido.startsWith("<")) {
+                    return extraido;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private String resumirInicio(String valor) {
+        if (valor == null) {
+            return "<null>";
+        }
+        String compacto = valor.replaceAll("\\s+", " ").trim();
+        return compacto.length() <= 180 ? compacto : compacto.substring(0, 180) + "...";
+    }
+
+    private static class ParsedAuthorizedXml {
+        private Document documentoComprobante;
+        private String numeroAutorizacion;
+        private String fechaAutorizacion;
+        private String claveAcceso;
     }
 
 }

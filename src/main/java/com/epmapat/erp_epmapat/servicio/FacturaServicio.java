@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Facturas;
+import com.epmapat.erp_epmapat.modelo.Fec_factura_detalles;
 import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
@@ -51,7 +52,7 @@ public class FacturaServicio {
 	@Autowired
 	private DefinirR dao_definir;
 	@Autowired
-	private LecturaServicio lecturaServicio;
+	private LecturaServicio lecturaServicio;`r`n`t@Autowired`r`n`tprivate Fec_facturaR fecFacturaR;`r`n`t@Autowired`r`n`tprivate Fec_factura_detallesR fecFacturaDetallesR;`r`n`t@Autowired`r`n`tprivate Fec_factura_detalles_impuestosR fecFacturaDetallesImpuestosR;`r`n`t@Autowired`r`n`tprivate Fec_factura_logR fecFacturaLogR;`r`n`t@Autowired`r`n`tprivate Fec_factura_pagosR fecFacturaPagosR;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -203,8 +204,24 @@ public class FacturaServicio {
 	}
 
 	public <S extends Facturas> S saveForNewEmision(S entity) {
-
 		return dao.save(entity);
+	}
+	@Transactional
+	public void eliminarFacturaElectronicaEnCascada(Long idfactura) {
+		if (idfactura == null || !fecFacturaR.existsById(idfactura)) {
+			return;
+		}
+		List<Long> detalleIds = fecFacturaDetallesR.findByIdfactura(idfactura)
+				.stream()
+				.map(Fec_factura_detalles::getIdfacturadetalle)
+				.collect(Collectors.toList());
+		if (!detalleIds.isEmpty()) {
+			fecFacturaDetallesImpuestosR.deleteByIdfacturadetalleIn(detalleIds);
+		}
+		fecFacturaDetallesR.deleteByIdfactura(idfactura);
+		fecFacturaPagosR.deleteByIdfactura(idfactura);
+		fecFacturaLogR.deleteByIdfactura(idfactura);
+		fecFacturaR.deleteByIdfactura(idfactura);
 	}
 
 	public FacturasR getDao() {
@@ -893,3 +910,4 @@ public class FacturaServicio {
 		return dao.findFacturasCobradasByEmision(idemision);
 	}
 }
+

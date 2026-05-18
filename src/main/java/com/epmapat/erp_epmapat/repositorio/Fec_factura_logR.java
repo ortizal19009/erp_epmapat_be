@@ -8,4 +8,6 @@ import com.epmapat.erp_epmapat.modelo.Fec_factura_log;
 
 public interface Fec_factura_logR extends JpaRepository<Fec_factura_log, Long> {
    List<Fec_factura_log> findByIdfacturaOrderByFechaAsc(Long idfactura);
+   void deleteByIdfactura(Long idfactura);
 }
+

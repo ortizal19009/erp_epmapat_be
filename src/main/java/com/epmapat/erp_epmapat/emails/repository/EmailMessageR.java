@@ -41,6 +41,8 @@ public interface EmailMessageR extends JpaRepository<EmailMessage, UUID>,
     @Query("select e from EmailMessage e where e.id = :id")
     Optional<EmailMessage> lockById(@Param("id") UUID id);
 
+    Optional<EmailMessage> findFirstByCorrelationIdOrderByCreatedAtDesc(String correlationId);
+
     @Query("""
         select count(e) from EmailMessage e
         where e.createdAt >= :from and e.createdAt < :to
