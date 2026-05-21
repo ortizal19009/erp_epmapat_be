@@ -8,7 +8,9 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.epmapat.erp_epmapat.config.AESUtil;
+import com.epmapat.erp_epmapat.emails.model.EmailAccount;
+import com.epmapat.erp_epmapat.emails.model.EmailType;
+import com.epmapat.erp_epmapat.emails.service.EmailAccountService;
 import com.epmapat.erp_epmapat.interfaces.DefinirProjection;
 import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.servicio.FecFacturaLogService;
@@ -23,6 +25,7 @@ public class FacturaPostAuthorizationService {
    private final Fec_facturaService fecFacturaService;
    private final XmlToPdfService xmlToPdfService;
    private final EmailService emailService;
+   private final EmailAccountService emailAccountService;
    private final DefinirServicio definirServicio;
    private final FecFacturaLogService logService;
    private final CorreosEnviadosServicio correosEnviadosServicio;
@@ -31,12 +34,14 @@ public class FacturaPostAuthorizationService {
          Fec_facturaService fecFacturaService,
          XmlToPdfService xmlToPdfService,
          EmailService emailService,
+         EmailAccountService emailAccountService,
          DefinirServicio definirServicio,
          FecFacturaLogService logService,
          CorreosEnviadosServicio correosEnviadosServicio) {
       this.fecFacturaService = fecFacturaService;
       this.xmlToPdfService = xmlToPdfService;
       this.emailService = emailService;
+      this.emailAccountService = emailAccountService;
       this.definirServicio = definirServicio;
       this.logService = logService;
       this.correosEnviadosServicio = correosEnviadosServicio;
@@ -60,12 +65,12 @@ public class FacturaPostAuthorizationService {
                pdf);
 
          DefinirProjection definir = definirServicio.findDefinirWithoutFirma(1L);
-         String password = AESUtil.descifrar(definir.getClave_email());
          String asunto = construirAsunto(definir, factura);
          String mensaje = construirMensaje(definir, factura);
          List<String> destinatarios = List.of(factura.getEmailcomprador().trim());
+         EmailAccount account = emailAccountService.resolveAccount(null, EmailType.DOC_ELECTRONICO);
 
-         boolean enviado = emailService.envioEmail(definir.getEmail(), password, destinatarios, asunto, mensaje, adjunto);
+         boolean enviado = emailService.envioEmail(account.getFromAddress(), account.getPassword(), destinatarios, asunto, mensaje, adjunto);
          if (!enviado) {
             throw new IllegalStateException("El servicio SMTP no confirmo el envio del correo");
          }
@@ -78,7 +83,7 @@ public class FacturaPostAuthorizationService {
                "FACTURA",
                factura.getEmailcomprador(),
                asunto,
-               definir.getEmail(),
+               account.getFromAddress(),
                "factura-" + factura.getSecuencial() + ".pdf",
                "ENVIADO",
                "Factura autorizada enviada por correo");

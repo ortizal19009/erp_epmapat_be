@@ -7,6 +7,9 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.emails.model.EmailAccount;
+import com.epmapat.erp_epmapat.emails.model.EmailType;
+import com.epmapat.erp_epmapat.emails.service.EmailAccountService;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Beneficiarios;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Fec_retenciones;
@@ -26,6 +29,8 @@ public class RetencionEmailService {
    private RetencionPdfService retencionPdfService;
    @Autowired
    private EmailService emailService;
+   @Autowired
+   private EmailAccountService emailAccountService;
    @Autowired
    private DefinirServicio definirServicio;
    @Autowired
@@ -58,14 +63,9 @@ public class RetencionEmailService {
             "application/pdf",
             pdfBytes);
 
-      String emisor = valueOf(definir.getEmail());
-      String password = "";
-      try {
-         Object clave = definirServicio.desEncriptar(1L);
-         password = clave == null ? "" : String.valueOf(clave);
-      } catch (Exception ex) {
-         throw new IllegalStateException("No se pudo desencriptar la clave de correo: " + ex.getMessage(), ex);
-      }
+      EmailAccount account = emailAccountService.resolveAccount(null, EmailType.DOC_ELECTRONICO);
+      String emisor = valueOf(account.getFromAddress());
+      String password = valueOf(account.getPassword());
 
       String cuerpo = mensaje == null || mensaje.isBlank()
             ? "Adjuntamos su comprobante de retención en formato PDF."

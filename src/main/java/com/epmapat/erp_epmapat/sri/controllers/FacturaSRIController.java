@@ -3,6 +3,9 @@ package com.epmapat.erp_epmapat.sri.controllers;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.epmapat.erp_epmapat.emails.model.EmailAccount;
+import com.epmapat.erp_epmapat.emails.model.EmailType;
+import com.epmapat.erp_epmapat.emails.service.EmailAccountService;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.Fec_facturaR;
 import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
@@ -46,6 +49,8 @@ public class FacturaSRIController {
     private DefinirServicio definirService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private EmailAccountService emailAccountService;
     @Autowired
     private XmlToPdfService xmlToPdfService;
 
@@ -187,10 +192,12 @@ public class FacturaSRIController {
         try {
 
             if (emisor.isEmpty()) {
-                emisor = "facturacion@epmapatulcan.gob.ec";
+                EmailAccount account = emailAccountService.resolveAccount(null, EmailType.DOC_ELECTRONICO);
+                emisor = account.getFromAddress();
             }
             if (password.isEmpty()) {
-                password = "79DB6F2BFA7FFED2E17F16CABA197D2063EB";
+                EmailAccount account = emailAccountService.resolveAccount(null, EmailType.DOC_ELECTRONICO);
+                password = account.getPassword();
             }
             // Envío del correo con o sin archivo
             boolean resultado = emailService.envioEmail(emisor, password, receptores, asunto, mensaje, file);

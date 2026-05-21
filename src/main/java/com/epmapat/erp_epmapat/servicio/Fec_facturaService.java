@@ -48,6 +48,11 @@ import com.epmapat.erp_epmapat.sri.interfaces.fecFacturaDatos;
 public class Fec_facturaService {
    // Tipo de comprobante: Factura = "01"
    private static final String TIPO_COMPROBANTE_FACTURA = "01";
+   private static final String CODIGO_IMPUESTO_IVA = "2";
+   private static final String CODIGO_PORCENTAJE_IVA_0 = "0";
+   private static final String CODIGO_PORCENTAJE_IVA_12 = "2";
+   private static final String CODIGO_PORCENTAJE_IVA_14 = "3";
+   private static final String CODIGO_PORCENTAJE_IVA_15 = "6";
    private static final DateTimeFormatter DDMMYYYY = DateTimeFormatter.ofPattern("ddMMyyyy");
    private static final int MAX_INTENTOS_AUTORIZACION = 10;
    @Autowired
@@ -400,6 +405,8 @@ public class Fec_facturaService {
 
    @Transactional
    public void generarFecFacturaDetalles(Long idfactura) {
+      DefinirProjection definir = definirR.findDefinirWithoutFirma(1L);
+      String codigoPorcentajeIva = resolverCodigoPorcentajeIva(definir);
 
       List<Rubroxfac> rxf = rubroxfacR.findByIdfactura(idfactura);
 
@@ -480,18 +487,24 @@ public class Fec_facturaService {
          Long rubro = item.getIdrubro_rubros().getIdrubro();
          Long idDetalle = Long.valueOf(String.valueOf(idfactura) + rubro);
 
-         impuestos.add(crearImpuesto(idDetalle, rubro, item.getValorunitario()));
+         impuestos.add(crearImpuesto(idDetalle, rubro, item.getValorunitario(),
+               Boolean.TRUE.equals(item.getIdrubro_rubros().getSwiva()), codigoPorcentajeIva));
       }
 
       // impuesto único consolidado (1004)
       if (hayConsolidado) {
-         impuestos.add(crearImpuesto(idDetalleConsolidado, 1004L, suma));
+         boolean consolidadoGravaIva = aConsolidar.stream()
+               .map(Rubroxfac::getIdrubro_rubros)
+               .filter(Objects::nonNull)
+               .anyMatch(rubro -> Boolean.TRUE.equals(rubro.getSwiva()));
+         impuestos.add(crearImpuesto(idDetalleConsolidado, 1004L, suma, consolidadoGravaIva, codigoPorcentajeIva));
       }
 
       fecFacturaDetallesImpuestosR.saveAll(impuestos);
    }
 
-   private Fec_factura_detalles_impuestos crearImpuesto(Long idDetalle, Long rubro, BigDecimal base) {
+   private Fec_factura_detalles_impuestos crearImpuesto(Long idDetalle, Long rubro, BigDecimal base,
+         boolean aplicaIva, String codigoPorcentajeIva) {
       Fec_factura_detalles_impuestos imp = new Fec_factura_detalles_impuestos();
 
       // id único (mejor hacerlo robusto, pero te dejo tu estilo)
@@ -499,11 +512,27 @@ public class Fec_facturaService {
 
       imp.setIdfacturadetalleimpuestos(idImp);
       imp.setIdfacturadetalle(idDetalle);
-      imp.setCodigoimpuesto("2");
-      imp.setCodigoporcentaje("0");
+      imp.setCodigoimpuesto(CODIGO_IMPUESTO_IVA);
+      imp.setCodigoporcentaje(aplicaIva ? codigoPorcentajeIva : CODIGO_PORCENTAJE_IVA_0);
       imp.setBaseimponible(base);
 
       return imp;
+   }
+
+   private String resolverCodigoPorcentajeIva(DefinirProjection definir) {
+      BigDecimal porcentaje = definir == null || definir.getPorciva() == null
+            ? BigDecimal.ZERO
+            : definir.getPorciva().stripTrailingZeros();
+      if (BigDecimal.valueOf(12).compareTo(porcentaje) == 0) {
+         return CODIGO_PORCENTAJE_IVA_12;
+      }
+      if (BigDecimal.valueOf(14).compareTo(porcentaje) == 0) {
+         return CODIGO_PORCENTAJE_IVA_14;
+      }
+      if (BigDecimal.valueOf(15).compareTo(porcentaje) == 0) {
+         return CODIGO_PORCENTAJE_IVA_15;
+      }
+      return CODIGO_PORCENTAJE_IVA_0;
    }
 
    public void generarFecFacturaDetallesImpuestos(Rubroxfac rxf, Long idfecfacturadetalle) {

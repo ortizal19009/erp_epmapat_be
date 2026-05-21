@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,8 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-
 import com.epmapat.erp_epmapat.DTO.FecFacturaUpdateDto;
 import com.epmapat.erp_epmapat.DTO.FecFacturaGestionFiltroDto;
 import com.epmapat.erp_epmapat.DTO.FecMailQueueRequestDto;
@@ -49,8 +46,6 @@ public class Fec_facturaApi {
    private Fec_facturaService fecfacServicio;
    @Autowired
    private FecFacturaLogService fecFacturaLogService;
-   @Autowired
-   private RestTemplate restTemplate;
    @Autowired
    private FecMailQueueService fecMailQueueService;
 

@@ -33,6 +33,11 @@ import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
+import com.epmapat.erp_epmapat.repositorio.Fec_facturaR;
+import com.epmapat.erp_epmapat.repositorio.Fec_factura_detallesR;
+import com.epmapat.erp_epmapat.repositorio.Fec_factura_detalles_impuestosR;
+import com.epmapat.erp_epmapat.repositorio.Fec_factura_logR;
+import com.epmapat.erp_epmapat.repositorio.Fec_factura_pagosR;
 import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
 import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
 
@@ -52,7 +57,17 @@ public class FacturaServicio {
 	@Autowired
 	private DefinirR dao_definir;
 	@Autowired
-	private LecturaServicio lecturaServicio;`r`n`t@Autowired`r`n`tprivate Fec_facturaR fecFacturaR;`r`n`t@Autowired`r`n`tprivate Fec_factura_detallesR fecFacturaDetallesR;`r`n`t@Autowired`r`n`tprivate Fec_factura_detalles_impuestosR fecFacturaDetallesImpuestosR;`r`n`t@Autowired`r`n`tprivate Fec_factura_logR fecFacturaLogR;`r`n`t@Autowired`r`n`tprivate Fec_factura_pagosR fecFacturaPagosR;
+	private LecturaServicio lecturaServicio;
+	@Autowired
+	private Fec_facturaR fecFacturaR;
+	@Autowired
+	private Fec_factura_detallesR fecFacturaDetallesR;
+	@Autowired
+	private Fec_factura_detalles_impuestosR fecFacturaDetallesImpuestosR;
+	@Autowired
+	private Fec_factura_logR fecFacturaLogR;
+	@Autowired
+	private Fec_factura_pagosR fecFacturaPagosR;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -200,7 +215,11 @@ public class FacturaServicio {
 	}
 
 	public <S extends Facturas> S save(S entity) {
-		return dao.save(entity);
+		S saved = dao.save(entity);
+		if (saved.getFechaanulacion() != null) {
+			eliminarFacturaElectronicaEnCascada(saved.getIdfactura());
+		}
+		return saved;
 	}
 
 	public <S extends Facturas> S saveForNewEmision(S entity) {
@@ -910,4 +929,6 @@ public class FacturaServicio {
 		return dao.findFacturasCobradasByEmision(idemision);
 	}
 }
+
+
 
