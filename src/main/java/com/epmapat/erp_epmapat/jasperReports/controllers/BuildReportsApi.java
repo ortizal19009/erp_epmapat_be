@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -40,6 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.epmapat.erp_epmapat.jasperReports.DTO.Jasper_DTO;
 import com.epmapat.erp_epmapat.jasperReports.services.BuildReports;
+import com.epmapat.erp_epmapat.jasperReports.services.ReporteExportService;
 
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
@@ -56,6 +58,8 @@ public class BuildReportsApi {
     @Autowired
     private BuildReports buildReports;
     @Autowired
+    private ReporteExportService reporteExportService;
+    @Autowired
     private DataSource dataSource;
 
     private final ConcurrentHashMap<String, MergeJobStatus> mergeJobs = new ConcurrentHashMap<>();
@@ -71,10 +75,15 @@ public class BuildReportsApi {
         try {
             Jasper_DTO dto = new Jasper_DTO();
             dto.setReportName(jasperDTO.getReportName());
+            dto.setExtencion(resolveExtension(jasperDTO.getExtencion()));
 
             Map<String, Object> params = new HashMap<>();
 
-            for (Map.Entry<String, Object> entry : jasperDTO.getParameters().entrySet()) {
+            Map<String, Object> requestParameters = jasperDTO.getParameters() != null
+                    ? jasperDTO.getParameters()
+                    : new HashMap<>();
+
+            for (Map.Entry<String, Object> entry : requestParameters.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
 
@@ -95,23 +104,47 @@ public class BuildReportsApi {
 
             ByteArrayOutputStream outputStream;
             try (Connection conn = dataSource.getConnection()) {
-                outputStream = buildReports.buildReport(dto, conn);
+                var jasperPrint = buildReports.buildPrint(dto.getReportName(), dto.getParameters(), conn);
+                outputStream = reporteExportService.export(dto.getExtencion(), jasperPrint);
             }
 
-            ByteArrayInputStream pdfStream = new ByteArrayInputStream(outputStream.toByteArray());
-            InputStreamResource resource = new InputStreamResource(pdfStream);
+            byte[] fileBytes = outputStream.toByteArray();
+            ByteArrayResource resource = new ByteArrayResource(fileBytes);
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=" + jasperDTO.getReportName() + ".pdf")
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .contentLength(outputStream.size())
+                            "attachment; filename=" + jasperDTO.getReportName() + "." + dto.getExtencion())
+                    .contentType(resolveMediaType(dto.getExtencion()))
+                    .contentLength(fileBytes.length)
                     .body(resource);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    private String resolveExtension(String extencion) {
+        if (extencion == null || extencion.trim().isEmpty()) {
+            return "pdf";
+        }
+
+        String normalized = extencion.trim().toLowerCase();
+        return switch (normalized) {
+            case "pdf", "xml", "xlsx", "csv" -> normalized;
+            default -> throw new IllegalArgumentException("Formato no soportado: " + extencion);
+        };
+    }
+
+    private MediaType resolveMediaType(String extension) {
+        return switch (extension) {
+            case "pdf" -> MediaType.APPLICATION_PDF;
+            case "xml" -> MediaType.APPLICATION_XML;
+            case "xlsx" -> MediaType
+                    .parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            case "csv" -> MediaType.parseMediaType("text/csv");
+            default -> MediaType.APPLICATION_OCTET_STREAM;
+        };
     }
 
     private Object parseDateToSQLType(String value) throws ParseException {
