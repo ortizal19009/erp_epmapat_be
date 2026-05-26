@@ -111,6 +111,10 @@ public class XmlToPdfService {
             String identificacionComprador = getNodeText(document, "identificacionComprador");
             String direccionComprador = getNodeText(document, "direccionComprador");
             String guiaRemision = getNodeText(document, "guiaRemision");
+            String email = "";
+            String concepto = "";
+            String recaudador = "";
+            String referencia = "";
             String formaPago = tabla15r.getNombre(getNodeText(document, "formaPago"));
             String totalDescuento = getNodeText(document, "totalDescuento");
             String propina = getNodeText(document, "propina");
@@ -177,9 +181,34 @@ public class XmlToPdfService {
                 String nombre = campo.getAttribute("nombre");
                 String valor = campo.getTextContent();
                 parameters.put(nombre, valor);
+                String normalizedName = nombre == null ? "" : nombre.trim().toLowerCase();
+                if (normalizedName.equals("e-mail") || normalizedName.equals("email")
+                        || normalizedName.equals("correo") || normalizedName.equals("correo electronico")
+                        || normalizedName.equals("correo electrónico")) {
+                    email = valor;
+                } else if (normalizedName.equals("concepto")) {
+                    concepto = valor;
+                } else if (normalizedName.equals("recaudador")) {
+                    recaudador = valor;
+                } else if (normalizedName.equals("referencia")
+                        || normalizedName.equals("cuenta")
+                        || normalizedName.equals("cuenta contrato")
+                        || normalizedName.equals("cuenta_contrato")
+                        || normalizedName.equals("idabonado")) {
+                    referencia = valor;
+                }
             }
 
             // Parámetros Jasper
+            email = firstNonBlank(email,
+                    (String) parameters.get("Email"),
+                    (String) parameters.get("E-mail"),
+                    (String) parameters.get("email"),
+                    (String) parameters.get("correo"),
+                    (String) parameters.get("Correo"),
+                    (String) parameters.get("correoElectronico"),
+                    (String) parameters.get("correo_electronico"));
+
             parameters.put("RazonSocial", razonSocial);
             parameters.put("Ruc", ruc);
             parameters.put("NumeroAutorizacion", safeValue(numeroAutorizacion, "0000000000"));
@@ -200,6 +229,10 @@ public class XmlToPdfService {
             parameters.put("IdentificacionComprador", identificacionComprador);
             parameters.put("DireccionComprador", direccionComprador);
             parameters.put("GuiaRemision", safeValue(guiaRemision, "NO APLICA"));
+            parameters.put("Email", safeValue(email, ""));
+            parameters.put("Concepto", safeValue(concepto, ""));
+            parameters.put("Recaudador", safeValue(recaudador, ""));
+            parameters.put("Referencia", safeValue(referencia, ""));
             parameters.put("FormaPago", formaPago);
             parameters.put("TotalDescuento", safeBigDecimal.apply(totalDescuento));
             parameters.put("Propina", safeBigDecimal.apply(propina));
@@ -250,6 +283,18 @@ public class XmlToPdfService {
         return (value == null || value.trim().isEmpty()) ? defaultVal : value;
     }
 
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return "";
+        }
+        for (String value : values) {
+            if (value != null && !value.trim().isEmpty()) {
+                return value.trim();
+            }
+        }
+        return "";
+    }
+
     public ByteArrayOutputStream generarFacturaPDF_v2(String xmlAutorizado) {
         try {
             // Utilidad para manejo seguro de BigDecimal
@@ -289,6 +334,10 @@ public class XmlToPdfService {
             String identificacionComprador = getNodeText(document, "identificacionComprador");
             String direccionComprador = getNodeText(document, "direccionComprador");
             String guiaRemision = getNodeText(document, "guiaRemision"); // Asumido
+            String email = "";
+            String concepto = "";
+            String recaudador = "";
+            String referencia = "";
             String formaPago = tabla15r.getNombre(getNodeText(document, "formaPago"));
             String totalDescuento = getNodeText(document, "totalDescuento");
             String propina = getNodeText(document, "propina");
@@ -355,9 +404,34 @@ public class XmlToPdfService {
                 String nombre = campo.getAttribute("nombre");
                 String valor = campo.getTextContent();
                 parameters.put(nombre, valor);
+                String normalizedName = nombre == null ? "" : nombre.trim().toLowerCase();
+                if (normalizedName.equals("e-mail") || normalizedName.equals("email")
+                        || normalizedName.equals("correo") || normalizedName.equals("correo electronico")
+                        || normalizedName.equals("correo electrónico")) {
+                    email = valor;
+                } else if (normalizedName.equals("concepto")) {
+                    concepto = valor;
+                } else if (normalizedName.equals("recaudador")) {
+                    recaudador = valor;
+                } else if (normalizedName.equals("referencia")
+                        || normalizedName.equals("cuenta")
+                        || normalizedName.equals("cuenta contrato")
+                        || normalizedName.equals("cuenta_contrato")
+                        || normalizedName.equals("idabonado")) {
+                    referencia = valor;
+                }
             }
 
             // Parámetros para Jasper
+            email = firstNonBlank(email,
+                    (String) parameters.get("Email"),
+                    (String) parameters.get("E-mail"),
+                    (String) parameters.get("email"),
+                    (String) parameters.get("correo"),
+                    (String) parameters.get("Correo"),
+                    (String) parameters.get("correoElectronico"),
+                    (String) parameters.get("correo_electronico"));
+
             parameters.put("RazonSocial", razonSocial);
             parameters.put("Ruc", ruc);
             parameters.put("NumeroAutorizacion", safeValue(numeroAutorizacion, "0000000000"));
@@ -378,6 +452,10 @@ public class XmlToPdfService {
             parameters.put("IdentificacionComprador", identificacionComprador);
             parameters.put("DireccionComprador", direccionComprador);
             parameters.put("GuiaRemision", safeValue(guiaRemision, "NO APLICA"));
+            parameters.put("Email", safeValue(email, ""));
+            parameters.put("Concepto", safeValue(concepto, ""));
+            parameters.put("Recaudador", safeValue(recaudador, ""));
+            parameters.put("Referencia", safeValue(referencia, ""));
             parameters.put("FormaPago", formaPago);
             parameters.put("TotalDescuento", safeBigDecimal.apply(totalDescuento));
             parameters.put("Propina", safeBigDecimal.apply(propina));

@@ -137,32 +137,32 @@
 		</band>
 	</title>
 	<pageHeader>
-		<band height="67">
+		<band height="90" splitType="Stretch">
 			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="310" height="20" uuid="ae3645a7-bcd0-44e5-8b4e-c4aba22e21ea"/>
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="0" y="0" width="555" height="20" uuid="ae3645a7-bcd0-44e5-8b4e-c4aba22e21ea"/>
 				<textFieldExpression><![CDATA["Razón Social / Nombre y Apellido: " + $P{RazonSocialComprador}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="20" width="555" height="20" uuid="725d59ce-9ccc-407e-b320-35e9638d6ce1"/>
+			<textField textAdjust="StretchHeight">
+				<reportElement positionType="Float" x="0" y="48" width="555" height="20" uuid="725d59ce-9ccc-407e-b320-35e9638d6ce1"/>
 				<textFieldExpression><![CDATA["Fecha Emisión: " + $P{FechaEmision}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="40" width="555" height="20" uuid="28adc5d8-f073-47dd-8da6-d4bbade8e084"/>
+				<reportElement positionType="Float" x="0" y="68" width="555" height="20" uuid="28adc5d8-f073-47dd-8da6-d4bbade8e084"/>
 				<textFieldExpression><![CDATA["Dirección: " + $P{DireccionComprador}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement x="320" y="0" width="232" height="20" uuid="f12469ce-8f63-4c83-bba1-9e81b41d5965"/>
+				<reportElement positionType="Float" x="0" y="24" width="270" height="20" uuid="f12469ce-8f63-4c83-bba1-9e81b41d5965"/>
 				<textFieldExpression><![CDATA["Identificación: " + $P{IdentificacionComprador}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="321" y="19" width="232" height="20" uuid="89f99e4f-d5ed-4a0f-989c-3375a4c3810f"/>
+				<reportElement positionType="Float" x="285" y="24" width="270" height="20" uuid="89f99e4f-d5ed-4a0f-989c-3375a4c3810f"/>
 				<textFieldExpression><![CDATA["Guía Remisión: " + $P{GuiaRemision}]]></textFieldExpression>
 			</textField>
 			<rectangle radius="10">
 				<reportElement mode="Transparent" x="0" y="-198" width="310" height="188" uuid="c76383eb-dc05-4849-bab5-23d35a5d5c32"/>
 			</rectangle>
 			<rectangle radius="10">
-				<reportElement mode="Transparent" x="0" y="-8" width="555" height="68" uuid="25542f42-9973-45a1-9a24-89f766d05be8"/>
+				<reportElement mode="Transparent" x="0" y="-8" width="555" height="88" uuid="25542f42-9973-45a1-9a24-89f766d05be8"/>
 			</rectangle>
 		</band>
 	</pageHeader>
@@ -177,7 +177,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Código]]></text>
 			</staticText>
@@ -190,7 +190,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Descripción]]></text>
 			</staticText>
@@ -203,7 +203,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Cant.]]></text>
 			</staticText>
@@ -216,7 +216,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Precio Unitario]]></text>
 			</staticText>
@@ -229,7 +229,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Total Sin Impuesto]]></text>
 			</staticText>
@@ -603,7 +603,7 @@
 				<textFieldExpression><![CDATA["Referencia: "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="119" y="50" width="220" height="20" uuid="c4904193-daa3-4bbb-8074-e2ee693946e2"/>
+				<reportElement positionType="Float" x="119" y="50" width="220" height="20" uuid="c4904193-daa3-4bbb-8074-e2ee693946e2"/>
 				<textFieldExpression><![CDATA[$P{Email}]]></textFieldExpression>
 			</textField>
 			<textField>
@@ -671,3 +671,4 @@
 		</band>
 	</summary>
 </jasperReport>
+
