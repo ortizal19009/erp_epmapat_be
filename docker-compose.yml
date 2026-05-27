@@ -17,6 +17,7 @@ services:
       - "8080:8080"
     volumes:
       - ./deploy/erp_epmapat-v0.1.war:/usr/local/tomcat/webapps/ROOT.war
+      - ./backups/postgres:/var/backups/postgres
     restart: always
     networks:
       - erp_epmapat

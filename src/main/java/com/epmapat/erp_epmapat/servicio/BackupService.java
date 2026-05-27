@@ -60,7 +60,7 @@ public class BackupService {
         String os = System.getProperty("os.name").toLowerCase();
         boolean isWindows = os.contains("win");
 
-        String pgDumpPath = isWindows ? pgDumpPathWindows : pgDumpPathLinux;
+        String pgDumpPath = resolvePgDumpCommand(isWindows);
         String backupFolder = isWindows ? backupFolderWindows : backupFolderLinux;
 
         // Crear carpeta si no existe
@@ -103,5 +103,19 @@ public class BackupService {
             logger.error("❌ Error al generar backup. Código: {}", exitCode);
             throw new IOException("Backup falló con código " + exitCode);
         }
+    }
+
+    private String resolvePgDumpCommand(boolean isWindows) {
+        if (isWindows) {
+            return pgDumpPathWindows;
+        }
+
+        Path configuredPath = Paths.get(pgDumpPathLinux);
+        if (Files.exists(configuredPath)) {
+            return configuredPath.toString();
+        }
+
+        logger.warn("No se encontrÃ³ pg_dump en {}. Se intentarÃ¡ usar 'pg_dump' desde el PATH.", pgDumpPathLinux);
+        return "pg_dump";
     }
 }
