@@ -1,9 +1,12 @@
 package com.epmapat.erp_epmapat.controlador;
 
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,9 +20,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 
+import javax.servlet.http.HttpServletRequest;
+
+import com.epmapat.erp_epmapat.DTO.AnularEmisionRequest;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.ResEmisiones;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
+import com.epmapat.erp_epmapat.servicio.AuditoriaGenericaService;
 import com.epmapat.erp_epmapat.servicio.EmisionMantenimientoServicio;
 import com.epmapat.erp_epmapat.servicio.EmisionServicio;
 import com.epmapat.erp_epmapat.servicio.MultaBasuraRepairService;
@@ -35,6 +42,8 @@ public class EmisionesApi {
 	private MultaBasuraRepairService multaBasuraRepairService;
 	@Autowired
 	private EmisionMantenimientoServicio emisionMantenimientoServicio;
+	@Autowired
+	private AuditoriaGenericaService auditoriaGenericaService;
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
@@ -109,7 +118,24 @@ public class EmisionesApi {
 	public ResponseEntity<?> reabrirEmision(
 			@PathVariable Long idemision,
 			@RequestParam(required = false, defaultValue = "0") Long usumodi) {
-		return ResponseEntity.ok(emisionMantenimientoServicio.reabrirEmision(idemision, usumodi));
+		try {
+			return ResponseEntity.ok(emisionMantenimientoServicio.reabrirEmision(idemision, usumodi));
+		} catch (ResponseStatusException ex) {
+			return ResponseEntity.status(ex.getStatus()).body(errorBody(ex));
+		}
+	}
+
+	@PostMapping("/{idemision}/anular")
+	public ResponseEntity<?> anularEmision(
+			@PathVariable Long idemision,
+			@RequestBody AnularEmisionRequest request,
+			@RequestParam(required = false, defaultValue = "0") Long usumodi,
+			HttpServletRequest httpRequest) {
+		try {
+			return ResponseEntity.ok(emisionMantenimientoServicio.anularEmision(idemision, request, usumodi, httpRequest));
+		} catch (ResponseStatusException ex) {
+			return ResponseEntity.status(ex.getStatus()).body(errorBody(ex));
+		}
 	}
 
 	@PostMapping("/{idemision}/eliminar")
@@ -117,6 +143,28 @@ public class EmisionesApi {
 			@PathVariable Long idemision,
 			@RequestParam(required = false, defaultValue = "0") Long usumodi) {
 		return ResponseEntity.ok(emisionMantenimientoServicio.eliminarEmision(idemision, usumodi));
+	}
+
+	@PostMapping("/audit")
+	public ResponseEntity<?> registrarAuditoriaEmision(@RequestBody Map<String, Object> payload) {
+		return ResponseEntity.ok(auditoriaGenericaService.saveAuditEntry(payload));
+	}
+
+	@GetMapping("/audit")
+	public ResponseEntity<?> consultarAuditoriaEmision(
+			@RequestParam(required = false) Long idemision,
+			@RequestParam(required = false) String accion,
+			@RequestParam(required = false) String desde,
+			@RequestParam(required = false) String hasta) {
+		return ResponseEntity.ok(auditoriaGenericaService.consultarAuditoriaEmisiones(idemision, accion, desde, hasta));
+	}
+
+	private Map<String, Object> errorBody(ResponseStatusException ex) {
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("success", false);
+		body.put("status", ex.getStatus().value());
+		body.put("message", ex.getReason() == null ? "Solicitud inválida." : ex.getReason());
+		return body;
 	}
 
 }

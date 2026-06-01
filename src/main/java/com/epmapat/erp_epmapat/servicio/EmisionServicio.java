@@ -46,4 +46,8 @@ public class EmisionServicio {
 		return dao.ResumenEmisiones(limit);
 	}
 
+	public List<Emisiones> findPosterioresByEmisionAndEstadoIn(String emision, List<Integer> estados) {
+		return dao.findPosterioresByEmisionAndEstadoIn(emision, estados);
+	}
+
 }

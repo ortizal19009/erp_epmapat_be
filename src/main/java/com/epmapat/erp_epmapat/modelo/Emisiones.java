@@ -38,5 +38,12 @@ public class Emisiones implements Serializable {
     Date feccrea;
     Long usumodi;
     Date fecmodi;
+    Long iddocumentoAnulacion;
+    String documentoAnulacion;
+    String referenciaDocumentoAnulacion;
+    String motivoAnulacion;
+    Long usuarioAnulacion;
+    @Column(name = "fechaanulacion")
+    private ZonedDateTime fechaanulacion;
 
 }

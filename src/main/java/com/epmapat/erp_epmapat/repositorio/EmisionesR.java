@@ -1,9 +1,11 @@
 package com.epmapat.erp_epmapat.repositorio;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
 import com.epmapat.erp_epmapat.interfaces.ResEmisiones;
@@ -84,6 +86,15 @@ public interface EmisionesR extends JpaRepository<Emisiones, Long> {
 			ORDER BY f.idabonado
 			""", nativeQuery = true)
 	List<EmisionesInterface> getSwAguapotable(Long idemision);
+
+	@Query("""
+			select e from Emisiones e
+			where e.emision > :emision
+			  and e.estado in :estados
+			order by e.emision asc
+			""")
+	List<Emisiones> findPosterioresByEmisionAndEstadoIn(@Param("emision") String emision,
+			@Param("estados") List<Integer> estados);
 
 }
 

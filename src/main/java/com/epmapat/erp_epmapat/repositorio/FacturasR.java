@@ -881,6 +881,24 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	List<FacturasProjection> findFacturasCobradasByEmision(Long idemision);
 
+	@Query(value = """
+			select f.*
+			from facturas f
+			join lecturas l on l.idfactura = f.idfactura
+			where l.idemision = :idemision
+			order by f.idfactura
+			""", nativeQuery = true)
+	List<Facturas> findFacturasByEmision(@Param("idemision") Long idemision);
+
+	@Query(value = """
+			select count(*)
+			from facturas f
+			join lecturas l on l.idfactura = f.idfactura
+			where l.idemision = :idemision
+			  and coalesce(f.pagado, 0) <> 0
+			""", nativeQuery = true)
+	long countFacturasCobradasByEmision(@Param("idemision") Long idemision);
+
 }
 
 
