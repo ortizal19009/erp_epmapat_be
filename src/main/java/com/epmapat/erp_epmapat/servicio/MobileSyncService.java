@@ -7,14 +7,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.epmapat.erp_epmapat.DTO.AbonadoDto;
-import com.epmapat.erp_epmapat.DTO.ClienteDto;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
 import com.epmapat.erp_epmapat.DTO.SmartSyncResponseDto;
 import com.epmapat.erp_epmapat.mappers.LecturaMapper;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
+import com.epmapat.erp_epmapat.modelo.Rutas;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
 import com.epmapat.erp_epmapat.repositorio.CategoriaR;
 import com.epmapat.erp_epmapat.repositorio.ClientesR;
@@ -40,54 +39,67 @@ public class MobileSyncService {
     private final Pliego24R pliego24R;
 
     public SmartSyncResponseDto getSmartSyncData(Long idusuario, Long idemision, List<String> modulos) {
-        List<String> upperModulos = modulos.stream().map(String::toUpperCase).collect(Collectors.toList());
+        List<String> upperModulos = modulos == null
+                ? List.of()
+                : modulos.stream()
+                        .filter(module -> module != null && !module.isBlank())
+                        .map(String::toUpperCase)
+                        .collect(Collectors.toList());
 
-        // 1. LECTURAS
         List<Lecturas> assignedLecturas = lecturasR.findByUsuarioEmision(idusuario, idemision);
-        
-        // 2. ABONADOS
+
         List<Abonados> abonados;
         if (upperModulos.contains("ABONADOS") || upperModulos.contains("ABONADO")) {
             abonados = abonadosR.findAll();
         } else {
             Set<Long> abonadoIds = assignedLecturas.stream()
-                .filter(l -> l.getIdabonado_abonados() != null)
-                .map(l -> l.getIdabonado_abonados().getIdabonado())
-                .collect(Collectors.toSet());
-            abonados = abonadosR.findAllById(abonadoIds);
+                    .filter(lectura -> lectura.getIdabonado_abonados() != null)
+                    .map(lectura -> lectura.getIdabonado_abonados().getIdabonado())
+                    .collect(Collectors.toSet());
+            abonados = abonadoIds.isEmpty() ? List.of() : abonadosR.findAllById(abonadoIds);
         }
 
-        // 3. CLIENTES
         List<Clientes> clientes;
         if (upperModulos.contains("CLIENTES") || upperModulos.contains("CLIENTE")) {
             clientes = clientesR.findAll();
         } else {
             Set<Long> clienteIds = new HashSet<>();
-            for (Abonados a : abonados) {
-                if (a.getIdcliente_clientes() != null) clienteIds.add(a.getIdcliente_clientes().getIdcliente());
-                if (a.getIdresponsable() != null) clienteIds.add(a.getIdresponsable().getIdcliente());
+            for (Abonados abonado : abonados) {
+                if (abonado.getIdcliente_clientes() != null) {
+                    clienteIds.add(abonado.getIdcliente_clientes().getIdcliente());
+                }
+                if (abonado.getIdresponsable() != null) {
+                    clienteIds.add(abonado.getIdresponsable().getIdcliente());
+                }
             }
-            clientes = clientesR.findAllById(clienteIds);
+            clientes = clienteIds.isEmpty() ? List.of() : clientesR.findAllById(clienteIds);
         }
 
-        // 4. RUTAS
-        List<com.epmapat.erp_epmapat.modelo.Rutas> rutas;
+        List<Rutas> rutas;
         if (upperModulos.contains("RUTAS") || upperModulos.contains("RUTA")) {
             rutas = rutasR.findAll();
         } else {
             Set<Long> rutaIds = assignedLecturas.stream()
-                .filter(l -> l.getIdrutaxemision_rutasxemision() != null && l.getIdrutaxemision_rutasxemision().getIdruta_rutas() != null)
-                .map(l -> l.getIdrutaxemision_rutasxemision().getIdruta_rutas().getIdruta())
-                .collect(Collectors.toSet());
-            rutas = rutasR.findAllById(rutaIds);
+                    .filter(lectura -> lectura.getIdrutaxemision_rutasxemision() != null
+                            && lectura.getIdrutaxemision_rutasxemision().getIdruta_rutas() != null)
+                    .map(lectura -> lectura.getIdrutaxemision_rutasxemision().getIdruta_rutas().getIdruta())
+                    .collect(Collectors.toSet());
+            rutas = rutaIds.isEmpty() ? List.of() : rutasR.findAllById(rutaIds);
         }
 
-        // Map to DTOs (Simplified mapping for this example)
+        List<LecturaDto> lecturasDto = assignedLecturas.stream()
+                .map(LecturaMapper::toDto)
+                .collect(Collectors.toList());
+
         return SmartSyncResponseDto.builder()
-            .lecturas(assignedLecturas.stream().map(LecturaMapper::toDto).collect(Collectors.toList()))
-            // Aquí deberías usar mappers reales para Abonados y Clientes para evitar enviar todo el objeto JPA
-            // Por brevedad uso los modelos si el Jackson está configurado para ignorar LAZY o si se cargan arriba.
-            // Pero lo ideal es .map(AbonadoMapper::toDto)
-            .build();
+                .lecturas(lecturasDto)
+                .abonados(abonados)
+                .clientes(clientes)
+                .rutas(rutas)
+                .categorias(categoriaR.findAll())
+                .novedades(novedadR.getNovedadesToMobile())
+                .nacionalidades(nacionalidadR.findAll())
+                .pliegos(pliego24R.findAll())
+                .build();
     }
 }

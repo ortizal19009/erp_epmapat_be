@@ -28,7 +28,7 @@ public class Partixcerti {
 	private BigDecimal valor;
 	private BigDecimal saldo;
 	private BigDecimal totprmisos;
-	private short swreinte;
+	private Short swreinte;
 	private Long usucrea;
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)

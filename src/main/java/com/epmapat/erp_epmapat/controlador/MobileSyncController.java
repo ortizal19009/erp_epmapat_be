@@ -50,55 +50,55 @@ public class MobileSyncController {
     public ResponseEntity<SmartSyncResponseDto> download(@RequestBody SmartSyncRequestDto request) {
         log.info("Iniciando Smart Sync para usuario: {} y emision: {}", request.getIdusuario(), request.getIdemision());
 
-        List<String> modulos = request.getModulos().stream()
-                .map(String::toUpperCase)
-                .collect(Collectors.toList());
+        List<String> modulos = request.getModulos() == null
+                ? List.of()
+                : request.getModulos().stream()
+                        .filter(module -> module != null && !module.isBlank())
+                        .map(String::toUpperCase)
+                        .collect(Collectors.toList());
 
-        // 1. LECTURAS
         List<Lecturas> assignedLecturas = lecturasR.findByUsuarioEmision(request.getIdusuario(), request.getIdemision());
         List<LecturaDto> lecturasDto = assignedLecturas.stream()
                 .map(LecturaMapper::toDto)
                 .collect(Collectors.toList());
 
-        // 2. ABONADOS
         List<Abonados> abonados;
         if (modulos.contains("ABONADOS") || modulos.contains("ABONADO")) {
-            abonados = abonadosR.findAll(); 
+            abonados = abonadosR.findAll();
         } else {
             Set<Long> assignedAbonadoIds = assignedLecturas.stream()
                     .filter(l -> l.getIdabonado_abonados() != null)
                     .map(l -> l.getIdabonado_abonados().getIdabonado())
                     .collect(Collectors.toSet());
-            abonados = abonadosR.findAllById(assignedAbonadoIds);
+            abonados = assignedAbonadoIds.isEmpty() ? List.of() : abonadosR.findAllById(assignedAbonadoIds);
         }
 
-        // 3. CLIENTES
         List<Clientes> clientes;
         if (modulos.contains("CLIENTES") || modulos.contains("CLIENTE")) {
             clientes = clientesR.findAll();
         } else {
             Set<Long> assignedClienteIds = new HashSet<>();
-            for (Abonados a : abonados) {
-                if (a.getIdcliente_clientes() != null) {
-                    assignedClienteIds.add(a.getIdcliente_clientes().getIdcliente());
+            for (Abonados abonado : abonados) {
+                if (abonado.getIdcliente_clientes() != null) {
+                    assignedClienteIds.add(abonado.getIdcliente_clientes().getIdcliente());
                 }
-                if (a.getIdresponsable() != null) {
-                    assignedClienteIds.add(a.getIdresponsable().getIdcliente());
+                if (abonado.getIdresponsable() != null) {
+                    assignedClienteIds.add(abonado.getIdresponsable().getIdcliente());
                 }
             }
-            clientes = clientesR.findAllById(assignedClienteIds);
+            clientes = assignedClienteIds.isEmpty() ? List.of() : clientesR.findAllById(assignedClienteIds);
         }
 
-        // 4. RUTAS
         List<Rutas> rutas;
         if (modulos.contains("RUTAS") || modulos.contains("RUTA")) {
             rutas = rutasR.findAll();
         } else {
             Set<Long> assignedRutaIds = assignedLecturas.stream()
-                    .filter(l -> l.getIdrutaxemision_rutasxemision() != null && l.getIdrutaxemision_rutasxemision().getIdruta_rutas() != null)
+                    .filter(l -> l.getIdrutaxemision_rutasxemision() != null
+                            && l.getIdrutaxemision_rutasxemision().getIdruta_rutas() != null)
                     .map(l -> l.getIdrutaxemision_rutasxemision().getIdruta_rutas().getIdruta())
                     .collect(Collectors.toSet());
-            rutas = rutasR.findAllById(assignedRutaIds);
+            rutas = assignedRutaIds.isEmpty() ? List.of() : rutasR.findAllById(assignedRutaIds);
         }
 
         SmartSyncResponseDto response = SmartSyncResponseDto.builder()
@@ -107,7 +107,7 @@ public class MobileSyncController {
                 .clientes(clientes)
                 .rutas(rutas)
                 .categorias(categoriaR.findAll())
-                .novedades(novedadR.findAll())
+                .novedades(novedadR.getNovedadesToMobile())
                 .nacionalidades(nacionalidadR.findAll())
                 .pliegos(pliego24R.findAll())
                 .build();
