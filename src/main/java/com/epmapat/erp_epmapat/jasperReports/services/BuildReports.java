@@ -25,6 +25,7 @@ import java.io.File;
 public class BuildReports {
     private static final int RECEIPT_CUT_PADDING_POINTS = 2;
     private static final int MAX_RECEIPT_HEIGHT_POINTS = 567;
+    private static final int MAX_WATER_RECEIPT_HEIGHT_POINTS = 760;
 
     private final ReportCache reportCache;
     private final JasperReportLoader loader;
@@ -188,7 +189,7 @@ public class BuildReports {
 
         int currentHeight = jasperPrint.getPageHeight();
         int trimmedHeight = Math.min(currentHeight, usedHeight + RECEIPT_CUT_PADDING_POINTS);
-        trimmedHeight = Math.min(trimmedHeight, MAX_RECEIPT_HEIGHT_POINTS);
+        trimmedHeight = Math.min(trimmedHeight, resolveMaxReceiptHeight(reportName));
         jasperPrint.setPageHeight(trimmedHeight);
         jasperPrint.setTopMargin(0);
         jasperPrint.setBottomMargin(0);
@@ -198,5 +199,12 @@ public class BuildReports {
 
     private boolean isReceiptReport(String reportName) {
         return reportName != null && reportName.startsWith("CompPago");
+    }
+
+    private int resolveMaxReceiptHeight(String reportName) {
+        if ("CompPagoConsumoAgua".equals(reportName)) {
+            return MAX_WATER_RECEIPT_HEIGHT_POINTS;
+        }
+        return MAX_RECEIPT_HEIGHT_POINTS;
     }
 }

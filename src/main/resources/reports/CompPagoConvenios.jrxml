@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="226" pageHeight="842" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -441,7 +441,7 @@ where
 									<textElement verticalAlignment="Middle">
 										<font size="7" isBold="true"/>
 									</textElement>
-									<text><![CDATA[NOTA CRÃ‰DITO:]]></text>
+									<text><![CDATA[NOTA CRÉDITO:]]></text>
 								</staticText>
 							</ns2:tableFooter>
 							<ns2:columnHeader style="Table 1_TD" height="15" rowSpan="1">
@@ -493,7 +493,7 @@ where
 									<textElement verticalAlignment="Middle">
 										<font size="7" isBold="true"/>
 									</textElement>
-									<text><![CDATA[INTERÃ‰S:]]></text>
+									<text><![CDATA[INTERÉS:]]></text>
 								</staticText>
 							</ns2:detailCell>
 						</ns2:column>
@@ -698,7 +698,7 @@ where
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Ruc/CÃ©dula:]]></text>
+				<text><![CDATA[Ruc/Cédula:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="20" y="56" width="80" height="20" uuid="85e74fd7-ce42-4fa4-abfa-b85ee5fb57ea"/>
@@ -726,7 +726,7 @@ where
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[DirecciÃ³n:]]></text>
+				<text><![CDATA[Dirección:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="20" y="136" width="80" height="20" uuid="ba2b233f-0d4f-4f38-86e7-fab1aed6bd1e"/>
@@ -973,7 +973,7 @@ where
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<text><![CDATA[DESCRIPCIÃ“N]]></text>
+								<text><![CDATA[DESCRIPCIÓN]]></text>
 							</staticText>
 						</ns2:tableHeader>
 						<ns2:detailCell style="Table_TD" height="15">
@@ -1087,7 +1087,7 @@ where
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<text><![CDATA[DESCRIPCIÃ“N]]></text>
+								<text><![CDATA[DESCRIPCIÓN]]></text>
 							</staticText>
 						</ns2:tableHeader>
 						<ns2:detailCell style="Table_TD" height="15">
@@ -1196,13 +1196,8 @@ where
 					<font size="6" isItalic="true"/>
 				</textElement>
 				<text><![CDATA[
-Para mas informaciÃ³n visita: www.epmapatulcan.gob.ec]]></text>
+Para más información visita: www.epmapatulcan.gob.ec]]></text>
 			</staticText>
 		</band>
 	</summary>
 </jasperReport>
-
-
-
-
-

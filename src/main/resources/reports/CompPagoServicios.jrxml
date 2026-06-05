@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="226" pageHeight="842" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoServicios" pageWidth="226" pageHeight="842" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ERPAdapter.jrdax"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="SERVIDOR EPMAPAT"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -62,18 +62,20 @@
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
 		<parameter name="idfactura" class="java.lang.Long"/>
 		<queryString language="SQL">
-			<![CDATA[SELECT r.descripcion,
-	rf.cantidad,
-	rf.valorunitario,
-	rf.cantidad * rf.valorunitario AS total
+			<![CDATA[SELECT
+	rf.idrubro_rubros AS idrubro,
+	COALESCE(r.descripcion, 'RUBRO SIN DESCRIPCION') AS descripcion,
+	COALESCE(SUM(rf.cantidad), 0)::numeric AS cantidad,
+	COALESCE(SUM(rf.valorunitario), 0)::numeric AS valorunitario,
+	COALESCE(SUM(rf.cantidad * rf.valorunitario), 0)::numeric AS total
 FROM rubroxfac rf
-	join rubros r ON 
-	 rf.idrubro_rubros = r.idrubro 
+	LEFT JOIN rubros r ON rf.idrubro_rubros = r.idrubro
 WHERE 
-	 rf.idfactura_facturas = $P{idfactura} AND (rf.estado IS NULL OR rf.estado <> 0) 
-	 AND NOT  ( 
-	 rf.idrubro_rubros = 165 
-	 OR rf.idrubro_rubros = 5)]]>
+	 rf.idfactura_facturas = $P{idfactura}
+	 AND (rf.estado IS NULL OR rf.estado <> 0)
+	 AND rf.idrubro_rubros NOT IN (165, 5)
+GROUP BY rf.idrubro_rubros, r.descripcion
+ORDER BY rf.idrubro_rubros]]>
 		</queryString>
 		<field name="descripcion" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.name" value="descripcion"/>
@@ -113,18 +115,23 @@ WHERE
 		<parameter name="idfactura" class="java.lang.Long"/>
 		<queryString>
 			<![CDATA[SELECT 
-    rf.idfactura_facturas,
-    SUM(rf.cantidad * rf.valorunitario)  AS subtotal,
-    COALESCE(f.swiva, 0) AS iva,
-    COALESCE(f.interescobrado, 0) AS interes, 
-      COALESCE( f.valornotacredito, 0) as nc,
-    SUM(rf.cantidad * rf.valorunitario) + COALESCE(f.swiva, 0) + COALESCE(f.interescobrado, 0)  AS total
+    f.idfactura AS idfactura_facturas,
+    COALESCE(t.subtotal, 0)::numeric AS subtotal,
+    COALESCE(f.swiva, 0)::numeric AS iva,
+    COALESCE(f.interescobrado, 0)::numeric AS interes, 
+    COALESCE(f.valornotacredito, 0)::numeric AS nc,
+    (COALESCE(t.subtotal, 0) + COALESCE(f.swiva, 0) + COALESCE(f.interescobrado, 0))::numeric AS total
 FROM facturas f
-JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas 
-JOIN rubros r ON r.idrubro = rf.idrubro_rubros 
-WHERE (rf.estado IS NULL OR rf.estado <> 0) AND rf.idrubro_rubros NOT IN (165, 5)
-  AND f.idfactura = $P{idfactura}
-GROUP BY rf.idfactura_facturas, f.swiva, f.interescobrado, f.valornotacredito]]>
+LEFT JOIN (
+    SELECT 
+        rf.idfactura_facturas,
+        SUM(rf.cantidad * rf.valorunitario) AS subtotal
+    FROM rubroxfac rf
+    WHERE (rf.estado IS NULL OR rf.estado <> 0)
+      AND rf.idrubro_rubros NOT IN (165, 5)
+    GROUP BY rf.idfactura_facturas
+) t ON t.idfactura_facturas = f.idfactura
+WHERE f.idfactura = $P{idfactura}]]>
 		</queryString>
 		<field name="idfactura_facturas" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.name" value="idfactura_facturas"/>
@@ -199,9 +206,9 @@ from
 	 facturas f
 join clientes c on
 	f.idcliente = c.idcliente
-join usuarios u on
+left join usuarios u on
 	f.usuariocobro = u.idusuario
-join modulos m on
+left join modulos m on
 	f.idmodulo = m.idmodulo
 where
 	f.idfactura= $P{idfactura}]]>
@@ -320,7 +327,7 @@ where
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Ruc/CÃ©dula:]]></text>
+				<text><![CDATA[Ruc/Cédula:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="20" y="60" width="80" height="20" uuid="85e74fd7-ce42-4fa4-abfa-b85ee5fb57ea"/>
@@ -348,7 +355,7 @@ where
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[DirecciÃ³n:]]></text>
+				<text><![CDATA[Dirección:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="20" y="140" width="80" height="20" uuid="ba2b233f-0d4f-4f38-86e7-fab1aed6bd1e"/>
@@ -362,7 +369,7 @@ where
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[MÃ³dulo:]]></text>
+				<text><![CDATA[Módulo:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="20" y="120" width="80" height="20" uuid="92eebb7d-ea1a-46c1-93de-53edba6b3f88"/>
@@ -507,9 +514,21 @@ where
 		</band>
 	</pageHeader>
 	<columnHeader>
-		<band height="31" splitType="Stretch">
+		<band height="45" splitType="Stretch">
+			<staticText>
+				<reportElement x="20" y="0" width="180" height="15" uuid="0f519d2f-9d0f-479b-bd57-4a996d6654d5">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Detalle de rubros pagados]]></text>
+			</staticText>
 			<componentElement>
-				<reportElement x="20" y="1" width="180" height="30" uuid="eca64775-0ca0-4cd9-b321-f8e42e4c0022">
+				<reportElement x="20" y="15" width="180" height="30" uuid="eca64775-0ca0-4cd9-b321-f8e42e4c0022">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
@@ -529,15 +548,15 @@ where
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<text><![CDATA[DESCRIPCIÃ“N]]></text>
+								<text><![CDATA[DESCRIPCIÓN]]></text>
 							</staticText>
 						</jr:tableHeader>
 						<jr:detailCell style="Table_TD" height="15">
-							<textField>
-								<reportElement x="0" y="0" width="90" height="15" uuid="b436cb7f-e3f2-42b1-8f2e-06699a8ab7ab"/>
-								<box leftPadding="5"/>
+							<textField textAdjust="StretchHeight">
+								<reportElement positionType="Float" x="0" y="0" width="90" height="15" uuid="b436cb7f-e3f2-42b1-8f2e-06699a8ab7ab"/>
+								<box leftPadding="1"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle">
-									<font size="7" isBold="true"/>
+									<font size="8" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$F{descripcion}]]></textFieldExpression>
 							</textField>
@@ -558,7 +577,7 @@ where
 								<reportElement x="0" y="0" width="30" height="15" uuid="be187a24-752c-4eca-9158-7a13e3c886b0"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font size="7"/>
+									<font size="8" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[String.format("%.0f", $F{cantidad})]]></textFieldExpression>
 							</textField>
@@ -579,7 +598,7 @@ where
 								<reportElement x="0" y="0" width="30" height="15" uuid="4311c6dd-ae10-496a-a7cd-bc74fbc200d8"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
-									<font size="7"/>
+									<font size="8" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[String.format("%.2f", $F{valorunitario}) + " $"]]></textFieldExpression>
 							</textField>
@@ -600,7 +619,7 @@ where
 								<reportElement x="0" y="0" width="30" height="15" uuid="9197e41c-a6d0-4175-a163-ca5fc0e68a57"/>
 								<box rightPadding="2"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
-									<font size="7"/>
+									<font size="8" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[String.format("%.2f", $F{total}) + " $"]]></textFieldExpression>
 							</textField>
@@ -662,7 +681,7 @@ where
 								<textElement verticalAlignment="Middle">
 									<font size="7" isBold="true"/>
 								</textElement>
-								<text><![CDATA[NOTA CRÃ‰DITO:]]></text>
+								<text><![CDATA[NOTA CRÉDITO:]]></text>
 							</staticText>
 						</jr:tableFooter>
 						<jr:columnHeader style="Table 1_TD" height="15" rowSpan="1">
@@ -714,7 +733,7 @@ where
 								<textElement verticalAlignment="Middle">
 									<font size="7" isBold="true"/>
 								</textElement>
-								<text><![CDATA[INTERÃ‰S:]]></text>
+								<text><![CDATA[INTERÉS:]]></text>
 							</staticText>
 						</jr:detailCell>
 					</jr:column>
@@ -880,14 +899,8 @@ where
 					<font size="6" isItalic="true"/>
 				</textElement>
 				<text><![CDATA[
-Para mas informaciÃ³n visita: www.epmapatulcan.gob.ec]]></text>
+Para más información visita: www.epmapatulcan.gob.ec]]></text>
 			</staticText>
 		</band>
 	</summary>
 </jasperReport>
-
-
-
-
-
-

@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CompPagoConsumoAgua" pageWidth="226" pageHeight="842" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="28151c4d-50b7-4e27-b837-21298f485dcc">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="LocalErp"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="SERVIDOR EPMAPAT"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -38,7 +38,7 @@
 			<![CDATA[-- 1) CONSOLIDADO: 1006 + 1007 => 1004 (solo si existen)
 SELECT
     1004 AS idrubro,
-    'ConservaciÃ³n de fuentes' AS descripcion,
+    'Conservación de fuentes' AS descripcion,
     1::numeric AS cantidad,
     SUM(rf.valorunitario)::numeric AS valorunitario,
     SUM(rf.valorunitario)::numeric AS total
@@ -447,7 +447,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Ruc/CÃ©dula:]]></text>
+				<text><![CDATA[Ruc/Cédula:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="21" y="59" width="80" height="14" uuid="90534fd1-6ab2-422a-9bf7-8d0f07d672d1"/>
@@ -489,7 +489,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[DirecciÃ³n:]]></text>
+				<text><![CDATA[Dirección:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="21" y="101" width="40" height="14" uuid="7cf3e0c3-142e-4ea8-9cde-cf971f7b1c34"/>
@@ -559,7 +559,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[CategorÃ­a:]]></text>
+				<text><![CDATA[Categoría:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="21" y="115" width="40" height="14" uuid="4e071562-d59f-495a-931d-0542bc139021"/>
@@ -839,7 +839,7 @@ where l.idfactura = $P{idfactura}]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<text><![CDATA[DESCRIPCIÃ“N]]></text>
+								<text><![CDATA[DESCRIPCIÓN]]></text>
 							</staticText>
 						</jr:tableHeader>
 						<jr:detailCell style="Table_TD" height="15">
@@ -1182,7 +1182,7 @@ where l.idfactura = $P{idfactura}]]>
 								<textElement verticalAlignment="Middle">
 									<font size="7" isBold="true"/>
 								</textElement>
-								<text><![CDATA[NOTA CRÃ‰DITO:]]></text>
+								<text><![CDATA[NOTA CRÉDITO:]]></text>
 							</staticText>
 						</jr:columnFooter>
 						<jr:detailCell height="15">
@@ -1344,12 +1344,11 @@ where l.idfactura = $P{idfactura}]]>
 	<summary>
 		<band height="174" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[false]]></printWhenExpression>
 			<barChart>
 				<chart isShowLegend="false" evaluationTime="Report" hyperlinkTarget="Blank" renderType="image" theme="aegean">
 					<reportElement mode="Opaque" x="21" y="6" width="180" height="140" uuid="e7d9662a-ee8b-40ce-ac0c-e5598142d74f"/>
 					<chartTitle>
-						<font size="8"/>
+						<font size="9" isBold="true"/>
 						<titleExpression><![CDATA["Historial de consumo"]]></titleExpression>
 					</chartTitle>
 					<chartSubtitle>
@@ -1375,7 +1374,7 @@ where l.idfactura = $P{idfactura}]]>
 				</categoryDataset>
 				<barPlot>
 					<plot foregroundAlpha="0.9"/>
-					<itemLabel/>
+					<itemLabel color="#153E63"/>
 					<categoryAxisFormat>
 						<axisFormat labelColor="#000000" tickLabelColor="#000000" axisLineColor="#000000"/>
 					</categoryAxisFormat>
@@ -1390,7 +1389,7 @@ where l.idfactura = $P{idfactura}]]>
 					<font size="6" isItalic="true"/>
 				</textElement>
 				<text><![CDATA[
-Para mÃ¡s informaciÃ³n visita: www.epmapatulcan.gob.ec]]></text>
+Para más información visita: www.epmapatulcan.gob.ec]]></text>
 			</staticText>
 		</band>
 	</summary>
