@@ -130,6 +130,10 @@ public class BuildReportsApi {
         }
 
         String normalized = extencion.trim().toLowerCase();
+        if (normalized.startsWith(".")) {
+            normalized = normalized.substring(1);
+        }
+
         return switch (normalized) {
             case "pdf", "xml", "xlsx", "csv" -> normalized;
             default -> throw new IllegalArgumentException("Formato no soportado: " + extencion);
