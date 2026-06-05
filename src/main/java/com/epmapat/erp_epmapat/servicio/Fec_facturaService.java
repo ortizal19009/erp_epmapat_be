@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -55,6 +56,8 @@ public class Fec_facturaService {
    private static final String CODIGO_PORCENTAJE_IVA_15 = "6";
    private static final DateTimeFormatter DDMMYYYY = DateTimeFormatter.ofPattern("ddMMyyyy");
    private static final int MAX_INTENTOS_AUTORIZACION = 10;
+   private static final long DETALLE_RUBRO_FACTOR = 1_000_000L;
+   private static final long IMPUESTO_RUBRO_FACTOR = 10_000_000_000_000L;
    @Autowired
    private Fec_facturaR dao;
    @Autowired
@@ -427,12 +430,12 @@ public class Fec_facturaService {
       // ---------------------------
       // A) Construir y guardar DETALLES
       // ---------------------------
-      List<Fec_factura_detalles> detallesAGuardar = new ArrayList<>();
+      Map<Long, Fec_factura_detalles> detallesPorId = new LinkedHashMap<>();
 
       // normales (sin 1006/1007)
       for (Rubroxfac item : normales) {
          Long rubro = item.getIdrubro_rubros().getIdrubro();
-         Long idDetalle = Long.valueOf(String.valueOf(idfactura) + rubro);
+         Long idDetalle = buildDetalleId(idfactura, rubro);
 
          Fec_factura_detalles d = new Fec_factura_detalles();
          d.setIdfactura(idfactura);
@@ -443,7 +446,7 @@ public class Fec_facturaService {
          d.setDescripcion(item.getIdrubro_rubros().getDescripcion());
          d.setDescuento(BigDecimal.ZERO);
 
-         detallesAGuardar.add(d);
+         detallesPorId.put(idDetalle, d);
       }
 
       // consolidado 1006+1007 -> 1004
@@ -457,7 +460,7 @@ public class Fec_facturaService {
       Long idDetalleConsolidado = null;
       if (hayConsolidado) {
          Long rubroFinal = 1004L;
-         idDetalleConsolidado = Long.valueOf(String.valueOf(idfactura) + rubroFinal);
+         idDetalleConsolidado = buildDetalleId(idfactura, rubroFinal);
 
          Fec_factura_detalles d = new Fec_factura_detalles();
          d.setIdfactura(idfactura);
@@ -468,14 +471,20 @@ public class Fec_facturaService {
          d.setDescripcion("Conservación de fuentes");
          d.setDescuento(BigDecimal.ZERO);
 
-         detallesAGuardar.add(d);
+         detallesPorId.put(idDetalleConsolidado, d);
       }
 
       // ✅ Guardar todos los DETALLES primero
+      List<Fec_factura_detalles> detallesAGuardar = new ArrayList<>(detallesPorId.values());
       fecFacturaDetallesR.saveAll(detallesAGuardar);
 
       // ✅ Forzar que existan en BD antes de insertar impuestos
       fecFacturaDetallesR.flush();
+
+      Set<Long> detalleIdsPersistidos = fecFacturaDetallesR.findByIdfactura(idfactura).stream()
+            .map(Fec_factura_detalles::getIdfacturadetalle)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
 
       // ---------------------------
       // B) Ahora sí, construir y guardar IMPUESTOS
@@ -485,14 +494,16 @@ public class Fec_facturaService {
       // impuestos de normales
       for (Rubroxfac item : normales) {
          Long rubro = item.getIdrubro_rubros().getIdrubro();
-         Long idDetalle = Long.valueOf(String.valueOf(idfactura) + rubro);
+         Long idDetalle = buildDetalleId(idfactura, rubro);
 
-         impuestos.add(crearImpuesto(idDetalle, rubro, item.getValorunitario(),
-               Boolean.TRUE.equals(item.getIdrubro_rubros().getSwiva()), codigoPorcentajeIva));
+         if (detalleIdsPersistidos.contains(idDetalle)) {
+            impuestos.add(crearImpuesto(idDetalle, rubro, item.getValorunitario(),
+                  Boolean.TRUE.equals(item.getIdrubro_rubros().getSwiva()), codigoPorcentajeIva));
+         }
       }
 
       // impuesto único consolidado (1004)
-      if (hayConsolidado) {
+      if (hayConsolidado && detalleIdsPersistidos.contains(idDetalleConsolidado)) {
          boolean consolidadoGravaIva = aConsolidar.stream()
                .map(Rubroxfac::getIdrubro_rubros)
                .filter(Objects::nonNull)
@@ -501,6 +512,7 @@ public class Fec_facturaService {
       }
 
       fecFacturaDetallesImpuestosR.saveAll(impuestos);
+      fecFacturaDetallesImpuestosR.flush();
    }
 
    private Fec_factura_detalles_impuestos crearImpuesto(Long idDetalle, Long rubro, BigDecimal base,
@@ -508,7 +520,7 @@ public class Fec_facturaService {
       Fec_factura_detalles_impuestos imp = new Fec_factura_detalles_impuestos();
 
       // id único (mejor hacerlo robusto, pero te dejo tu estilo)
-      Long idImp = Long.valueOf(String.valueOf(rubro) + idDetalle);
+      Long idImp = buildImpuestoId(idDetalle, rubro);
 
       imp.setIdfacturadetalleimpuestos(idImp);
       imp.setIdfacturadetalle(idDetalle);
@@ -517,6 +529,26 @@ public class Fec_facturaService {
       imp.setBaseimponible(base);
 
       return imp;
+   }
+
+   private Long buildDetalleId(Long idfactura, Long rubro) {
+      if (idfactura == null || rubro == null) {
+         throw new IllegalArgumentException("idfactura y rubro son obligatorios para generar idfacturadetalle");
+      }
+      if (rubro >= DETALLE_RUBRO_FACTOR) {
+         throw new IllegalArgumentException("idrubro fuera de rango para generar idfacturadetalle: " + rubro);
+      }
+      return idfactura * DETALLE_RUBRO_FACTOR + rubro;
+   }
+
+   private Long buildImpuestoId(Long idDetalle, Long rubro) {
+      if (idDetalle == null || rubro == null) {
+         throw new IllegalArgumentException("idDetalle y rubro son obligatorios para generar idfacturadetalleimpuestos");
+      }
+      if (rubro >= DETALLE_RUBRO_FACTOR) {
+         throw new IllegalArgumentException("idrubro fuera de rango para generar idfacturadetalleimpuestos: " + rubro);
+      }
+      return rubro * IMPUESTO_RUBRO_FACTOR + idDetalle;
    }
 
    private String resolverCodigoPorcentajeIva(DefinirProjection definir) {
