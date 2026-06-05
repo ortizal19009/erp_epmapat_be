@@ -48,7 +48,7 @@ public class RetencionProcesamientoSRIService {
    private final ObjectMapper objectMapper;
    private final RetencionSseService retencionSseService;
 
-   @Value("${sri.microservice.base-url:http://192.168.0.33:9090}")
+   @Value("${sri.microservice.base-url:http://192.168.0.33:9096}")
    private String sriMicroserviceBaseUrl;
 
    public RetencionProcesamientoSRIService(
