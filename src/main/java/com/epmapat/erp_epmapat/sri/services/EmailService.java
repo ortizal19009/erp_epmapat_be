@@ -41,6 +41,12 @@ public class EmailService {
 
     public boolean envioEmail(final String emisor, final String password, List<String> receptores,
             String asunto, String mensajeHtml, MultipartFile file) {
+        return envioEmail(emisor, password, receptores, asunto, mensajeHtml,
+                file == null ? List.of() : List.of(file));
+    }
+
+    public boolean envioEmail(final String emisor, final String password, List<String> receptores,
+            String asunto, String mensajeHtml, List<? extends MultipartFile> files) {
         boolean envioExitoso = true;
         blacklistService.validateRecipients(receptores);
 
@@ -71,11 +77,16 @@ public class EmailService {
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(contenidoHtml);
 
-            if (file != null && !file.isEmpty()) {
-                MimeBodyPart adjunto = new MimeBodyPart();
-                adjunto.setFileName(file.getOriginalFilename());
-                adjunto.setDataHandler(new DataHandler(new ByteArrayDataSource(file.getBytes(), file.getContentType())));
-                multipart.addBodyPart(adjunto);
+            if (files != null) {
+                for (MultipartFile file : files) {
+                    if (file == null || file.isEmpty()) {
+                        continue;
+                    }
+                    MimeBodyPart adjunto = new MimeBodyPart();
+                    adjunto.setFileName(file.getOriginalFilename());
+                    adjunto.setDataHandler(new DataHandler(new ByteArrayDataSource(file.getBytes(), file.getContentType())));
+                    multipart.addBodyPart(adjunto);
+                }
             }
 
             message.setContent(multipart);
@@ -96,7 +107,7 @@ public class EmailService {
 
     public boolean EEenvioEmail(final String emisor, final String password, List<String> receptores,
             String asunto, String mensajeHtml) {
-        return envioEmail(emisor, password, receptores, asunto, mensajeHtml, null);
+        return envioEmail(emisor, password, receptores, asunto, mensajeHtml, (MultipartFile) null);
     }
 
     public boolean __envioArchivo(final String emisor, final String password, List<String> receptores, String asunto,

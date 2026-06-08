@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.sri.services;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -62,6 +63,7 @@ public class RetencionEmailService {
             construirNombreArchivo(retencion, "pdf"),
             "application/pdf",
             pdfBytes);
+      InMemoryMultipartFile xml = construirAdjuntoXml(retencion, generada);
 
       EmailAccount account = emailAccountService.resolveAccount(null, EmailType.DOC_ELECTRONICO);
       String emisor = valueOf(account.getFromAddress());
@@ -77,7 +79,7 @@ public class RetencionEmailService {
             correosDestino,
             asunto == null || asunto.isBlank() ? "Comprobante de retención" : asunto,
             cuerpo,
-            pdf);
+            List.of(pdf, xml));
 
       if (!enviado) {
          correosEnviadosServicio.registrarEnvio(
@@ -129,6 +131,19 @@ public class RetencionEmailService {
          secuencial = String.valueOf(retencion.getIdrete());
       }
       return "retencion_" + secuencial + "." + extension;
+   }
+
+   private InMemoryMultipartFile construirAdjuntoXml(Retenciones retencion, Fec_retenciones generada) {
+      String xmlAutorizado = generada.getXmlautorizado();
+      if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
+         throw new IllegalStateException(
+               "La retención " + retencion.getIdrete() + " no tiene XML autorizado para adjuntar al correo");
+      }
+      return new InMemoryMultipartFile(
+            "retencion_xml",
+            construirNombreArchivo(retencion, "xml"),
+            "application/xml",
+            xmlAutorizado.getBytes(StandardCharsets.UTF_8));
    }
 
    private String firstNonBlank(String... values) {

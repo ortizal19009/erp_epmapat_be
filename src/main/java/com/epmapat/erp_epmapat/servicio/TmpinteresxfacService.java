@@ -34,23 +34,14 @@ public class TmpinteresxfacService {
         int totalGuardadas = 0;
 
         List<FacSinCobrar> facturas = facturasR.getIdsFromFacturasSincobrar();
-        LocalDateTime date = LocalDateTime.now();
 
         for (FacSinCobrar item : facturas) {
-            Tmpinteresxfac tmpFac = tmpinteresxfacR.findByIdfactura(item.getIdfactura()).orElseThrow(()-> new RuntimeException("Interes no encontrado"));
-            BigDecimal interes = toBigDecimal(interesServicio.facturaid(item.getIdfactura()));
+            boolean existe = tmpinteresxfacR.findByIdfactura(item.getIdfactura()).isPresent();
+            upsertInteresFactura(item.getIdfactura());
 
-            if (tmpFac != null) {
-                tmpFac.setInteresapagar(interes);
-                tmpFac.setFeccorte(date);
-                tmpinteresxfacR.save(tmpFac);
+            if (existe) {
                 totalActualizadas++;
             } else {
-                Tmpinteresxfac nuevo = new Tmpinteresxfac();
-                nuevo.setIdfactura(item.getIdfactura());
-                nuevo.setInteresapagar(interes);
-                nuevo.setFeccorte(date);
-                tmpinteresxfacR.save(nuevo);
                 totalGuardadas++;
             }
         }
@@ -63,6 +54,22 @@ public class TmpinteresxfacService {
         respuesta.put("message", "Proceso finalizado correctamente");
 
         return respuesta;
+    }
+
+    @Transactional
+    public BigDecimal upsertInteresFactura(Long idfactura) {
+        BigDecimal interes = toBigDecimal(interesServicio.facturaid(idfactura));
+        LocalDateTime fechaCorte = LocalDateTime.now();
+
+        Tmpinteresxfac tmpFac = tmpinteresxfacR.findByIdfactura(idfactura)
+                .orElseGet(Tmpinteresxfac::new);
+
+        tmpFac.setIdfactura(idfactura);
+        tmpFac.setInteresapagar(interes);
+        tmpFac.setFeccorte(fechaCorte);
+        tmpinteresxfacR.save(tmpFac);
+
+        return interes;
     }
 
     private BigDecimal toBigDecimal(Object value) {
@@ -81,7 +88,7 @@ public class TmpinteresxfacService {
     public BigDecimal findByIdFactura(Long idfactura){
         return tmpinteresxfacR.findByIdfactura(idfactura)
                 .map(Tmpinteresxfac::getInteresapagar)
-                .orElse(BigDecimal.ZERO); // <-- 0.00 si no hay registro
+                .orElseGet(() -> upsertInteresFactura(idfactura));
     }
 
 
