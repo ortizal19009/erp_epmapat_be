@@ -553,7 +553,8 @@ public class XmlToPdfService {
     }
 
     private Document parseXml(DocumentBuilder builder, String xml) throws Exception {
-        InputSource inputSource = new InputSource(new StringReader(xml));
+        String xmlSeguro = aislarDocumentoXml(xml);
+        InputSource inputSource = new InputSource(new StringReader(xmlSeguro));
         inputSource.setEncoding("UTF-8");
         return builder.parse(inputSource);
     }
@@ -625,6 +626,78 @@ public class XmlToPdfService {
         }
 
         return null;
+    }
+
+    private String aislarDocumentoXml(String xml) {
+        String limpio = limpiarXmlRobusto(xml);
+        if (limpio.isBlank()) {
+            return limpio;
+        }
+
+        int inicioDeclaracion = limpio.startsWith("<?xml") ? 0 : -1;
+        int inicioRaiz = encontrarInicioRaizXml(limpio);
+        if (inicioRaiz < 0) {
+            return limpio;
+        }
+
+        int finRaiz = encontrarFinRaizXml(limpio, inicioRaiz);
+        if (finRaiz < 0) {
+            return limpio;
+        }
+
+        int inicioDocumento = inicioDeclaracion >= 0 && inicioDeclaracion < inicioRaiz ? inicioDeclaracion : inicioRaiz;
+        return limpio.substring(inicioDocumento, finRaiz).trim();
+    }
+
+    private int encontrarInicioRaizXml(String xml) {
+        int indice = 0;
+        while (indice >= 0 && indice < xml.length()) {
+            indice = xml.indexOf('<', indice);
+            if (indice < 0 || indice + 1 >= xml.length()) {
+                return -1;
+            }
+
+            char siguiente = xml.charAt(indice + 1);
+            if (siguiente == '?' || siguiente == '!' || siguiente == '/') {
+                indice += 1;
+                continue;
+            }
+            return indice;
+        }
+        return -1;
+    }
+
+    private int encontrarFinRaizXml(String xml, int inicioRaiz) {
+        int nombreInicio = inicioRaiz + 1;
+        int nombreFin = nombreInicio;
+        while (nombreFin < xml.length()) {
+            char actual = xml.charAt(nombreFin);
+            if (Character.isWhitespace(actual) || actual == '>' || actual == '/') {
+                break;
+            }
+            nombreFin++;
+        }
+
+        if (nombreFin <= nombreInicio) {
+            return -1;
+        }
+
+        String nombreRaiz = xml.substring(nombreInicio, nombreFin);
+        int finApertura = xml.indexOf('>', nombreFin);
+        if (finApertura < 0) {
+            return -1;
+        }
+
+        if (xml.charAt(finApertura - 1) == '/') {
+            return finApertura + 1;
+        }
+
+        String cierre = "</" + nombreRaiz + ">";
+        int fin = xml.lastIndexOf(cierre);
+        if (fin < 0) {
+            return -1;
+        }
+        return fin + cierre.length();
     }
 
     private String resumirInicio(String valor) {
