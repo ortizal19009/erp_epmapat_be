@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name ="clientes")
+@JsonIgnoreProperties({
+		"hibernateLazyInitializer",
+		"handler",
+		"idtpidentifica_tpidentifica",
+		"idnacionalidad_nacionalidad",
+		"idpjuridica_personeriajuridica",
+		"password"
+})
 public class Clientes {
 	
 	@Id
