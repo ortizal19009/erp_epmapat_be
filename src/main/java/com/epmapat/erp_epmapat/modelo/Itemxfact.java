@@ -9,8 +9,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "itemxfact")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Itemxfact {
 
@@ -23,9 +26,11 @@ public class Itemxfact {
    private Float descuento;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idfacturacion_facturacion")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Facturacion idfacturacion_facturacion;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idcatalogoitems_catalogoitems")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Catalogoitems idcatalogoitems_catalogoitems;     //Productos
 
    public Itemxfact() {   }

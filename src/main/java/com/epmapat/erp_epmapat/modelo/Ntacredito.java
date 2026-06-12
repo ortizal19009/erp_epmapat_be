@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "ntacredito")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Ntacredito {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -3,10 +3,12 @@ package com.epmapat.erp_epmapat.repositorio;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -26,17 +28,78 @@ import com.epmapat.erp_epmapat.modelo.Lecturas;
 
 public interface LecturasR extends JpaRepository<Lecturas, Long> {
 
+	@EntityGraph(attributePaths = {
+			"idrutaxemision_rutasxemision",
+			"idnovedad_novedades",
+			"idabonado_abonados",
+			"idabonado_abonados.idresponsable",
+			"idabonado_abonados.idcliente_clientes",
+			"idabonado_abonados.idcategoria_categorias",
+			"idabonado_abonados.idruta_rutas"
+	})
+	@Override
+	Optional<Lecturas> findById(Long id);
+
 	// Lectura por Planilla (Es una a una)
-	@Query(value = "SELECT * FROM lecturas WHERE idfactura=?1 ", nativeQuery = true)
+	@EntityGraph(attributePaths = {
+			"idrutaxemision_rutasxemision",
+			"idrutaxemision_rutasxemision.idemision_emisiones",
+			"idrutaxemision_rutasxemision.idruta_rutas",
+			"idnovedad_novedades",
+			"idabonado_abonados",
+			"idabonado_abonados.idresponsable",
+			"idabonado_abonados.idcliente_clientes",
+			"idabonado_abonados.idcategoria_categorias",
+			"idabonado_abonados.idruta_rutas"
+	})
+	@Query("SELECT l FROM Lecturas l WHERE l.idfactura = ?1")
 	public Lecturas findOnefactura(Long idfactura);
 
 	// Lecturas por rutasxemision
-	@Query(value = "SELECT * FROM lecturas WHERE idrutaxemision_rutasxemision=?1 order by idabonado_abonados", nativeQuery = true)
+	@EntityGraph(attributePaths = {
+			"idrutaxemision_rutasxemision",
+			"idrutaxemision_rutasxemision.idemision_emisiones",
+			"idrutaxemision_rutasxemision.idruta_rutas",
+			"idnovedad_novedades",
+			"idabonado_abonados",
+			"idabonado_abonados.idresponsable",
+			"idabonado_abonados.idcliente_clientes",
+			"idabonado_abonados.idcategoria_categorias",
+			"idabonado_abonados.idruta_rutas"
+	})
+	@Query("""
+			SELECT l
+			FROM Lecturas l
+			LEFT JOIN FETCH l.idrutaxemision_rutasxemision re
+			LEFT JOIN FETCH re.idemision_emisiones
+			LEFT JOIN FETCH re.idruta_rutas
+			LEFT JOIN FETCH l.idabonado_abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			WHERE l.idrutaxemision_rutasxemision.idrutaxemision = ?1
+			ORDER BY a.idabonado
+			""")
 	public List<Lecturas> findByIdrutaxemision(Long idrutasxemision);
 
 	// Lecturas por Abonado (Historial de consumo)
-	@Query(value = "SELECT * FROM lecturas WHERE idabonado_abonados=?1 ORDER BY idlectura DESC LIMIT ?2", nativeQuery = true)
-	public List<Lecturas> findByIdabonado(Long idabonado, Long limit);
+	@Query("""
+			SELECT l
+			FROM Lecturas l
+			LEFT JOIN FETCH l.idrutaxemision_rutasxemision re
+			LEFT JOIN FETCH re.idemision_emisiones
+			LEFT JOIN FETCH re.idruta_rutas
+			LEFT JOIN FETCH l.idnovedad_novedades
+			LEFT JOIN FETCH l.idabonado_abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			WHERE a.idabonado = ?1
+			ORDER BY l.idlectura DESC
+			""")
+	public List<Lecturas> findByIdabonado(Long idabonado);
 
 	@Query(value = "SELECT * FROM lecturas WHERE mesesmulta>=4 and estado=1 LIMIT 20", nativeQuery = true)
 	public List<Lecturas> findByMonth();
@@ -44,7 +107,17 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	@Query(value = "SELECT * FROM lecturas WHERE idabonado_abonados=?1 ", nativeQuery = true)
 	public List<Lecturas> findLecturasByIdAbonados(Long idabonado);
 
-	@Query(value = "SELECT * FROM lecturas WHERE idrutaxemision_rutasxemision = ?1", nativeQuery = true)
+	@EntityGraph(attributePaths = {
+			"idrutaxemision_rutasxemision",
+			"idrutaxemision_rutasxemision.idemision_emisiones",
+			"idrutaxemision_rutasxemision.idruta_rutas",
+			"idabonado_abonados",
+			"idabonado_abonados.idresponsable",
+			"idabonado_abonados.idcliente_clientes",
+			"idabonado_abonados.idcategoria_categorias",
+			"idabonado_abonados.idruta_rutas"
+	})
+	@Query("SELECT l FROM Lecturas l WHERE l.idrutaxemision_rutasxemision.idrutaxemision = ?1")
 	public List<Lecturas> findByIdRutasxEmision(Long idrutaxemision);
 
 	@Query(value = "SELECT * FROM lecturas l INNER JOIN rutasxemision r ON l.idrutaxemision_rutasxemision = r.idrutaxemision INNER JOIN rutas r2 ON r.idruta_rutas = ?1", nativeQuery = true)

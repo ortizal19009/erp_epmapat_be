@@ -11,5 +11,7 @@ public interface RepFacEliminadas {
 
 	String getModulo();
 
+	String getNombre();
+
 	BigDecimal getTotal();
 }

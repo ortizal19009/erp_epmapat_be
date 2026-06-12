@@ -12,6 +12,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +25,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "abonados")
+@JsonIgnoreProperties({
+		"hibernateLazyInitializer",
+		"handler",
+		"idubicacionm_ubicacionm",
+		"idtipopago_tipopago",
+		"idestadom_estadom"
+})
 public class Abonados {
 
 	@Id
@@ -48,15 +57,19 @@ public class Abonados {
 	private String piso;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idresponsable")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Clientes idresponsable;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idcategoria_categorias")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Categorias idcategoria_categorias;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idruta_rutas")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Rutas idruta_rutas;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idcliente_clientes")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Clientes idcliente_clientes;
 	@ManyToOne
 	@JoinColumn(name = "idubicacionm_ubicacionm")

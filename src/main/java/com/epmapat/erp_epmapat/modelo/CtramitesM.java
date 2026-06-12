@@ -7,9 +7,11 @@ import javax.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name="ctramites")
-
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CtramitesM {
 	
 	@Id
@@ -25,9 +27,11 @@ public class CtramitesM {
 	private Date validohasta; 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idtptramite_tptramite")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private TpTramiteM idtptramite_tptramite;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idcliente_clientes")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Clientes idcliente_clientes;
 	private Long usucrea;
 	@Temporal(TemporalType.DATE)

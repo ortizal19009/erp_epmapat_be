@@ -7,6 +7,10 @@ public interface NtaCreditoSaldos {
 
     Long getCuenta();
 
+    String getNombre();
+
+    Long getCategoria();
+
     BigDecimal getSaldo();
 
     BigDecimal getDevengado();

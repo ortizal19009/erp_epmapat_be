@@ -77,8 +77,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			select rf
 			from Rubroxfac rf
 			join fetch rf.idrubro_rubros rub
-			left join fetch rf.idfactura_facturas fac
-			where fac.idfactura = :idfactura
+			where rf.idfactura_facturas.idfactura = :idfactura
 			  and (rf.estado <> 0 or rf.estado is null)
 			order by rub.idrubro
 			""")
@@ -89,8 +88,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			select rf
 			from Rubroxfac rf
 			join fetch rf.idrubro_rubros rub
-			left join fetch rf.idfactura_facturas fac
-			where fac.idfactura = :idfactura
+			where rf.idfactura_facturas.idfactura = :idfactura
 			  and (rf.estado <> 0 or rf.estado is null)
 			order by rub.idrubro
 			""")
@@ -101,8 +99,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			select rf
 			from Rubroxfac rf
 			join fetch rf.idrubro_rubros rub
-			left join fetch rf.idfactura_facturas fac
-			where fac.idfactura = :idfactura
+			where rf.idfactura_facturas.idfactura = :idfactura
 			  and (rf.estado <> 0 or rf.estado is null)
 			  and rub.idrubro <> 165
 			order by rub.idrubro

@@ -4,19 +4,14 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-//import org.springframework.stereotype.Repository;
 
 import com.epmapat.erp_epmapat.modelo.Itemxfact;
 
-// @Repository
-public interface ItemxfactR extends JpaRepository<Itemxfact, Long>{
+public interface ItemxfactR extends JpaRepository<Itemxfact, Long> {
 
-   //Productos de una Facturación (itemxfac de una Facturacion)
-   @Query(value = "SELECT * FROM itemxfact AS i WHERE i.idfacturacion_facturacion=?1", nativeQuery=true)
-	public List<Itemxfact> findByIdfacturacion(Long idfacturacion);
+   @Query("SELECT i FROM Itemxfact i LEFT JOIN FETCH i.idcatalogoitems_catalogoitems c LEFT JOIN FETCH c.idrubro_rubros LEFT JOIN FETCH i.idfacturacion_facturacion WHERE i.idfacturacion_facturacion.idfacturacion = ?1")
+   List<Itemxfact> findByIdfacturacion(Long idfacturacion);
 
-   //Movimiento de un Prodcto (itemxfact de una Catalogoitems)
-   @Query(value = "SELECT * FROM itemxfact where idcatalogoitems_catalogoitems=?1 order by iditemxfact DESC LIMIT 10", nativeQuery = true)
-   public List<Itemxfact> findByIdcatalogoitems( Long Idcatalogoitems);
-
+   @Query("SELECT i FROM Itemxfact i LEFT JOIN FETCH i.idcatalogoitems_catalogoitems c LEFT JOIN FETCH c.idrubro_rubros LEFT JOIN FETCH i.idfacturacion_facturacion WHERE i.idcatalogoitems_catalogoitems.idcatalogoitems = ?1 ORDER BY i.iditemxfact DESC")
+   List<Itemxfact> findByIdcatalogoitems(Long idcatalogoitems);
 }

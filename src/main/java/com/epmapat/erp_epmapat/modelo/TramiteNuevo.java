@@ -7,8 +7,11 @@ import javax.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "tramitenuevo")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class TramiteNuevo {
    
@@ -56,9 +59,11 @@ public class TramiteNuevo {
 	private Long medidordiametro;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idcategoria_categorias")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Categorias idcategoria_categorias;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idaguatramite_aguatramite")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private AguaTramite idaguatramite_aguatramite;
 	private Long usucrea;
 	@Temporal(TemporalType.DATE)

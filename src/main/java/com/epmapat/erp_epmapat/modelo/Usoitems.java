@@ -11,8 +11,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "usoitems")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "idmodulo_modulos"})
 
 public class Usoitems {
 
@@ -23,6 +26,7 @@ public class Usoitems {
    private Boolean estado;
    @ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="idmodulo_modulos")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Modulos idmodulo_modulos;
    private Long usucrea;
    private Date feccrea;

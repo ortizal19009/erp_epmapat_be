@@ -12,8 +12,7 @@ import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 public interface UsuariosR extends JpaRepository<Usuarios, Long> {
 
    // Todos (Excepto el Administrador)
-   @SuppressWarnings("null")
-   @Query(value = "SELECT * FROM usuarios order by identificausu", nativeQuery = true)
+   @Query("SELECT u FROM Usuarios u LEFT JOIN FETCH u.personal ORDER BY u.identificausu")
    List<Usuarios> findAll();
 
    // Busca un usuario por Identificación

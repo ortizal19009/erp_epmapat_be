@@ -21,9 +21,14 @@ public interface RecargosxcuentaR extends JpaRepository<Recargosxcuenta, Long> {
     @Query("""
                 SELECT r
                 FROM Recargosxcuenta r
+                LEFT JOIN FETCH r.idabonado_abonados a
+                LEFT JOIN FETCH a.idresponsable
+                LEFT JOIN FETCH a.idcliente_clientes
+                LEFT JOIN FETCH a.idcategoria_categorias
+                LEFT JOIN FETCH a.idruta_rutas
                 LEFT JOIN FETCH r.idemision_emisiones e
                 LEFT JOIN FETCH r.idrubro_rubros ru
-                WHERE r.idabonado_abonados.idabonado = :idabonado
+                WHERE a.idabonado = :idabonado
                 ORDER BY e.idemision DESC, r.fecha DESC, r.feccrea DESC, r.idrecargoxcuenta DESC
             """)
     List<Recargosxcuenta> findByIdAbonado(@Param("idabonado") Long idabonado);

@@ -1,10 +1,11 @@
 package com.epmapat.erp_epmapat.repositorio;
 
-import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,7 +15,27 @@ import com.epmapat.erp_epmapat.interfaces.ConvenioDetalle;
 import com.epmapat.erp_epmapat.interfaces.EstadoConvenios;
 import com.epmapat.erp_epmapat.modelo.Convenios;
 
-public interface ConveniosR extends JpaRepository<Convenios, Serializable> {
+public interface ConveniosR extends JpaRepository<Convenios, Long> {
+
+  @EntityGraph(attributePaths = {
+      "idabonado",
+      "idabonado.idresponsable",
+      "idabonado.idcliente_clientes",
+      "idabonado.idcategoria_categorias",
+      "idabonado.idruta_rutas"
+  })
+  @Override
+  List<Convenios> findAll();
+
+  @EntityGraph(attributePaths = {
+      "idabonado",
+      "idabonado.idresponsable",
+      "idabonado.idcliente_clientes",
+      "idabonado.idcategoria_categorias",
+      "idabonado.idruta_rutas"
+  })
+  @Override
+  Optional<Convenios> findById(Long id);
 
   List<Convenios> findByNroconvenioBetweenOrderByNroconvenioAsc(Integer desde, Integer hasta);
 

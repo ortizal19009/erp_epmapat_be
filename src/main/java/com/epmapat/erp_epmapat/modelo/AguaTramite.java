@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +24,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="aguatramite")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AguaTramite {
    
    @Id
@@ -36,9 +39,11 @@ public class AguaTramite {
    private Long idfactura_facturas; //No todos los trámites tienen factura
    @ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idcliente_clientes")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Clientes idcliente_clientes;
    @ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idtipotramite_tipotramite")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private TipoTramite idtipotramite_tipotramite;
    private Long usucrea; 
    private Date feccrea;

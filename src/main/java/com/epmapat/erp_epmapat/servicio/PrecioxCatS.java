@@ -16,7 +16,7 @@ public class PrecioxCatS {
 	private PrecioxCatR dao;
 
 	public List<PrecioxCatM> findAll(Long c, Long dm, Long hm) {
-		if(c != null && dm != null || hm != null) {
+		if (c != null && dm != null && hm != null) {
 			return dao.findAll(c, dm,hm);
 		}
 		else {

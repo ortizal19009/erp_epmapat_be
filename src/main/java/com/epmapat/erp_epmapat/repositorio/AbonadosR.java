@@ -95,10 +95,12 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	@Query(value = "SELECT * FROM abonados WHERE estado=?1", nativeQuery = true)
 	public List<Abonados> findByEstado(Long estado);
 
-	@EntityGraph(attributePaths = { "idresponsable", "idcliente_clientes", "idcategoria_categorias", "idruta_rutas",
-			"idestadom_estadom" })
-	@Query(value = "SELECT * FROM abonados WHERE estado=?1", nativeQuery = true)
-	public Page<Abonados> findByEstado(Long estado, Pageable pageable);
+	@Query("""
+			SELECT a
+			FROM Abonados a
+			WHERE a.estado = :estado
+			""")
+	public Page<Abonados> findByEstado(@Param("estado") Long estado, Pageable pageable);
 
 	// Cliente tiene Abonados
 	@Query(value = "SELECT EXISTS (SELECT 1 FROM Abonados WHERE idcliente_clientes = ?1)", nativeQuery = true)
@@ -139,14 +141,33 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	 * List<Map<String, Object>> getOneAbonado(Long idabonado);
 	 */
 	// Un Abonado
-	@EntityGraph(attributePaths = { "idresponsable", "idcliente_clientes", "idcategoria_categorias", "idruta_rutas",
-			"idestadom_estadom" })
-	Abonados findByIdabonado(Long idabonado);
+	@Query("""
+			SELECT a
+			FROM Abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			LEFT JOIN FETCH a.idestadom_estadom
+			LEFT JOIN FETCH a.idubicacionm_ubicacionm
+			LEFT JOIN FETCH a.idtipopago_tipopago
+			WHERE a.idabonado = :idabonado
+			""")
+	Abonados findByIdabonado(@Param("idabonado") Long idabonado);
 
-	@Override
-	@EntityGraph(attributePaths = { "idresponsable", "idcliente_clientes", "idcategoria_categorias", "idruta_rutas",
-			"idestadom_estadom" })
-	java.util.Optional<Abonados> findById(Long id);
+	@Query("""
+			SELECT a
+			FROM Abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			LEFT JOIN FETCH a.idestadom_estadom
+			LEFT JOIN FETCH a.idubicacionm_ubicacionm
+			LEFT JOIN FETCH a.idtipopago_tipopago
+			WHERE a.idabonado = :id
+			""")
+	java.util.Optional<Abonados> findById(@Param("id") Long id);
 
 	@Query(value = "SELECT * FROM abonados a where a.idruta_rutas = ?1 order by a.idabonado asc", nativeQuery = true)
 	public List<Abonados> getCuentasByRutas(Long idruta);

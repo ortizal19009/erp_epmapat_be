@@ -17,22 +17,24 @@ public class FacturacionServicio {
    private FacturacionR dao;
 
    public List<Facturacion> findDesdeHasta(Long desde, Long hasta, Date del, Date al) {
-      if (desde != null || hasta != null) {
+      if (desde != null && hasta != null && del != null && al != null) {
          return dao.findDesdeHasta(desde, hasta, del, al);
       } else {
-         // return dao.findAll();
-         return null;
+         return dao.findAll();
       }
    }
 
    // Busca por Cliente (simpres dentro de fechas)
    public List<Facturacion> findByCliente(String cliente, Date del, Date al) {
+      if (cliente == null || del == null || al == null) {
+         return dao.findAll();
+      }
       return dao.findByCliente(cliente, del, al);
    }
 
    // Busca la última Facturación
    public Facturacion ultimo() {
-      return dao.findFirstByOrderByIdfacturacionDesc();
+      return dao.findTopByOrderByIdfacturacionDesc().stream().findFirst().orElse(null);
    }
 
    public Optional<Facturacion> findById(Long id) {

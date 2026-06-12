@@ -11,8 +11,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "catalogoitems")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Catalogoitems {
    
@@ -25,9 +28,11 @@ public class Catalogoitems {
    private Boolean estado;
    @ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="idusoitems_usoitems")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Usoitems idusoitems_usoitems;
    @ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="idrubro_rubros")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Rubros idrubro_rubros;
    private Long usucrea;
    private Date feccrea;

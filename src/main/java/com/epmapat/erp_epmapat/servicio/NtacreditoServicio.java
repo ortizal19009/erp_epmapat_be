@@ -31,8 +31,7 @@ public class NtacreditoServicio {
     }
     public Page<Ntacredito> findAllNtaCredito(int page, int size){
         Pageable pageable = PageRequest.of(page, size);
-        return dao.findAllNtaCreditos(pageable);
-        //return null;
+        return dao.findAll(pageable);
     }
     public List<NtaCreditoSaldos> findSaldosByCuenta(Long cuenta){
         return dao.findSaldosByCuenta(cuenta);

@@ -9,8 +9,11 @@ import javax.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name="tramites1")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Tramites1M {
 

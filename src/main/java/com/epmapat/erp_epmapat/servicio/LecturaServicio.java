@@ -66,7 +66,12 @@ public class LecturaServicio {
 	}
 
 	public List<Lecturas> findByIdabonado(Long idabonado, Long limit) {
-		return dao.findByIdabonado(idabonado, limit);
+		List<Lecturas> lecturas = dao.findByIdabonado(idabonado);
+		if (limit == null || limit <= 0 || lecturas.isEmpty()) {
+			return lecturas;
+		}
+		int max = (int) Math.min(limit, lecturas.size());
+		return lecturas.subList(0, max);
 	}
 
 	public List<Lecturas> findByMonth() {

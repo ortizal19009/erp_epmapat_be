@@ -22,6 +22,10 @@ import com.epmapat.erp_epmapat.modelo.Facturas;
 @Repository
 public interface FacturasR extends JpaRepository<Facturas, Long> {
 
+	@EntityGraph(attributePaths = { "idmodulo", "idcliente" })
+	@Override
+	java.util.Optional<Facturas> findById(Long id);
+
 	// VALIDACION DE LA ULTIMA FACTURA DEL RECAUDADOR
 	@Query(value = "select *, substring(nrofactura, 9) as nrofac from facturas where nrofactura like %?1% and not nrofactura  is null order by nrofac desc limit 1;", nativeQuery = true)
 	public Facturas validarUltimafactura(String codrecaudador);
@@ -55,9 +59,6 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	@EntityGraph(attributePaths = { "idmodulo", "idcliente" })
 	Page<Facturas> findByIdabonadoAndFechaeliminacionIsNullOrderByIdfacturaDesc(Long idabonado, Pageable pageable);
-
-	// Una Planilla (como lista para mostrar en la misma forma que por Abonado)
-	public List<Facturas> findByIdfactura(Long idfactura);
 
 	// Planillas por Abonado y Fecha
 	@Query("SELECT f FROM Facturas f WHERE f.idabonado = :idabonado AND f.feccrea BETWEEN :fechaDesde AND :fechaHasta AND totaltarifa > 0 order by feccrea desc")
@@ -174,9 +175,10 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT SUM(rf.cantidad * rf.valorunitario) AS totalGeneral FROM facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas and (rf.estado <> 0 or rf.estado is null) join rubros r on r.idrubro = rf.idrubro_rubros WHERE f.totaltarifa > 0 and f.idcliente = ?1 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro> ?2 or f.fechacobro is null)) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and not r.idrubro = 165 and not r.idrubro = 5 and (rf.estado <> 0 or rf.estado is null)", nativeQuery = true)
 	Double totCarteraCliente(@Param("idcliente") Long idcliente, LocalDate hasta);
 
-	// Planillas por Abonado
-	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY nrofactura", nativeQuery = true)
-	public List<Facturas> findByIdFactura(Long idabonado);
+	// Planilla por ID de factura
+	@EntityGraph(attributePaths = { "idcliente", "idmodulo" })
+	@Query("SELECT f FROM Facturas f LEFT JOIN FETCH f.idcliente LEFT JOIN FETCH f.idmodulo WHERE f.idfactura = ?1")
+	public List<Facturas> findByIdfactura(Long idfactura);
 
 	// Planilla por nrofactura
 	@Query(value = "SELECT * FROM facturas WHERE nrofactura=?1 order by idfactura", nativeQuery = true)
@@ -326,7 +328,14 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = " select * from facturas f where not f.fechaanulacion is null  and  not f.usuarioanulacion  is null order by f.fechaanulacion desc limit ?1", nativeQuery = true)
 	public List<Facturas> fingAllFacturasAnuladas(Long limit);
 
-	@Query(value = "select * from facturas f where f.fechaanulacion between ?1 and ?2", nativeQuery = true)
+	@Query("""
+			SELECT f
+			FROM Facturas f
+			LEFT JOIN FETCH f.idcliente
+			LEFT JOIN FETCH f.idmodulo
+			WHERE f.fechaanulacion BETWEEN ?1 AND ?2
+			ORDER BY f.fechaanulacion DESC
+			""")
 	public List<Facturas> findByFecAnulacion(Date d, Date h);
 
 	@Query(value = "select * from facturas f join clientes c on f.idcliente = c.idcliente where f.pagado = 1 and f.usuarioanulacion is null and f.fechaeliminacion is null and f.idcliente = ?1 order by f.feccrea desc", nativeQuery = true)
@@ -336,7 +345,14 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = " select * from facturas f where not f.fechaeliminacion is null  and  not f.usuarioeliminacion  is null order by f.fechaeliminacion desc limit ?1", nativeQuery = true)
 	public List<Facturas> fingAllFacturasEliminadas(Long limit);
 
-	@Query(value = "select * from facturas f where f.fechaeliminacion between ?1 and ?2", nativeQuery = true)
+	@Query("""
+			SELECT f
+			FROM Facturas f
+			LEFT JOIN FETCH f.idcliente
+			LEFT JOIN FETCH f.idmodulo
+			WHERE f.fechaeliminacion BETWEEN ?1 AND ?2
+			ORDER BY f.fechaeliminacion DESC
+			""")
 	public List<Facturas> findByFecEliminacion(Date d, Date h);
 
 	/* reporte de facturas cobradas por transferencia */
@@ -354,11 +370,11 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Facturas> findFechaCobro(LocalDate d, LocalDate h);
 
 	/* REPORTE DE FACTURAS ELIMINADAS POR RANGO DE FECHA */
-	@Query(value = "select f.idfactura as idfactura ,u.nomusu as nomusu, f.razoneliminacion as razoneliminacion, m.descripcion as modulo ,sum(rf.valorunitario * rf.cantidad) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join modulos m on f.idmodulo = m.idmodulo join usuarios u on f.usuarioeliminacion = u.idusuario where f.fechaeliminacion between ?1 and ?2 and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, m.idmodulo, u.idusuario ", nativeQuery = true)
+	@Query(value = "select f.idfactura as idfactura ,u.nomusu as nomusu, f.razoneliminacion as razoneliminacion, m.descripcion as modulo ,c.nombre as nombre, sum(rf.valorunitario * rf.cantidad) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join modulos m on f.idmodulo = m.idmodulo join usuarios u on f.usuarioeliminacion = u.idusuario left join clientes c on f.idcliente = c.idcliente where f.fechaeliminacion between ?1 and ?2 and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, m.idmodulo, u.idusuario, c.nombre ", nativeQuery = true)
 	public List<RepFacEliminadas> findEliminadasXfecha(LocalDate d, LocalDate h);
 
 	/* REPORTE DE FACTURAS ANULADAS POR RANGO DE FECHA */
-	@Query(value = "select f.idfactura as idfactura ,u.nomusu as nomusu, f.razonanulacion  as razoneliminacion, m.descripcion as modulo ,sum(rf.valorunitario * rf.cantidad) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join modulos m on f.idmodulo = m.idmodulo join usuarios u on f.usuarioanulacion = u.idusuario where f.fechaanulacion between ?1 and ?2 and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, m.idmodulo, u.idusuario ", nativeQuery = true)
+	@Query(value = "select f.idfactura as idfactura ,u.nomusu as nomusu, f.razonanulacion  as razoneliminacion, m.descripcion as modulo ,c.nombre as nombre, sum(rf.valorunitario * rf.cantidad) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join modulos m on f.idmodulo = m.idmodulo join usuarios u on f.usuarioanulacion = u.idusuario left join clientes c on f.idcliente = c.idcliente where f.fechaanulacion between ?1 and ?2 and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, m.idmodulo, u.idusuario, c.nombre ", nativeQuery = true)
 	public List<RepFacEliminadas> findAnuladasXfecha(LocalDate d, LocalDate h);
 
 	// @Query(value = "select rf.idfactura_facturas as idfactura, sum(rf.cantidad *

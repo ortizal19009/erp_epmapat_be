@@ -10,17 +10,26 @@ import com.epmapat.erp_epmapat.modelo.Catalogoitems;
 public interface CatalogoitemsR extends JpaRepository<Catalogoitems, Long>{
 
    //Productos por Seccion y/o Descripcion
-   @Query(value = "SELECT * FROM catalogoitems AS c JOIN usoitems as u ON c.idusoitems_usoitems=u.idusoitems WHERE u.idmodulo_modulos>=?1 and u.idmodulo_modulos<=?2 and LOWER(c.descripcion) like %?3% ORDER by c.descripcion", nativeQuery = true)
+   @Query("""
+         SELECT c
+         FROM Catalogoitems c
+         JOIN FETCH c.idusoitems_usoitems u
+         LEFT JOIN FETCH c.idrubro_rubros
+         WHERE u.idmodulo_modulos.idmodulo >= ?1
+           AND u.idmodulo_modulos.idmodulo <= ?2
+           AND (?3 = '' OR LOWER(c.descripcion) LIKE CONCAT('%', LOWER(?3), '%'))
+         ORDER BY c.descripcion
+         """)
 	public List<Catalogoitems> findProductos(Long idusoitems1, Long idusoitems2, String descripcion);
 
-   @Query(value="SELECT * FROM catalogoitems WHERE idrubro_rubros=?1 order by descripcion", nativeQuery = true)
+   @Query("SELECT c FROM Catalogoitems c LEFT JOIN FETCH c.idrubro_rubros LEFT JOIN FETCH c.idusoitems_usoitems WHERE c.idrubro_rubros.idrubro = ?1 ORDER BY c.descripcion")
 	public List<Catalogoitems> findByIdrubro(Long idrubro);
 
-   @Query(value="SELECT * FROM catalogoitems WHERE idusoitems_usoitems=?1 order by descripcion", nativeQuery = true)
+   @Query("SELECT c FROM Catalogoitems c LEFT JOIN FETCH c.idusoitems_usoitems LEFT JOIN FETCH c.idrubro_rubros WHERE c.idusoitems_usoitems.idusoitems = ?1 ORDER BY c.descripcion")
 	public List<Catalogoitems> findByIdusoitems(Long idusoitems);
    
    //Validar nombre (Por Uso)
-   @Query(value = "SELECT * FROM catalogoitems where idusoitems_usoitems=?1 and LOWER(descripcion)=?2", nativeQuery=true)
+   @Query("SELECT c FROM Catalogoitems c LEFT JOIN FETCH c.idusoitems_usoitems LEFT JOIN FETCH c.idrubro_rubros WHERE c.idusoitems_usoitems.idusoitems = ?1 AND LOWER(c.descripcion) = ?2")
 	List<Catalogoitems> findByNombre(Long idusoitems, String descripcion);
 
 }

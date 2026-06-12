@@ -13,12 +13,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.CuentasByRutas;
 import com.epmapat.erp_epmapat.modelo.Rutas;
+import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 import com.epmapat.erp_epmapat.servicio.RutaServicio;
 
 @RestController
@@ -27,6 +30,8 @@ public class RutasApi {
 
 	@Autowired
 	private RutaServicio rutServicio;
+	@Autowired
+	private AbonadoServicio aboServicio;
 
 	@GetMapping
 	public List<Rutas> getAll() {
@@ -76,5 +81,10 @@ public class RutasApi {
 	@GetMapping("/cuentasByRuta")
 	public ResponseEntity<List<CuentasByRutas>> getNcuentasByRutas() {
 		return ResponseEntity.ok(rutServicio.getNcuentasByRutas());
+	}
+
+	@GetMapping("/deudas_ruta_cuentas")
+	public ResponseEntity<List<ValorFactDTO>> getDeudasRutaCuentas(@RequestParam Long idruta) {
+		return ResponseEntity.ok(aboServicio.getCuentasByRutas(idruta));
 	}
 }
