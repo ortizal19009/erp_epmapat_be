@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.epmapat.erp_epmapat.interfaces.FecFacturaGestionProjection;
 import com.epmapat.erp_epmapat.modelo.Fec_factura;
@@ -149,6 +150,7 @@ public interface Fec_facturaR extends JpaRepository<Fec_factura, Long> {
             @Param("mailError") String mailError,
             @Param("soloFallidos") Boolean soloFallidos,
             @Param("limit") Integer limit);
+    @Transactional
     @Modifying
     @Query("delete from Fec_factura f where f.idfactura = :idfactura")
     void deleteByIdfactura(@Param("idfactura") Long idfactura);

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.epmapat.erp_epmapat.modelo.Fec_factura_detalles_impuestos;
 
@@ -19,6 +20,7 @@ public interface Fec_factura_detalles_impuestosR extends JpaRepository<Fec_factu
     @Query(value = "select * from fec_factura_detalles_impuestos where idfacturadetalleimpuestos = ?1", nativeQuery = true)
     public Fec_factura_detalles_impuestos findBy_id(Long idimpuesto);
 
+    @Transactional
     @Modifying
     @Query("delete from Fec_factura_detalles_impuestos i where i.idfacturadetalle in :ids")
     void deleteByIdfacturadetalleIn(@Param("ids") List<Long> ids);

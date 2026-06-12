@@ -13,12 +13,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.management.RuntimeErrorException;
-import javax.transaction.Transactional;
+
+import org.springframework.transaction.annotation.Transactional;
 
 import com.epmapat.erp_epmapat.DTO.RemiDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.interfaces.*;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -223,12 +227,29 @@ public class FacturaServicio {
 		return dao.findByNrofactura(nrofactura);
 	}
 
+	@Transactional
 	public <S extends Facturas> S save(S entity) {
 		S saved = dao.save(entity);
 		if (saved.getFechaanulacion() != null) {
 			eliminarFacturaElectronicaEnCascada(saved.getIdfactura());
 		}
 		return saved;
+	}
+
+	public static void mergeFactura(Facturas target, Facturas source) {
+		BeanUtils.copyProperties(source, target, getNullPropertyNames(source));
+	}
+
+	private static String[] getNullPropertyNames(Facturas source) {
+		final BeanWrapper beanWrapper = new BeanWrapperImpl(source);
+		java.util.List<String> nullProperties = new java.util.ArrayList<>();
+		for (var propertyDescriptor : beanWrapper.getPropertyDescriptors()) {
+			String propertyName = propertyDescriptor.getName();
+			if (beanWrapper.getPropertyValue(propertyName) == null) {
+				nullProperties.add(propertyName);
+			}
+		}
+		return nullProperties.toArray(new String[0]);
 	}
 
 	public <S extends Facturas> S saveForNewEmision(S entity) {
@@ -274,11 +295,11 @@ public class FacturaServicio {
 		return this.dao.fingAllFacturasEliminadas(limit);
 	}
 
-	public List<Facturas> findByFecEliminacion(Date d, Date h) {
+	public List<Facturas> findByFecEliminacion(LocalDate d, LocalDate h) {
 		return this.dao.findByFecEliminacion(d, h);
 	}
 
-	public List<Facturas> findByFecAnulacion(Date d, Date h) {
+	public List<Facturas> findByFecAnulacion(LocalDate d, LocalDate h) {
 		return this.dao.findByFecAnulacion(d, h);
 	}
 

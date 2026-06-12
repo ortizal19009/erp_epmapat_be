@@ -308,48 +308,13 @@ public class FacturasApi {
 			y.setInterescobrado(interes.add(interescobradoRecibido));
 		}
 		if (x.getHoracobro() != null) {
-			hora = LocalTime.parse(x.getHoracobro().toString()); // Esto funciona
+			hora = LocalTime.parse(x.getHoracobro().toString());
 		} else {
-			hora = null;
+			hora = y.getHoracobro();
 		}
 
-		y.setConveniopago(x.getConveniopago());
-		y.setEstado(x.getEstado());
-		y.setEstadoconvenio(x.getEstadoconvenio());
-		y.setFechaanulacion(x.getFechaanulacion());
-		y.setFechacobro(x.getFechacobro());
-		y.setFechaconvenio(x.getFechaconvenio());
-		y.setFechaeliminacion(x.getFechaeliminacion());
-		y.setFechatransferencia(x.getFechatransferencia());
-		y.setFormapago(x.getFormapago());
 		y.setHoracobro(hora);
-		y.setIdabonado(x.getIdabonado());
-		y.setIdcliente(x.getIdcliente());
-		y.setIdmodulo(x.getIdmodulo());
-		y.setNrofactura(x.getNrofactura());
-		y.setPagado(x.getPagado());
-		y.setPorcexoneracion(x.getPorcexoneracion());
-		y.setRazonanulacion(x.getRazonanulacion());
-		y.setRazoneliminacion(x.getRazoneliminacion());
-		y.setRazonexonera(x.getRazonexonera());
-		y.setRefeformapago(x.getRefeformapago());
-		y.setTotaltarifa(x.getTotaltarifa());
-		y.setUsuarioanulacion(x.getUsuarioanulacion());
-		y.setUsuariocobro(x.getUsuariocobro());
-		y.setUsuarioeliminacion(x.getUsuarioeliminacion());
-		y.setUsuariotransferencia(x.getUsuariotransferencia());
-		y.setUsucrea(x.getUsucrea());
-		y.setFeccrea(x.getFeccrea());
-		y.setSwiva(x.getSwiva());
-		y.setSecuencialfacilito(x.getSecuencialfacilito());
-		// y.setFeccrea(x.getFeccrea());
-
-		y.setUsumodi(x.getUsumodi());
-		y.setFecmodi(x.getFecmodi());
-
-		y.setValorbase(x.getValorbase());
-		y.setSwcondonar(x.getSwcondonar());
-		y.setValornotacredito(x.getValornotacredito());
+		FacturaServicio.mergeFactura(y, x);
 		Facturas updateFacturas = facServicio.save(y);
 		return ResponseEntity.ok(updateFacturas);
 	}
@@ -530,8 +495,8 @@ public class FacturasApi {
 
 	@GetMapping("/anulaciones/fechas")
 	public ResponseEntity<List<Facturas>> getFacturasByFecAnulaciones(
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate d,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate h) {
 		List<Facturas> facturas = facServicio.findByFecAnulacion(d, h);
 		return ResponseEntity.ok(facturas);
 	}
@@ -551,8 +516,8 @@ public class FacturasApi {
 
 	@GetMapping("/eliminaciones/fechas")
 	public ResponseEntity<List<Facturas>> getFacturasByFecEliminacion(
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate d,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate h) {
 		List<Facturas> facturas = facServicio.findByFecEliminacion(d, h);
 		return ResponseEntity.ok(facturas);
 	}
