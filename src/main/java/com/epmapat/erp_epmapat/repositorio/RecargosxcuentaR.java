@@ -18,6 +18,16 @@ public interface RecargosxcuentaR extends JpaRepository<Recargosxcuenta, Long> {
             """)
     List<Recargosxcuenta> findByIdEmision(@Param("idemision") Long idemision);
 
+    @Query("""
+                SELECT r
+                FROM Recargosxcuenta r
+                LEFT JOIN FETCH r.idemision_emisiones e
+                LEFT JOIN FETCH r.idrubro_rubros ru
+                WHERE r.idabonado_abonados.idabonado = :idabonado
+                ORDER BY e.idemision DESC, r.fecha DESC, r.feccrea DESC, r.idrecargoxcuenta DESC
+            """)
+    List<Recargosxcuenta> findByIdAbonado(@Param("idabonado") Long idabonado);
+
     // ✅ REGLA #2: tipo 1 NO repetible en la misma emisión (cuenta + emisión + tipo)
     @Query("""
                 SELECT (count(r) > 0)

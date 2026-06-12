@@ -25,6 +25,10 @@ public class RecaudaxcajaServicio {
 		return dao.findLastConexion(idcaja);
 	}
 
+	public List<Recaudaxcaja> findCajasAbiertas() {
+		return dao.findCajasAbiertas();
+	}
+
 	public <S extends Recaudaxcaja> S save(S entity) {
 		return dao.save(entity);
 	}

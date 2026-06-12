@@ -84,6 +84,10 @@ public class RecargosxcuentaService {
         return recargosR.findByIdEmision(emision);
     }
 
+    public List<Recargosxcuenta> findAllByAbonado(Long idabonado) {
+        return recargosR.findByIdAbonado(idabonado);
+    }
+
     // =========================
     // Actualizar Recargo
     // =========================

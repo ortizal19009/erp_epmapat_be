@@ -49,6 +49,7 @@ import com.epmapat.erp_epmapat.servicio.NtacreditoServicio;
 import com.epmapat.erp_epmapat.servicio.RecaudacionServicio;
 import com.epmapat.erp_epmapat.servicio.RecaudaxcajaServicio;
 import com.epmapat.erp_epmapat.servicio.RubroxfacServicio;
+import com.epmapat.erp_epmapat.servicio.TmpinteresxfacService;
 import com.epmapat.erp_epmapat.servicio.ValoresncServicio;
 import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
 import com.epmapat.erp_epmapat.servicio.administracion.UsuarioServicio;
@@ -82,6 +83,10 @@ public class RecaudacionCobroServicio {
     private ValoresncServicio valoresncServicio;
     @Autowired
     private FacxncService facxncService;
+    @Autowired
+    private TmpinteresxfacService tmpinteresxfacService;
+    @Autowired
+    private RecaudacionCajaSseService recaudacionCajaSseService;
 
     @Transactional
     public List<ValorFactDTO> getSincobroByCuenta(Long cuenta) {
@@ -96,7 +101,7 @@ public class RecaudacionCobroServicio {
                 .comparing(ValorFactDTO::getCuenta, Comparator.nullsLast(Long::compareTo))
                 .thenComparing(ValorFactDTO::getFeccrea, Comparator.nullsLast(java.time.LocalDate::compareTo))
                 .thenComparing(ValorFactDTO::getIdfactura, Comparator.nullsLast(Long::compareTo)));
-        cargarIvasMasivos(pendientes);
+        completarMontosPendientes(pendientes);
         return pendientes;
     }
 
@@ -129,7 +134,7 @@ public class RecaudacionCobroServicio {
             respuesta.add(dto);
         }
 
-        cargarIvasMasivos(respuesta);
+        completarMontosPendientes(respuesta);
         respuesta.sort(Comparator
                 .comparing(ValorFactDTO::getCuenta, Comparator.nullsLast(Long::compareTo))
                 .thenComparing(ValorFactDTO::getFeccrea, Comparator.nullsLast(java.time.LocalDate::compareTo))
@@ -257,6 +262,29 @@ public class RecaudacionCobroServicio {
     }
 
     @Transactional
+    public List<RecaudacionCajaDTO> getCajasAbiertas() {
+        return recaudaxcajaServicio.findCajasAbiertas().stream()
+                .filter(recxcaja -> recxcaja.getIdcaja_cajas() != null)
+                .map(recxcaja -> {
+                    Cajas caja = recxcaja.getIdcaja_cajas();
+                    Long secuencial = obtenerSecuencialActual(caja, recxcaja);
+                    Long siguiente = secuencial != null ? secuencial + 1 : null;
+                    return new RecaudacionCajaDTO(
+                            caja.getIdcaja(),
+                            recxcaja.getIdrecaudaxcaja(),
+                            recxcaja.getEstado(),
+                            caja.getIdusuario_usuarios() != null ? caja.getIdusuario_usuarios().getNomusu() : null,
+                            caja.getIdptoemision_ptoemision() != null ? caja.getIdptoemision_ptoemision().getEstablecimiento() : null,
+                            caja.getCodigo(),
+                            recxcaja.getFacinicio(),
+                            recxcaja.getFacfin(),
+                            secuencial,
+                            siguiente);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
     public RecaudacionCajaOperacionResponse abrirCaja(String username, String password) {
         if (username == null || username.isBlank() || password == null) {
             throw new IllegalArgumentException("Debe indicar usuario y contraseña.");
@@ -305,6 +333,8 @@ public class RecaudacionCobroServicio {
         cajaServicio.save(caja);
 
         RecaudacionCajaDTO cajaDto = getEstadoCaja(usuario.getIdusuario());
+        recaudacionCajaSseService.publishEstado(usuario.getIdusuario(), cajaDto);
+        recaudacionCajaSseService.publishEstadoGlobal(cajaDto);
         return new RecaudacionCajaOperacionResponse("Caja abierta correctamente.", cajaDto);
     }
 
@@ -342,6 +372,50 @@ public class RecaudacionCobroServicio {
         cajaServicio.save(caja);
 
         RecaudacionCajaDTO cajaDto = getEstadoCaja(usuario.getIdusuario());
+        recaudacionCajaSseService.publishEstado(usuario.getIdusuario(), cajaDto);
+        recaudacionCajaSseService.publishEstadoGlobal(cajaDto);
+        return new RecaudacionCajaOperacionResponse("Caja cerrada correctamente.", cajaDto);
+    }
+
+    @Transactional
+    public RecaudacionCajaOperacionResponse cerrarCajaPorId(Long idcaja) {
+        if (idcaja == null) {
+            throw new IllegalArgumentException("Debe indicar la caja.");
+        }
+
+        Cajas caja = cajaServicio.findById(idcaja)
+                .orElseThrow(() -> new IllegalArgumentException("No existe la caja."));
+
+        Recaudaxcaja recxcaja = recaudaxcajaServicio.findLastConexion(caja.getIdcaja());
+        Long idusuario = caja.getIdusuario_usuarios() != null ? caja.getIdusuario_usuarios().getIdusuario() : null;
+
+        if (recxcaja == null || !Integer.valueOf(1).equals(recxcaja.getEstado())) {
+            RecaudacionCajaDTO cajaDto = idusuario != null
+                    ? getEstadoCaja(idusuario)
+                    : new RecaudacionCajaDTO(caja.getIdcaja(), null, 0, null,
+                            caja.getIdptoemision_ptoemision() != null ? caja.getIdptoemision_ptoemision().getEstablecimiento() : null,
+                            caja.getCodigo(), null, null, null, null);
+            return new RecaudacionCajaOperacionResponse("La caja ya se encuentra cerrada.", cajaDto);
+        }
+
+        recxcaja.setEstado(0);
+        recxcaja.setFechafinlabor(new Date());
+        recxcaja.setHorafin(LocalTime.now());
+        recaudaxcajaServicio.save(recxcaja);
+
+        caja.setEstado(0L);
+        cajaServicio.save(caja);
+
+        RecaudacionCajaDTO cajaDto = idusuario != null
+                ? getEstadoCaja(idusuario)
+                : new RecaudacionCajaDTO(caja.getIdcaja(), recxcaja.getIdrecaudaxcaja(), 0, null,
+                        caja.getIdptoemision_ptoemision() != null ? caja.getIdptoemision_ptoemision().getEstablecimiento() : null,
+                        caja.getCodigo(), recxcaja.getFacinicio(), recxcaja.getFacfin(), recxcaja.getFacfin(), null);
+
+        if (idusuario != null) {
+            recaudacionCajaSseService.publishEstado(idusuario, cajaDto);
+        }
+        recaudacionCajaSseService.publishEstadoGlobal(cajaDto);
         return new RecaudacionCajaOperacionResponse("Caja cerrada correctamente.", cajaDto);
     }
 
@@ -375,7 +449,7 @@ public class RecaudacionCobroServicio {
             pendientes = facturaServicio.findSincobroDatos(cuenta)
                     .stream()
                     .filter(dto -> request.getFacturas().contains(dto.getIdfactura()))
-                    .peek(this::completarIva)
+                    .peek(this::completarMontosPendiente)
                     .collect(Collectors.toList());
         }
 
@@ -387,6 +461,9 @@ public class RecaudacionCobroServicio {
         Recaudaxcaja recxcaja = recaudaxcajaServicio.findLastConexion(caja.getIdcaja());
         if (recxcaja == null) {
             throw new IllegalArgumentException("La caja no tiene una conexión activa para generar secuenciales.");
+        }
+        if (!Integer.valueOf(1).equals(recxcaja.getEstado())) {
+            throw new IllegalArgumentException("La caja se encuentra cerrada. No es posible cobrar.");
         }
 
         Map<Long, ValorFactDTO> pendientesPorId = pendientes.stream()
@@ -488,6 +565,7 @@ public class RecaudacionCobroServicio {
         }
 
         RecaudacionCajaDTO cajaDto = getEstadoCaja(idusuario);
+        recaudacionCajaSseService.publishSecuencial(idusuario, cajaDto);
         return new RecaudacionCobroResponse(recaudacionGuardada, cajaDto, facturasParaCobro, totalCalculado, numeroFacturaSiguiente);
     }
 
@@ -498,9 +576,7 @@ public class RecaudacionCobroServicio {
         Definir definir = definirServicio.ultima();
         BigDecimal tasaIva = obtenerTasaIva(definir);
         dto.setIva(calcularIva(dto.getIdfactura(), tasaIva));
-        BigDecimal subtotal = dto.getSubtotal() != null ? BigDecimal.valueOf(dto.getSubtotal()) : BigDecimal.ZERO;
-        BigDecimal interes = dto.getInteres() != null ? dto.getInteres() : BigDecimal.ZERO;
-        dto.setTotal(subtotal);
+        recomputarTotal(dto);
     }
 
     private ValorFactDTO construirPendienteDesdeFactura(Facturas factura) {
@@ -517,12 +593,50 @@ public class RecaudacionCobroServicio {
         dto.setPagado(factura.getPagado());
         dto.setModulo(factura.getIdmodulo() != null ? factura.getIdmodulo().getDescripcion() : null);
         BigDecimal subtotal = sumarSubtotalFactura(factura.getIdfactura());
-        BigDecimal interes = rubroxfacServicio.getTotalInteres(factura.getIdfactura());
+        BigDecimal interes = tmpinteresxfacService.findByIdFactura(factura.getIdfactura());
         dto.setSubtotal(subtotal != null ? subtotal.floatValue() : 0f);
         dto.setTotal(subtotal != null ? subtotal : BigDecimal.ZERO);
         dto.setInteres(interes != null ? interes : BigDecimal.ZERO);
         dto.setIva(calcularIva(factura.getIdfactura()));
+        recomputarTotal(dto);
         return dto;
+    }
+
+    private void completarMontosPendientes(List<ValorFactDTO> facturas) {
+        if (facturas == null || facturas.isEmpty()) {
+            return;
+        }
+
+        cargarInteresesMasivos(facturas);
+        cargarIvasMasivos(facturas);
+        facturas.forEach(this::recomputarTotal);
+    }
+
+    private void completarMontosPendiente(ValorFactDTO dto) {
+        if (dto == null) {
+            return;
+        }
+
+        if (dto.getIdfactura() != null) {
+            dto.setInteres(tmpinteresxfacService.findByIdFactura(dto.getIdfactura()));
+        }
+        completarIva(dto);
+    }
+
+    private void cargarInteresesMasivos(List<ValorFactDTO> facturas) {
+        List<Long> ids = facturas.stream()
+                .map(ValorFactDTO::getIdfactura)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (ids.isEmpty()) {
+            facturas.forEach(dto -> dto.setInteres(BigDecimal.ZERO));
+            return;
+        }
+
+        Map<Long, BigDecimal> interesesPorFactura = tmpinteresxfacService.findByIdFacturas(ids);
+        facturas.forEach(dto -> dto.setInteres(interesesPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)));
     }
 
     private void cargarIvasMasivos(List<ValorFactDTO> facturas) {
@@ -560,6 +674,16 @@ public class RecaudacionCobroServicio {
         }
 
         facturas.forEach(dto -> dto.setIva(ivaPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)));
+    }
+
+    private void recomputarTotal(ValorFactDTO dto) {
+        if (dto == null) {
+            return;
+        }
+        BigDecimal subtotal = dto.getSubtotal() != null ? BigDecimal.valueOf(dto.getSubtotal()) : BigDecimal.ZERO;
+        BigDecimal interes = dto.getInteres() != null ? dto.getInteres() : BigDecimal.ZERO;
+        BigDecimal iva = dto.getIva() != null ? dto.getIva() : BigDecimal.ZERO;
+        dto.setTotal(subtotal.add(interes).add(iva));
     }
 
     private BigDecimal calcularIva(Long idfactura) {
@@ -651,7 +775,9 @@ public class RecaudacionCobroServicio {
     }
 
     private BigDecimal calcularTotalFacturaParaCobro(ValorFactDTO pendiente, BigDecimal interes, BigDecimal iva) {
-        BigDecimal subtotal = pendiente != null && pendiente.getTotal() != null ? pendiente.getTotal() : BigDecimal.ZERO;
+        BigDecimal subtotal = pendiente != null && pendiente.getSubtotal() != null
+                ? BigDecimal.valueOf(pendiente.getSubtotal())
+                : BigDecimal.ZERO;
         return subtotal
                 .add(interes != null ? interes : BigDecimal.ZERO)
                 .add(iva != null ? iva : BigDecimal.ZERO);

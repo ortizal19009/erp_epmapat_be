@@ -2,9 +2,12 @@ package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -89,6 +92,28 @@ public class TmpinteresxfacService {
         return tmpinteresxfacR.findByIdfactura(idfactura)
                 .map(Tmpinteresxfac::getInteresapagar)
                 .orElseGet(() -> upsertInteresFactura(idfactura));
+    }
+
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public Map<Long, BigDecimal> findByIdFacturas(Collection<Long> idfacturas) {
+        if (idfacturas == null || idfacturas.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, BigDecimal> intereses = tmpinteresxfacR.findAllByIdfacturaIn(idfacturas).stream()
+                .filter(Objects::nonNull)
+                .filter(item -> item.getIdfactura() != null)
+                .collect(Collectors.toMap(
+                        Tmpinteresxfac::getIdfactura,
+                        item -> item.getInteresapagar() != null ? item.getInteresapagar() : BigDecimal.ZERO,
+                        BigDecimal::add));
+
+        idfacturas.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .forEach(idfactura -> intereses.computeIfAbsent(idfactura, this::upsertInteresFactura));
+
+        return intereses;
     }
 
 

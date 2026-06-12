@@ -108,6 +108,11 @@ public class FacturaServicio {
 		return dao.findByIdabonadoLimit(idabonado, limit);
 	}
 
+	public Page<Facturas> findByIdabonadoPage(Long idabonado, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return dao.findByIdabonadoAndFechaeliminacionIsNullOrderByIdfacturaDesc(idabonado, pageable);
+	}
+
 	// Una Planilla (como lista)
 	public List<Facturas> buscarPlanilla(Long idfactura) {
 		return dao.findByIdfactura(idfactura);

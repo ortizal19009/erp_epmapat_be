@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.epmapat.erp_epmapat.DTO.LoginRequest;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
@@ -18,6 +19,7 @@ import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaDTO;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaOperacionResponse;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroRequest;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroResponse;
+import com.epmapat.erp_epmapat.servicio.recaudacion.RecaudacionCajaSseService;
 import com.epmapat.erp_epmapat.servicio.recaudacion.RecaudacionCobroServicio;
 
 @RestController
@@ -26,6 +28,8 @@ public class RecaudacionCobroApi {
 
     @Autowired
     private RecaudacionCobroServicio recaudacionCobroServicio;
+    @Autowired
+    private RecaudacionCajaSseService recaudacionCajaSseService;
 
     @GetMapping("/sincobro/cuenta")
     public ResponseEntity<List<ValorFactDTO>> getSincobroByCuenta(@RequestParam Long cuenta) {
@@ -40,6 +44,22 @@ public class RecaudacionCobroApi {
     @GetMapping("/caja/estado")
     public ResponseEntity<RecaudacionCajaDTO> getCajaEstado(@RequestParam Long idusuario) {
         return ResponseEntity.ok(recaudacionCobroServicio.getEstadoCaja(idusuario));
+    }
+
+    @GetMapping("/caja/abiertas")
+    public ResponseEntity<List<RecaudacionCajaDTO>> getCajasAbiertas() {
+        return ResponseEntity.ok(recaudacionCobroServicio.getCajasAbiertas());
+    }
+
+    @GetMapping("/caja/stream")
+    public SseEmitter streamCajaEstado(@RequestParam Long idusuario) {
+        RecaudacionCajaDTO estadoActual = recaudacionCobroServicio.getEstadoCaja(idusuario);
+        return recaudacionCajaSseService.subscribe(idusuario, estadoActual);
+    }
+
+    @GetMapping("/caja/stream/global")
+    public SseEmitter streamCajasEstadoGlobal() {
+        return recaudacionCajaSseService.subscribeGlobal();
     }
 
     @GetMapping("/caja/abrir")
@@ -57,6 +77,11 @@ public class RecaudacionCobroApi {
     @PutMapping("/caja/cerrar")
     public ResponseEntity<RecaudacionCajaOperacionResponse> cerrarCaja(@RequestParam String username) {
         return ResponseEntity.ok(recaudacionCobroServicio.cerrarCaja(username));
+    }
+
+    @PutMapping("/caja/cerrar/idcaja")
+    public ResponseEntity<RecaudacionCajaOperacionResponse> cerrarCajaPorId(@RequestParam Long idcaja) {
+        return ResponseEntity.ok(recaudacionCobroServicio.cerrarCajaPorId(idcaja));
     }
 
     @PostMapping("/cobrar")

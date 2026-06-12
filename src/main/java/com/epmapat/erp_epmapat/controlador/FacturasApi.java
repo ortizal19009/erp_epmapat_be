@@ -121,6 +121,14 @@ public class FacturasApi {
 		return facServicio.findByIdabonadoLimit(idabonado, limit);
 	}
 
+	@GetMapping("/abonado/{idabonado}/page")
+	public ResponseEntity<Page<Facturas>> getByIdabonadoPage(
+			@PathVariable Long idabonado,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "15") int size) {
+		return ResponseEntity.ok(facServicio.findByIdabonadoPage(idabonado, page, size));
+	}
+
 	// Una Planilla (como lista)
 	@GetMapping("/planilla")
 	public ResponseEntity<List<Facturas>> buscarPlanilla(@Param(value = "idfactura") Long idfactura) {

@@ -33,6 +33,11 @@ public class RecargosxcuentaApi {
         return recargosxcuentaService.findAllByEmision(idemision);
     }
 
+    @GetMapping("/byAbonado")
+    public List<Recargosxcuenta> getRecargosxcuentaByAbonado(Long idabonado) {
+        return recargosxcuentaService.findAllByAbonado(idabonado);
+    }
+
     @PostMapping("/validar")
     public ResponseEntity<ValidarRecargosResponse> validar(@RequestBody ValidarRecargosRequest req) {
         return ResponseEntity.ok(recargosxcuentaService.validar(req));
