@@ -15,10 +15,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaDTO;
@@ -88,7 +87,7 @@ public class RecaudacionCobroServicio {
     @Autowired
     private RecaudacionCajaSseService recaudacionCajaSseService;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<ValorFactDTO> getSincobroByCuenta(Long cuenta) {
         Map<Long, ValorFactDTO> pendientesPorId = new java.util.LinkedHashMap<>();
 
@@ -105,7 +104,7 @@ public class RecaudacionCobroServicio {
         return pendientes;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<ValorFactDTO> getSincobroByCliente(Long idcliente) {
         List<ValorFactDTO> respuesta = new ArrayList<>();
 
@@ -237,7 +236,7 @@ public class RecaudacionCobroServicio {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public RecaudacionCajaDTO getEstadoCaja(Long idusuario) {
         Cajas caja = cajaServicio.findCajaByIdUsuario(idusuario);
         if (caja == null) {
@@ -261,7 +260,7 @@ public class RecaudacionCobroServicio {
                 siguiente);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<RecaudacionCajaDTO> getCajasAbiertas() {
         return recaudaxcajaServicio.findCajasAbiertas().stream()
                 .filter(recxcaja -> recxcaja.getIdcaja_cajas() != null)

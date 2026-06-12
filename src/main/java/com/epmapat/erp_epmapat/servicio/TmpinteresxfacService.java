@@ -9,10 +9,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
 import com.epmapat.erp_epmapat.modelo.Tmpinteresxfac;
@@ -87,14 +86,14 @@ public class TmpinteresxfacService {
         }
     }
 
-    @Transactional(Transactional.TxType.SUPPORTS)
+    @Transactional
     public BigDecimal findByIdFactura(Long idfactura){
         return tmpinteresxfacR.findByIdfactura(idfactura)
                 .map(Tmpinteresxfac::getInteresapagar)
                 .orElseGet(() -> upsertInteresFactura(idfactura));
     }
 
-    @Transactional(Transactional.TxType.SUPPORTS)
+    @Transactional
     public Map<Long, BigDecimal> findByIdFacturas(Collection<Long> idfacturas) {
         if (idfacturas == null || idfacturas.isEmpty()) {
             return Map.of();
