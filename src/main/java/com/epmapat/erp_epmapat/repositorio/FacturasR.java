@@ -180,6 +180,11 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query("SELECT f FROM Facturas f WHERE f.idfactura = ?1")
 	public List<Facturas> findByIdfactura(Long idfactura);
 
+	// Alias para compatibilidad con el servicio existente
+	default List<Facturas> findByIdFactura(Long idfactura) {
+		return findByIdfactura(idfactura);
+	}
+
 	// Planilla por nrofactura
 	@Query(value = "SELECT * FROM facturas WHERE nrofactura=?1 order by idfactura", nativeQuery = true)
 	public List<Facturas> findByNrofactura(String nrofactura);
