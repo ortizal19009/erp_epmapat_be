@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -176,8 +177,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	Double totCarteraCliente(@Param("idcliente") Long idcliente, LocalDate hasta);
 
 	// Planilla por ID de factura
-	@EntityGraph(attributePaths = { "idcliente", "idmodulo" })
-	@Query("SELECT f FROM Facturas f LEFT JOIN FETCH f.idcliente LEFT JOIN FETCH f.idmodulo WHERE f.idfactura = ?1")
+	@EntityGraph(attributePaths = { "idcliente", "idabonado", "idmodulo" })
+	@Query("SELECT f FROM Facturas f LEFT JOIN FETCH f.idcliente LEFT JOIN FETCH f.idabonado LEFT JOIN FETCH f.idmodulo WHERE f.idfactura = ?1")
 	public List<Facturas> findByIdfactura(Long idfactura);
 
 	// Planilla por nrofactura

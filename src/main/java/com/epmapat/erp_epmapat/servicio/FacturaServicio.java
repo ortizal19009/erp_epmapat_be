@@ -215,8 +215,8 @@ public class FacturaServicio {
 		dao.deleteById(id);
 	}
 
-	public List<Facturas> findByIdFactura(Long idabonado) {
-		return dao.findByIdFactura(idabonado);
+	public List<Facturas> findByIdFactura(Long idfactura) {
+		return dao.findByIdfactura(idfactura);
 	}
 
 	public List<Facturas> findByNrofactura(String nrofactura) {
