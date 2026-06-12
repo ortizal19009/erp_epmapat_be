@@ -45,6 +45,7 @@ public class RetencionesApi {
          @Param(value = "hastaSecu") String hastaSecu,
          @Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
          @Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
+            System.out.println("POR AQUI");
       return reteServicio.findDesdeHasta(desdeSecu, hastaSecu, desdeFecha, hastaFecha);
    }
 

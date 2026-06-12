@@ -40,8 +40,21 @@ public class RetencionesServicio {
    private Tabla17R daoTabla17;
 
    // Busca por secuencial y fechas
+   @Transactional
    public List<Retenciones> findDesdeHasta(String desdeSecu, String hastaSecu, Date desdeFecha, Date hastaFecha) {
-      return dao.findDesdeHasta(desdeSecu, hastaSecu, desdeFecha, hastaFecha);
+      List<Retenciones> retenciones = dao.findDesdeHasta(desdeSecu, hastaSecu, desdeFecha, hastaFecha);
+      if (retenciones.isEmpty()) {
+         throw new ResourceNotFoundExcepciones("No se encontraron retenciones con los criterios proporcionados.");
+      }
+
+      // Mantener la sesión abierta solo durante la creación de la respuesta.
+      for (Retenciones r : retenciones) {
+         if (r.getIdbene() != null) {
+            r.getIdbene().getNomben();
+         }
+      }
+
+      return retenciones;
    }
 
    public Retenciones findLastNumeric() {
