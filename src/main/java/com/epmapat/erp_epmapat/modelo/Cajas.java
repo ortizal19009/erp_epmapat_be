@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
@@ -11,6 +13,7 @@ import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 
 @Entity
 @Table(name= "cajas")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Cajas {
 
@@ -22,6 +25,7 @@ public class Cajas {
 	private Long estado;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idptoemision_ptoemision")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private PtoEmisionM idptoemision_ptoemision;
 	private Long usucrea;
 	@Temporal(TemporalType.DATE)
@@ -35,6 +39,7 @@ public class Cajas {
 	private Date fecmodi;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="idusuario_usuarios")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Usuarios idusuario_usuarios; 
 	private String ultimafact; 
 	

@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.repositorio;
 
 import com.epmapat.erp_epmapat.modelo.Usrxrutas;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +11,7 @@ import java.util.Optional;
 
 public interface UsrxrutasR extends JpaRepository<Usrxrutas, Long> {
 
+    @EntityGraph(attributePaths = { "idusuario_usuarios", "idemision_emisiones" })
     @Query("""
         SELECT u
         FROM Usrxrutas u
@@ -21,6 +23,7 @@ public interface UsrxrutasR extends JpaRepository<Usrxrutas, Long> {
             @Param("idemision") Long idemision
     );
 
+    @EntityGraph(attributePaths = { "idusuario_usuarios", "idemision_emisiones" })
     @Query("""
         SELECT u
         FROM Usrxrutas u
@@ -28,6 +31,7 @@ public interface UsrxrutasR extends JpaRepository<Usrxrutas, Long> {
     """)
     List<Usrxrutas> findByEmision(@Param("idemision") Long idemision);
 
+    @EntityGraph(attributePaths = { "idusuario_usuarios", "idemision_emisiones" })
     @Query("""
         SELECT u
         FROM Usrxrutas u

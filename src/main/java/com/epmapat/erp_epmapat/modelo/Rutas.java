@@ -4,11 +4,14 @@ import java.util.Date;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 @Entity
 @Table(name="rutas")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Rutas {
 	

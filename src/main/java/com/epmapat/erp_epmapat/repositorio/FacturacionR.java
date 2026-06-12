@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Date;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -22,6 +23,7 @@ public interface FacturacionR extends JpaRepository<Facturacion, Serializable> {
     public List<Facturacion> findByCliente(String cliente, Date del, Date al);
 
     // Ultima Facturación
+    @EntityGraph(attributePaths = { "idcliente_clientes" })
     Facturacion findFirstByOrderByIdfacturacionDesc();
 
 }

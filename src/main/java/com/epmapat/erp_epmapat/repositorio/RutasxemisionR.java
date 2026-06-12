@@ -10,7 +10,14 @@ import com.epmapat.erp_epmapat.modelo.Rutasxemision;
 public interface RutasxemisionR extends JpaRepository<Rutasxemision, Long> {
 
 	// Rutas por Emision
-	@Query(value = "SELECT * FROM rutasxemision AS a JOIN rutas AS b ON a.idruta_rutas = b.idruta WHERE a.idemision_emisiones=?1 order by b.codigo", nativeQuery = true)
+	@Query("""
+			SELECT rxe
+			FROM Rutasxemision rxe
+			JOIN FETCH rxe.idemision_emisiones emi
+			JOIN FETCH rxe.idruta_rutas ruta
+			WHERE emi.idemision = ?1
+			ORDER BY ruta.codigo
+			""")
 	public List<Rutasxemision> findByIdemision(Long idemision);
 
 	//Cuenta las rutas abiertas de una Emisión

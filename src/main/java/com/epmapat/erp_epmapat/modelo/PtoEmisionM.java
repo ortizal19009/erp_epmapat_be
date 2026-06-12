@@ -7,8 +7,11 @@ import javax.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "ptoemision")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class PtoEmisionM {
 	@Id

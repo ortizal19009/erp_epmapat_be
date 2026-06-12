@@ -8,6 +8,7 @@ import java.time.LocalTime;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "facturas")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Facturas implements Serializable {
 
 	@Id
@@ -23,9 +25,11 @@ public class Facturas implements Serializable {
 	private Long idfactura;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idmodulo")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Modulos idmodulo;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idcliente")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Clientes idcliente;
 	private String nrofactura;
 	private Long porcexoneracion;

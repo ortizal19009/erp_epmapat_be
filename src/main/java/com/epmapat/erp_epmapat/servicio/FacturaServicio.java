@@ -96,7 +96,11 @@ public class FacturaServicio {
 
 	// Planillas por Cliente
 	public List<Facturas> findByIdcliente(Long idcliente, Long limit) {
-		return dao.findByIdcliente(idcliente, limit);
+		int max = limit != null && limit > 0 ? Math.toIntExact(limit) : 20;
+		return dao.findByIdcliente_IdclienteAndTotaltarifaGreaterThanOrderByIdfacturaDesc(
+				idcliente,
+				BigDecimal.ZERO,
+				PageRequest.of(0, max));
 	}
 
 	// Planillas por Abonado

@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.repositorio;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -39,8 +40,11 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Facturas> findDesde(Long desde, Long hasta);
 
 	// Planillas por Cliente
-	@Query(value = "SELECT * FROM facturas WHERE idcliente=?1 and totaltarifa > 0 ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
-	public List<Facturas> findByIdcliente(Long idcliente, Long limit);
+	@EntityGraph(attributePaths = { "idmodulo", "idcliente" })
+	public List<Facturas> findByIdcliente_IdclienteAndTotaltarifaGreaterThanOrderByIdfacturaDesc(
+			Long idcliente,
+			BigDecimal totaltarifa,
+			Pageable pageable);
 
 	// 15 Planillas de un Abonado
 	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY idfactura DESC LIMIT 15", nativeQuery = true)

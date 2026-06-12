@@ -13,6 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.epmapat.erp_epmapat.modelo.rrhh.Personal;
 
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "usuarios")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Usuarios {
 
@@ -55,6 +57,7 @@ public class Usuarios {
    private String plataform_access;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "personal_idpersonal")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Personal personal;
 
 }

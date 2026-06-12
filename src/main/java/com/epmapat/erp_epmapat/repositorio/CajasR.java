@@ -20,8 +20,14 @@ public interface CajasR extends JpaRepository<Cajas, Long> {
    //Puntos de emision por Establecimiento
    @Query(value = "SELECT * FROM cajas WHERE idptoemision_ptoemision=?1 ORDER BY codigo", nativeQuery=true)
 	public List<Cajas> findByIdptoemision(Long idptoemision);
-   @Query(value = "SELECT * FROM cajas WHERE idusuario_usuarios = ?1", nativeQuery = true)
-   public Cajas findCajaByIdUsuario(Long idusuario); 
+   @Query("""
+         select c
+         from Cajas c
+         left join fetch c.idptoemision_ptoemision p
+         left join fetch c.idusuario_usuarios u
+         where u.idusuario = :idusuario
+         """)
+   public Cajas findCajaByIdUsuario(@org.springframework.data.repository.query.Param("idusuario") Long idusuario); 
    @Query(value = "SELECT * FROM cajas WHERE not idusuario_usuarios is null and estado = 1 ", nativeQuery = true)
    public List<Cajas> findCajasActivas(); 
 
