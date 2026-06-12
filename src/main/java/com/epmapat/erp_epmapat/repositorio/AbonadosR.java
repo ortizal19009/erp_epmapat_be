@@ -7,6 +7,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -42,11 +43,29 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	public List<AbonadoI> getAbonadoInterfaceIdCliente(Long idcliente);
 
 	// Abonado por ID (o sea por Cuenta con abonados/id)
-	@Query(value = "SELECT * FROM abonados WHERE idabonado=?1", nativeQuery = true)
+	@Query("""
+			SELECT a
+			FROM Abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			LEFT JOIN FETCH a.idestadom_estadom
+			WHERE a.idabonado = ?1
+			""")
 	public List<Abonados> getAbonadoByid(Long idabonado);
 
 	// Abonado por Cuenta como parametro (para la recaudación)
-	@Query(value = "SELECT * FROM abonados WHERE idabonado=?1", nativeQuery = true)
+	@Query("""
+			SELECT a
+			FROM Abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			LEFT JOIN FETCH a.idestadom_estadom
+			WHERE a.idabonado = ?1
+			""")
 	public List<Abonados> getByIdabonado(Long idabonado);
 
 	@Query(value = "SELECT * FROM abonados AS a JOIN clientes AS C ON a.idcliente_clientes = c.idcliente WHERE LOWER(c.nombre) LIKE %?1% ORDER BY c.nombre ", nativeQuery = true)
@@ -76,6 +95,8 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	@Query(value = "SELECT * FROM abonados WHERE estado=?1", nativeQuery = true)
 	public List<Abonados> findByEstado(Long estado);
 
+	@EntityGraph(attributePaths = { "idresponsable", "idcliente_clientes", "idcategoria_categorias", "idruta_rutas",
+			"idestadom_estadom" })
 	@Query(value = "SELECT * FROM abonados WHERE estado=?1", nativeQuery = true)
 	public Page<Abonados> findByEstado(Long estado, Pageable pageable);
 
@@ -83,7 +104,17 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	@Query(value = "SELECT EXISTS (SELECT 1 FROM Abonados WHERE idcliente_clientes = ?1)", nativeQuery = true)
 	boolean existsByIdcliente_clientes(Long idcliente);
 
-	@Query(value = "SELECT * FROM abonados a JOIN clientes c ON a.idcliente_clientes = c.idcliente WHERE c.idcliente = ?1", nativeQuery = true)
+	@Query("""
+			SELECT a
+			FROM Abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			LEFT JOIN FETCH a.idestadom_estadom
+			WHERE a.idcliente_clientes.idcliente = ?1
+			ORDER BY a.idabonado
+			""")
 	public List<Abonados> findByIdCliente(Long idcliente);
 
 	// Campos específicos de Clientes y Abonados
@@ -108,7 +139,14 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	 * List<Map<String, Object>> getOneAbonado(Long idabonado);
 	 */
 	// Un Abonado
+	@EntityGraph(attributePaths = { "idresponsable", "idcliente_clientes", "idcategoria_categorias", "idruta_rutas",
+			"idestadom_estadom" })
 	Abonados findByIdabonado(Long idabonado);
+
+	@Override
+	@EntityGraph(attributePaths = { "idresponsable", "idcliente_clientes", "idcategoria_categorias", "idruta_rutas",
+			"idestadom_estadom" })
+	java.util.Optional<Abonados> findById(Long id);
 
 	@Query(value = "SELECT * FROM abonados a where a.idruta_rutas = ?1 order by a.idabonado asc", nativeQuery = true)
 	public List<Abonados> getCuentasByRutas(Long idruta);
