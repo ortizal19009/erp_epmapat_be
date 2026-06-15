@@ -61,6 +61,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	Page<Facturas> findByIdabonadoAndFechaeliminacionIsNullOrderByIdfacturaDesc(Long idabonado, Pageable pageable);
 
 	// Planillas por Abonado y Fecha
+	@EntityGraph(attributePaths = { "idmodulo", "idcliente" })
 	@Query("SELECT f FROM Facturas f WHERE f.idabonado = :idabonado AND f.feccrea BETWEEN :fechaDesde AND :fechaHasta AND totaltarifa > 0 order by feccrea desc")
 	List<Facturas> findByAbonadoAndFechaCreacionRange(@Param("idabonado") Long idabonado,
 			@Param("fechaDesde") LocalDate fechaDesde, @Param("fechaHasta") LocalDate fechaHasta);

@@ -27,6 +27,6 @@ public interface Pliego24R  extends JpaRepository<Pliego24, Long> {
 
    @EntityGraph(attributePaths = { "idcategoria" })
    @Query("SELECT p FROM Pliego24 p LEFT JOIN FETCH p.idcategoria WHERE p.idcategoria.idcategoria = ?1 AND p.desde <= ?2 AND p.hasta >= ?2")
-public Pliego24 _findBloque(int idcategoria, int m3);
+   public Pliego24 _findBloque(Long idcategoria, Integer m3);
 
 }

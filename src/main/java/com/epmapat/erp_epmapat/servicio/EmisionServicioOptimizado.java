@@ -365,7 +365,10 @@ public class EmisionServicioOptimizado {
         boolean esResidencial = Objects.equals(cat, 1) || Objects.equals(cat, 9);
 
         if (!esResidencial && v.getPliego24() == null) {
-            Pliego24 p = dao_pliego._findBloque(cat, v.getM3());
+            Integer consumo = Integer.valueOf(v.getM3());
+            Pliego24 p = dao_pliego._findBloque(
+                    cat != null ? Long.valueOf(cat) : null,
+                    consumo);
             if (p == null) {
                 p = new Pliego24();
                 p.setPorc(BigDecimal.ONE);
@@ -412,7 +415,7 @@ public class EmisionServicioOptimizado {
         }
         v.setCategoria(catEfectiva);
 
-        Pliego24 pliego = dao_pliego._findBloque(catEfectiva, m3);
+        Pliego24 pliego = dao_pliego._findBloque(Long.valueOf(catEfectiva), Integer.valueOf(m3));
         v.setPliego24(pliego);
 
         Categorias cat = dao_categoria.getCategoriaById(catEfectiva);
@@ -428,20 +431,22 @@ public class EmisionServicioOptimizado {
             boolean swAdultoMayor,
             boolean swAguapotable) {
 
+        int consumo = Math.max(m3, 1);
+
         EmisionOfCuentaDTO v = new EmisionOfCuentaDTO();
-        v.setM3(m3);
+        v.setM3(consumo);
         v.setSwMunicipio(swMunicipio);
         v.setSwAdultoMayor(swAdultoMayor);
         v.setSwAguapotable(swAguapotable);
         v.setCategoria(categoria);
 
         int catEfectiva = categoria;
-        if ((categoria == 1 || (categoria == 9 && swAdultoMayor)) && m3 > 70) {
+        if ((categoria == 1 || (categoria == 9 && swAdultoMayor)) && consumo > 70) {
             catEfectiva = 2;
         }
         v.setCategoria(catEfectiva);
 
-        Pliego24 pliego = dao_pliego._findBloque(catEfectiva, m3);
+        Pliego24 pliego = dao_pliego._findBloque(Long.valueOf(catEfectiva), Integer.valueOf(consumo));
         v.setPliego24(pliego);
 
         Categorias cat = dao_categoria.getCategoriaById(catEfectiva);
@@ -677,7 +682,8 @@ public class EmisionServicioOptimizado {
 
         v.setCategoria(1);
 
-        Pliego24 pl = dao_pliego._findBloque(1, v.getM3());
+        Integer consumo = Integer.valueOf(v.getM3());
+        Pliego24 pl = dao_pliego._findBloque(1L, consumo);
         v.setPliego24(pl);
 
         Categorias cat = dao_categoria.getCategoriaById(1);

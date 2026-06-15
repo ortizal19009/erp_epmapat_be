@@ -331,7 +331,9 @@ public class LecturaServicio {
 			if ((categoria == 1 || (categoria == 9 && swAdultoMayor == true)) && m3 > 70) {
 				valoresEmision.setCategoria(2);
 			}
-			Pliego24 pliego = dao_pliego._findBloque(valoresEmision.getCategoria(), m3);
+			Pliego24 pliego = dao_pliego._findBloque(
+					Long.valueOf(valoresEmision.getCategoria()),
+					Integer.valueOf(m3));
 			valoresEmision.setPliego24(pliego);
 			Categorias _categoria = dao_categoria.getCategoriaById(valoresEmision.getCategoria());
 			valoresEmision.setCategorias(_categoria);
@@ -625,7 +627,9 @@ public class LecturaServicio {
 	public BigDecimal excedente(EmisionOfCuentaDTO valoresExcedente1) {
 		valoresExcedente1.setCategoria(1);
 		valoresExcedente1.setCategoria(1);
-		Pliego24 pliego = dao_pliego._findBloque(valoresExcedente1.getCategoria(), valoresExcedente1.getM3());
+		Pliego24 pliego = dao_pliego._findBloque(
+				Long.valueOf(valoresExcedente1.getCategoria()),
+				Integer.valueOf(valoresExcedente1.getM3()));
 		valoresExcedente1.setPliego24(pliego);
 		Categorias _categoria = dao_categoria.getCategoriaById(valoresExcedente1.getCategoria());
 		valoresExcedente1.setCategorias(_categoria);

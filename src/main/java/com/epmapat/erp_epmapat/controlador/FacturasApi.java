@@ -131,7 +131,7 @@ public class FacturasApi {
 
 	// Una Planilla (como lista)
 	@GetMapping("/planilla")
-	public ResponseEntity<List<Facturas>> buscarPlanilla(@Param(value = "idfactura") Long idfactura) {
+	public ResponseEntity<List<Facturas>> buscarPlanilla(@RequestParam("idfactura") Long idfactura) {
 		List<Facturas> x = facServicio.buscarPlanilla(idfactura);
 		if (x.isEmpty()) {
 			return ResponseEntity.notFound().build();
@@ -142,9 +142,9 @@ public class FacturasApi {
 	// Planillas por Abonado y Fecha
 	@GetMapping("/porabonado")
 	public ResponseEntity<List<Facturas>> buscarPorAbonadoYFechaCreacionRange(
-			@Param(value = "idabonado") Long idabonado,
-			@Param("fechaDesde") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaDesde,
-			@Param("fechaHasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaHasta) {
+			@RequestParam("idabonado") Long idabonado,
+			@RequestParam("fechaDesde") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaDesde,
+			@RequestParam("fechaHasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaHasta) {
 		List<Facturas> x = facServicio.buscarPorAbonadoYFechaCreacionRange(idabonado, fechaDesde, fechaHasta);
 		if (x.isEmpty()) {
 			return ResponseEntity.notFound().build();

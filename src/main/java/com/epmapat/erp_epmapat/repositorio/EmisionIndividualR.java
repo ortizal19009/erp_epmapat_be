@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,8 +19,17 @@ import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
 import com.epmapat.erp_epmapat.modelo.EmisionIndividual;
 
 public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Long> {
-        @Query(value = "select * from emisionindividual where idemision = ?1", nativeQuery = true)
-        List<EmisionIndividual> findByIdEmision(Long idemision);
+        @EntityGraph(attributePaths = {
+                        "idemision",
+                        "idlecturanueva",
+                        "idlecturanueva.idabonado_abonados",
+                        "idlecturanueva.idabonado_abonados.idresponsable",
+                        "idlecturaanterior",
+                        "idlecturaanterior.idabonado_abonados",
+                        "idlecturaanterior.idabonado_abonados.idresponsable"
+        })
+        @Query("select ei from EmisionIndividual ei where ei.idemision.idemision = :idemision")
+        List<EmisionIndividual> findByIdEmision(@Param("idemision") Long idemision);
 
         /* REPORTE DE LECTURAS NUEVAS */
         @Query(value = "select r.idrubro_rubros as rubro, rs.descripcion as descripcion,  count(*) as nrofacturas, sum(r.valorunitario * r.cantidad) as sumaTotal from emisionindividual ei join lecturas l on ei.idlecturanueva = l.idlectura join rubroxfac r on l.idfactura = r.idfactura_facturas and (r.estado <> 0 or r.estado is null) join rubros rs on r.idrubro_rubros = rs.idrubro where ei.idemision = ?1 and not r.idrubro_rubros = 5 group by r.idrubro_rubros, rs.descripcion ", nativeQuery = true)

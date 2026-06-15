@@ -3,9 +3,11 @@ package com.epmapat.erp_epmapat.repositorio;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,6 +22,13 @@ import com.epmapat.erp_epmapat.interfaces.mobile.ClientesMobile;
 import com.epmapat.erp_epmapat.modelo.Clientes;
 
 public interface ClientesR extends JpaRepository<Clientes, Long> {
+
+	@EntityGraph(attributePaths = {
+			"idtpidentifica_tpidentifica",
+			"idnacionalidad_nacionalidad",
+			"idpjuridica_personeriajuridica"
+	})
+	Optional<Clientes> findDetalleByIdcliente(Long idcliente);
 
 	// Clientes por Nombre o Identificacion
 	@Query(value = "select * from clientes WHERE LOWER(nombre) LIKE %?1% OR cedula LIKE %?1% ORDER BY nombre", nativeQuery = true)

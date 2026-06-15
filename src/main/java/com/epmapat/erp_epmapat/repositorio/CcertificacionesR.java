@@ -2,23 +2,37 @@ package com.epmapat.erp_epmapat.repositorio;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.epmapat.erp_epmapat.modelo.Ccertificaciones;
 
-//@Repository
 public interface CcertificacionesR extends JpaRepository<Ccertificaciones, Long> {
 
-   //Desde / Hasta número
-   @Query(value = "SELECT * FROM ccertificaciones AS c WHERE c.numero >= ?1 and c.numero <= ?2 ORDER BY numero", nativeQuery = true)
-   public List<Ccertificaciones> findDesdeHasta(Long desde, Long hasta);
+   @Query("""
+         SELECT c
+         FROM Ccertificaciones c
+         LEFT JOIN FETCH c.idfactura_facturas f
+         LEFT JOIN FETCH f.idcliente
+         LEFT JOIN FETCH c.idtpcertifica_tpcertifica
+         WHERE c.numero >= ?1 AND c.numero <= ?2
+         ORDER BY c.numero
+         """)
+   List<Ccertificaciones> findDesdeHasta(Long desde, Long hasta);
 
-   //Por Cliente
-   @Query(value = "SELECT * FROM ccertificaciones AS c JOIN facturas as f ON c.idfactura_facturas=f.idfactura JOIN clientes as cl ON f.idcliente=cl.idcliente WHERE (LOWER(cl.nombre) like %?1%) ORDER by cl.nombre", nativeQuery = true)
-   public List<Ccertificaciones> findByCliente(String cliente);
+   @Query("""
+         SELECT c
+         FROM Ccertificaciones c
+         JOIN FETCH c.idfactura_facturas f
+         JOIN FETCH f.idcliente cl
+         LEFT JOIN FETCH c.idtpcertifica_tpcertifica
+         WHERE LOWER(cl.nombre) LIKE CONCAT('%', ?1, '%')
+         ORDER BY cl.nombre
+         """)
+   List<Ccertificaciones> findByCliente(String cliente);
 
-   // Ultima Certificación
+   @EntityGraph(attributePaths = { "idfactura_facturas", "idfactura_facturas.idcliente",
+         "idtpcertifica_tpcertifica" })
    Ccertificaciones findFirstByOrderByIdccertificacionDesc();
-
 }

@@ -65,6 +65,10 @@ public class ClienteServicio {
 		return dao.findById(id);
 	}
 
+	public Optional<Clientes> findDetalleById(Long id) {
+		return dao.findDetalleByIdcliente(id);
+	}
+
 	public void deleteById(Long id) {
 		dao.deleteByIdQ(id);
 	}

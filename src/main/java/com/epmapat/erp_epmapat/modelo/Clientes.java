@@ -20,9 +20,6 @@ import lombok.Setter;
 @JsonIgnoreProperties({
 		"hibernateLazyInitializer",
 		"handler",
-		"idtpidentifica_tpidentifica",
-		"idnacionalidad_nacionalidad",
-		"idpjuridica_personeriajuridica",
 		"password"
 })
 public class Clientes {

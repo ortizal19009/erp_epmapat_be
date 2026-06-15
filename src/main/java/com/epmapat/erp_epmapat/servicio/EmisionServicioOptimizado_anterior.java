@@ -250,7 +250,7 @@ public class EmisionServicioOptimizado_anterior {
 
         // Si NO es residencial y no tiene pliego, intentamos cargarlo desde BD
         if (!esResidencial && v.getPliego24() == null) {
-            Pliego24 p = dao_pliego._findBloque(cat, v.getM3());
+            Pliego24 p = dao_pliego._findBloque(cat == null ? null : Long.valueOf(cat), v.getM3());
             if (p == null) {
                 // Evita NPE más adelante con un dummy
                 p = new Pliego24();
@@ -292,7 +292,7 @@ public class EmisionServicioOptimizado_anterior {
         }
         v.setCategoria(catEfectiva);
 
-        Pliego24 pliego = dao_pliego._findBloque(catEfectiva, m3);
+        Pliego24 pliego = dao_pliego._findBloque(Long.valueOf(catEfectiva), Integer.valueOf(m3));
         v.setPliego24(pliego);
 
         Categorias cat = dao_categoria.getCategoriaById(catEfectiva);
@@ -315,7 +315,7 @@ public class EmisionServicioOptimizado_anterior {
         }
         v.setCategoria(catEfectiva);
 
-        Pliego24 pliego = dao_pliego._findBloque(catEfectiva, m3);
+        Pliego24 pliego = dao_pliego._findBloque(Long.valueOf(catEfectiva), Integer.valueOf(m3));
         v.setPliego24(pliego);
 
         Categorias cat = dao_categoria.getCategoriaById(catEfectiva);
@@ -493,7 +493,7 @@ public class EmisionServicioOptimizado_anterior {
         v.setCategoria(1);
         v.setCategoria(1);
 
-        Pliego24 pl = dao_pliego._findBloque(1, v.getM3());
+        Pliego24 pl = dao_pliego._findBloque(1L, v.getM3());
         v.setPliego24(pl);
 
         Categorias cat = dao_categoria.getCategoriaById(1);

@@ -27,10 +27,7 @@ import lombok.Setter;
 @Table(name = "abonados")
 @JsonIgnoreProperties({
 		"hibernateLazyInitializer",
-		"handler",
-		"idubicacionm_ubicacionm",
-		"idtipopago_tipopago",
-		"idestadom_estadom"
+		"handler"
 })
 public class Abonados {
 

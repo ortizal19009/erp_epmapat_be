@@ -14,6 +14,7 @@ public interface CatalogoitemsR extends JpaRepository<Catalogoitems, Long>{
          SELECT c
          FROM Catalogoitems c
          JOIN FETCH c.idusoitems_usoitems u
+         LEFT JOIN FETCH u.idmodulo_modulos
          LEFT JOIN FETCH c.idrubro_rubros
          WHERE u.idmodulo_modulos.idmodulo >= ?1
            AND u.idmodulo_modulos.idmodulo <= ?2
@@ -22,14 +23,14 @@ public interface CatalogoitemsR extends JpaRepository<Catalogoitems, Long>{
          """)
 	public List<Catalogoitems> findProductos(Long idusoitems1, Long idusoitems2, String descripcion);
 
-   @Query("SELECT c FROM Catalogoitems c LEFT JOIN FETCH c.idrubro_rubros LEFT JOIN FETCH c.idusoitems_usoitems WHERE c.idrubro_rubros.idrubro = ?1 ORDER BY c.descripcion")
+   @Query("SELECT c FROM Catalogoitems c LEFT JOIN FETCH c.idrubro_rubros LEFT JOIN FETCH c.idusoitems_usoitems u LEFT JOIN FETCH u.idmodulo_modulos WHERE c.idrubro_rubros.idrubro = ?1 ORDER BY c.descripcion")
 	public List<Catalogoitems> findByIdrubro(Long idrubro);
 
-   @Query("SELECT c FROM Catalogoitems c LEFT JOIN FETCH c.idusoitems_usoitems LEFT JOIN FETCH c.idrubro_rubros WHERE c.idusoitems_usoitems.idusoitems = ?1 ORDER BY c.descripcion")
+   @Query("SELECT c FROM Catalogoitems c LEFT JOIN FETCH c.idusoitems_usoitems u LEFT JOIN FETCH u.idmodulo_modulos LEFT JOIN FETCH c.idrubro_rubros WHERE c.idusoitems_usoitems.idusoitems = ?1 ORDER BY c.descripcion")
 	public List<Catalogoitems> findByIdusoitems(Long idusoitems);
    
    //Validar nombre (Por Uso)
-   @Query("SELECT c FROM Catalogoitems c LEFT JOIN FETCH c.idusoitems_usoitems LEFT JOIN FETCH c.idrubro_rubros WHERE c.idusoitems_usoitems.idusoitems = ?1 AND LOWER(c.descripcion) = ?2")
+   @Query("SELECT c FROM Catalogoitems c LEFT JOIN FETCH c.idusoitems_usoitems u LEFT JOIN FETCH u.idmodulo_modulos LEFT JOIN FETCH c.idrubro_rubros WHERE c.idusoitems_usoitems.idusoitems = ?1 AND LOWER(c.descripcion) = ?2")
 	List<Catalogoitems> findByNombre(Long idusoitems, String descripcion);
 
 }

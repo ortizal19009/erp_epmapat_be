@@ -54,7 +54,7 @@ public class ClientesApi {
 
 	@GetMapping("/one")
 	public ResponseEntity<Clientes> getByIdCliente(@RequestParam Long idcliente) {
-		Clientes clienteM = cliServicio.findById(idcliente)
+		Clientes clienteM = cliServicio.findDetalleById(idcliente)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe ese cliente con ese Id: " + idcliente)));
 		return ResponseEntity.ok(clienteM);
 	}

@@ -3,7 +3,6 @@ package com.epmapat.erp_epmapat.controlador;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,8 +30,9 @@ public class CcertificacionesApi {
 	private CcertificacionServicio certiServicio;
 
 	@GetMapping
-	public List<Ccertificaciones> getCertificaciones(@Param(value = "desde") Long desde,
-			@Param(value = "hasta") Long hasta, @Param(value = "cliente") String cliente) {
+	public List<Ccertificaciones> getCertificaciones(@RequestParam(value = "desde", required = false) Long desde,
+			@RequestParam(value = "hasta", required = false) Long hasta,
+			@RequestParam(value = "cliente", required = false) String cliente) {
 		if (desde != null && hasta != null) {
 			return certiServicio.findDesdeHasta(desde, hasta);
 		} else if (cliente != null) {
