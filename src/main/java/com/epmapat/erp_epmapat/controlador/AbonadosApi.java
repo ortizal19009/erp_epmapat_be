@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaTypeFactory;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -181,7 +182,7 @@ public class AbonadosApi {
 
 	@PostMapping
 	public Abonados saveAbonados(@RequestBody Abonados x) {
-		return aboServicio.save(x);
+		return aboServicio.save(prepararAbonadoParaPersistencia(x, null));
 	}
 
 	@GetMapping("/tmp")
@@ -221,8 +222,117 @@ public class AbonadosApi {
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
 			@RequestParam(required = false, defaultValue = "Actualización de abonado") String observacion) {
 
-		Abonados updated = aboServicio.actualizarAbonadoConAuditoria(idabonado, abonadosm, usumodi, observacion, tipo);
+		Abonados original = aboServicio.findById(idabonado)
+				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe ese abonado con ese Id: " + idabonado)));
+		Abonados updated = aboServicio.actualizarAbonadoConAuditoria(
+				idabonado,
+				prepararAbonadoParaPersistencia(abonadosm, original),
+				usumodi,
+				observacion,
+				tipo);
 		return ResponseEntity.ok(updated);
+	}
+
+	private Abonados prepararAbonadoParaPersistencia(Abonados abonado, Abonados original) {
+		if (abonado == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se recibieron datos del abonado");
+		}
+
+		if (abonado.getIdcliente_clientes() != null && abonado.getIdcliente_clientes().getIdcliente() != null) {
+			abonado.setIdcliente_clientes(
+					clientesR.findById(abonado.getIdcliente_clientes().getIdcliente())
+							.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cliente no encontrado")));
+		} else if (original != null) {
+			abonado.setIdcliente_clientes(original.getIdcliente_clientes());
+		}
+
+		if (abonado.getIdcliente_clientes() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"El cliente es obligatorio para guardar el abonado");
+		}
+
+		if (abonado.getIdresponsable() != null && abonado.getIdresponsable().getIdcliente() != null) {
+			abonado.setIdresponsable(
+					clientesR.findById(abonado.getIdresponsable().getIdcliente())
+							.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Responsable no encontrado")));
+		} else if (abonado.getIdcliente_clientes() != null) {
+			abonado.setIdresponsable(abonado.getIdcliente_clientes());
+		} else if (original != null && original.getIdresponsable() != null) {
+			abonado.setIdresponsable(original.getIdresponsable());
+		}
+
+		if (abonado.getIdresponsable() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"El responsable es obligatorio para guardar el abonado");
+		}
+
+		if (abonado.getIdcategoria_categorias() != null && abonado.getIdcategoria_categorias().getIdcategoria() != null) {
+			abonado.setIdcategoria_categorias(
+					categoriaR.findById(abonado.getIdcategoria_categorias().getIdcategoria())
+							.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoría no encontrada")));
+		} else if (original != null) {
+			abonado.setIdcategoria_categorias(original.getIdcategoria_categorias());
+		}
+
+		if (abonado.getIdcategoria_categorias() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"La categoría es obligatoria para guardar el abonado");
+		}
+
+		if (abonado.getIdruta_rutas() != null && abonado.getIdruta_rutas().getIdruta() != null) {
+			abonado.setIdruta_rutas(
+					rutasR.findById(abonado.getIdruta_rutas().getIdruta())
+							.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ruta no encontrada")));
+		} else if (original != null) {
+			abonado.setIdruta_rutas(original.getIdruta_rutas());
+		}
+
+		if (abonado.getIdruta_rutas() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"La ruta es obligatoria para guardar el abonado");
+		}
+
+		if (abonado.getIdubicacionm_ubicacionm() != null
+				&& abonado.getIdubicacionm_ubicacionm().getIdubicacionm() != null) {
+			abonado.setIdubicacionm_ubicacionm(
+					ubicacionmR.findById(abonado.getIdubicacionm_ubicacionm().getIdubicacionm())
+							.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ubicación del medidor no encontrada")));
+		} else if (original != null) {
+			abonado.setIdubicacionm_ubicacionm(original.getIdubicacionm_ubicacionm());
+		}
+
+		if (abonado.getIdubicacionm_ubicacionm() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"La ubicación del medidor es obligatoria para guardar el abonado");
+		}
+
+		if (abonado.getIdtipopago_tipopago() != null && abonado.getIdtipopago_tipopago().getIdtipopago() != null) {
+			abonado.setIdtipopago_tipopago(
+					tipopagoR.findById(abonado.getIdtipopago_tipopago().getIdtipopago())
+							.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de pago no encontrado")));
+		} else if (original != null) {
+			abonado.setIdtipopago_tipopago(original.getIdtipopago_tipopago());
+		}
+
+		if (abonado.getIdtipopago_tipopago() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"El tipo de pago es obligatorio para guardar el abonado");
+		}
+
+		if (abonado.getIdestadom_estadom() != null && abonado.getIdestadom_estadom().getIdestadom() != null) {
+			abonado.setIdestadom_estadom(
+					estadomR.findById(abonado.getIdestadom_estadom().getIdestadom())
+							.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado del medidor no encontrado")));
+		} else if (original != null) {
+			abonado.setIdestadom_estadom(original.getIdestadom_estadom());
+		}
+
+		if (abonado.getIdestadom_estadom() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"El estado del medidor es obligatorio para guardar el abonado");
+		}
+
+		return abonado;
 	}
 
 	private Abonados buildAbonadoFromMobileDto(Long idabonado, AbonadoMobileUpdateDto dto) {

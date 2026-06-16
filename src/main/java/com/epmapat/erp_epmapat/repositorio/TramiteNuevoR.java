@@ -1,7 +1,9 @@
 package com.epmapat.erp_epmapat.repositorio;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -11,6 +13,15 @@ public interface TramiteNuevoR extends JpaRepository<TramiteNuevo, Long> {
 
 	@Query("SELECT t FROM TramiteNuevo t ORDER BY t.idtramitenuevo DESC")
 	List<TramiteNuevo> findAll();
+
+	@Override
+	@EntityGraph(attributePaths = {
+			"idcategoria_categorias",
+			"idaguatramite_aguatramite",
+			"idaguatramite_aguatramite.idcliente_clientes",
+			"idaguatramite_aguatramite.idtipotramite_tipotramite"
+	})
+	Optional<TramiteNuevo> findById(Long id);
 
 	@Query("""
 			SELECT t

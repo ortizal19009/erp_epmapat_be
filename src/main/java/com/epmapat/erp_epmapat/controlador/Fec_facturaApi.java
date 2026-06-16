@@ -153,8 +153,10 @@ public class Fec_facturaApi {
    }
 
    @GetMapping("/factura")
-   public ResponseEntity<Optional<Fec_factura>> getByIdFactura(@RequestParam("idfactura") Long idfactura) {
-      return ResponseEntity.ok(fecfacServicio.findById(idfactura));
+   public ResponseEntity<Fec_factura> getByIdFactura(@RequestParam("idfactura") Long idfactura) {
+      Fec_factura factura = fecfacServicio.findById(idfactura)
+            .orElseThrow(() -> new ResourceNotFoundExcepciones("No existe fec_factura para idfactura=" + idfactura));
+      return ResponseEntity.ok(factura);
    }
 
    @PostMapping
@@ -239,8 +241,10 @@ public class Fec_facturaApi {
    }
 
    @GetMapping("/{idfactura}")
-   public ResponseEntity<Optional<Fec_factura>> findByIdFactura(@PathVariable Long idfactura) {
-      return ResponseEntity.ok(fecfacServicio.findById(idfactura));
+   public ResponseEntity<Fec_factura> findByIdFactura(@PathVariable Long idfactura) {
+      Fec_factura factura = fecfacServicio.findById(idfactura)
+            .orElseThrow(() -> new ResourceNotFoundExcepciones("No existe fec_factura para idfactura=" + idfactura));
+      return ResponseEntity.ok(factura);
    }
 
    @GetMapping("/{idfactura}/seguimiento")
