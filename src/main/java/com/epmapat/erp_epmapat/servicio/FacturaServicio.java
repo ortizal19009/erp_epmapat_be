@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.management.RuntimeErrorException;
@@ -32,7 +34,9 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Facturas;
+import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.modelo.Fec_factura_detalles;
+import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
@@ -72,6 +76,8 @@ public class FacturaServicio {
 	private Fec_factura_logR fecFacturaLogR;
 	@Autowired
 	private Fec_factura_pagosR fecFacturaPagosR;
+	@Autowired
+	private AuditoriaGenericaService auditoriaGenericaService;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -231,7 +237,10 @@ public class FacturaServicio {
 	public <S extends Facturas> S save(S entity) {
 		S saved = dao.save(entity);
 		if (saved.getFechaanulacion() != null) {
-			eliminarFacturaElectronicaEnCascada(saved.getIdfactura());
+			eliminarFacturaElectronicaEnCascada(
+					saved.getIdfactura(),
+					saved.getUsuarioanulacion(),
+					saved.getRazonanulacion());
 		}
 		return saved;
 	}
@@ -256,10 +265,11 @@ public class FacturaServicio {
 		return dao.save(entity);
 	}
 	@Transactional
-	public void eliminarFacturaElectronicaEnCascada(Long idfactura) {
+	public void eliminarFacturaElectronicaEnCascada(Long idfactura, Long idusuario, String observacion) {
 		if (idfactura == null || !fecFacturaR.existsById(idfactura)) {
 			return;
 		}
+		auditarFacturaElectronica(idfactura, idusuario, observacion);
 		List<Long> detalleIds = fecFacturaDetallesR.findByIdfactura(idfactura)
 				.stream()
 				.map(Fec_factura_detalles::getIdfacturadetalle)
@@ -271,6 +281,147 @@ public class FacturaServicio {
 		fecFacturaPagosR.deleteByIdfactura(idfactura);
 		fecFacturaLogR.deleteByIdfactura(idfactura);
 		fecFacturaR.deleteByIdfactura(idfactura);
+	}
+
+	private void auditarFacturaElectronica(Long idfactura, Long idusuario, String observacion) {
+		Optional<Fec_factura> fecFacturaOpt = fecFacturaR.findById(idfactura);
+		if (fecFacturaOpt.isEmpty()) {
+			return;
+		}
+
+		Fec_factura fecFactura = fecFacturaOpt.get();
+		List<Fec_factura_detalles> detalles = fecFacturaDetallesR.findByIdfactura(idfactura);
+		Map<Long, List<Object>> impuestosPorDetalle = new LinkedHashMap<>();
+		for (Fec_factura_detalles detalle : detalles) {
+			impuestosPorDetalle.put(
+					detalle.getIdfacturadetalle(),
+					new ArrayList<>(fecFacturaDetallesImpuestosR.findByIdDetalle(detalle.getIdfacturadetalle())));
+		}
+
+		Map<String, Object> snapshot = new LinkedHashMap<>();
+		snapshot.put("facturaElectronica", fecFactura);
+		snapshot.put("detalles", detalles);
+		snapshot.put("impuestosPorDetalle", impuestosPorDetalle);
+		snapshot.put("pagos", fecFacturaPagosR.getByIdfactura(idfactura));
+		snapshot.put("historialSri", fecFacturaLogR.findByIdfacturaOrderByFechaAsc(idfactura));
+
+		auditoriaGenericaService.saveAudit(
+				"fec_factura",
+				idfactura,
+				snapshot,
+				idusuario == null ? 0L : idusuario,
+				observacion == null || observacion.isBlank() ? "ANULACION DE FACTURA" : observacion,
+				"ELIMINACION");
+	}
+
+	private boolean fueEnviadaAlSri(Fec_factura fecFactura) {
+		if (fecFactura == null || fecFactura.getEstado() == null) {
+			return false;
+		}
+		return Set.of("C", "U", "A", "O").contains(fecFactura.getEstado().trim().toUpperCase());
+	}
+
+	public Map<String, Object> obtenerDetalleAnulacionBaja(Long idfactura) {
+		Facturas factura = findById(idfactura)
+				.orElseThrow(() -> new RuntimeErrorException(null, "FACTURA NO ENCONTRADA"));
+		Optional<Fec_factura> fecFacturaOpt = fecFacturaR.findById(idfactura);
+		List<Lecturas> lecturas = lecturaServicio.findByIdfactura(idfactura);
+		Object emision = lecturaServicio.getEmisionByIdfactura(idfactura);
+
+		Map<String, Object> response = new LinkedHashMap<>();
+		response.put("factura", factura);
+		response.put("fecFactura", fecFacturaOpt.orElse(null));
+		response.put("tieneFacturaElectronica", fecFacturaOpt.isPresent());
+		response.put("enviadaSri", fecFacturaOpt.map(this::fueEnviadaAlSri).orElse(false));
+		response.put("lecturas", lecturas);
+		response.put("emision", emision);
+
+		if (!lecturas.isEmpty()) {
+			Lecturas lectura = lecturas.get(0);
+			Float lecturaAnterior = lectura.getLecturaanterior();
+			Float lecturaActual = lectura.getLecturaactual();
+			if (lecturaAnterior != null && lecturaActual != null) {
+				response.put("m3", lecturaActual - lecturaAnterior);
+			}
+		}
+
+		return response;
+	}
+
+	@Transactional
+	public Facturas ejecutarAnulacion(Long idfactura, String motivo, Long idusuario) {
+		Facturas factura = findById(idfactura)
+				.orElseThrow(() -> new RuntimeErrorException(null, "FACTURA NO ENCONTRADA"));
+
+		auditoriaGenericaService.saveAudit(
+				"facturas",
+				idfactura,
+				factura,
+				idusuario == null ? 0L : idusuario,
+				motivo == null || motivo.isBlank() ? "ANULACION DE FACTURA" : motivo,
+				"MODIFICACION");
+
+		LocalDate hoy = LocalDate.now();
+		factura.setFechaanulacion(hoy);
+		factura.setNrofactura(null);
+		factura.setRazonanulacion(motivo);
+		factura.setFechacobro(null);
+		factura.setPagado(0);
+		factura.setUsuariocobro(null);
+		factura.setUsuarioanulacion(idusuario);
+		if (Objects.equals(factura.getFormapago(), 4L)) {
+			factura.setEstado(1L);
+			factura.setFormapago(1L);
+		}
+		if (Objects.equals(factura.getEstadoconvenio(), 1L)) {
+			factura.setEstado(2L);
+		}
+
+		save(factura);
+		return findById(idfactura)
+				.orElseThrow(() -> new RuntimeErrorException(null, "FACTURA NO ENCONTRADA"));
+	}
+
+	@Transactional
+	public Facturas ejecutarEliminacionLogica(Long idfactura, String motivo, Long idusuario) {
+		Facturas factura = findById(idfactura)
+				.orElseThrow(() -> new RuntimeErrorException(null, "FACTURA NO ENCONTRADA"));
+
+		auditoriaGenericaService.saveAudit(
+				"facturas",
+				idfactura,
+				factura,
+				idusuario == null ? 0L : idusuario,
+				motivo == null || motivo.isBlank() ? "ELIMINACION LOGICA DE FACTURA" : motivo,
+				"MODIFICACION");
+
+		LocalDate hoy = LocalDate.now();
+		factura.setFechaeliminacion(hoy);
+		factura.setRazoneliminacion(motivo);
+		factura.setEstado(0L);
+		factura.setUsuarioeliminacion(idusuario);
+		Facturas actualizada = dao.save(factura);
+
+		Long idmodulo = actualizada.getIdmodulo() != null ? actualizada.getIdmodulo().getIdmodulo() : null;
+		if ((Objects.equals(idmodulo, 3L) || Objects.equals(idmodulo, 4L))
+				&& actualizada.getIdabonado() != null
+				&& actualizada.getIdabonado() > 0) {
+			List<Lecturas> lecturas = lecturaServicio.findByIdfactura(idfactura);
+			if (!lecturas.isEmpty()) {
+				Lecturas lectura = lecturas.get(0);
+				lectura.setEstado(0);
+				lectura.setObservaciones(motivo);
+				lecturaServicio.actualizarLecturaConAuditoria(
+						lectura.getIdlectura(),
+						lectura,
+						idusuario == null ? 0L : idusuario,
+						motivo == null || motivo.isBlank() ? "ELIMINACION LOGICA DE FACTURA" : motivo,
+						"ELIMINACION");
+			}
+		}
+
+		return findById(actualizada.getIdfactura())
+				.orElseThrow(() -> new RuntimeErrorException(null, "FACTURA NO ENCONTRADA"));
 	}
 
 	public FacturasR getDao() {

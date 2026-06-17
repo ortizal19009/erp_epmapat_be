@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.epmapat.erp_epmapat.DTO.FacturaAnulacionBajaRequestDto;
 import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +158,11 @@ public class FacturasApi {
 		Facturas x = facServicio.findById(idfactura)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe la Factura  Id: " + idfactura)));
 		return ResponseEntity.ok(x);
+	}
+
+	@GetMapping("/{idfactura}/anulacion-baja-detalle")
+	public ResponseEntity<Map<String, Object>> getDetalleAnulacionBaja(@PathVariable Long idfactura) {
+		return ResponseEntity.ok(facServicio.obtenerDetalleAnulacionBaja(idfactura));
 	}
 
 	// Planillas sin cobro de un Cliente
@@ -317,6 +323,31 @@ public class FacturasApi {
 		FacturaServicio.mergeFactura(y, x);
 		Facturas updateFacturas = facServicio.save(y);
 		return ResponseEntity.ok(updateFacturas);
+	}
+
+	@PostMapping("/anulaciones-bajas")
+	public ResponseEntity<Facturas> ejecutarAnulacionOBaja(@RequestBody FacturaAnulacionBajaRequestDto request) {
+		if (request.getIdfactura() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El idfactura es obligatorio");
+		}
+
+		String accion = request.getAccion() == null ? "" : request.getAccion().trim().toUpperCase();
+		if ("ANULACION".equals(accion)) {
+			return ResponseEntity.ok(
+					facServicio.ejecutarAnulacion(
+							request.getIdfactura(),
+							request.getMotivo(),
+							request.getIdusuario()));
+		}
+		if ("ELIMINACION".equals(accion)) {
+			return ResponseEntity.ok(
+					facServicio.ejecutarEliminacionLogica(
+							request.getIdfactura(),
+							request.getMotivo(),
+							request.getIdusuario()));
+		}
+
+		throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Accion no soportada: " + request.getAccion());
 	}
 
 	/*

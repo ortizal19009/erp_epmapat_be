@@ -51,7 +51,14 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			Pageable pageable);
 
 	// 15 Planillas de un Abonado
-	@Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY idfactura DESC LIMIT 15", nativeQuery = true)
+	@Query("""
+			SELECT f
+			FROM Facturas f
+			LEFT JOIN FETCH f.idcliente
+			LEFT JOIN FETCH f.idmodulo
+			WHERE f.idabonado = ?1
+			ORDER BY f.idfactura DESC
+			""")
 	public List<Facturas> findByIdabonado(Long idabonado);
 
 	@Query(value = "SELECT * FROM facturas f WHERE f.idabonado=?1 and f.fechaeliminacion is null ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
@@ -67,7 +74,18 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			@Param("fechaDesde") LocalDate fechaDesde, @Param("fechaHasta") LocalDate fechaHasta);
 
 	// Planillas por Cliente (sinCobrar)
-	@Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
+	@Query("""
+			SELECT f
+			FROM Facturas f
+			LEFT JOIN FETCH f.idcliente
+			LEFT JOIN FETCH f.idmodulo
+			WHERE f.totaltarifa > 0
+			  AND f.idcliente.idcliente = ?1
+			  AND ((((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL) OR f.estado = 3))
+			  AND f.fechaconvenio IS NULL
+			  AND f.fechaeliminacion IS NULL
+			ORDER BY f.idfactura
+			""")
 	public List<Facturas> findSinCobro(Long idcliente);
 
 	// Planillas por Cliente (sinCobrar para cartera vencida)
@@ -178,7 +196,13 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	// Planilla por ID de factura
 	@EntityGraph(attributePaths = { "idcliente", "idmodulo" })
-	@Query("SELECT f FROM Facturas f WHERE f.idfactura = ?1")
+	@Query("""
+			SELECT f
+			FROM Facturas f
+			LEFT JOIN FETCH f.idcliente
+			LEFT JOIN FETCH f.idmodulo
+			WHERE f.idfactura = ?1
+			""")
 	public List<Facturas> findByIdfactura(Long idfactura);
 
 	// Alias para compatibilidad con el servicio existente
@@ -335,7 +359,16 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Facturas> fingAllFacturasAnuladas(Long limit);
 
 	// Listado de facturas cobradas por cliente
-	@Query(value = "select * from facturas f where f.idcliente = ?1 and f.pagado = 1 and f.fechaeliminacion is null order by f.idfactura desc", nativeQuery = true)
+	@Query("""
+			SELECT f
+			FROM Facturas f
+			LEFT JOIN FETCH f.idcliente
+			LEFT JOIN FETCH f.idmodulo
+			WHERE f.idcliente.idcliente = ?1
+			  AND f.pagado = 1
+			  AND f.fechaeliminacion IS NULL
+			ORDER BY f.idfactura DESC
+			""")
 	public List<Facturas> findCobradasByCliente(Long idcliente);
 
 	// Listado de facturas eliminadas

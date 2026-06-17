@@ -188,6 +188,13 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	void reasignarCliente(@Param("dupId") Long dupId,
 			@Param("masterId") Long masterId);
 
+	@EntityGraph(attributePaths = {
+			"idresponsable",
+			"idcliente_clientes",
+			"idcategoria_categorias",
+			"idruta_rutas",
+			"idestadom_estadom"
+	})
 	@Query("""
 			    SELECT a
 			    FROM Abonados a

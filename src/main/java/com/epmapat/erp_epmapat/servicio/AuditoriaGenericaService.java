@@ -9,24 +9,41 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.epmapat.erp_epmapat.modelo.AuditoriaGenerica;
 import com.epmapat.erp_epmapat.repositorio.AuditoriaGenericaR;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Service
 public class AuditoriaGenericaService {
+    private static final Logger log = LoggerFactory.getLogger(AuditoriaGenericaService.class);
+    private static final int MAX_ENTIDAD_LEN = 120;
+    private static final int MAX_TIPO_LEN = 60;
+    private static final int MAX_OBSERVACION_LEN = 240;
 
     private final AuditoriaGenericaR auditoriaGenericaR;
     private final ObjectMapper objectMapper;
+    private final TransactionTemplate requiresNewTx;
 
-    public AuditoriaGenericaService(AuditoriaGenericaR auditoriaGenericaR) {
+    public AuditoriaGenericaService(
+            AuditoriaGenericaR auditoriaGenericaR,
+            ObjectMapper objectMapper,
+            PlatformTransactionManager transactionManager) {
         this.auditoriaGenericaR = auditoriaGenericaR;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper.copy();
         this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        this.requiresNewTx = new TransactionTemplate(transactionManager);
+        this.requiresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     public void saveAudit(String entidad,
@@ -39,20 +56,104 @@ public class AuditoriaGenericaService {
         String json = "{}";
         try {
             json = objectMapper.writeValueAsString(estadoInicial);
-        } catch (JsonProcessingException e) {
-            json = "{\"serializationError\":\"" + e.getMessage().replaceAll("\"", "\\\"") + "\"}";
+        } catch (Exception e) {
+            json = buildSerializationFallbackJson(e, entidad, entidadId, tipo);
         }
 
+        AuditoriaGenerica audit = buildAudit(
+                entidad,
+                entidadId,
+                usumodi,
+                observacion,
+                tipo,
+                json);
+
+        if (persistAuditSafely(audit)) {
+            return;
+        }
+
+        try {
+            log.warn("Fallo auditoria completa entidad={} entidadId={}. Reintentando con payload resumido. Causa: {}",
+                    entidad, entidadId, "error de persistencia");
+            Map<String, Object> fallback = new LinkedHashMap<>();
+            fallback.put("warning", "AUDITORIA_RESUMIDA");
+            fallback.put("entidad", truncate(entidad, MAX_ENTIDAD_LEN));
+            fallback.put("entidadId", entidadId);
+            fallback.put("tipo", truncate(tipo == null || tipo.isBlank() ? "MODIFICACION" : tipo, MAX_TIPO_LEN));
+            fallback.put("observacion", truncate(observacion, MAX_OBSERVACION_LEN));
+            fallback.put("payloadLength", json == null ? 0 : json.length());
+
+            String fallbackJson = objectMapper.writeValueAsString(fallback);
+            boolean persistedFallback = persistAuditSafely(buildAudit(
+                    entidad,
+                    entidadId,
+                    usumodi,
+                    observacion,
+                    tipo,
+                    fallbackJson));
+            if (!persistedFallback) {
+                log.error("No se pudo guardar auditoria ni completa ni resumida. entidad={} entidadId={}",
+                        entidad, entidadId);
+            }
+        } catch (Exception nested) {
+            log.error("No se pudo construir la auditoria resumida. entidad={} entidadId={}",
+                    entidad, entidadId, nested);
+        }
+    }
+
+    private boolean persistAuditSafely(AuditoriaGenerica audit) {
+        try {
+            Boolean persisted = requiresNewTx.execute(status -> {
+                auditoriaGenericaR.saveAndFlush(audit);
+                return Boolean.TRUE;
+            });
+            return Boolean.TRUE.equals(persisted);
+        } catch (Exception e) {
+            log.warn("Fallo guardando auditoria entidad={} entidadId={}: {}",
+                    audit.getEntidad(), audit.getEntidadId(), e.getMessage());
+            return false;
+        }
+    }
+
+    private String buildSerializationFallbackJson(Exception e, String entidad, Long entidadId, String tipo) {
+        Map<String, Object> fallback = new LinkedHashMap<>();
+        fallback.put("warning", "SERIALIZATION_ERROR");
+        fallback.put("entidad", truncate(entidad, MAX_ENTIDAD_LEN));
+        fallback.put("entidadId", entidadId);
+        fallback.put("tipo", truncate(tipo == null || tipo.isBlank() ? "MODIFICACION" : tipo, MAX_TIPO_LEN));
+        fallback.put("errorClass", e.getClass().getSimpleName());
+        fallback.put("errorMessage", e.getMessage());
+        try {
+            return objectMapper.writeValueAsString(fallback);
+        } catch (JsonProcessingException nested) {
+            log.warn("No se pudo serializar el fallback JSON de auditoria entidad={} entidadId={}: {}",
+                    entidad, entidadId, nested.getMessage());
+            return "{\"warning\":\"SERIALIZATION_ERROR\"}";
+        }
+    }
+
+    private AuditoriaGenerica buildAudit(String entidad,
+                                         Long entidadId,
+                                         Long usumodi,
+                                         String observacion,
+                                         String tipo,
+                                         String json) {
         AuditoriaGenerica audit = new AuditoriaGenerica();
-        audit.setEntidad(entidad);
+        audit.setEntidad(truncate(entidad, MAX_ENTIDAD_LEN));
         audit.setEntidadId(entidadId);
         audit.setUsumodi(usumodi);
         audit.setFecmodi(new Timestamp(System.currentTimeMillis()));
-        audit.setObservacion(observacion);
-        audit.setTipo(tipo == null || tipo.isBlank() ? "MODIFICACION" : tipo);
-        audit.setObjectJson(json);
+        audit.setObservacion(truncate(observacion, MAX_OBSERVACION_LEN));
+        audit.setTipo(truncate(tipo == null || tipo.isBlank() ? "MODIFICACION" : tipo, MAX_TIPO_LEN));
+        audit.setObjectJson(json == null || json.isBlank() ? "{}" : json);
+        return audit;
+    }
 
-        auditoriaGenericaR.save(audit);
+    private String truncate(String value, int maxLen) {
+        if (value == null) {
+            return null;
+        }
+        return value.length() <= maxLen ? value : value.substring(0, maxLen);
     }
 
     public AuditoriaGenerica saveAuditEntry(Map<String, Object> payload) {

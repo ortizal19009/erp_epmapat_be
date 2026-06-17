@@ -133,15 +133,58 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	public List<Lecturas> findByICliente(String identificacion);
 
 	// Lectura por Planilla (Es una a una)
-	@Query(value = "SELECT * FROM lecturas WHERE idfactura=?1 ", nativeQuery = true)
+	@Query("""
+			SELECT l
+			FROM Lecturas l
+			LEFT JOIN FETCH l.idrutaxemision_rutasxemision re
+			LEFT JOIN FETCH re.idemision_emisiones
+			LEFT JOIN FETCH re.idruta_rutas
+			LEFT JOIN FETCH l.idnovedad_novedades
+			LEFT JOIN FETCH l.idabonado_abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			WHERE l.idfactura = ?1
+			ORDER BY l.idlectura DESC
+			""")
 	public List<Lecturas> findByIdfactura(Long idfactura);
 
 	// Lecturas de una Emisión
-	@Query(value = "SELECT * FROM lecturas WHERE idemision=?1 ", nativeQuery = true)
+	@Query("""
+			SELECT l
+			FROM Lecturas l
+			LEFT JOIN FETCH l.idrutaxemision_rutasxemision re
+			LEFT JOIN FETCH re.idemision_emisiones
+			LEFT JOIN FETCH re.idruta_rutas
+			LEFT JOIN FETCH l.idnovedad_novedades
+			LEFT JOIN FETCH l.idabonado_abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			WHERE l.idemision = ?1
+			ORDER BY a.idabonado, l.idlectura DESC
+			""")
 	public List<Lecturas> findByIdemision(Long idemision);
 
 	// Lecturas de una Emisión
-	@Query(value = "SELECT * FROM lecturas WHERE idemision=?1 and idabonado_abonados = ?2 order by idlectura desc", nativeQuery = true)
+	@Query("""
+			SELECT l
+			FROM Lecturas l
+			LEFT JOIN FETCH l.idrutaxemision_rutasxemision re
+			LEFT JOIN FETCH re.idemision_emisiones
+			LEFT JOIN FETCH re.idruta_rutas
+			LEFT JOIN FETCH l.idnovedad_novedades
+			LEFT JOIN FETCH l.idabonado_abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			WHERE l.idemision = ?1
+			  AND a.idabonado = ?2
+			ORDER BY l.idlectura DESC
+			""")
 	public List<Lecturas> findByIdemisionIdAbonado(Long idemision, Long idabonado);
 
 	// Ultima lectura de un Abonado: debe ser lecturaactual tempoaralmente

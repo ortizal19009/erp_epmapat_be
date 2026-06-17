@@ -14,7 +14,15 @@ public interface RecargosxcuentaR extends JpaRepository<Recargosxcuenta, Long> {
     @Query("""
                 SELECT r
                 FROM Recargosxcuenta r
-                WHERE r.idemision_emisiones.idemision = :idemision
+                LEFT JOIN FETCH r.idabonado_abonados a
+                LEFT JOIN FETCH a.idresponsable
+                LEFT JOIN FETCH a.idcliente_clientes
+                LEFT JOIN FETCH a.idcategoria_categorias
+                LEFT JOIN FETCH a.idruta_rutas
+                LEFT JOIN FETCH r.idemision_emisiones e
+                LEFT JOIN FETCH r.idrubro_rubros ru
+                WHERE e.idemision = :idemision
+                ORDER BY a.idabonado ASC, r.fecha DESC, r.feccrea DESC, r.idrecargoxcuenta DESC
             """)
     List<Recargosxcuenta> findByIdEmision(@Param("idemision") Long idemision);
 
