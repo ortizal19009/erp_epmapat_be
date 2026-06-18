@@ -40,6 +40,7 @@ import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Valoresnc;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
+import com.epmapat.erp_epmapat.repositorio.RubrosR;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 import com.epmapat.erp_epmapat.servicio.CajaServicio;
 import com.epmapat.erp_epmapat.servicio.FacturaServicio;
@@ -89,6 +90,8 @@ public class RecaudacionCobroServicio {
     private TmpinteresxfacService tmpinteresxfacService;
     @Autowired
     private RecaudacionCajaSseService recaudacionCajaSseService;
+    @Autowired
+    private RubrosR rubrosR;
 
     @Transactional(readOnly = true)
     public List<ValorFactDTO> getSincobroByCuenta(Long cuenta) {
@@ -738,8 +741,10 @@ public class RecaudacionCobroServicio {
 
             rubroPrincipal = new Rubroxfac();
             rubroPrincipal.setIdfactura_facturas(factura);
-            Rubros rubroInteres = new Rubros();
-            rubroInteres.setIdrubro(RUBRO_INTERES_ID);
+            Rubros rubroInteres = rubrosR.findByIdRubro(RUBRO_INTERES_ID);
+            if (rubroInteres == null) {
+                throw new IllegalStateException("No se encontró el rubro de interés con id " + RUBRO_INTERES_ID);
+            }
             rubroPrincipal.setIdrubro_rubros(rubroInteres);
         }
 
