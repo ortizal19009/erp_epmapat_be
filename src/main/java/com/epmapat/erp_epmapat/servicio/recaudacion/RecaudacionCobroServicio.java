@@ -35,6 +35,8 @@ import com.epmapat.erp_epmapat.modelo.Facxrecauda;
 import com.epmapat.erp_epmapat.modelo.Ntacredito;
 import com.epmapat.erp_epmapat.modelo.Recaudacion;
 import com.epmapat.erp_epmapat.modelo.Recaudaxcaja;
+import com.epmapat.erp_epmapat.modelo.Rubroxfac;
+import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Valoresnc;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
@@ -55,6 +57,7 @@ import com.epmapat.erp_epmapat.servicio.administracion.UsuarioServicio;
 
 @Service
 public class RecaudacionCobroServicio {
+    private static final long RUBRO_INTERES_ID = 5L;
 
     @Autowired
     private FacturaServicio facturaServicio;
@@ -537,24 +540,29 @@ public class RecaudacionCobroServicio {
                 numeroFacturaSiguiente = factura.getNrofactura();
             }
 
-            BigDecimal interes = pendiente.getInteres() != null ? pendiente.getInteres() : BigDecimal.ZERO;
+            BigDecimal interesCalculado = pendiente.getInteres() != null ? pendiente.getInteres() : BigDecimal.ZERO;
+            BigDecimal interesExistente = obtenerInteresExistenteRubro(factura.getIdfactura());
+            BigDecimal interesTotalCobrado = normalizarMoneda(interesExistente.add(interesCalculado));
             BigDecimal iva = pendiente.getIva() != null ? pendiente.getIva() : calcularIva(factura.getIdfactura(), tasaIva);
-            BigDecimal totalFactura = calcularTotalFacturaParaCobro(pendiente, interes, iva);
+            BigDecimal totalFactura = calcularTotalFacturaParaCobro(pendiente, interesCalculado, iva);
             BigDecimal valorNotaCreditoAplicado = calcularValorNotaCreditoAplicado(totalFactura, saldoNotaCreditoPendiente);
 
             factura.setFechacobro(LocalDate.now());
             factura.setHoracobro(LocalTime.now());
             factura.setUsuariocobro(idusuario);
-            factura.setInterescobrado(interes);
+            factura.setInterescobrado(interesTotalCobrado);
             factura.setSwiva(iva);
             factura.setValornotacredito(valorNotaCreditoAplicado);
             factura.setPagado(1);
             factura.setFormapago(resolveFormaPago(recaudacion));
             factura.setEstado(Objects.equals(factura.getEstado(), 2L) ? 2L : 1L);
             facturaServicio.save(factura);
+            actualizarRubroInteres(factura, interesTotalCobrado);
             registrarAplicacionNotaCredito(factura, valorNotaCreditoAplicado);
             fecFacturaService.asegurarFecFactura(factura.getIdfactura());
             saldoNotaCreditoPendiente = saldoNotaCreditoPendiente.subtract(valorNotaCreditoAplicado).max(BigDecimal.ZERO);
+
+            pendiente.setInterescobrado(interesTotalCobrado);
 
             Facxrecauda facxrecauda = new Facxrecauda();
             facxrecauda.setIdrecaudacion(recaudacionGuardada);
@@ -701,6 +709,57 @@ public class RecaudacionCobroServicio {
         return toBigDecimal(ivaRows.get(0)[1]);
     }
 
+    private BigDecimal obtenerInteresExistenteRubro(Long idfactura) {
+        if (idfactura == null) {
+            return BigDecimal.ZERO;
+        }
+        return normalizarMoneda(rubroxfacServicio.getTotalInteres(idfactura));
+    }
+
+    private void actualizarRubroInteres(Facturas factura, BigDecimal interesTotalCobrado) {
+        if (factura == null || factura.getIdfactura() == null) {
+            return;
+        }
+
+        BigDecimal totalNormalizado = normalizarMoneda(interesTotalCobrado);
+        List<Rubroxfac> rubrosInteres = rubroxfacServicio
+                .getByFacturaAndRubro(factura.getIdfactura(), RUBRO_INTERES_ID);
+
+        Rubroxfac rubroPrincipal = rubrosInteres.stream()
+                .filter(Objects::nonNull)
+                .filter(r -> r.getEstado() == null || r.getEstado() != 0L)
+                .findFirst()
+                .orElse(rubrosInteres.isEmpty() ? null : rubrosInteres.get(0));
+
+        if (rubroPrincipal == null) {
+            if (totalNormalizado.compareTo(BigDecimal.ZERO) <= 0) {
+                return;
+            }
+
+            rubroPrincipal = new Rubroxfac();
+            rubroPrincipal.setIdfactura_facturas(factura);
+            Rubros rubroInteres = new Rubros();
+            rubroInteres.setIdrubro(RUBRO_INTERES_ID);
+            rubroPrincipal.setIdrubro_rubros(rubroInteres);
+        }
+
+        rubroPrincipal.setCantidad(1F);
+        rubroPrincipal.setValorunitario(totalNormalizado);
+        rubroPrincipal.setEstado(totalNormalizado.compareTo(BigDecimal.ZERO) > 0 ? 1L : 0L);
+        rubroxfacServicio.saveSync(rubroPrincipal);
+
+        Long idPrincipal = rubroPrincipal.getIdrubroxfac();
+        for (Rubroxfac rubroDuplicado : rubrosInteres) {
+            if (rubroDuplicado == null || Objects.equals(rubroDuplicado.getIdrubroxfac(), idPrincipal)) {
+                continue;
+            }
+            rubroDuplicado.setCantidad(1F);
+            rubroDuplicado.setValorunitario(BigDecimal.ZERO);
+            rubroDuplicado.setEstado(0L);
+            rubroxfacServicio.saveSync(rubroDuplicado);
+        }
+    }
+
     private BigDecimal sumarSubtotalFactura(Long idfactura) {
         if (idfactura == null) {
             return BigDecimal.ZERO;
@@ -790,6 +849,13 @@ public class RecaudacionCobroServicio {
             return BigDecimal.ZERO;
         }
         return totalFactura.min(saldoNotaCreditoPendiente).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal normalizarMoneda(BigDecimal valor) {
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return valor.setScale(2, RoundingMode.HALF_UP);
     }
 
     private void registrarAplicacionNotaCredito(Facturas factura, BigDecimal valorAplicado) {

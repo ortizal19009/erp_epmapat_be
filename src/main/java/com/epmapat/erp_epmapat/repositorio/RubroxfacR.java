@@ -373,6 +373,12 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	Optional<Rubroxfac> findByFacturaIdAndRubroId(@Param("idfactura") Long idfactura,
 			@Param("idrubro") Long idrubro);
 
+	@Query("select rf from Rubroxfac rf " +
+			"where rf.idfactura_facturas.idfactura = :idfactura " +
+			"and rf.idrubro_rubros.idrubro = :idrubro")
+	List<Rubroxfac> findByFacturaAndRubro(@Param("idfactura") Long idfactura,
+			@Param("idrubro") Long idrubro);
+
 	@Query("select rf from Rubroxfac rf where (rf.estado <> 0 OR rf.estado IS NULL) and rf.idfactura_facturas.idfactura = :idfactura")
 	List<Rubroxfac> findAllByFacturaId(@Param("idfactura") Long idfactura);
 

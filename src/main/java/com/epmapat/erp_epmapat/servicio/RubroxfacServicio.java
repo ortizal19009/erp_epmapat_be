@@ -141,8 +141,19 @@ public class RubroxfacServicio {
 		return (S) dao.save(existente);
 	}
 
+	public <S extends Rubroxfac> S saveSync(S entity) {
+		if (entity.getValorunitario() == null) {
+			entity.setValorunitario(BigDecimal.ZERO);
+		}
+		return dao.save(entity);
+	}
+
 	public BigDecimal getTotalInteres(Long idfactura) {
 		return dao.getTotalInteres(idfactura);
+	}
+
+	public List<Rubroxfac> getByFacturaAndRubro(Long idfactura, Long idrubro) {
+		return dao.findByFacturaAndRubro(idfactura, idrubro);
 	}
 
 	public Optional<Rubroxfac> findById(Long id) {
