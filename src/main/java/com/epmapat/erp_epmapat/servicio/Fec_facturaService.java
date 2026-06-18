@@ -1,4 +1,4 @@
-package com.epmapat.erp_epmapat.servicio;
+﻿package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -29,6 +29,7 @@ import com.epmapat.erp_epmapat.interfaces.DefinirProjection;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FecFacturaGestionProjection;
 import com.epmapat.erp_epmapat.interfaces.Fecfactura;
+import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.modelo.Fec_factura_detalles;
 import com.epmapat.erp_epmapat.modelo.Fec_factura_detalles_impuestos;
@@ -58,6 +59,7 @@ public class Fec_facturaService {
    private static final int MAX_INTENTOS_AUTORIZACION = 10;
    private static final long DETALLE_RUBRO_FACTOR = 1_000_000L;
    private static final long IMPUESTO_RUBRO_FACTOR = 10_000_000_000_000L;
+   private static final long RUBRO_INTERES_ID = 5L;
    @Autowired
    private Fec_facturaR dao;
    @Autowired
@@ -358,7 +360,7 @@ public class Fec_facturaService {
       // --- 2) Guardar los rubros normales (sin 1006/1007) ---
       for (Rubroxfac item : normales) {
 
-         Fec_factura_detalles fecFacturaDetalles = new Fec_factura_detalles(); // ✅ nuevo objeto por item
+         Fec_factura_detalles fecFacturaDetalles = new Fec_factura_detalles(); // âœ… nuevo objeto por item
          fecFacturaDetalles.setIdfactura(idfactura);
          fecFacturaDetalles.setDescuento(BigDecimal.ZERO);
 
@@ -387,7 +389,7 @@ public class Fec_facturaService {
          detConsolidado.setIdfactura(idfactura);
          detConsolidado.setDescuento(BigDecimal.ZERO);
 
-         // ✅ rubro resultante: 1004
+         // âœ… rubro resultante: 1004
          Long rubroFinal = 1004L;
 
          String idfacdetalle = String.valueOf(idfactura + "" + rubroFinal);
@@ -395,13 +397,13 @@ public class Fec_facturaService {
 
          detConsolidado.setIdfacturadetalle(idDetalle);
          detConsolidado.setCodigoprincipal(String.valueOf(rubroFinal));
-         detConsolidado.setCantidad(BigDecimal.ONE); // ✅ cantidad = 1
-         detConsolidado.setPreciounitario(suma); // ✅ precioUnitario sumado
-         detConsolidado.setDescripcion("Conservación de fuentes"); // ✅
+         detConsolidado.setCantidad(BigDecimal.ONE); // âœ… cantidad = 1
+         detConsolidado.setPreciounitario(suma); // âœ… precioUnitario sumado
+         detConsolidado.setDescripcion("ConservaciÃ³n de fuentes"); // âœ…
 
          fecFacturaDetallesR.save(detConsolidado);
 
-         // ✅ impuesto único tomando base imponible = suma
+         // âœ… impuesto Ãºnico tomando base imponible = suma
          generarFecFacturaDetallesImpuestosConsolidado(idDetalle, suma);
       }
    }
@@ -410,6 +412,14 @@ public class Fec_facturaService {
    public void generarFecFacturaDetalles(Long idfactura) {
       DefinirProjection definir = definirR.findDefinirWithoutFirma(1L);
       String codigoPorcentajeIva = resolverCodigoPorcentajeIva(definir);
+
+      Facturas factura = facturasR.findById(idfactura)
+            .orElseThrow(() -> new IllegalArgumentException("No existe la factura " + idfactura));
+
+      BigDecimal interesCobrado = factura.getInterescobrado() == null
+            ? BigDecimal.ZERO
+            : factura.getInterescobrado();
+      boolean hayInteres = interesCobrado.compareTo(BigDecimal.ZERO) > 0;
 
       List<Rubroxfac> rxf = rubroxfacR.findByIdfactura(idfactura);
 
@@ -424,7 +434,14 @@ public class Fec_facturaService {
       List<Rubroxfac> normales = rxf.stream()
             .filter(x -> x.getIdrubro_rubros() != null
                   && x.getIdrubro_rubros().getIdrubro() != null
+                  && !Objects.equals(x.getIdrubro_rubros().getIdrubro(), RUBRO_INTERES_ID)
                   && !rubrosConsolidar.contains(x.getIdrubro_rubros().getIdrubro()))
+            .toList();
+
+      List<Rubroxfac> rubrosInteres = rxf.stream()
+            .filter(x -> x.getIdrubro_rubros() != null
+                  && x.getIdrubro_rubros().getIdrubro() != null
+                  && Objects.equals(x.getIdrubro_rubros().getIdrubro(), RUBRO_INTERES_ID))
             .toList();
 
       // ---------------------------
@@ -468,17 +485,39 @@ public class Fec_facturaService {
          d.setCodigoprincipal(String.valueOf(rubroFinal));
          d.setCantidad(BigDecimal.ONE);
          d.setPreciounitario(suma);
-         d.setDescripcion("Conservación de fuentes");
+         d.setDescripcion("ConservaciÃ³n de fuentes");
          d.setDescuento(BigDecimal.ZERO);
 
          detallesPorId.put(idDetalleConsolidado, d);
       }
 
-      // ✅ Guardar todos los DETALLES primero
+      Long idDetalleInteres = null;
+      if (hayInteres) {
+         idDetalleInteres = buildDetalleId(idfactura, RUBRO_INTERES_ID);
+
+         Fec_factura_detalles detalleInteres = new Fec_factura_detalles();
+         detalleInteres.setIdfactura(idfactura);
+         detalleInteres.setIdfacturadetalle(idDetalleInteres);
+         detalleInteres.setCodigoprincipal(String.valueOf(RUBRO_INTERES_ID));
+         detalleInteres.setCantidad(BigDecimal.ONE);
+         detalleInteres.setPreciounitario(interesCobrado);
+         detalleInteres.setDescripcion(rubrosInteres.stream()
+               .map(Rubroxfac::getIdrubro_rubros)
+               .filter(Objects::nonNull)
+               .map(rubro -> rubro.getDescripcion())
+               .filter(Objects::nonNull)
+               .findFirst()
+               .orElse("Interés"));
+         detalleInteres.setDescuento(BigDecimal.ZERO);
+
+         detallesPorId.put(idDetalleInteres, detalleInteres);
+      }
+
+      // âœ… Guardar todos los DETALLES primero
       List<Fec_factura_detalles> detallesAGuardar = new ArrayList<>(detallesPorId.values());
       fecFacturaDetallesR.saveAll(detallesAGuardar);
 
-      // ✅ Forzar que existan en BD antes de insertar impuestos
+      // âœ… Forzar que existan en BD antes de insertar impuestos
       fecFacturaDetallesR.flush();
 
       Set<Long> detalleIdsPersistidos = fecFacturaDetallesR.findByIdfactura(idfactura).stream()
@@ -487,7 +526,7 @@ public class Fec_facturaService {
             .collect(Collectors.toSet());
 
       // ---------------------------
-      // B) Ahora sí, construir y guardar IMPUESTOS
+      // B) Ahora sÃ­, construir y guardar IMPUESTOS
       // ---------------------------
       List<Fec_factura_detalles_impuestos> impuestos = new ArrayList<>();
 
@@ -502,13 +541,22 @@ public class Fec_facturaService {
          }
       }
 
-      // impuesto único consolidado (1004)
+      // impuesto Ãºnico consolidado (1004)
       if (hayConsolidado && detalleIdsPersistidos.contains(idDetalleConsolidado)) {
          boolean consolidadoGravaIva = aConsolidar.stream()
                .map(Rubroxfac::getIdrubro_rubros)
                .filter(Objects::nonNull)
                .anyMatch(rubro -> Boolean.TRUE.equals(rubro.getSwiva()));
          impuestos.add(crearImpuesto(idDetalleConsolidado, 1004L, suma, consolidadoGravaIva, codigoPorcentajeIva));
+      }
+
+      if (hayInteres && idDetalleInteres != null && detalleIdsPersistidos.contains(idDetalleInteres)) {
+         boolean interesGravaIva = rubrosInteres.stream()
+               .map(Rubroxfac::getIdrubro_rubros)
+               .filter(Objects::nonNull)
+               .anyMatch(rubro -> Boolean.TRUE.equals(rubro.getSwiva()));
+         impuestos.add(crearImpuesto(idDetalleInteres, RUBRO_INTERES_ID, interesCobrado, interesGravaIva,
+               codigoPorcentajeIva));
       }
 
       fecFacturaDetallesImpuestosR.saveAll(impuestos);
@@ -519,7 +567,7 @@ public class Fec_facturaService {
          boolean aplicaIva, String codigoPorcentajeIva) {
       Fec_factura_detalles_impuestos imp = new Fec_factura_detalles_impuestos();
 
-      // id único (mejor hacerlo robusto, pero te dejo tu estilo)
+      // id Ãºnico (mejor hacerlo robusto, pero te dejo tu estilo)
       Long idImp = buildImpuestoId(idDetalle, rubro);
 
       imp.setIdfacturadetalleimpuestos(idImp);
@@ -582,19 +630,19 @@ public class Fec_facturaService {
       fecFacturaDetallesImpuestosR.save(fecFacturaDetallesImpuestos);
    }
 
-   // ✅ impuesto único para el consolidado 1004
+   // âœ… impuesto Ãºnico para el consolidado 1004
    public void generarFecFacturaDetallesImpuestosConsolidado(Long idfecfacturadetalle, BigDecimal baseImponible) {
 
       Fec_factura_detalles_impuestos imp = new Fec_factura_detalles_impuestos();
 
-      // id único (puedes dejar esta lógica o definir una más segura)
+      // id Ãºnico (puedes dejar esta lÃ³gica o definir una mÃ¡s segura)
       String idfacdetalleimpuestos = String.valueOf(1004L + "" + idfecfacturadetalle);
 
       imp.setIdfacturadetalleimpuestos(Long.valueOf(idfacdetalleimpuestos));
       imp.setIdfacturadetalle(idfecfacturadetalle);
       imp.setCodigoimpuesto("2");
       imp.setCodigoporcentaje("0");
-      imp.setBaseimponible(baseImponible); // ✅ suma
+      imp.setBaseimponible(baseImponible); // âœ… suma
 
       fecFacturaDetallesImpuestosR.save(imp);
    }
@@ -627,14 +675,14 @@ public class Fec_facturaService {
    // COMPLEMENTOS PARA GENERAR LA FECFACTURA
    public static String[] separarCodigo(String codigo) {
       if (codigo == null || !codigo.contains("-")) {
-         throw new IllegalArgumentException("El código no tiene el formato esperado");
+         throw new IllegalArgumentException("El cÃ³digo no tiene el formato esperado");
       }
 
       // Separa por guiones
       String[] partes = codigo.split("-");
 
       if (partes.length != 3) {
-         throw new IllegalArgumentException("El código debe tener 3 partes (ej: 001-013-000022233)");
+         throw new IllegalArgumentException("El cÃ³digo debe tener 3 partes (ej: 001-013-000022233)");
       }
 
       return partes;
@@ -645,52 +693,52 @@ public class Fec_facturaService {
       Objects.requireNonNull(factura, "Factura no puede ser nula");
       Objects.requireNonNull(definir, "Definir no puede ser nulo");
 
-      // 1) Fecha de emisión (DDMMYYYY)
+      // 1) Fecha de emisiÃ³n (DDMMYYYY)
       String fechaEmision = formatToDDMMYYYY(factura.getFechaemision());
 
-      // 2) Tipo de comprobante (2 dígitos)
+      // 2) Tipo de comprobante (2 dÃ­gitos)
       String tipoComprobante = TIPO_COMPROBANTE_FACTURA;
 
-      // 3) RUC del emisor (13 dígitos)
+      // 3) RUC del emisor (13 dÃ­gitos)
       String ruc = leftPadDigits(requireDigits(definir.getRuc(), "RUC"), 13);
 
-      // 4) Ambiente (1 dígito: 1=Pruebas, 2=Producción)
+      // 4) Ambiente (1 dÃ­gito: 1=Pruebas, 2=ProducciÃ³n)
       String ambiente = requireDigits(definir.getTipoambiente() == null ? null : definir.getTipoambiente().toString(),
             "Tipo de ambiente");
       if (!(ambiente.equals("1") || ambiente.equals("2"))) {
-         throw new IllegalArgumentException("El ambiente debe ser '1' (pruebas) o '2' (producción)");
+         throw new IllegalArgumentException("El ambiente debe ser '1' (pruebas) o '2' (producciÃ³n)");
       }
 
-      // 5) Serie: 3 dígitos establecimiento + 3 dígitos punto de emisión
+      // 5) Serie: 3 dÃ­gitos establecimiento + 3 dÃ­gitos punto de emisiÃ³n
       String estab = leftPadDigits(requireDigits(factura.getEstablecimiento(), "Establecimiento"), 3);
-      String ptoEmi = leftPadDigits(requireDigits(factura.getPuntoemision(), "Punto de emisión"), 3);
+      String ptoEmi = leftPadDigits(requireDigits(factura.getPuntoemision(), "Punto de emisiÃ³n"), 3);
       String serie = estab + ptoEmi;
 
-      // 6) Secuencial (9 dígitos)
+      // 6) Secuencial (9 dÃ­gitos)
       String secuencial = leftPadDigits(requireDigits(factura.getSecuencial(), "Secuencial"), 9);
 
-      // 7) Código numérico (8 dígitos) — aleatorio o el que definas en tu negocio
+      // 7) CÃ³digo numÃ©rico (8 dÃ­gitos) â€” aleatorio o el que definas en tu negocio
       String codigoNumerico = generarCodigoNumerico8();
 
-      // 8) Tipo de emisión (1 dígito, normal=1)
+      // 8) Tipo de emisiÃ³n (1 dÃ­gito, normal=1)
       String tipoEmision = "1";
 
-      // Concatenar base de 48 dígitos
+      // Concatenar base de 48 dÃ­gitos
       String base48 = fechaEmision + tipoComprobante + ruc + ambiente + serie + secuencial + codigoNumerico
             + tipoEmision;
 
       if (base48.length() != 48) {
          throw new IllegalStateException(
-               "La base de la clave de acceso debe tener 48 dígitos, actual: " + base48.length());
+               "La base de la clave de acceso debe tener 48 dÃ­gitos, actual: " + base48.length());
       }
       if (!base48.chars().allMatch(Character::isDigit)) {
-         throw new IllegalStateException("La base de la clave de acceso debe contener solo dígitos");
+         throw new IllegalStateException("La base de la clave de acceso debe contener solo dÃ­gitos");
       }
 
-      // 9) Dígito verificador (módulo 11 con pesos 2..7 de derecha a izquierda)
+      // 9) DÃ­gito verificador (mÃ³dulo 11 con pesos 2..7 de derecha a izquierda)
       char dv = calcularDigitoVerificadorModulo11(base48);
 
-      // 10) Clave completa (49 dígitos)
+      // 10) Clave completa (49 dÃ­gitos)
       return base48 + dv;
    }
 
@@ -703,7 +751,7 @@ public class Fec_facturaService {
       return dateTime.format(DDMMYYYY);
    }
 
-   /** Genera un código numérico aleatorio de 8 dígitos (00000000–99999999). */
+   /** Genera un cÃ³digo numÃ©rico aleatorio de 8 dÃ­gitos (00000000â€“99999999). */
    private static String generarCodigoNumerico8() {
       // Si no deseas ceros a la izquierda, usa rango 10000000..99999999
       int n = ThreadLocalRandom.current().nextInt(0, 100_000_000);
@@ -711,14 +759,14 @@ public class Fec_facturaService {
    }
 
    /**
-    * Cálculo del dígito verificador para clave de acceso SRI (módulo 11):
-    * - Ponderación cíclica 2..7 de derecha a izquierda.
+    * CÃ¡lculo del dÃ­gito verificador para clave de acceso SRI (mÃ³dulo 11):
+    * - PonderaciÃ³n cÃ­clica 2..7 de derecha a izquierda.
     * - dv = 11 - (suma % 11)
     * - Si dv == 11 -> 0 ; si dv == 10 -> 1.
     */
    private static char calcularDigitoVerificadorModulo11(String base48) {
       if (base48 == null || base48.length() != 48 || !base48.chars().allMatch(Character::isDigit)) {
-         throw new IllegalArgumentException("Se espera base de 48 dígitos numéricos");
+         throw new IllegalArgumentException("Se espera base de 48 dÃ­gitos numÃ©ricos");
       }
       final int[] pesos = { 2, 3, 4, 5, 6, 7 };
       int suma = 0;
@@ -737,20 +785,20 @@ public class Fec_facturaService {
       return (char) ('0' + dv);
    }
 
-   /** Verifica y normaliza que el texto contenga solo dígitos. */
+   /** Verifica y normaliza que el texto contenga solo dÃ­gitos. */
    private static String requireDigits(String value, String label) {
       if (value == null || value.isBlank())
-         throw new IllegalArgumentException(label + " no puede ser nulo o vacío");
+         throw new IllegalArgumentException(label + " no puede ser nulo o vacÃ­o");
       String digits = value.replaceAll("\\D", "");
       if (digits.isEmpty())
-         throw new IllegalArgumentException(label + " debe contener dígitos");
+         throw new IllegalArgumentException(label + " debe contener dÃ­gitos");
       return digits;
    }
 
    /** Rellena a la izquierda con ceros hasta la longitud indicada. */
    private static String leftPadDigits(String digits, int length) {
       if (!digits.chars().allMatch(Character::isDigit))
-         throw new IllegalArgumentException("Valor no numérico: " + digits);
+         throw new IllegalArgumentException("Valor no numÃ©rico: " + digits);
       if (digits.length() > length)
          throw new IllegalArgumentException("Longitud mayor a " + length + ": " + digits);
       return String.format("%0" + length + "d", Long.parseLong(digits));
@@ -758,7 +806,7 @@ public class Fec_facturaService {
 
    public static void validarClaveAcceso(String clave) {
       if (clave == null || !clave.matches("\\d{49}")) {
-         throw new IllegalArgumentException("claveAcceso inválida: debe tener 49 dígitos");
+         throw new IllegalArgumentException("claveAcceso invÃ¡lida: debe tener 49 dÃ­gitos");
       }
    }
 
@@ -784,3 +832,5 @@ public class Fec_facturaService {
    }
 
 }
+
+
