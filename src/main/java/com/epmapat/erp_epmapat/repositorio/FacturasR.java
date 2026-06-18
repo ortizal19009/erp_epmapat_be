@@ -837,22 +837,22 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 						select
 				idfactura, feccrea
 			from
-				facturas
+				facturas f
 			where
-				totaltarifa > 0
-				and idabonado = ?1
-				and (( (estado = 1
-					or estado = 2)
-				and (fechacobro is null or fechacobro between ?2 and ?3))
-				or estado = 3 )
-				and fechaconvenio is null
-				and fechaanulacion is null
-				and fechaeliminacion is null
-				and fechaconvenio is null
-				and (idmodulo = 3
-					or idmodulo = 4)
+				f.totaltarifa > 0
+				and f.idabonado = ?1
+				and (
+					((f.estado = 1 or f.estado = 2) and f.fechacobro is null)
+					or f.estado = 3
+				)
+				and f.fechaconvenio is null
+				and f.fechaanulacion is null
+				and f.fechaeliminacion is null
+				and (f.fechacobro is null or f.fechacobro <> ?2)
+				and (f.idmodulo = 3
+					or f.idmodulo = 4)
 			order by
-				idfactura
+				f.idfactura
 					""", nativeQuery = true)
 	public List<FacturasSinCobroInter> calcularPendientesDeAbonados(Long cuenta,
 			LocalDate d, LocalDate h);
@@ -861,22 +861,22 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 						select
 				idfactura
 			from
-				facturas
+				facturas f
 			where
-				totaltarifa > 0
-				and idabonado = ?1
-				and (( (estado = 1
-					or estado = 2)
-				and (fechacobro is null or fechacobro between ?2 and ?3))
-				or estado = 3 )
-				and fechaconvenio is null
-				and fechaanulacion is null
-				and fechaeliminacion is null
-				and fechaconvenio is null
-				and (idmodulo = 3
-					or idmodulo = 4)
+				f.totaltarifa > 0
+				and f.idabonado = ?1
+				and (
+					((f.estado = 1 or f.estado = 2) and f.fechacobro is null)
+					or f.estado = 3
+				)
+				and f.fechaconvenio is null
+				and f.fechaanulacion is null
+				and f.fechaeliminacion is null
+				and (f.fechacobro is null or f.fechacobro <> ?2)
+				and (f.idmodulo = 3
+					or f.idmodulo = 4)
 			order by
-				idfactura
+				f.idfactura
 					""", nativeQuery = true)
 	public List<Long> _calcularPendientesDeAbonados(Long cuenta,
 			LocalDate d, LocalDate h);

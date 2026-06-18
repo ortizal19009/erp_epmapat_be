@@ -2,8 +2,12 @@ package com.epmapat.erp_epmapat.controlador;
 
 import java.math.BigDecimal;
 import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -26,20 +30,19 @@ import com.epmapat.erp_epmapat.servicio.RutasxemisionServicio;
 
 @RestController
 @RequestMapping("/rutasxemision")
-
 public class RutasxemisionApi {
+
+	private static final ZoneId APP_ZONE = ZoneId.systemDefault();
 
 	@Autowired
 	RutasxemisionServicio ruxemiServicio;
 
-	// Alternativa 1. Ok.
 	@GetMapping
 	public List<Rutasxemision> getByIdemision(@Param(value = "idemision") Long idemision) {
 		if (idemision != null) {
 			return ruxemiServicio.findByIdemision(idemision);
-		} else {
-			return null;
 		}
+		return null;
 	}
 
 	@GetMapping("/{idrutaxemision}")
@@ -66,7 +69,7 @@ public class RutasxemisionApi {
 						("No existe Rutaxemision con Id: " + idrutaxemision)));
 		y.setEstado(x.getEstado());
 		y.setUsuariocierre(x.getUsuariocierre());
-		y.setFechacierre(x.getFechacierre());
+		y.setFechacierre(normalizarFechaCierre(x.getFechacierre()));
 		y.setIdemision_emisiones(x.getIdemision_emisiones());
 		y.setIdruta_rutas(x.getIdruta_rutas());
 		y.setM3(x.getM3());
@@ -85,52 +88,87 @@ public class RutasxemisionApi {
 		Rutasxemision ruta = ruxemiServicio.findById(idrutaxemision)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe Ruta con Id: " + idrutaxemision));
 
-		// 🔹 estado (Integer)
-		if (cambios.containsKey("estado"))
+		if (cambios.containsKey("estado")) {
 			ruta.setEstado(((Number) cambios.get("estado")).intValue());
+		}
 
-		// 🔹 usuariocierre (Long)
-		if (cambios.containsKey("usuariocierre"))
+		if (cambios.containsKey("usuariocierre")) {
 			ruta.setUsuariocierre(((Number) cambios.get("usuariocierre")).longValue());
+		}
 
-		// 🔹 fechacierre (Date) — admite "yyyy-MM-dd" o ISO string
 		if (cambios.containsKey("fechacierre")) {
 			Object valor = cambios.get("fechacierre");
 			if (valor instanceof String) {
-				String fechaStr = (String) valor;
-				try {
-					// Acepta tanto "2025-11-05" como "2025-11-05T00:00:00"
-					SimpleDateFormat formato = fechaStr.length() > 10
-							? new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-							: new SimpleDateFormat("yyyy-MM-dd");
-					ruta.setFechacierre(formato.parse(fechaStr));
-				} catch (ParseException e) {
-					throw new IllegalArgumentException("Formato de fecha inválido: " + valor);
-				}
+				ruta.setFechacierre(parseFechaCierre((String) valor));
 			} else if (valor instanceof Number) {
-				// timestamp milisegundos
-				ruta.setFechacierre(new Date(((Number) valor).longValue()));
+				ruta.setFechacierre(parseFechaCierre(((Number) valor).longValue()));
 			}
 		}
 
-		// 🔹 m3 (Long)
-		if (cambios.containsKey("m3"))
+		if (cambios.containsKey("m3")) {
 			ruta.setM3(((Number) cambios.get("m3")).longValue());
-
-		// 🔹 total (BigDecimal)
-		if (cambios.containsKey("total")) {
-			Object valor = cambios.get("total");
-			if (valor instanceof Number)
-				ruta.setTotal(BigDecimal.valueOf(((Number) valor).doubleValue()));
-			else if (valor instanceof String)
-				ruta.setTotal(new BigDecimal((String) valor));
 		}
 
-		// ❌ No tocar usucrea ni feccrea (NOT NULL)
-		// 🔸 Tampoco se cambian las relaciones idemision_emisiones ni idruta_rutas
+		if (cambios.containsKey("total")) {
+			Object valor = cambios.get("total");
+			if (valor instanceof Number) {
+				ruta.setTotal(BigDecimal.valueOf(((Number) valor).doubleValue()));
+			} else if (valor instanceof String) {
+				ruta.setTotal(new BigDecimal((String) valor));
+			}
+		}
 
 		Rutasxemision actualizada = ruxemiServicio.save(ruta);
 		return ResponseEntity.ok(actualizada);
+	}
+
+	private Date parseFechaCierre(String valor) {
+		String fechaStr = valor == null ? "" : valor.trim();
+		if (fechaStr.isEmpty()) {
+			throw new IllegalArgumentException("Formato de fecha inválido: " + valor);
+		}
+
+		try {
+			if (fechaStr.length() <= 10) {
+				return Date.valueOf(LocalDate.parse(fechaStr));
+			}
+
+			try {
+				LocalDate fecha = OffsetDateTime.parse(fechaStr)
+						.atZoneSameInstant(APP_ZONE)
+						.toLocalDate();
+				return Date.valueOf(fecha);
+			} catch (DateTimeParseException ignored) {
+				LocalDate fecha = Instant.parse(fechaStr)
+						.atZone(APP_ZONE)
+						.toLocalDate();
+				return Date.valueOf(fecha);
+			}
+		} catch (DateTimeParseException ex) {
+			try {
+				LocalDate fecha = LocalDateTime.parse(fechaStr).toLocalDate();
+				return Date.valueOf(fecha);
+			} catch (DateTimeParseException inner) {
+				throw new IllegalArgumentException("Formato de fecha inválido: " + valor, inner);
+			}
+		}
+	}
+
+	private Date parseFechaCierre(long epochMillis) {
+		LocalDate fecha = Instant.ofEpochMilli(epochMillis)
+				.atZone(APP_ZONE)
+				.toLocalDate();
+		return Date.valueOf(fecha);
+	}
+
+	private Date normalizarFechaCierre(java.util.Date fecha) {
+		if (fecha == null) {
+			return null;
+		}
+		LocalDate localDate = Instant.ofEpochMilli(fecha.getTime())
+				.atZone(APP_ZONE)
+				.toLocalDate();
+		return Date.valueOf(localDate);
 	}
 
 	@GetMapping("/emiruta")
@@ -139,5 +177,4 @@ public class RutasxemisionApi {
 		Rutasxemision rutasxemision = ruxemiServicio.findByEmisionRuta(idemision, idruta);
 		return ResponseEntity.ok(rutasxemision);
 	}
-
 }

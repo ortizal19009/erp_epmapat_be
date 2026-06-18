@@ -711,14 +711,12 @@ public class EmisionServicioOptimizadoV2 {
 
     public BigDecimal multas(Long cuenta) {
         // Se recalculan en cada invocación → siempre es "hoy"
-        LocalDate fechaDesde = LocalDate.now();
-        LocalDate fechaHasta = LocalDate.now();
+        LocalDate fechaCorte = LocalDate.now();
 
         List<Long> idfacturas = dao_facturas._calcularPendientesDeAbonados(
                 cuenta,
-                fechaDesde,
-                fechaHasta);
-        System.out.println("Calculando multas para cuenta: " + cuenta + " entre " + fechaDesde + " y " + fechaHasta + ". Facturas pendientes: " + idfacturas.size());
+                fechaCorte,
+                fechaCorte);
 
         if (idfacturas == null || idfacturas.isEmpty() || idfacturas.size() < 1) {
             return ZERO;
