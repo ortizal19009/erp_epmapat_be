@@ -1,4 +1,4 @@
-﻿package com.epmapat.erp_epmapat.servicio;
+package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
