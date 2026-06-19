@@ -131,7 +131,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			    SELECT
 			      f.idfactura,
 			      f.idmodulo,
-			      f.totaltarifa AS total,
+			      CAST(tf.total AS numeric(18,2)) AS total,
 			      f.idcliente,
 			      f.idabonado,
 			      f.feccrea,
@@ -145,12 +145,20 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				  a.direccionubicacion as direccionubicacion
 
 			    FROM facturas f
+				JOIN (
+				  SELECT
+				    rf.idfactura_facturas,
+				    SUM(rf.cantidad * rf.valorunitario) AS total
+				  FROM rubroxfac rf
+				  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
+				  GROUP BY rf.idfactura_facturas
+				) tf ON tf.idfactura_facturas = f.idfactura
 				LEFT JOIN modulos m ON f.idmodulo = m.idmodulo
 				LEFT JOIN clientes c ON f.idcliente = c.idcliente
 				LEFT JOIN abonados a ON f.idabonado = a.idabonado
 
 			    WHERE
-			      f.totaltarifa > 0
+			      tf.total > 0
 			      AND f.idcliente = ?1
 			      AND (
 			        ((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL)
@@ -164,14 +172,96 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			""", nativeQuery = true)
 	List<FacSinCobrar> findFacSincobro(Long idcliente);
 
-	@Query(value = "select f.idfactura, f.idmodulo, f.totaltarifa AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f where f.totaltarifa > 0 and f.idabonado= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
+	@Query(value = """
+			SELECT
+			  f.idfactura,
+			  f.idmodulo,
+			  CAST(tf.total AS numeric(18,2)) AS total,
+			  f.idcliente,
+			  f.idabonado,
+			  f.feccrea,
+			  f.formapago,
+			  f.estado,
+			  f.pagado,
+			  f.swcondonar
+			FROM facturas f
+			JOIN (
+			  SELECT
+			    rf.idfactura_facturas,
+			    SUM(rf.cantidad * rf.valorunitario) AS total
+			  FROM rubroxfac rf
+			  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
+			  GROUP BY rf.idfactura_facturas
+			) tf ON tf.idfactura_facturas = f.idfactura
+			WHERE tf.total > 0
+			  AND f.idabonado = ?1
+			  AND (((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL) OR f.estado = 3)
+			  AND f.fechaeliminacion IS NULL
+			  AND f.fechaconvenio IS NULL
+			ORDER BY f.idabonado ASC, f.feccrea ASC
+			""", nativeQuery = true)
 	public List<FacSinCobrar> findFacSincobroByCuetna(Long cuenta);
 
 	/* OPCION SOLO PARA REALIZAR EL CAMBIO DE PROPIETARIO */
-	@Query(value = "select f.idfactura, f.idmodulo, f.totaltarifa AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f where f.idabonado= ?1 and (( f.estado = 1 or f.estado = 2) and f.fechacobro is null) and f.fechaeliminacion is null and fechaconvenio is null ORDER BY f.idabonado asc, f.idfactura desc", nativeQuery = true)
+	@Query(value = """
+			SELECT
+			  f.idfactura,
+			  f.idmodulo,
+			  CAST(tf.total AS numeric(18,2)) AS total,
+			  f.idcliente,
+			  f.idabonado,
+			  f.feccrea,
+			  f.formapago,
+			  f.estado,
+			  f.pagado,
+			  f.swcondonar
+			FROM facturas f
+			JOIN (
+			  SELECT
+			    rf.idfactura_facturas,
+			    SUM(rf.cantidad * rf.valorunitario) AS total
+			  FROM rubroxfac rf
+			  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
+			  GROUP BY rf.idfactura_facturas
+			) tf ON tf.idfactura_facturas = f.idfactura
+			WHERE f.idabonado = ?1
+			  AND ((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL)
+			  AND f.fechaeliminacion IS NULL
+			  AND f.fechaconvenio IS NULL
+			ORDER BY f.idabonado ASC, f.idfactura DESC
+			""", nativeQuery = true)
 	public List<FacSinCobrar> findByCuenta(Long cuenta);
 
-	@Query(value = "select f.idfactura, f.idmodulo, f.totaltarifa AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar, m.descripcion as modulo from facturas f join modulos m on f.idmodulo = m.idmodulo where f.totaltarifa > 0 and f.idabonado= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
+	@Query(value = """
+			SELECT
+			  f.idfactura,
+			  f.idmodulo,
+			  CAST(tf.total AS numeric(18,2)) AS total,
+			  f.idcliente,
+			  f.idabonado,
+			  f.feccrea,
+			  f.formapago,
+			  f.estado,
+			  f.pagado,
+			  f.swcondonar,
+			  m.descripcion AS modulo
+			FROM facturas f
+			JOIN (
+			  SELECT
+			    rf.idfactura_facturas,
+			    SUM(rf.cantidad * rf.valorunitario) AS total
+			  FROM rubroxfac rf
+			  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
+			  GROUP BY rf.idfactura_facturas
+			) tf ON tf.idfactura_facturas = f.idfactura
+			JOIN modulos m ON f.idmodulo = m.idmodulo
+			WHERE tf.total > 0
+			  AND f.idabonado = ?1
+			  AND (((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL) OR f.estado = 3)
+			  AND f.fechaeliminacion IS NULL
+			  AND f.fechaconvenio IS NULL
+			ORDER BY f.idabonado ASC, f.feccrea ASC
+			""", nativeQuery = true)
 	public List<FacSinCobrar> findSincobroByCuetna(Long cuenta);
 
 	// Cartera a una fecha
