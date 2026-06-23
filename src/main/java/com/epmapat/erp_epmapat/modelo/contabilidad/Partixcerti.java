@@ -8,12 +8,15 @@ import javax.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -42,9 +45,11 @@ public class Partixcerti {
 	private Long inteje;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "intpre")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Presupue intpre;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idcerti")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Certipresu idcerti;
 	private Long idparxcer_;
 

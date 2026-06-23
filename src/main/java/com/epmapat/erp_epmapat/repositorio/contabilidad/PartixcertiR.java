@@ -14,7 +14,15 @@ import com.epmapat.erp_epmapat.modelo.contabilidad.Partixcerti;
 public interface PartixcertiR extends JpaRepository<Partixcerti, Long> {
 
 	// Partidas de una certipresu ordenadas por codpar
-	List<Partixcerti> findByIdcerti_IdcertiOrderByIntpre_Codpar(Long idcerti);
+	@Query("""
+			SELECT p
+			FROM Partixcerti p
+			JOIN FETCH p.intpre i
+			JOIN FETCH p.idcerti c
+			WHERE c.idcerti = :idcerti
+			ORDER BY i.codpar
+			""")
+	List<Partixcerti> findByIdcerti_IdcertiOrderByIntpre_Codpar(@Param("idcerti") Long idcerti);
 
 	// Cuenta las partidas de una certipresu
 	short countByIdcerti_Idcerti(Long idcerti);
@@ -39,5 +47,14 @@ public interface PartixcertiR extends JpaRepository<Partixcerti, Long> {
 	// Partixcerti de un intpre (Certificaciones de una Partida)
 	@Query("SELECT p FROM Partixcerti p JOIN p.idcerti c WHERE p.intpre.intpre = :intpre AND c.fecha BETWEEN :desde AND :hasta ORDER BY c.fecha, c.numero ASC ")
 	List<Partixcerti> findByIntpreDesdeHasta(Long intpre, LocalDate desde, LocalDate hasta);
+
+	@Query("""
+			SELECT p
+			FROM Partixcerti p
+			JOIN FETCH p.intpre i
+			JOIN FETCH p.idcerti c
+			WHERE p.idparxcer = :idparxcer
+			""")
+	java.util.Optional<Partixcerti> findDetailedById(@Param("idparxcer") Long idparxcer);
 
 }

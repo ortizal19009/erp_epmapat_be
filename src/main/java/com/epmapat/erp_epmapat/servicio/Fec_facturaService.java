@@ -18,6 +18,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,6 +80,8 @@ public class Fec_facturaService {
    private Fec_factura_pagosR fecFacturaPagosR;
    @Autowired
    private RestTemplate restTemplate;
+   @PersistenceContext
+   private EntityManager entityManager;
    @Autowired
    private FecFacturaLogService logService;
 
@@ -305,6 +309,8 @@ public class Fec_facturaService {
 
       fecFacturaDetallesR.deleteByIdfactura(idfactura);
       fecFacturaPagosR.deleteByIdfactura(idfactura);
+      entityManager.flush();
+      entityManager.clear();
    }
 
    // CREAR FACTURA DETALLE

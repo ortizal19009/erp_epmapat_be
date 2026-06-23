@@ -4,8 +4,11 @@ import java.time.ZonedDateTime;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "documentos")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Documentos {
 
 	@Id
@@ -15,6 +18,7 @@ public class Documentos {
 	private Long tipdoc;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idtabla4")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Tabla4 idtabla4;
 	private String tipocomprobante;
 	private Long usucrea;

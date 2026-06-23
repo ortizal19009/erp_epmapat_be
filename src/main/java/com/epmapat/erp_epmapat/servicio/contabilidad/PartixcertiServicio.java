@@ -37,7 +37,7 @@ public class PartixcertiServicio {
 
 	// Partixcerti por idparxcer
 	public Optional<Partixcerti> findById(Long idparxcer) {
-		return dao.findById(idparxcer);
+		return dao.findDetailedById(idparxcer);
 	}
 
 	// Cuenta las partidas de una certipresu

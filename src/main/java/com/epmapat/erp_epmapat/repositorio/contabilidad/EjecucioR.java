@@ -63,8 +63,8 @@ public interface EjecucioR extends JpaRepository<Ejecucio, Long> {
    List<Ejecucio> findByIdparxcer(Long idparxcer);
 
    // Partidas de un Trámite
-   @Query(value = "SELECT * FROM ejecucio  WHERE idtrami = ?1 ORDER BY inteje", nativeQuery = true)
-   public List<Ejecucio> partixtrami(Long idtrami);
+   @Query("SELECT e FROM Ejecucio e JOIN FETCH e.intpre p WHERE e.idtrami = :idtrami ORDER BY e.inteje")
+   List<Ejecucio> partixtrami(@Param("idtrami") Long idtrami);
 
    // Contar las Partidas de un Trámite
    short countByIdtrami(Long idtrami);
@@ -96,7 +96,8 @@ public interface EjecucioR extends JpaRepository<Ejecucio, Long> {
    public List<Ejecucio> misosPendientes(String nomben, Date hasta);
 
    // Devengados de un compromiso (Busca por: ejecucio.idprmiso)
-   List<Ejecucio> findByIdprmiso(Long idprmiso);
+   @Query("SELECT e FROM Ejecucio e JOIN FETCH e.intpre p WHERE e.idprmiso = :idprmiso ORDER BY e.fecha_eje, e.inteje")
+   List<Ejecucio> findByIdprmiso(@Param("idprmiso") Long idprmiso);
 
    // Contar lo devengados de un compromiso
    short countByIdprmiso(Long idprmiso);

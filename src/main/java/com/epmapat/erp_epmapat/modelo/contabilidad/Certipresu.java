@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -47,14 +49,17 @@ public class Certipresu {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idbene")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Beneficiarios idbene;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idbeneres")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Beneficiarios idbeneres;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "intdoc")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Documentos intdoc;
 	
 }

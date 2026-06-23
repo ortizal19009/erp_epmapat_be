@@ -4,12 +4,15 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -44,6 +47,7 @@ public class Ejecucio {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "intpre")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Presupue intpre;
 
     private Long idprmiso;

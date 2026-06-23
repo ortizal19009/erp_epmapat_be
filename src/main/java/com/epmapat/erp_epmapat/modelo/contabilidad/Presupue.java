@@ -6,6 +6,7 @@ import java.time.ZonedDateTime;
 import javax.persistence.*;
 
 import com.epmapat.erp_epmapat.modelo.Clasificador;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 
@@ -14,6 +15,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "presupue")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Presupue {
 
@@ -39,6 +41,7 @@ public class Presupue {
    //Para el clasificador usa intcla y codpart
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "intcla")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Clasificador intcla;
    private String codpart;
 

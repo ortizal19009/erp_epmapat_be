@@ -14,12 +14,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 
 @Entity
 @Data
 @Table(name = "tramites")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Tramipresu {
 
    @Id
@@ -39,9 +41,11 @@ public class Tramipresu {
 
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idbene")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Beneficiarios idbene;
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "intdoc")
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    private Documentos intdoc;
 
 }
