@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.CarteraVencidaRubros_int;
@@ -100,7 +99,6 @@ public class RubroxfacServicio {
 		return dao.totalRubrosActual(fecha, hasta);
 	}
 
-	@Async
 	public <S extends Rubroxfac> S save(S entity) {
 		if (entity.getIdfactura_facturas() == null || entity.getIdfactura_facturas().getIdfactura() == null) {
 			throw new IllegalArgumentException("Debe enviar la factura asociada al rubro.");
@@ -109,36 +107,10 @@ public class RubroxfacServicio {
 			throw new IllegalArgumentException("Debe enviar el rubro asociado.");
 		}
 
-		Long idFactura = entity.getIdfactura_facturas().getIdfactura();
-		Long idRubro = entity.getIdrubro_rubros().getIdrubro();
-		List<Rubroxfac> rxfList = dao.getOneFxR(idFactura, idRubro);
-
-		if (rxfList == null || rxfList.isEmpty()) {
-			if (entity.getValorunitario() == null) {
-				entity.setValorunitario(new BigDecimal(0));
-			}
-			return dao.save(entity);
+		if (entity.getValorunitario() == null) {
+			entity.setValorunitario(BigDecimal.ZERO);
 		}
-
-		rxfList.stream().skip(1).forEach(duplicado -> {
-			if (dao.existsById(duplicado.getIdrubroxfac())) {
-				dao.deleteById(duplicado.getIdrubroxfac());
-			}
-		});
-
-		Rubroxfac existente = rxfList.get(0);
-		if (idRubro == 5) {
-			if (existente.getValorunitario() != null && entity.getValorunitario() != null
-					&& !existente.getValorunitario().equals(entity.getValorunitario())) {
-				existente.setValorunitario(existente.getValorunitario().add(entity.getValorunitario()));
-			}
-		} else {
-			if (entity.getValorunitario() == null) {
-				entity.setValorunitario(new BigDecimal(0));
-			}
-			existente.setValorunitario(entity.getValorunitario());
-		}
-		return (S) dao.save(existente);
+		return dao.save(entity);
 	}
 
 	public <S extends Rubroxfac> S saveSync(S entity) {
