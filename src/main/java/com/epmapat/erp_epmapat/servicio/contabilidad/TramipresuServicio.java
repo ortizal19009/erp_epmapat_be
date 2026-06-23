@@ -1,7 +1,7 @@
 package com.epmapat.erp_epmapat.servicio.contabilidad;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +36,7 @@ public class TramipresuServicio {
             .orElse(null);
    }
 
-   public List<Tramipresu> findDesdeHasta(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
+   public List<Tramipresu> findDesdeHasta(Long desdeNum, Long hastaNum, LocalDate desdeFecha, LocalDate hastaFecha) {
       return dao.findDesdeHasta(desdeNum, hastaNum, desdeFecha, hastaFecha);
    }
 

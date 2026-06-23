@@ -50,6 +50,11 @@ public class Ejecucio {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Presupue intpre;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idtrami", referencedColumnName = "idtrami", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Tramipresu tramipresu;
+
     private Long idprmiso;
     private Long idevenga;
         

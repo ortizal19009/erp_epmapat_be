@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 
@@ -23,7 +24,7 @@ public interface EjecucioR extends JpaRepository<Ejecucio, Long> {
    @Query(value = "SELECT * FROM ejecucio order by codpar", nativeQuery = true)
    List<Ejecucio> findAll();
 
-   @Query(value = "SELECT * FROM ejecucio where idrefo = ?1 order by codpar", nativeQuery = true)
+   @Query("SELECT e FROM Ejecucio e JOIN FETCH e.intpre WHERE e.idrefo = ?1 ORDER BY e.codpar")
    List<Ejecucio> buscaByIdrefo(Long idrefo);
 
    @Query(value = "SELECT * FROM ejecucio  WHERE (codpar like ?1) AND (fecha_eje BETWEEN (?2) AND (?3)) ORDER BY codpar, fecha_eje, inteje", nativeQuery = true)
@@ -82,13 +83,16 @@ public interface EjecucioR extends JpaRepository<Ejecucio, Long> {
    BigDecimal sumaPrmisoPorIntpre(@Param("intpre") Long intpre);
 
    // Ejecución de un asiento
+   @EntityGraph(attributePaths = { "intpre", "tramipresu", "tramipresu.idbene", "tramipresu.intdoc" })
    List<Ejecucio> findByIdasiento(Long idasiento);
 
    // Ejecución de un asiento por tippar
+   @EntityGraph(attributePaths = { "intpre", "tramipresu", "tramipresu.idbene", "tramipresu.intdoc" })
    @Query("SELECT e FROM Ejecucio e JOIN e.intpre p WHERE e.idasiento = :idasiento AND p.tippar = :tippar")
    List<Ejecucio> findByIdasientoAndTippar(Long idasiento, Integer tippar);
 
    // Ejecucion de una transaci.inttra (es de 1 a 1)
+   @EntityGraph(attributePaths = { "intpre", "tramipresu", "tramipresu.idbene", "tramipresu.intdoc" })
    Optional<Ejecucio> findByInttra(Long inttra);
 
    // Compromisos que tienen saldo pendiente
@@ -119,5 +123,9 @@ public interface EjecucioR extends JpaRepository<Ejecucio, Long> {
    @Transactional
    @Query("UPDATE Ejecucio SET totdeven = :totdeven WHERE inteje = :inteje")
    void updateTotdeven(@Param("inteje") Long inteje, @Param("totdeven") BigDecimal totdeven);
+
+   @Override
+   @EntityGraph(attributePaths = { "intpre", "tramipresu", "tramipresu.idbene", "tramipresu.intdoc" })
+   Optional<Ejecucio> findById(Long id);
 
 }

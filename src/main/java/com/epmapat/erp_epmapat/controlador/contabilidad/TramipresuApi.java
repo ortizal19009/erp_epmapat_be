@@ -1,10 +1,10 @@
 package com.epmapat.erp_epmapat.controlador.contabilidad;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -35,8 +35,8 @@ public class TramipresuApi {
    @GetMapping
    public List<Tramipresu> getAllLista(@Param(value = "desdeNum") Long desdeNum,
          @Param(value = "hastaNum") Long hastaNum,
-         @Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
-         @Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
+         @Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desdeFecha,
+         @Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hastaFecha) {
       if (desdeNum != null) {
          return tramiServicio.findDesdeHasta(desdeNum, hastaNum, desdeFecha, hastaFecha);
       } else
