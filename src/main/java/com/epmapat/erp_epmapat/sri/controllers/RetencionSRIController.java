@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -81,13 +82,19 @@ public class RetencionSRIController {
 
    @GetMapping("/pdf")
    public ResponseEntity<byte[]> generarPdf(@RequestParam Long idretencion) {
-      ByteArrayOutputStream pdf = retencionPdfService.generarPdf(idretencion);
-      byte[] bytes = pdf.toByteArray();
-      return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=retencion_" + idretencion + ".pdf")
-            .contentType(MediaType.APPLICATION_PDF)
-            .contentLength(bytes.length)
-            .body(bytes);
+      try {
+         ByteArrayOutputStream pdf = retencionPdfService.generarPdf(idretencion);
+         byte[] bytes = pdf.toByteArray();
+         return ResponseEntity.ok()
+               .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=retencion_" + idretencion + ".pdf")
+               .contentType(MediaType.APPLICATION_PDF)
+               .contentLength(bytes.length)
+               .body(bytes);
+      } catch (IllegalArgumentException e) {
+         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+      } catch (IllegalStateException e) {
+         return ResponseEntity.status(HttpStatus.CONFLICT).build();
+      }
    }
 
    @PostMapping("/procesar")

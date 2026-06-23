@@ -15,6 +15,7 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.epmapat.erp_epmapat.commons.JasperReportManager;
@@ -44,6 +45,7 @@ public class RetencionPdfService {
    @Autowired
    private JasperReportManager reportManager;
 
+   @Transactional(readOnly = true)
    public ByteArrayOutputStream generarPdf(Long idretencion) {
       try {
          Retenciones retencion = retencionesR.findById(idretencion)
@@ -63,6 +65,8 @@ public class RetencionPdfService {
          ByteArrayOutputStream pdf = new ByteArrayOutputStream();
          JasperExportManager.exportReportToPdfStream(print, pdf);
          return pdf;
+      } catch (IllegalArgumentException | IllegalStateException e) {
+         throw e;
       } catch (Exception e) {
          throw new RuntimeException("No se pudo generar el PDF de la retención " + idretencion + ": " + e.getMessage(), e);
       }

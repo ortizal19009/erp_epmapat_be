@@ -64,9 +64,9 @@
 				</textElement>
 				<textFieldExpression><![CDATA["NÚMERO DE AUTORIZACIÓN"]]></textFieldExpression>
 			</textField>
-			<image>
+			<image onErrorType="Blank">
 				<reportElement x="10" y="10" width="300" height="120" uuid="6700265d-f727-4443-a025-db96c081e74a"/>
-				<imageExpression><![CDATA["https://epmapatulcan.gob.ec/wp/wp-content/uploads/2021/05/LOGO-HORIZONTAL.png"]]></imageExpression>
+				<imageExpression><![CDATA[getClass().getResourceAsStream("/reports/LOGO-H.png")]]></imageExpression>
 			</image>
 			<textField>
 				<reportElement x="334" y="91" width="209" height="30" uuid="9c777873-5fad-4916-9e3f-4c1d017fbce0"/>
