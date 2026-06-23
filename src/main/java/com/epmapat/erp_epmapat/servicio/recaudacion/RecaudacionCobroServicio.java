@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaDTO;
@@ -528,6 +530,7 @@ public class RecaudacionCobroServicio {
         BigDecimal saldoNotaCreditoPendiente = recaudacion.getNcvalor() != null
                 ? recaudacion.getNcvalor().max(BigDecimal.ZERO)
                 : BigDecimal.ZERO;
+        List<Long> facturasParaGenerarFec = new ArrayList<>();
 
         for (Facturas factura : facturas) {
             ValorFactDTO pendiente = pendientesPorId.get(factura.getIdfactura());
@@ -562,7 +565,7 @@ public class RecaudacionCobroServicio {
             facturaServicio.save(factura);
             actualizarRubroInteres(factura, interesTotalCobrado);
             registrarAplicacionNotaCredito(factura, valorNotaCreditoAplicado);
-            fecFacturaService.asegurarFecFactura(factura.getIdfactura());
+            facturasParaGenerarFec.add(factura.getIdfactura());
             saldoNotaCreditoPendiente = saldoNotaCreditoPendiente.subtract(valorNotaCreditoAplicado).max(BigDecimal.ZERO);
 
             pendiente.setInterescobrado(interesTotalCobrado);
@@ -575,8 +578,29 @@ public class RecaudacionCobroServicio {
         }
 
         RecaudacionCajaDTO cajaDto = getEstadoCaja(idusuario);
-        recaudacionCajaSseService.publishSecuencial(idusuario, cajaDto);
+        ejecutarDespuesDeCommit(() -> {
+            facturasParaGenerarFec.forEach(fecFacturaService::asegurarFecFactura);
+            recaudacionCajaSseService.publishSecuencial(idusuario, cajaDto);
+        });
         return new RecaudacionCobroResponse(recaudacionGuardada, cajaDto, facturasParaCobro, totalCalculado, numeroFacturaSiguiente);
+    }
+
+    private void ejecutarDespuesDeCommit(Runnable tarea) {
+        if (tarea == null) {
+            return;
+        }
+
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            tarea.run();
+            return;
+        }
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                tarea.run();
+            }
+        });
     }
 
     private void completarIva(ValorFactDTO dto) {
