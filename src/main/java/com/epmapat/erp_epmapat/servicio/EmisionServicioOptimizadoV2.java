@@ -708,6 +708,10 @@ public class EmisionServicioOptimizadoV2 {
 
     private static final BigDecimal PORCENTAJE_MULTA = new BigDecimal("0.005");
 
+    public BigDecimal multas(Long cuenta) {
+        return multas(cuenta, null);
+    }
+
     public BigDecimal multas(Long cuenta, Long idfacturaActual) {
         // Se recalculan en cada invocación → siempre es "hoy"
         if (cuenta == null) {
