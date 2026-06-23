@@ -15,6 +15,7 @@ import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Beneficiarios;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Fec_retenciones;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Retenciones;
+import com.epmapat.erp_epmapat.repositorio.contabilidad.Fec_retencionesR;
 import com.epmapat.erp_epmapat.repositorio.contabilidad.RetencionesR;
 import com.epmapat.erp_epmapat.servicio.administracion.CorreosEnviadosServicio;
 import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
@@ -24,6 +25,8 @@ public class RetencionEmailService {
 
    @Autowired
    private RetencionesR retencionesR;
+   @Autowired
+   private Fec_retencionesR fecRetencionesR;
    @Autowired
    private RetencionSRIService retencionSRIService;
    @Autowired
@@ -45,9 +48,7 @@ public class RetencionEmailService {
          boolean actualizarEstado) {
       Retenciones retencion = retencionesR.findById(idretencion)
             .orElseThrow(() -> new IllegalArgumentException("No existe la retención " + idretencion));
-      Fec_retenciones generada = actualizarEstado
-            ? retencionSRIService.generarYGuardar(idretencion)
-            : retencionSRIService.actualizarXmlAutorizado(idretencion, null, "AUTORIZADA", null);
+      Fec_retenciones generada = resolverDocumentoElectronico(idretencion, retencion, actualizarEstado);
       Definir definir = definirServicio.findById(1L)
             .orElseThrow(() -> new IllegalArgumentException("No existe la configuración general para correo"));
 
@@ -114,6 +115,33 @@ public class RetencionEmailService {
             "estado", actualizado.getEstado(),
             "email", correoConcatenado,
             "archivo", construirNombreArchivo(retencion, "pdf"));
+   }
+
+   private Fec_retenciones resolverDocumentoElectronico(Long idretencion, Retenciones retencion, boolean actualizarEstado) {
+      Fec_retenciones existente = fecRetencionesR.findById(idretencion).orElse(null);
+      if (estaAutorizada(retencion) && tieneXmlAutorizado(existente)) {
+         return existente;
+      }
+      return actualizarEstado
+            ? retencionSRIService.generarYGuardar(idretencion)
+            : retencionSRIService.actualizarXmlAutorizado(idretencion, null, "AUTORIZADA", null);
+   }
+
+   private boolean estaAutorizada(Retenciones retencion) {
+      return retencion != null
+            && retencion.getEstado() != null
+            && retencion.getEstado() == 1
+            && retencion.getNumautoriza_e() != null
+            && !retencion.getNumautoriza_e().trim().isEmpty()
+            && retencion.getFecautoriza() != null;
+   }
+
+   private boolean tieneXmlAutorizado(Fec_retenciones fec) {
+      if (fec == null || fec.getXmlautorizado() == null || fec.getXmlautorizado().isBlank()) {
+         return false;
+      }
+      String estado = fec.getEstado() == null ? "" : fec.getEstado().trim().toUpperCase();
+      return estado.contains("AUTORIZADA") || estado.contains("ENVIADA");
    }
 
    private String obtenerEmailBeneficiario(Retenciones retencion) {
