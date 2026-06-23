@@ -304,7 +304,10 @@ public class BuildReportsApi {
                 params.put("idfactura", it.getIdfactura());
                 dto.setParameters(params);
 
-                ByteArrayOutputStream os = buildReports.buildReport(dto, conn);
+                ByteArrayOutputStream os;
+                try (Connection reportConn = dataSource.getConnection()) {
+                    os = buildReports.buildReport(dto, reportConn);
+                }
                 ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
                 fuentes.add(is);
                 merger.addSource(is);
@@ -416,8 +419,7 @@ public class BuildReportsApi {
     }
 
     private byte[] generarMergePdf(MergeReq req) throws Exception {
-        try (Connection conn = dataSource.getConnection();
-                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
             List<MergeItem> itemsValidos = req.getItems().stream()
                     .filter(it -> it != null && it.getIdfactura() != null)
@@ -427,7 +429,7 @@ public class BuildReportsApi {
                 throw new IllegalArgumentException("No existen items válidos para generar el merge");
             }
 
-            Map<Long, ReportInfo> reportInfoByFactura = cargarReportInfoFaltante(conn, itemsValidos);
+            Map<Long, ReportInfo> reportInfoByFactura = cargarReportInfoFaltante(itemsValidos);
             List<JasperPrint> prints = new ArrayList<>(itemsValidos.size());
 
             for (MergeItem it : itemsValidos) {
@@ -437,7 +439,10 @@ public class BuildReportsApi {
                 Map<String, Object> params = new HashMap<>();
                 params.put("idfactura", it.getIdfactura());
 
-                JasperPrint jp = buildReports.fillFromCompiled(reportName, params, conn);
+                JasperPrint jp;
+                try (Connection reportConn = dataSource.getConnection()) {
+                    jp = buildReports.fillFromCompiled(reportName, params, reportConn);
+                }
                 prints.add(jp);
             }
 
@@ -455,6 +460,12 @@ public class BuildReportsApi {
             exporter.exportReport();
 
             return out.toByteArray();
+        }
+    }
+
+    private Map<Long, ReportInfo> cargarReportInfoFaltante(List<MergeItem> items) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            return cargarReportInfoFaltante(conn, items);
         }
     }
 
@@ -538,7 +549,10 @@ public class BuildReportsApi {
                 // JRSwapFileVirtualizer virt = new JRSwapFileVirtualizer(100, swap, true);
                 // params.put(JRParameter.REPORT_VIRTUALIZER, virt);
 
-                JasperPrint print = buildReports.buildPrint(reportName, params, conn);
+                JasperPrint print;
+                try (Connection reportConn = dataSource.getConnection()) {
+                    print = buildReports.buildPrint(reportName, params, reportConn);
+                }
                 prints.add(print);
             }
 

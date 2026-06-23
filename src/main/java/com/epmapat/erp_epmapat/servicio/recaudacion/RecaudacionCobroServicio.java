@@ -17,9 +17,12 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaDTO;
@@ -94,6 +97,14 @@ public class RecaudacionCobroServicio {
     private RecaudacionCajaSseService recaudacionCajaSseService;
     @Autowired
     private RubrosR rubrosR;
+
+    private final TransactionTemplate requiresNewTx;
+
+    @Autowired
+    public RecaudacionCobroServicio(PlatformTransactionManager transactionManager) {
+        this.requiresNewTx = new TransactionTemplate(transactionManager);
+        this.requiresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    }
 
     @Transactional(readOnly = true)
     public List<ValorFactDTO> getSincobroByCuenta(Long cuenta) {
@@ -579,10 +590,18 @@ public class RecaudacionCobroServicio {
 
         RecaudacionCajaDTO cajaDto = getEstadoCaja(idusuario);
         ejecutarDespuesDeCommit(() -> {
-            facturasParaGenerarFec.forEach(fecFacturaService::asegurarFecFactura);
+            facturasParaGenerarFec.forEach(this::asegurarFecFacturaEnNuevaTransaccion);
             recaudacionCajaSseService.publishSecuencial(idusuario, cajaDto);
         });
         return new RecaudacionCobroResponse(recaudacionGuardada, cajaDto, facturasParaCobro, totalCalculado, numeroFacturaSiguiente);
+    }
+
+    private void asegurarFecFacturaEnNuevaTransaccion(Long idfactura) {
+        if (idfactura == null) {
+            return;
+        }
+
+        requiresNewTx.executeWithoutResult(status -> fecFacturaService.asegurarFecFactura(idfactura));
     }
 
     private void ejecutarDespuesDeCommit(Runnable tarea) {
