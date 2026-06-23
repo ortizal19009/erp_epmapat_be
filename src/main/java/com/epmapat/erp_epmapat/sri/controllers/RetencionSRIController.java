@@ -58,11 +58,15 @@ public class RetencionSRIController {
 
    @GetMapping("/xml")
    public ResponseEntity<String> generarXml(@RequestParam Long idretencion) {
-      String xml = retencionSRIService.generarXml(idretencion);
-      return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=retencion.xml")
-            .contentType(MediaType.APPLICATION_XML)
-            .body(xml);
+      try {
+         String xml = retencionSRIService.generarXml(idretencion);
+         return ResponseEntity.ok()
+               .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=retencion.xml")
+               .contentType(MediaType.APPLICATION_XML)
+               .body(xml);
+      } catch (IllegalArgumentException e) {
+         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+      }
    }
 
    @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

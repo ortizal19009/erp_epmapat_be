@@ -60,6 +60,7 @@ public class RetencionSRIService {
    @PersistenceContext
    private EntityManager entityManager;
 
+   @Transactional
    public String generarXml(Long idretencion) {
       Retenciones retencion = cargarRetencion(idretencion);
       Definir definir = getDefinir();
