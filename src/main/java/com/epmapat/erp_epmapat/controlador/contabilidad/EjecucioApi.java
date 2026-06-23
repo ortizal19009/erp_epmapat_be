@@ -100,7 +100,6 @@ public class EjecucioApi {
          @Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
          @Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
       Double tmodi = ejecuServicio.totalModi(codpar, desdeFecha, hastaFecha);
-      // System.out.println("tmodi: " + tmodi);
       return tmodi;
    }
 

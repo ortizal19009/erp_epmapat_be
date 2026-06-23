@@ -202,7 +202,6 @@ public class CuentasApi {
 
 	@PostMapping("/dataset")
 	public ResponseEntity<byte[]> generaCuentas(@RequestBody JasperDatasetDTO<CuentasReporte> dto) {
-		// System.out.println("Pasa");
 		return generar(dto);
 	}
 
@@ -256,10 +255,6 @@ public class CuentasApi {
 
 			dto.setParameter("Desde", desdeDate);
 			dto.setParameter("Hasta", hastaDate);
-
-			System.out.println("============== codcue en API: " + codcue);
-			System.out.println("============== dto: " + dto);
-			// System.out.println("Desde: " + Desde);
 
 			List<SaldoCuentasDTO> lista = cueServicio.calcularSaldosPorCodcue(codcue, Desde, Hasta);
 			dto.setBeanCollection(lista);

@@ -307,7 +307,7 @@ public class LecturaServicio {
 
 	public BigDecimal calcularValores(Long cuenta, Long idfactura, int m3, int categoria, boolean swMunicipio,
 			boolean swAdultoMayor, boolean swAguapotable) {
-		BigDecimal multa = multas(cuenta);
+		BigDecimal multa = multas(cuenta, idfactura);
 		BigDecimal total = BigDecimal.ZERO;
 		Facturas factura = dao_facturas.findById(idfactura).orElseThrow();
 		Rubroxfac rubroxfac = new Rubroxfac();
@@ -651,9 +651,10 @@ public class LecturaServicio {
 	}
 
 	/* MULTAS */
-	public BigDecimal multas(Long cuentas) {
-		List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuentas);
-		long nroPendientes = idfacturas.size();
+	public BigDecimal multas(Long cuentas, Long idfacturaActual) {
+		long nroPendientes = (idfacturaActual == null)
+				? dao_facturas.findSinCobroAbo(cuentas).size()
+				: dao_facturas.countPendientesMultaExcluyendoFacturaActual(cuentas, idfacturaActual);
 		BigDecimal multa = BigDecimal.ZERO;
 		/*
 		 * if (nroPendientes == 3) {

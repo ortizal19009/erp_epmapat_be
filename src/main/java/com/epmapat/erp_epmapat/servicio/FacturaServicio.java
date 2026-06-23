@@ -894,7 +894,7 @@ public class FacturaServicio {
 		}
 
 		// ✅ 2) Calcula cuánto debe de multa (0 = no debe)
-		BigDecimal valorMulta = multas(cuenta);
+		BigDecimal valorMulta = multas(cuenta, idfactura);
 		boolean debeMulta = valorMulta != null && valorMulta.compareTo(BigDecimal.ZERO) > 0;
 
 		// ✅ 3) Si NO debe multa: borrar rubro 6 si existe
@@ -999,12 +999,14 @@ public class FacturaServicio {
 		return dao.save(factura);
 	}
 
-	private BigDecimal multas(Long cuenta) {
+	private BigDecimal multas(Long cuenta, Long idfacturaActual) {
 		if (cuenta == null)
 			return BigDecimal.ZERO;
 
-		List<Long> idfacturas = dao.findSinCobroAbo(cuenta);
-		if (idfacturas == null || idfacturas.isEmpty())
+		long pendientes = (idfacturaActual == null)
+				? dao.findSinCobroAbo(cuenta).size()
+				: dao.countPendientesMultaExcluyendoFacturaActual(cuenta, idfacturaActual);
+		if (pendientes <= 2)
 			return BigDecimal.ZERO;
 
 		Definir definir = dao_definir.findTopByOrderByIddefinirDesc();

@@ -135,9 +135,8 @@ public class EmisionServicioOptimizadoV2 {
         // 2) Calcular rubros base
         // ---------------------------
         BigDecimal multa = BigDecimal.ZERO;
-        System.out.println("swRefacturacion: " + swRefacturacion);
         if (!swRefacturacion) {
-            multa = multas(cuenta);
+            multa = multas(cuenta, idfactura);
         }
         /*
          * BigDecimal multa_basura = multas_basura(cuenta);
@@ -445,7 +444,7 @@ public class EmisionServicioOptimizadoV2 {
             boolean swAdultoMayor,
             boolean swAguapotable) {
 
-        int consumo = Math.max(m3, 1);
+        int consumo = Math.max(m3, 0);
 
         EmisionOfCuentaDTO v = new EmisionOfCuentaDTO();
         v.setM3(consumo);
@@ -582,7 +581,6 @@ public class EmisionServicioOptimizadoV2 {
         if (v.getCategoria() == 9 && v.isSwAdultoMayor() && (v.getM3() > 34 && v.getM3() < 70)) {
             total = total.add(baseAlcantarilladoExcedente(v));
         }
-
         return total.add(hidrosuccionador(v, porc)).setScale(2, RM);
     }
 
@@ -700,6 +698,7 @@ public class EmisionServicioOptimizadoV2 {
          * BigDecimal parteVariable = Qs.multiply(m3).add(sumco);
          */
 
+
         BigDecimal total = TP.multiply(m.multiply(BigDecimal.valueOf(v.getM3())).add(sumco));
 
         return total.setScale(2, RM);
@@ -709,16 +708,17 @@ public class EmisionServicioOptimizadoV2 {
 
     private static final BigDecimal PORCENTAJE_MULTA = new BigDecimal("0.005");
 
-    public BigDecimal multas(Long cuenta) {
+    public BigDecimal multas(Long cuenta, Long idfacturaActual) {
         // Se recalculan en cada invocación → siempre es "hoy"
-        LocalDate fechaCorte = LocalDate.now();
+        if (cuenta == null) {
+            return ZERO;
+        }
 
-        List<Long> idfacturas = dao_facturas._calcularPendientesDeAbonados(
-                cuenta,
-                fechaCorte,
-                fechaCorte);
+        long pendientes = (idfacturaActual == null)
+                ? dao_facturas.findSinCobroAbo(cuenta).size()
+                : dao_facturas.countPendientesMultaExcluyendoFacturaActual(cuenta, idfacturaActual);
 
-        if (idfacturas == null || idfacturas.isEmpty() || idfacturas.size() < 1) {
+        if (pendientes <= 2) {
             return ZERO;
         }
 

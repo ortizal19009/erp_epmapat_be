@@ -88,7 +88,6 @@ public class ReportesjrApi {
          @RequestParam("jrxml") MultipartFile jrxml,
          @RequestParam("jasper") MultipartFile jasper) {
       try {
-         System.out.println("metodo: " + metodo);
          Reportesjr nuevo = repojrService.crearReporte(idrepoxopcion, nomrep, metodo, desrep, jrxml, jasper);
          return ResponseEntity.ok(nuevo);
       } catch (Exception e) {

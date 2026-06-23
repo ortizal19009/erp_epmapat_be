@@ -180,7 +180,6 @@ public class FacturasApi {
 	/* sincobro v-2.0 */
 	@GetMapping("/facSincobrar")
 	public List<FacSinCobrar> findFacSincobro(@RequestParam Long idcliente) {
-		System.out.println("idcliente: " + idcliente);
 		return facServicio.findFacSincobro(idcliente);
 	}
 

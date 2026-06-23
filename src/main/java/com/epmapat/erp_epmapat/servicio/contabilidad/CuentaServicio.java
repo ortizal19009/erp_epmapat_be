@@ -205,7 +205,6 @@ public class CuentaServicio {
    }
 
    public List<SaldoCuentasDTO> calcularSaldosPorCodcue(String codcue, LocalDate desde, LocalDate hasta) {
-      // System.out.println("codcue en servicio: " + codcue);
       List<Cuentas> cuentas = dao.findByCodcueStartingWithOrderByCodcue(codcue);
       return cuentas.stream()
             .map(c -> calcularSaldosDeCuenta(c, desde, hasta))
