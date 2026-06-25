@@ -15,7 +15,6 @@ import com.epmapat.erp_epmapat.modelo.administracion.Documentos;
 public class SuspensionesM {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idsuspension;
 	private Long tipo; 
 	@ManyToOne(fetch = FetchType.LAZY)
