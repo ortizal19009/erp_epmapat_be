@@ -648,6 +648,227 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 					"AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165) AND (rf.estado <> 0 OR rf.estado IS NULL)", nativeQuery = true)
 	public Page<CVFacturasNoConsumo> getCVByNoConsumo(LocalDate fecha, Pageable pageable);
 
+	@Query(value = """
+			WITH facturas_filtradas AS (
+			    SELECT
+			        f.idfactura,
+			        f.idabonado
+			    FROM facturas f
+			    JOIN abonados a ON a.idabonado = f.idabonado
+			    WHERE f.totaltarifa > 0
+			      AND f.feccrea <= :fecha
+			      AND (((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= :fecha OR f.fechacobro IS NULL)) OR f.estado = 3)
+			      AND f.fechaconvenio IS NULL
+			      AND f.fechaeliminacion IS NULL
+			      AND (f.idmodulo = 3 OR f.idmodulo = 4)
+			      AND f.idabonado > 0
+			      AND (:estado IS NULL OR a.estado = :estado)
+			      AND (:idcategoria IS NULL OR a.idcategoria_categorias = :idcategoria)
+			      AND (:idruta IS NULL OR a.idruta_rutas = :idruta)
+			),
+			rubros_por_factura AS (
+			    SELECT
+			        rf.idfactura_facturas AS idfactura,
+			        CAST(COALESCE(SUM(rf.cantidad * rf.valorunitario), 0) AS numeric(18,2)) AS valor
+			    FROM rubroxfac rf
+			    WHERE rf.idrubro_rubros NOT IN (79, 5, 165)
+			      AND (rf.estado <> 0 OR rf.estado IS NULL)
+			    GROUP BY rf.idfactura_facturas
+			),
+			intereses_por_factura AS (
+			    SELECT
+			        t.idfactura,
+			        CAST(COALESCE(SUM(t.interesapagar), 0) AS numeric(18,2)) AS interes
+			    FROM tmpinteresxfac t
+			    GROUP BY t.idfactura
+			)
+			SELECT
+			    a.idabonado AS cuenta,
+			    c.idcliente AS idcliente,
+			    c.nombre AS responsable,
+			    c.cedula AS identificacion,
+			    ct.descripcion AS categoria,
+			    r.descripcion AS ruta,
+			    a.estado AS estado,
+			    CAST(COALESCE(SUM(rpf.valor), 0) AS numeric(18,2)) AS valor,
+			    CAST(COALESCE(SUM(ipf.interes), 0) AS numeric(18,2)) AS interes,
+			    CAST(COALESCE(SUM(rpf.valor), 0) + COALESCE(SUM(ipf.interes), 0) AS numeric(18,2)) AS totaldeuda,
+			    COUNT(DISTINCT ff.idfactura) AS facturas
+			FROM abonados a
+			JOIN clientes c ON a.idresponsable = c.idcliente
+			JOIN categorias ct ON a.idcategoria_categorias = ct.idcategoria
+			JOIN rutas r ON a.idruta_rutas = r.idruta
+			JOIN facturas_filtradas ff ON ff.idabonado = a.idabonado
+			LEFT JOIN rubros_por_factura rpf ON rpf.idfactura = ff.idfactura
+			LEFT JOIN intereses_por_factura ipf ON ipf.idfactura = ff.idfactura
+			GROUP BY
+			    a.idabonado, c.idcliente, c.nombre, c.cedula, ct.descripcion, r.descripcion, a.estado
+			ORDER BY valor DESC
+			""", countQuery = """
+			SELECT COUNT(*)
+			FROM (
+			    SELECT a.idabonado
+			    FROM abonados a
+			    JOIN clientes c ON a.idresponsable = c.idcliente
+			    JOIN categorias ct ON a.idcategoria_categorias = ct.idcategoria
+			    JOIN rutas r ON a.idruta_rutas = r.idruta
+			    JOIN facturas f ON f.idabonado = a.idabonado
+			    JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
+			    WHERE f.totaltarifa > 0
+			      AND f.feccrea <= :fecha
+			      AND (((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= :fecha OR f.fechacobro IS NULL)) OR f.estado = 3)
+			      AND f.fechaconvenio IS NULL
+			      AND f.fechaeliminacion IS NULL
+			      AND (f.idmodulo = 3 OR f.idmodulo = 4)
+			      AND f.idabonado > 0
+			      AND rf.idrubro_rubros NOT IN (79, 5, 165)
+			      AND (rf.estado <> 0 OR rf.estado IS NULL)
+			      AND (:estado IS NULL OR a.estado = :estado)
+			      AND (:idcategoria IS NULL OR a.idcategoria_categorias = :idcategoria)
+			      AND (:idruta IS NULL OR a.idruta_rutas = :idruta)
+			    GROUP BY a.idabonado
+			) sub
+			""", nativeQuery = true)
+	Page<CVAbonados> getCVAbonados(
+			@Param("fecha") LocalDate fecha,
+			@Param("estado") Long estado,
+			@Param("idcategoria") Long idcategoria,
+			@Param("idruta") Long idruta,
+			Pageable pageable);
+
+	@Query(value = """
+			SELECT DISTINCT f.idfactura
+			FROM abonados a
+			JOIN facturas f ON f.idabonado = a.idabonado
+			WHERE f.totaltarifa > 0
+			  AND f.feccrea <= :fecha
+			  AND (((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= :fecha OR f.fechacobro IS NULL)) OR f.estado = 3)
+			  AND f.fechaconvenio IS NULL
+			  AND f.fechaeliminacion IS NULL
+			  AND (f.idmodulo = 3 OR f.idmodulo = 4)
+			  AND f.idabonado > 0
+			  AND (:estado IS NULL OR a.estado = :estado)
+			  AND (:idcategoria IS NULL OR a.idcategoria_categorias = :idcategoria)
+			  AND (:idruta IS NULL OR a.idruta_rutas = :idruta)
+			""", nativeQuery = true)
+	List<Long> getCvAbonadoFacturaIds(
+			@Param("fecha") LocalDate fecha,
+			@Param("estado") Long estado,
+			@Param("idcategoria") Long idcategoria,
+			@Param("idruta") Long idruta);
+
+	@Query(value = """
+			SELECT a.idabonado AS cuenta
+			FROM abonados a
+			JOIN facturas f ON f.idabonado = a.idabonado
+			JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
+			WHERE f.totaltarifa > 0
+			  AND f.feccrea <= :fecha
+			  AND (((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= :fecha OR f.fechacobro IS NULL)) OR f.estado = 3)
+			  AND f.fechaconvenio IS NULL
+			  AND f.fechaeliminacion IS NULL
+			  AND (f.idmodulo = 3 OR f.idmodulo = 4)
+			  AND f.idabonado > 0
+			  AND rf.idrubro_rubros NOT IN (79, 5, 165)
+			  AND (rf.estado <> 0 OR rf.estado IS NULL)
+			  AND (:estado IS NULL OR a.estado = :estado)
+			  AND (:idcategoria IS NULL OR a.idcategoria_categorias = :idcategoria)
+			  AND (:idruta IS NULL OR a.idruta_rutas = :idruta)
+			GROUP BY a.idabonado
+			ORDER BY CAST(COALESCE(SUM(rf.cantidad * rf.valorunitario), 0) AS numeric(18,2)) DESC
+			""", countQuery = """
+			SELECT COUNT(*)
+			FROM (
+			    SELECT a.idabonado
+			    FROM abonados a
+			    JOIN facturas f ON f.idabonado = a.idabonado
+			    JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
+			    WHERE f.totaltarifa > 0
+			      AND f.feccrea <= :fecha
+			      AND (((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= :fecha OR f.fechacobro IS NULL)) OR f.estado = 3)
+			      AND f.fechaconvenio IS NULL
+			      AND f.fechaeliminacion IS NULL
+			      AND (f.idmodulo = 3 OR f.idmodulo = 4)
+			      AND f.idabonado > 0
+			      AND rf.idrubro_rubros NOT IN (79, 5, 165)
+			      AND (rf.estado <> 0 OR rf.estado IS NULL)
+			      AND (:estado IS NULL OR a.estado = :estado)
+			      AND (:idcategoria IS NULL OR a.idcategoria_categorias = :idcategoria)
+			      AND (:idruta IS NULL OR a.idruta_rutas = :idruta)
+			    GROUP BY a.idabonado
+			) sub
+			""", nativeQuery = true)
+	Page<Long> getCvAbonadoCuentasPage(
+			@Param("fecha") LocalDate fecha,
+			@Param("estado") Long estado,
+			@Param("idcategoria") Long idcategoria,
+			@Param("idruta") Long idruta,
+			Pageable pageable);
+
+	@Query(value = """
+			WITH intereses_por_factura AS (
+			    SELECT
+			        t.idfactura,
+			        CAST(COALESCE(SUM(t.interesapagar), 0) AS numeric(18,2)) AS interes
+			    FROM tmpinteresxfac t
+			    GROUP BY t.idfactura
+			)
+			SELECT
+			    rf.idfactura_facturas AS factura,
+			    c.nombre,
+			    c.idcliente,
+			    m.descripcion AS modulo,
+			    CAST(COALESCE(SUM(rf.cantidad * rf.valorunitario), 0) AS numeric(18,2)) AS total,
+			    CAST(COALESCE(MAX(ipf.interes), 0) AS numeric(18,2)) AS interes,
+			    CAST(COALESCE(SUM(rf.cantidad * rf.valorunitario), 0) + COALESCE(MAX(ipf.interes), 0) AS numeric(18,2)) AS totaldeuda,
+			    f.idabonado AS cuenta,
+			    f.feccrea
+			FROM rubroxfac rf
+			JOIN facturas f ON rf.idfactura_facturas = f.idfactura
+			JOIN rubros r ON rf.idrubro_rubros = r.idrubro
+			JOIN clientes c ON f.idcliente = c.idcliente
+			JOIN modulos m ON f.idmodulo = m.idmodulo
+			LEFT JOIN intereses_por_factura ipf ON ipf.idfactura = f.idfactura
+			WHERE f.totaltarifa > 0
+			  AND f.feccrea <= :fecha
+			  AND (((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= :fecha OR f.fechacobro IS NULL)) OR f.estado = 3)
+			  AND (f.idmodulo = 3 OR f.idmodulo = 4)
+			  AND f.idabonado = :cuenta
+			  AND f.fechaconvenio IS NULL
+			  AND f.fechaeliminacion IS NULL
+			  AND rf.idrubro_rubros NOT IN (79, 5, 165)
+			  AND (rf.estado <> 0 OR rf.estado IS NULL)
+			GROUP BY rf.idfactura_facturas, c.nombre, c.idcliente, m.descripcion, f.idabonado, f.feccrea
+			ORDER BY total DESC
+			""", nativeQuery = true)
+	List<CVFacturasNoConsumo> getCvFacturasByAbonado(@Param("cuenta") Long cuenta, @Param("fecha") LocalDate fecha);
+
+	@Query(value = """
+			SELECT DISTINCT f.idfactura
+			FROM facturas f
+			WHERE f.totaltarifa > 0
+			  AND f.feccrea <= :fecha
+			  AND (((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= :fecha OR f.fechacobro IS NULL)) OR f.estado = 3)
+			  AND (f.idmodulo = 3 OR f.idmodulo = 4)
+			  AND f.idabonado = :cuenta
+			  AND f.fechaconvenio IS NULL
+			  AND f.fechaeliminacion IS NULL
+			""", nativeQuery = true)
+	List<Long> getCvFacturaIdsByAbonado(@Param("cuenta") Long cuenta, @Param("fecha") LocalDate fecha);
+
+	@Query(value = """
+			SELECT DISTINCT f.idfactura
+			FROM facturas f
+			WHERE f.totaltarifa > 0
+			  AND f.feccrea <= :fecha
+			  AND (((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= :fecha OR f.fechacobro IS NULL)) OR f.estado = 3)
+			  AND (f.idmodulo = 3 OR f.idmodulo = 4)
+			  AND f.idabonado IN (:cuentas)
+			  AND f.fechaconvenio IS NULL
+			  AND f.fechaeliminacion IS NULL
+			""", nativeQuery = true)
+	List<Long> getCvFacturaIdsByAbonados(@Param("cuentas") List<Long> cuentas, @Param("fecha") LocalDate fecha);
+
 	/* CONSULTA PARA LAS REMISIONES DE MULTAS HE INTERESES */
 	@Query(value = "SELECT f.idfactura, m.descripcion, f.feccrea, SUM(rf.valorunitario * rf.cantidad) AS total " +
 			"FROM rubroxfac rf " +

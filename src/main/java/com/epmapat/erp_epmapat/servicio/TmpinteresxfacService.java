@@ -115,5 +115,20 @@ public class TmpinteresxfacService {
         return intereses;
     }
 
+    @Transactional
+    public Map<Long, BigDecimal> refreshByIdFacturas(Collection<Long> idfacturas) {
+        if (idfacturas == null || idfacturas.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, BigDecimal> intereses = new HashMap<>();
+        idfacturas.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .forEach(idfactura -> intereses.put(idfactura, upsertInteresFactura(idfactura)));
+
+        return intereses;
+    }
+
 
 }

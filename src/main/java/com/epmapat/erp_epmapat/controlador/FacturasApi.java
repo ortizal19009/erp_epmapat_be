@@ -651,6 +651,24 @@ public class FacturasApi {
 		return ResponseEntity.ok(facServicio.getCVByNoConsumo(fecha, page, size));
 	}
 
+	@GetMapping("/CV_abonados")
+	public ResponseEntity<Page<CVAbonados>> getCVAbonados(
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+			@RequestParam(required = false) Long estado,
+			@RequestParam(required = false) Long idcategoria,
+			@RequestParam(required = false) Long idruta,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+		return ResponseEntity.ok(facServicio.getCVAbonados(fecha, estado, idcategoria, idruta, page, size));
+	}
+
+	@GetMapping("/reportes/cv_facxabonado")
+	public ResponseEntity<List<CVFacturasNoConsumo>> getCvFacturasByAbonado(
+			@RequestParam Long cuenta,
+			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+		return ResponseEntity.ok(facServicio.getCvFacturasByAbonado(cuenta, fecha));
+	}
+
 	@GetMapping("/remisiones")
 	public ResponseEntity<List<RemiDTO>> getFacForRemisiones(@RequestParam Long idcliente,
 			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechatope) {

@@ -78,6 +78,9 @@ public class FacturaServicio {
 	private Fec_factura_pagosR fecFacturaPagosR;
 	@Autowired
 	private AuditoriaGenericaService auditoriaGenericaService;
+	@Autowired
+	@Lazy
+	private TmpinteresxfacService tmpinteresxfacService;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -522,6 +525,15 @@ public class FacturaServicio {
 	public Page<CVFacturasNoConsumo> getCVByNoConsumo(LocalDate fecha, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		return dao.getCVByNoConsumo(fecha, pageable);
+	}
+
+	public Page<CVAbonados> getCVAbonados(LocalDate fecha, Long estado, Long idcategoria, Long idruta, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return dao.getCVAbonados(fecha, estado, idcategoria, idruta, pageable);
+	}
+
+	public List<CVFacturasNoConsumo> getCvFacturasByAbonado(Long cuenta, LocalDate fecha) {
+		return dao.getCvFacturasByAbonado(cuenta, fecha);
 	}
 
 	public List<RemiDTO> getFacForRemisiones(Long idcliente, LocalDate topefecha) {

@@ -90,7 +90,7 @@ public class AbonadoServicio {
 	}
 
 	public Page<Abonados> findByIdruta(Long idruta, Pageable pageable) {
-		return dao.findByIdruta(idruta, pageable);
+		return hydratePage(dao.findByIdruta(idruta, pageable));
 	}
 
 	// Abonados por Categoría
@@ -99,7 +99,7 @@ public class AbonadoServicio {
 	}
 
 	public Page<Abonados> findByIdcategoria(Long idcategoria, Pageable pageable) {
-		return dao.findByIdcategoria(idcategoria, pageable);
+		return hydratePage(dao.findByIdcategoria(idcategoria, pageable));
 	}
 
 	public List<Abonados> findByIdCliente(Long idcliente) {
@@ -212,7 +212,7 @@ public class AbonadoServicio {
 	}
 
 	public Page<Abonados> findByEstado(Long estado, Pageable pageable) {
-		return dao.findByEstado(estado, pageable);
+		return hydratePage(dao.findByEstado(estado, pageable));
 	}
 
 	public Page<Abonados> buscar(
@@ -223,14 +223,18 @@ public class AbonadoServicio {
 			Long cuenta,
 			String ruta,
 			Pageable pageable) {
-		return dao.buscarConFiltros(
+		return hydratePage(dao.buscarConFiltros(
 				idruta,
 				responsable,
 				estado,
 				cedula,
 				cuenta,
 				ruta,
-				pageable);
+				pageable));
+	}
+
+	private Page<Abonados> hydratePage(Page<Abonados> page) {
+		return page.map(abonado -> dao.findById(abonado.getIdabonado()).orElse(abonado));
 	}
 
 	public Abonados actualizarGeolocalizacionConAuditoria(Long idabonado, String geolocalizacion, Long usumodi, String observacion, String tipo) {

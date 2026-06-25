@@ -82,19 +82,49 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	@Query(value = "SELECT * FROM abonados as a JOIN clientes AS c ON a.idcliente_clientes = c.idcliente WHERE (a.estado = 1 or a.estado = 2) and a.idruta_rutas=?1 ORDER BY c.nombre", nativeQuery = true)
 	public List<Abonados> findByIdruta(Long idruta);
 
-	@Query(value = "SELECT * FROM abonados as a JOIN clientes AS c ON a.idcliente_clientes = c.idcliente WHERE (a.estado = 1 or a.estado = 2) and a.idruta_rutas=?1 ORDER BY c.nombre", nativeQuery = true)
-	public Page<Abonados> findByIdruta(Long idruta, Pageable pageable);
+	@EntityGraph(attributePaths = {
+			"idresponsable",
+			"idcliente_clientes",
+			"idcategoria_categorias",
+			"idruta_rutas",
+			"idestadom_estadom"
+	})
+	@Query("""
+			SELECT a
+			FROM Abonados a
+			WHERE (a.estado = 1 OR a.estado = 2)
+			  AND a.idruta_rutas.idruta = :idruta
+			""")
+	public Page<Abonados> findByIdruta(@Param("idruta") Long idruta, Pageable pageable);
 
 	// Abonados de una Categoria
 	@Query(value = "SELECT * FROM abonados WHERE idcategoria_categorias=?1", nativeQuery = true)
 	public List<Abonados> findByIdcategoria(Long idcategoria);
 
-	@Query(value = "SELECT * FROM abonados WHERE idcategoria_categorias=?1", nativeQuery = true)
-	public Page<Abonados> findByIdcategoria(Long idcategoria, Pageable pageable);
+	@EntityGraph(attributePaths = {
+			"idresponsable",
+			"idcliente_clientes",
+			"idcategoria_categorias",
+			"idruta_rutas",
+			"idestadom_estadom"
+	})
+	@Query("""
+			SELECT a
+			FROM Abonados a
+			WHERE a.idcategoria_categorias.idcategoria = :idcategoria
+			""")
+	public Page<Abonados> findByIdcategoria(@Param("idcategoria") Long idcategoria, Pageable pageable);
 
 	@Query(value = "SELECT * FROM abonados WHERE estado=?1", nativeQuery = true)
 	public List<Abonados> findByEstado(Long estado);
 
+	@EntityGraph(attributePaths = {
+			"idresponsable",
+			"idcliente_clientes",
+			"idcategoria_categorias",
+			"idruta_rutas",
+			"idestadom_estadom"
+	})
 	@Query("""
 			SELECT a
 			FROM Abonados a

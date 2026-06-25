@@ -12,6 +12,10 @@ public interface CVFacturasNoConsumo {
 
     BigDecimal getTotal();
 
+    BigDecimal getInteres();
+
+    BigDecimal getTotaldeuda();
+
     Long getCuenta();
 
     BigDecimal getTotalFactura();
