@@ -18,6 +18,9 @@ public class SuspensionesM {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idsuspension;
 	private Long tipo; 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "idsuspension_origen")
+	private SuspensionesM idsuspension_origen;
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
 	@Column(name = "fecha")
@@ -44,11 +47,12 @@ public class SuspensionesM {
 		super();
 		
 	}
-	public SuspensionesM(Long idsuspension, Long tipo, Date fecha, Long numero, Documentos iddocumento_documentos,
+	public SuspensionesM(Long idsuspension, Long tipo, SuspensionesM idsuspension_origen, Date fecha, Long numero, Documentos iddocumento_documentos,
 			String numdoc, String observa, Long usucrea, Date feccrea, Long usumodi, Date fecmodi, Long total) {
 		super();
 		this.idsuspension = idsuspension;
 		this.tipo = tipo;
+		this.idsuspension_origen = idsuspension_origen;
 		this.fecha = fecha;
 		this.numero = numero;
 		this.iddocumento_documentos = iddocumento_documentos;
@@ -69,6 +73,12 @@ public class SuspensionesM {
 	}
 	public Long getTipo() {
 		return tipo;
+	}
+	public SuspensionesM getIdsuspension_origen() {
+		return idsuspension_origen;
+	}
+	public void setIdsuspension_origen(SuspensionesM idsuspension_origen) {
+		this.idsuspension_origen = idsuspension_origen;
 	}
 	public Long getTotal() {
 		return total;

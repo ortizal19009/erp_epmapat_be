@@ -119,7 +119,10 @@ public class SuspensionesS implements SuspensionesR{
 
 	@Override
 	public <S extends SuspensionesM> S save(S entity) {
-		
+		if (entity != null && entity.getIdsuspension() == null) {
+			entity.setIdsuspension(suspensionesR.findNextIdsuspension());
+		}
+
 		return suspensionesR.save(entity);
 	}
 

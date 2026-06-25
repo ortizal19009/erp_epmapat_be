@@ -13,9 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
+import com.epmapat.erp_epmapat.DTO.CierreRutaReporteDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
 import com.epmapat.erp_epmapat.DTO.LecturasAuditDTO;
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
+import com.epmapat.erp_epmapat.interfaces.CierreRutaCategoria;
+import com.epmapat.erp_epmapat.interfaces.CierreRutaMultaDetalle;
+import com.epmapat.erp_epmapat.interfaces.CierreRutaResumenTotales;
+import com.epmapat.erp_epmapat.interfaces.CierreRutaRubroResumen;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
@@ -28,6 +33,7 @@ import com.epmapat.erp_epmapat.modelo.Categorias;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.modelo.Pliego24;
+import com.epmapat.erp_epmapat.modelo.Rutasxemision;
 import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
@@ -55,6 +61,8 @@ public class LecturaServicio {
 	private RubroxfacR dao_rubroxfac;
 	@Autowired
 	private AuditoriaGenericaService auditoriaService;
+	@Autowired
+	private RutasxemisionServicio rutasxemisionServicio;
 
 	// Lectura por Planilla
 	public Lecturas findOnefactura(Long idfactura) {
@@ -276,6 +284,28 @@ public class LecturaServicio {
 
 	public List<CountRubrosByEmision> getCuentaRubrosByEmision(long idemision) {
 		return dao.getCuentaRubrosByEmision(idemision);
+	}
+
+	public CierreRutaReporteDTO getReporteCierreRuta(Long idrutaxemision) {
+		Rutasxemision ruta = rutasxemisionServicio.findById(idrutaxemision)
+				.orElseThrow(() -> new RuntimeException("No existe la ruta por emision: " + idrutaxemision));
+
+		CierreRutaResumenTotales totales = dao.getResumenCierreRuta(idrutaxemision);
+		List<CierreRutaCategoria> categorias = dao.getCategoriasCierreRuta(idrutaxemision);
+		List<CierreRutaRubroResumen> rubros = dao.getRubrosCierreRuta(idrutaxemision);
+		List<CierreRutaMultaDetalle> multas = dao.getMultasCierreRuta(idrutaxemision);
+
+		return new CierreRutaReporteDTO(
+				ruta.getIdrutaxemision(),
+				ruta.getIdemision_emisiones() == null ? null : ruta.getIdemision_emisiones().getIdemision(),
+				ruta.getIdemision_emisiones() == null ? null : ruta.getIdemision_emisiones().getEmision(),
+				ruta.getIdruta_rutas() == null ? null : ruta.getIdruta_rutas().getIdruta(),
+				ruta.getIdruta_rutas() == null ? null : ruta.getIdruta_rutas().getDescripcion(),
+				ruta.getFechacierre(),
+				totales,
+				categorias,
+				rubros,
+				multas);
 	}
 
 	/* CALCULO DEL PLIEGO TARIFARIO */
@@ -662,7 +692,7 @@ public class LecturaServicio {
 		 * }
 		 */
 
-		if (nroPendientes > 2) {
+		if (nroPendientes > 0) {
 			Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último
 			if (definir != null) {
 				BigDecimal rbu = definir.getRbu();

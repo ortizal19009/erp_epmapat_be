@@ -35,4 +35,9 @@ public class AboxSuspensionC {
 	public List<AboxSuspensionM> getByIdsuspension(@PathVariable Long idsuspension){
 		return aboxsuspensionS.findByIdsuspension(idsuspension);
 	}
+
+	@GetMapping("/abonado/{idabonado}/ultima-activa")
+	public AboxSuspensionM getUltimaSuspensionActivaByAbonado(@PathVariable Long idabonado) {
+		return aboxsuspensionS.findUltimaSuspensionActivaByAbonado(idabonado).orElse(null);
+	}
 }

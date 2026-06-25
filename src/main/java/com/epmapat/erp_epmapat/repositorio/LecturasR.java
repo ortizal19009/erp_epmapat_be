@@ -16,6 +16,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.scheduling.annotation.Async;
 
 import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
+import com.epmapat.erp_epmapat.interfaces.CierreRutaCategoria;
+import com.epmapat.erp_epmapat.interfaces.CierreRutaMultaDetalle;
+import com.epmapat.erp_epmapat.interfaces.CierreRutaResumenTotales;
+import com.epmapat.erp_epmapat.interfaces.CierreRutaRubroResumen;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
 import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
@@ -398,6 +402,129 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			   AND COUNT(rf.idrubro_rubros) = 0
 			""", nativeQuery = true)
 	List<EmisionesInterface> GetCuentasCeros(Long idemision);
+
+	@Query(value = """
+			SELECT
+				COUNT(DISTINCT l.idabonado_abonados) AS cuentas,
+				COALESCE(SUM(l.lecturaactual - l.lecturaanterior), 0) AS m3,
+				COALESCE(SUM(f.totaltarifa), 0) AS total
+			FROM lecturas l
+			JOIN facturas f ON l.idfactura = f.idfactura
+			WHERE l.idrutaxemision_rutasxemision = ?1
+			  AND f.fechaeliminacion IS NULL
+			  AND f.fechaanulacion IS NULL
+			""", nativeQuery = true)
+	public CierreRutaResumenTotales getResumenCierreRuta(Long idrutaxemision);
+
+	@Query(value = """
+			SELECT
+				c.idcategoria AS idcategoria,
+				c.descripcion AS descripcion,
+				COUNT(DISTINCT l.idabonado_abonados) AS cuentas,
+				COALESCE(SUM(f.totaltarifa), 0) AS total
+			FROM lecturas l
+			JOIN facturas f ON l.idfactura = f.idfactura
+			JOIN categorias c ON l.idcategoria = c.idcategoria
+			WHERE l.idrutaxemision_rutasxemision = ?1
+			  AND f.fechaeliminacion IS NULL
+			  AND f.fechaanulacion IS NULL
+			GROUP BY c.idcategoria, c.descripcion
+			ORDER BY c.descripcion
+			""", nativeQuery = true)
+	public List<CierreRutaCategoria> getCategoriasCierreRuta(Long idrutaxemision);
+
+	@Query(value = """
+			SELECT
+				r.idrubro AS idrubro,
+				r.descripcion AS descripcion,
+				COALESCE(SUM(rf.cantidad * rf.valorunitario), 0) AS total,
+				COUNT(DISTINCT l.idabonado_abonados) AS abonados
+			FROM lecturas l
+			JOIN facturas f ON l.idfactura = f.idfactura
+			JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas AND (rf.estado IS NULL OR rf.estado <> 0)
+			JOIN rubros r ON rf.idrubro_rubros = r.idrubro
+			WHERE l.idrutaxemision_rutasxemision = ?1
+			  AND f.fechaeliminacion IS NULL
+			  AND f.fechaanulacion IS NULL
+			GROUP BY r.idrubro, r.descripcion
+			ORDER BY r.idrubro
+			""", nativeQuery = true)
+	public List<CierreRutaRubroResumen> getRubrosCierreRuta(Long idrutaxemision);
+
+	@Query(value = """
+			WITH cierre AS (
+				SELECT rx.idrutaxemision, rx.fechacierre, rx.idemision_emisiones AS idemision
+				FROM rutasxemision rx
+				WHERE rx.idrutaxemision = ?1
+			),
+			cuentas_multa AS (
+				SELECT DISTINCT l.idabonado_abonados AS cuenta, l.idfactura
+				FROM lecturas l
+				JOIN facturas f ON l.idfactura = f.idfactura
+				JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas AND (rf.estado IS NULL OR rf.estado <> 0)
+				WHERE l.idrutaxemision_rutasxemision = ?1
+				  AND f.fechaeliminacion IS NULL
+				  AND f.fechaanulacion IS NULL
+				  AND rf.idrubro_rubros = 6
+			),
+			pendientes_al_cierre AS (
+				SELECT
+					f.idabonado,
+					COUNT(*) AS pendientesalcierre,
+					STRING_AGG(CAST(f.idfactura AS text), ', ' ORDER BY f.feccrea, f.idfactura) AS facturaspendientes
+				FROM facturas f
+				CROSS JOIN cierre c
+				WHERE f.idabonado IS NOT NULL
+				  AND f.feccrea <= c.fechacierre
+				  AND f.fechaeliminacion IS NULL
+				  AND f.fechaanulacion IS NULL
+				  AND COALESCE(f.estadoconvenio, 0) = 0
+				  AND NOT EXISTS (
+					  SELECT 1
+					  FROM lecturas lx
+					  WHERE lx.idfactura = f.idfactura
+					    AND lx.idemision > c.idemision
+				  )
+				  AND (
+					  COALESCE(f.pagado, 0) = 0
+					  OR f.fechacobro IS NULL
+					  OR f.fechacobro > c.fechacierre
+				  )
+				GROUP BY f.idabonado
+			)
+			SELECT
+				a.idabonado AS cuenta,
+				cl.nombre AS nombre,
+				cat.descripcion AS categoria,
+				f.idfactura AS idfactura,
+				f.nrofactura AS nrofactura,
+				COALESCE(SUM(rf.cantidad * rf.valorunitario), 0) AS multa,
+				COALESCE(p.pendientesalcierre, 0) AS pendientesalcierre,
+				COALESCE(p.facturaspendientes, '') AS facturaspendientes,
+				COALESCE(f.totaltarifa, 0) AS totalfactura,
+				f.fechacobro AS fechacobro
+			FROM cuentas_multa cm
+			JOIN facturas f ON cm.idfactura = f.idfactura
+			JOIN abonados a ON cm.cuenta = a.idabonado
+			JOIN clientes cl ON a.idcliente_clientes = cl.idcliente
+			LEFT JOIN categorias cat ON a.idcategoria_categorias = cat.idcategoria
+			JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas
+				AND (rf.estado IS NULL OR rf.estado <> 0)
+				AND rf.idrubro_rubros = 6
+			LEFT JOIN pendientes_al_cierre p ON p.idabonado = a.idabonado
+			GROUP BY
+				a.idabonado,
+				cl.nombre,
+				cat.descripcion,
+				f.idfactura,
+				f.nrofactura,
+				p.pendientesalcierre,
+				p.facturaspendientes,
+				f.totaltarifa,
+				f.fechacobro
+			ORDER BY a.idabonado, f.idfactura
+			""", nativeQuery = true)
+	public List<CierreRutaMultaDetalle> getMultasCierreRuta(Long idrutaxemision);
 
 	@Query(value = """
 			  SELECT

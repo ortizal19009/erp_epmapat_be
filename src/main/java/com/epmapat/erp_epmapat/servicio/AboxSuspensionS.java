@@ -24,6 +24,10 @@ public class AboxSuspensionS implements AboxSuspensionR{
 	public List<AboxSuspensionM> findByIdsuspension(Long idsuspension) {
 		return aboxsuspensionR.findByIdsuspension(idsuspension);
 	}
+
+	public Optional<AboxSuspensionM> findUltimaSuspensionActivaByAbonado(Long idabonado) {
+		return aboxsuspensionR.findUltimaSuspensionActivaByAbonado(idabonado);
+	}
 	
 	@Override
 	public List<AboxSuspensionM> findAll() {

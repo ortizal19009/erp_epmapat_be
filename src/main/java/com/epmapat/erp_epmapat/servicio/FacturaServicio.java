@@ -1018,7 +1018,7 @@ public class FacturaServicio {
 		long pendientes = (idfacturaActual == null)
 				? dao.findSinCobroAbo(cuenta).size()
 				: dao.countPendientesMultaExcluyendoFacturaActual(cuenta, idfacturaActual);
-		if (pendientes <= 2)
+		if (pendientes <= 0)
 			return BigDecimal.ZERO;
 
 		Definir definir = dao_definir.findTopByOrderByIddefinirDesc();

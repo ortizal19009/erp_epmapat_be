@@ -722,7 +722,7 @@ public class EmisionServicioOptimizadoV2 {
                 ? dao_facturas.findSinCobroAbo(cuenta).size()
                 : dao_facturas.countPendientesMultaExcluyendoFacturaActual(cuenta, idfacturaActual);
 
-        if (pendientes <= 2) {
+        if (pendientes <= 0) {
             return ZERO;
         }
 

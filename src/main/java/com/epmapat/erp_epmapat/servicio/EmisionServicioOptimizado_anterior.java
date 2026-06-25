@@ -510,7 +510,7 @@ public class EmisionServicioOptimizado_anterior {
             return ZERO;
 
         long nroPendientes = idfacturas.size();
-        if (nroPendientes <= 2)
+        if (nroPendientes <= 0)
             return ZERO;
 
         Definir definir = dao_definir.findTopByOrderByIddefinirDesc();

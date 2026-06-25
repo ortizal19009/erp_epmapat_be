@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.util.StringUtils;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
+import com.epmapat.erp_epmapat.DTO.CierreRutaReporteDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
 import com.epmapat.erp_epmapat.DTO.LecturaUploadItemDto;
 import com.epmapat.erp_epmapat.DTO.LecturasByRutasRequest;
@@ -375,6 +376,11 @@ public class LecturasApi {
 	@GetMapping("/reportes/rubrozero")
 	public ResponseEntity<List<CountRubrosByEmision>> getCuentaRubrosByEmision(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.getCuentaRubrosByEmision(idemision));
+	}
+
+	@GetMapping("/reportes/cierre-ruta")
+	public ResponseEntity<CierreRutaReporteDTO> getReporteCierreRuta(@RequestParam Long idrutaxemision) {
+		return ResponseEntity.ok(lecServicio.getReporteCierreRuta(idrutaxemision));
 	}
 
 	@PostMapping("/valoresEmisiones")

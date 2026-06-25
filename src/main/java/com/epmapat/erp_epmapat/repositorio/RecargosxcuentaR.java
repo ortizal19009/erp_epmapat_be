@@ -19,6 +19,7 @@ public interface RecargosxcuentaR extends JpaRepository<Recargosxcuenta, Long> {
                 LEFT JOIN FETCH a.idcliente_clientes
                 LEFT JOIN FETCH a.idcategoria_categorias
                 LEFT JOIN FETCH a.idruta_rutas
+                LEFT JOIN FETCH a.idestadom_estadom
                 LEFT JOIN FETCH r.idemision_emisiones e
                 LEFT JOIN FETCH r.idrubro_rubros ru
                 WHERE e.idemision = :idemision
@@ -34,6 +35,7 @@ public interface RecargosxcuentaR extends JpaRepository<Recargosxcuenta, Long> {
                 LEFT JOIN FETCH a.idcliente_clientes
                 LEFT JOIN FETCH a.idcategoria_categorias
                 LEFT JOIN FETCH a.idruta_rutas
+                LEFT JOIN FETCH a.idestadom_estadom
                 LEFT JOIN FETCH r.idemision_emisiones e
                 LEFT JOIN FETCH r.idrubro_rubros ru
                 WHERE a.idabonado = :idabonado

@@ -735,7 +735,7 @@ public class EmisionServicioOptimizado {
             return ZERO;
 
         long nroPendientes = dao_facturas.countPendientesMultaExcluyendoFacturaActual(cuenta, idfacturaActual);
-        if (nroPendientes <= 2)
+        if (nroPendientes <= 0)
             return ZERO;
 
         Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
