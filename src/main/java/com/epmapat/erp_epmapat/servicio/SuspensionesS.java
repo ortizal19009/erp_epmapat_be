@@ -15,11 +15,14 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.SuspensionesM;
 import com.epmapat.erp_epmapat.repositorio.SuspensionesR;
+import com.epmapat.erp_epmapat.repositorio.administracion.DocumentosR;
 
 @Service
 public class SuspensionesS implements SuspensionesR{
 	@Autowired
 	private SuspensionesR suspensionesR;
+	@Autowired
+	private DocumentosR documentosR;
 
 	@Override
 	public List<SuspensionesM> findAll() {
@@ -122,8 +125,29 @@ public class SuspensionesS implements SuspensionesR{
 		if (entity != null && entity.getIdsuspension() == null) {
 			entity.setIdsuspension(suspensionesR.findNextIdsuspension());
 		}
+		if (entity != null) {
+			entity.setNumero(obtenerSiguienteNumeroPorTipo(entity.getTipo()));
+		}
+		if (entity != null
+				&& entity.getIddocumento_documentos() != null
+				&& entity.getIddocumento_documentos().getIntdoc() != null) {
+			entity.setIddocumento_documentos(
+					documentosR.getReferenceById(entity.getIddocumento_documentos().getIntdoc()));
+		}
 
 		return suspensionesR.save(entity);
+	}
+
+	public SuspensionesM findUltimaPorTipo(Long tipo) {
+		if (tipo != null && tipo == 1L) {
+			return suspensionesR.findUltimaHabilitacion();
+		}
+		return suspensionesR.findUltimaSuspension();
+	}
+
+	public Long obtenerSiguienteNumeroPorTipo(Long tipo) {
+		SuspensionesM ultima = findUltimaPorTipo(tipo);
+		return ultima != null && ultima.getNumero() != null ? ultima.getNumero() + 1 : 1L;
 	}
 
 	@Override

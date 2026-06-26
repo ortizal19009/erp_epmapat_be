@@ -22,6 +22,12 @@ public interface SuspensionesR extends JpaRepository<SuspensionesM, Long>{
 
 	@Query(value = "SELECT COALESCE(MAX(idsuspension), 0) + 1 FROM suspensiones", nativeQuery = true)
 	Long findNextIdsuspension();
+
+	@Query(value = "SELECT * FROM suspensiones s WHERE s.tipo = 1 ORDER BY s.numero DESC NULLS LAST, s.idsuspension DESC LIMIT 1", nativeQuery = true)
+	SuspensionesM findUltimaHabilitacion();
+
+	@Query(value = "SELECT * FROM suspensiones s WHERE s.tipo IN (2, 3) ORDER BY s.numero DESC NULLS LAST, s.idsuspension DESC LIMIT 1", nativeQuery = true)
+	SuspensionesM findUltimaSuspension();
 	
 	SuspensionesM findFirstByOrderByIdsuspensionDesc();
 

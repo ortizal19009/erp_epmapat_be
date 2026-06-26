@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.epmapat.erp_epmapat.modelo.SuspensionesM;
 import com.epmapat.erp_epmapat.servicio.SuspensionesS;
@@ -71,6 +72,11 @@ public class SuspensionesC {
 	@GetMapping("/ultimo")
 	public SuspensionesM getUltima(){
 		return suspensionesS.findFirstByOrderByIdsuspensionDesc();
+	}
+
+	@GetMapping("/ultimo/portipo")
+	public SuspensionesM getUltimaPorTipo(@RequestParam Long tipo){
+		return suspensionesS.findUltimaPorTipo(tipo);
 	}
 
 }
