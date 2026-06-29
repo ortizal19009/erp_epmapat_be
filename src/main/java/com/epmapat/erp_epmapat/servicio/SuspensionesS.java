@@ -250,6 +250,21 @@ public class SuspensionesS implements SuspensionesR{
 	}
 
 	@Override
+	public Long findNextIdsuspension() {
+		return suspensionesR.findNextIdsuspension();
+	}
+
+	@Override
+	public SuspensionesM findUltimaHabilitacion() {
+		return suspensionesR.findUltimaHabilitacion();
+	}
+
+	@Override
+	public SuspensionesM findUltimaSuspension() {
+		return suspensionesR.findUltimaSuspension();
+	}
+
+	@Override
 	public List<SuspensionesM> findByFechaHabilitaciones(Date desde, Date hasta) {
 		return suspensionesR.findByFechaHabilitaciones(desde, hasta);
 	}
