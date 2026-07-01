@@ -10,7 +10,30 @@ import com.epmapat.erp_epmapat.modelo.Liquidafac;
 
 public interface LiquidafacR extends JpaRepository<Liquidafac, Serializable> {
 
-   @Query(value = "SELECT * FROM liquidafac WHERE idfacturacion_facturacion =?1 order by idliquidafac", nativeQuery = true)
-    public List<Liquidafac> findByIdfacturacion(Long idfacturacion);
+   @Query("""
+         SELECT l
+         FROM Liquidafac l
+         JOIN FETCH l.idfacturacion_facturacion f
+         LEFT JOIN FETCH f.idcliente_clientes
+         LEFT JOIN FETCH l.idfactura_facturas fac
+         LEFT JOIN FETCH fac.idcliente
+         LEFT JOIN FETCH fac.idmodulo
+         WHERE f.idfacturacion = ?1
+         ORDER BY l.idliquidafac
+         """)
+   public List<Liquidafac> findByIdfacturacion(Long idfacturacion);
+
+   @Query("""
+         SELECT l
+         FROM Liquidafac l
+         JOIN FETCH l.idfacturacion_facturacion f
+         LEFT JOIN FETCH f.idcliente_clientes c
+         LEFT JOIN FETCH l.idfactura_facturas fac
+         LEFT JOIN FETCH fac.idcliente
+         LEFT JOIN FETCH fac.idmodulo
+         WHERE COALESCE(f.cuotas, 0) > 0
+         ORDER BY f.idfacturacion DESC, l.cuota ASC, l.idliquidafac ASC
+         """)
+   List<Liquidafac> findPendientesFacturacionConDetalle();
         
 }
