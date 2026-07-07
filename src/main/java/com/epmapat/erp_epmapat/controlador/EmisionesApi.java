@@ -23,10 +23,12 @@ import org.springframework.data.repository.query.Param;
 import javax.servlet.http.HttpServletRequest;
 
 import com.epmapat.erp_epmapat.DTO.AnularEmisionRequest;
+import com.epmapat.erp_epmapat.DTO.EmisionGeneracionResponseDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.ResEmisiones;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.servicio.AuditoriaGenericaService;
+import com.epmapat.erp_epmapat.servicio.EmisionGeneracionServicio;
 import com.epmapat.erp_epmapat.servicio.EmisionMantenimientoServicio;
 import com.epmapat.erp_epmapat.servicio.EmisionServicio;
 import com.epmapat.erp_epmapat.servicio.MultaBasuraRepairService;
@@ -44,6 +46,8 @@ public class EmisionesApi {
 	private EmisionMantenimientoServicio emisionMantenimientoServicio;
 	@Autowired
 	private AuditoriaGenericaService auditoriaGenericaService;
+	@Autowired
+	private EmisionGeneracionServicio emisionGeneracionServicio;
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
@@ -69,6 +73,18 @@ public class EmisionesApi {
 	@PostMapping
 	public ResponseEntity<Emisiones> save(@RequestBody Emisiones x) {
 		return ResponseEntity.ok(emiServicio.save(x));
+	}
+
+	@PostMapping("/{idemision}/generar-pendientes")
+	public ResponseEntity<EmisionGeneracionResponseDTO> generarPendientes(
+			@PathVariable Long idemision,
+			@RequestParam(required = false, defaultValue = "0") Long idusuario) {
+		return ResponseEntity.ok(emisionGeneracionServicio.generarPendientes(idemision, idusuario));
+	}
+
+	@GetMapping("/{idemision}/validar-apertura")
+	public ResponseEntity<EmisionGeneracionResponseDTO> validarApertura(@PathVariable Long idemision) {
+		return ResponseEntity.ok(emisionGeneracionServicio.validarApertura(idemision));
 	}
 
 	@PutMapping("/{idemision}")

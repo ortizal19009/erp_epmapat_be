@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.repositorio;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -38,5 +39,15 @@ public interface RutasxemisionR extends JpaRepository<Rutasxemision, Long> {
 			  AND ruta.idruta = ?2
 			""")
 	public Rutasxemision findByEmisionRuta(Long idemision, Long idruta); 
+
+	@Query("""
+			SELECT rxe
+			FROM Rutasxemision rxe
+			JOIN FETCH rxe.idemision_emisiones emi
+			JOIN FETCH rxe.idruta_rutas ruta
+			WHERE emi.idemision = ?1
+			  AND ruta.idruta = ?2
+			""")
+	Optional<Rutasxemision> findOptionalByEmisionRuta(Long idemision, Long idruta);
 
 }

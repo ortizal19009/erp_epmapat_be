@@ -191,6 +191,31 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			""")
 	public List<Lecturas> findByIdemisionIdAbonado(Long idemision, Long idabonado);
 
+	@Query("""
+			SELECT l
+			FROM Lecturas l
+			LEFT JOIN FETCH l.idrutaxemision_rutasxemision re
+			LEFT JOIN FETCH re.idemision_emisiones
+			LEFT JOIN FETCH re.idruta_rutas
+			LEFT JOIN FETCH l.idnovedad_novedades
+			LEFT JOIN FETCH l.idabonado_abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			WHERE l.idemision = ?1
+			  AND a.idabonado = ?2
+			ORDER BY l.idlectura DESC
+			""")
+	Optional<Lecturas> findFirstByIdemisionAndIdabonado(Long idemision, Long idabonado);
+
+	@Query(value = """
+			SELECT COUNT(DISTINCT l.idabonado_abonados)
+			FROM lecturas l
+			WHERE l.idrutaxemision_rutasxemision = ?1
+			""", nativeQuery = true)
+	Long countDistinctAbonadosByRutaXEmision(Long idrutaxemision);
+
 	// Ultima lectura de un Abonado: debe ser lecturaactual tempoaralmente
 	// lecturaanterior porque no están cerradas las rutas de la emisión anterior
 	@Query(value = "SELECT l.lecturaactual FROM lecturas l WHERE l.idabonado_abonados=?1 ORDER BY l.idemision DESC LIMIT 1", nativeQuery = true)
@@ -216,7 +241,12 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	public List<Lecturas> findDeudoresByRuta(Long ruta);
 
 	/* encontrar fecha de emision para recaudacion */
-	@Query(value = "select e.feccrea from lecturas l join emisiones e on l.idemision = e.idemision where idfactura = ?1", nativeQuery = true)
+	@Query(value = """
+			select max(e.feccrea)
+			from lecturas l
+			join emisiones e on l.idemision = e.idemision
+			where l.idfactura = ?1
+			""", nativeQuery = true)
 	public Date findDateByIdfactura(Long idfactura);
 
 	@Query(value = "select e.emision, e.feccrea from lecturas l join emisiones e on l.idemision = e.idemision where l.idfactura =  ?1", nativeQuery = true)

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -60,6 +61,22 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			ORDER BY f.idfactura DESC
 			""")
 	public List<Facturas> findByIdabonado(Long idabonado);
+
+	@Query("""
+			SELECT f
+			FROM Facturas f
+			LEFT JOIN FETCH f.idcliente
+			LEFT JOIN FETCH f.idmodulo
+			WHERE f.idabonado = :idabonado
+			  AND f.idmodulo.idmodulo = :idmodulo
+			  AND f.feccrea = :feccrea
+			  AND f.fechaeliminacion IS NULL
+			ORDER BY f.idfactura DESC
+			""")
+	List<Facturas> findByIdabonadoAndModuloAndFecha(
+			@Param("idabonado") Long idabonado,
+			@Param("idmodulo") Long idmodulo,
+			@Param("feccrea") LocalDate feccrea);
 
 	@Query(value = "SELECT * FROM facturas f WHERE f.idabonado=?1 and f.fechaeliminacion is null ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
 	public List<Facturas> findByIdabonadoLimit(Long idabonado, Long limit);
