@@ -6,7 +6,10 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +34,7 @@ import com.epmapat.erp_epmapat.repositorio.AbonadosR;
 import com.epmapat.erp_epmapat.repositorio.EmisionesR;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
+import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
 import com.epmapat.erp_epmapat.repositorio.RutasR;
 import com.epmapat.erp_epmapat.repositorio.RutasxemisionR;
 
@@ -49,6 +53,7 @@ public class EmisionGeneracionServicio {
     private final AbonadosR abonadosR;
     private final LecturasR lecturasR;
     private final FacturasR facturasR;
+    private final RubroxfacR rubroxfacR;
     private final TransactionTemplate transactionTemplate;
 
     public EmisionGeneracionServicio(
@@ -58,6 +63,7 @@ public class EmisionGeneracionServicio {
             AbonadosR abonadosR,
             LecturasR lecturasR,
             FacturasR facturasR,
+            RubroxfacR rubroxfacR,
             PlatformTransactionManager transactionManager) {
         this.emisionesR = emisionesR;
         this.rutasR = rutasR;
@@ -65,6 +71,7 @@ public class EmisionGeneracionServicio {
         this.abonadosR = abonadosR;
         this.lecturasR = lecturasR;
         this.facturasR = facturasR;
+        this.rubroxfacR = rubroxfacR;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
@@ -74,6 +81,50 @@ public class EmisionGeneracionServicio {
 
     public EmisionGeneracionResponseDTO validarApertura(Long idemision) {
         return procesarApertura(idemision, 0L, false);
+    }
+
+    public Map<String, Object> generarFacturasCabeceraUltimaEmisionAbierta(Long idusuario) {
+        Emisiones emision = emisionesR.findFirstByEstadoOrderByEmisionDesc(0);
+        if (emision == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No existe una emision abierta para reparar.");
+        }
+
+        LocalDate fechaEmision = parseFechaEmision(emision.getEmision());
+        List<Rutasxemision> rutas = rutasxemisionR.findByIdemision(emision.getIdemision());
+        int rutasRecorridas = 0;
+        int lecturasRevisadas = 0;
+        int facturasCreadas = 0;
+
+        for (Rutasxemision ruta : rutas) {
+            rutasRecorridas++;
+            List<Lecturas> lecturas = lecturasR.findByIdrutaxemision(ruta.getIdrutaxemision());
+            for (Lecturas lectura : lecturas) {
+                lecturasRevisadas++;
+                if (lectura.getIdfactura() != null) {
+                    continue;
+                }
+
+                Abonados abonado = lectura.getIdabonado_abonados();
+                if (abonado == null || abonado.getIdabonado() == null) {
+                    continue;
+                }
+
+                Facturas factura = crearFactura(abonado, fechaEmision, idusuario);
+                lectura.setIdfactura(factura.getIdfactura());
+                lecturasR.save(lectura);
+                facturasCreadas++;
+            }
+        }
+
+        Map<String, Object> respuesta = new LinkedHashMap<>();
+        respuesta.put("success", true);
+        respuesta.put("idemision", emision.getIdemision());
+        respuesta.put("emision", emision.getEmision());
+        respuesta.put("rutasRecorridas", rutasRecorridas);
+        respuesta.put("lecturasRevisadas", lecturasRevisadas);
+        respuesta.put("facturasCreadas", facturasCreadas);
+        return respuesta;
     }
 
     private EmisionGeneracionResponseDTO procesarApertura(Long idemision, Long idusuario, boolean generarFaltantes) {
@@ -238,11 +289,21 @@ public class EmisionGeneracionServicio {
                 : lecturasR.countDistinctAbonadosByRutaXEmision(rutaXEmision.getIdrutaxemision());
         long creadasRuta = 0;
 
-        if (generarFaltantes && rutaXEmision != null) {
+        if (rutaXEmision != null) {
             for (Abonados abonado : abonados) {
-                boolean yaExiste = lecturasR.findFirstByIdemisionAndIdabonado(emision.getIdemision(), abonado.getIdabonado())
-                        .isPresent();
-                if (yaExiste) {
+                Optional<Lecturas> lecturaExistente = lecturasR
+                        .findFirstByIdemisionAndIdabonado(emision.getIdemision(), abonado.getIdabonado());
+
+                if (lecturaExistente.isPresent()) {
+                    corregirFacturaDeLecturaSiCorresponde(
+                            lecturaExistente.get(),
+                            abonado,
+                            fechaEmisionLocal,
+                            idusuario);
+                    continue;
+                }
+
+                if (!generarFaltantes) {
                     continue;
                 }
 
@@ -316,26 +377,99 @@ public class EmisionGeneracionServicio {
         });
     }
 
+    private void corregirFacturaDeLecturaSiCorresponde(
+            Lecturas lectura,
+            Abonados abonado,
+            LocalDate fechaEmision,
+            Long idusuario) {
+        if (lectura == null || lectura.getIdfactura() == null) {
+            return;
+        }
+
+        Long idfactura = lectura.getIdfactura();
+        if (!facturaPerteneceAOtraEmision(lectura, fechaEmision)) {
+            return;
+        }
+
+        Facturas nuevaFactura = crearFactura(abonado, fechaEmision, idusuario);
+        lectura.setIdfactura(nuevaFactura.getIdfactura());
+        lecturasR.save(lectura);
+
+        log.warn(
+                "Lectura {} de emision {} abonado {} estaba enlazada a factura {} de otra emision. Se reasigno a nueva factura {} sin rubros.",
+                lectura.getIdlectura(),
+                lectura.getIdemision(),
+                abonado.getIdabonado(),
+                idfactura,
+                nuevaFactura.getIdfactura());
+    }
+
     private Facturas obtenerOCrearFactura(Abonados abonado, LocalDate fechaEmision, Long idusuario) {
         List<Facturas> facturasExistentes = facturasR.findByIdabonadoAndModuloAndFecha(
                 abonado.getIdabonado(),
                 MODULO_LECTURAS,
                 fechaEmision);
 
-        if (!facturasExistentes.isEmpty()) {
-            if (facturasExistentes.size() > 1) {
-                log.warn(
-                        "Se encontraron {} facturas para abonado {} modulo {} fecha {}. Se reutilizara la mas reciente {}",
-                        facturasExistentes.size(),
-                        abonado.getIdabonado(),
-                        MODULO_LECTURAS,
-                        fechaEmision,
-                        facturasExistentes.get(0).getIdfactura());
+        for (Facturas facturaExistente : facturasExistentes) {
+            if (facturaPendienteReutilizable(facturaExistente)) {
+                if (facturasExistentes.size() > 1) {
+                    log.warn(
+                            "Se encontraron {} facturas para abonado {} modulo {} fecha {}. Se reutilizara la factura vacia {}",
+                            facturasExistentes.size(),
+                            abonado.getIdabonado(),
+                            MODULO_LECTURAS,
+                            fechaEmision,
+                            facturaExistente.getIdfactura());
+                }
+                return facturaExistente;
             }
-            return facturasExistentes.get(0);
         }
 
         return crearFactura(abonado, fechaEmision, idusuario);
+    }
+
+    private boolean facturaPendienteReutilizable(Facturas factura) {
+        if (factura == null || factura.getIdfactura() == null) {
+            return false;
+        }
+
+        boolean tieneRubros = !rubroxfacR.findAllByFacturaId(factura.getIdfactura()).isEmpty();
+        if (tieneRubros) {
+            return false;
+        }
+
+        boolean tieneLecturaAsociada = !lecturasR.findByIdfactura(factura.getIdfactura()).isEmpty();
+        return !tieneLecturaAsociada;
+    }
+
+    private boolean facturaPerteneceAOtraEmision(Lecturas lectura, LocalDate fechaEmision) {
+        Long idfactura = lectura.getIdfactura();
+        if (idfactura == null) {
+            return false;
+        }
+
+        Facturas factura = facturasR.findById(idfactura).orElse(null);
+        if (factura == null) {
+            return false;
+        }
+
+        if (factura.getFeccrea() != null && !fechaEmision.equals(factura.getFeccrea())) {
+            return true;
+        }
+
+        List<Lecturas> lecturasFactura = lecturasR.findByIdfactura(idfactura);
+        for (Lecturas lecturaFactura : lecturasFactura) {
+            if (lecturaFactura.getIdlectura() == null || lectura.getIdlectura() == null) {
+                continue;
+            }
+            if (!lecturaFactura.getIdlectura().equals(lectura.getIdlectura())
+                    && lecturaFactura.getIdemision() != null
+                    && !lecturaFactura.getIdemision().equals(lectura.getIdemision())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private Facturas crearFactura(Abonados abonado, LocalDate fechaEmision, Long idusuario) {

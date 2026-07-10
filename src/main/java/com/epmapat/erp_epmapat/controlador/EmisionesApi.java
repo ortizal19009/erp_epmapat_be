@@ -87,6 +87,12 @@ public class EmisionesApi {
 		return ResponseEntity.ok(emisionGeneracionServicio.validarApertura(idemision));
 	}
 
+	@PostMapping("/ultima-abierta/generar-facturas-cabecera")
+	public ResponseEntity<?> generarFacturasCabeceraUltimaEmisionAbierta(
+			@RequestParam(required = false, defaultValue = "0") Long idusuario) {
+		return ResponseEntity.ok(emisionGeneracionServicio.generarFacturasCabeceraUltimaEmisionAbierta(idusuario));
+	}
+
 	@PutMapping("/{idemision}")
 	public ResponseEntity<Emisiones> update(@PathVariable Long idemision, @RequestBody Emisiones x) {
 		Emisiones y = emiServicio.findById(idemision)
