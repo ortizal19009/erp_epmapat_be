@@ -128,6 +128,16 @@ public class EmisionesApi {
 		return ResponseEntity.ok(emiServicio.getResEmisiones(limit));
 	}
 
+	@GetMapping("/control/dashboard")
+	public ResponseEntity<?> getControlDashboard(@RequestParam(required = false, defaultValue = "24") Long limit) {
+		return ResponseEntity.ok(emiServicio.getControlDashboard(limit));
+	}
+
+	@GetMapping("/{idemision}/control-detalle")
+	public ResponseEntity<?> getControlDetalle(@PathVariable Long idemision) {
+		return ResponseEntity.ok(emiServicio.getControlDetalle(idemision));
+	}
+
 	@PostMapping("/{idemision}/rutaxemision/{idrutaxemision}/multa-basura/recalcular")
 	public ResponseEntity<?> recalcular(
 			@PathVariable Long idemision,

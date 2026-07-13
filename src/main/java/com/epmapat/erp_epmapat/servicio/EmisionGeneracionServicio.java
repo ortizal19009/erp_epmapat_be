@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class EmisionGeneracionServicio {
     private final FacturasR facturasR;
     private final RubroxfacR rubroxfacR;
     private final TransactionTemplate transactionTemplate;
+    private final Clock clock;
 
     public EmisionGeneracionServicio(
             EmisionesR emisionesR,
@@ -73,6 +75,7 @@ public class EmisionGeneracionServicio {
         this.facturasR = facturasR;
         this.rubroxfacR = rubroxfacR;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
+        this.clock = Clock.systemDefaultZone();
     }
 
     public EmisionGeneracionResponseDTO generarPendientes(Long idemision, Long idusuario) {
@@ -92,28 +95,40 @@ public class EmisionGeneracionServicio {
 
         LocalDate fechaEmision = parseFechaEmision(emision.getEmision());
         List<Rutasxemision> rutas = rutasxemisionR.findByIdemision(emision.getIdemision());
+        List<Lecturas> lecturasSinFactura = lecturasR.findByIdemisionAndIdfacturaIsNull(emision.getIdemision());
         int rutasRecorridas = 0;
-        int lecturasRevisadas = 0;
+        int lecturasRevisadas = lecturasSinFactura.size();
         int facturasCreadas = 0;
+        int facturasReutilizadas = 0;
+        int lecturasActualizadas = 0;
 
         for (Rutasxemision ruta : rutas) {
             rutasRecorridas++;
-            List<Lecturas> lecturas = lecturasR.findByIdrutaxemision(ruta.getIdrutaxemision());
-            for (Lecturas lectura : lecturas) {
-                lecturasRevisadas++;
-                if (lectura.getIdfactura() != null) {
-                    continue;
-                }
+        }
 
-                Abonados abonado = lectura.getIdabonado_abonados();
-                if (abonado == null || abonado.getIdabonado() == null) {
-                    continue;
-                }
+        for (Lecturas lectura : lecturasSinFactura) {
+            Abonados abonado = lectura.getIdabonado_abonados();
+            if (abonado == null || abonado.getIdabonado() == null) {
+                continue;
+            }
 
-                Facturas factura = crearFactura(abonado, fechaEmision, idusuario);
+            Facturas facturaExistente = obtenerFacturaPendienteReutilizable(abonado, fechaEmision);
+            Facturas factura = facturaExistente;
+            if (factura == null) {
+                factura = crearFactura(abonado, fechaEmision, idusuario);
+                facturasCreadas++;
+            } else {
+                facturasReutilizadas++;
+            }
+
+            if (factura == null || factura.getIdfactura() == null) {
+                continue;
+            }
+
+            if (lectura.getIdfactura() == null) {
                 lectura.setIdfactura(factura.getIdfactura());
                 lecturasR.save(lectura);
-                facturasCreadas++;
+                lecturasActualizadas++;
             }
         }
 
@@ -124,6 +139,9 @@ public class EmisionGeneracionServicio {
         respuesta.put("rutasRecorridas", rutasRecorridas);
         respuesta.put("lecturasRevisadas", lecturasRevisadas);
         respuesta.put("facturasCreadas", facturasCreadas);
+        respuesta.put("facturasReutilizadas", facturasReutilizadas);
+        respuesta.put("lecturasActualizadas", lecturasActualizadas);
+        respuesta.put("lecturasPendientesSinFactura", lecturasR.findByIdemisionAndIdfacturaIsNull(emision.getIdemision()).size());
         return respuesta;
     }
 
@@ -405,6 +423,15 @@ public class EmisionGeneracionServicio {
     }
 
     private Facturas obtenerOCrearFactura(Abonados abonado, LocalDate fechaEmision, Long idusuario) {
+        Facturas reutilizable = obtenerFacturaPendienteReutilizable(abonado, fechaEmision);
+        if (reutilizable != null) {
+            return reutilizable;
+        }
+
+        return crearFactura(abonado, fechaEmision, idusuario);
+    }
+
+    private Facturas obtenerFacturaPendienteReutilizable(Abonados abonado, LocalDate fechaEmision) {
         List<Facturas> facturasExistentes = facturasR.findByIdabonadoAndModuloAndFecha(
                 abonado.getIdabonado(),
                 MODULO_LECTURAS,
@@ -425,7 +452,7 @@ public class EmisionGeneracionServicio {
             }
         }
 
-        return crearFactura(abonado, fechaEmision, idusuario);
+        return null;
     }
 
     private boolean facturaPendienteReutilizable(Facturas factura) {
@@ -474,6 +501,7 @@ public class EmisionGeneracionServicio {
 
     private Facturas crearFactura(Abonados abonado, LocalDate fechaEmision, Long idusuario) {
         Facturas factura = new Facturas();
+        LocalDate primerDiaMesActual = LocalDate.now(clock).withDayOfMonth(1);
 
         Modulos modulo = new Modulos();
         modulo.setIdmodulo(MODULO_LECTURAS);
@@ -493,7 +521,7 @@ public class EmisionGeneracionServicio {
         factura.setValorbase(BigDecimal.ZERO);
         factura.setUsucrea(idusuario);
         factura.setEstado(1L);
-        factura.setFeccrea(fechaEmision);
+        factura.setFeccrea(primerDiaMesActual);
 
         return facturasR.save(factura);
     }

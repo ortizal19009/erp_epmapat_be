@@ -238,6 +238,7 @@ public class FacturaServicio {
 
 	@Transactional
 	public <S extends Facturas> S save(S entity) {
+		prepararFechaCreacionSiEsNueva(entity);
 		S saved = dao.save(entity);
 		if (saved.getFechaanulacion() != null) {
 			eliminarFacturaElectronicaEnCascada(
@@ -265,7 +266,15 @@ public class FacturaServicio {
 	}
 
 	public <S extends Facturas> S saveForNewEmision(S entity) {
+		prepararFechaCreacionSiEsNueva(entity);
 		return dao.save(entity);
+	}
+
+	private void prepararFechaCreacionSiEsNueva(Facturas factura) {
+		if (factura == null || factura.getIdfactura() != null) {
+			return;
+		}
+		factura.setFeccrea(LocalDate.now().withDayOfMonth(1));
 	}
 	@Transactional
 	public void eliminarFacturaElectronicaEnCascada(Long idfactura, Long idusuario, String observacion) {

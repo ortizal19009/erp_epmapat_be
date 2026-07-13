@@ -21,6 +21,7 @@ import com.epmapat.erp_epmapat.interfaces.CierreRutaMultaDetalle;
 import com.epmapat.erp_epmapat.interfaces.CierreRutaResumenTotales;
 import com.epmapat.erp_epmapat.interfaces.CierreRutaRubroResumen;
 import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
+import com.epmapat.erp_epmapat.interfaces.ControlRutaStats;
 import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FacturaCuentaView;
@@ -171,6 +172,35 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			ORDER BY a.idabonado, l.idlectura DESC
 			""")
 	public List<Lecturas> findByIdemision(Long idemision);
+
+	@EntityGraph(attributePaths = {
+			"idrutaxemision_rutasxemision",
+			"idrutaxemision_rutasxemision.idemision_emisiones",
+			"idrutaxemision_rutasxemision.idruta_rutas",
+			"idnovedad_novedades",
+			"idabonado_abonados",
+			"idabonado_abonados.idresponsable",
+			"idabonado_abonados.idcliente_clientes",
+			"idabonado_abonados.idcategoria_categorias",
+			"idabonado_abonados.idruta_rutas"
+	})
+	@Query("""
+			SELECT l
+			FROM Lecturas l
+			LEFT JOIN FETCH l.idrutaxemision_rutasxemision re
+			LEFT JOIN FETCH re.idemision_emisiones
+			LEFT JOIN FETCH re.idruta_rutas
+			LEFT JOIN FETCH l.idnovedad_novedades
+			LEFT JOIN FETCH l.idabonado_abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			LEFT JOIN FETCH a.idcategoria_categorias
+			LEFT JOIN FETCH a.idruta_rutas
+			WHERE l.idemision = ?1
+			  AND l.idfactura IS NULL
+			ORDER BY a.idabonado, l.idlectura DESC
+			""")
+	public List<Lecturas> findByIdemisionAndIdfacturaIsNull(Long idemision);
 
 	// Lecturas de una Emisión
 	@Query("""
@@ -445,6 +475,47 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			  AND f.fechaanulacion IS NULL
 			""", nativeQuery = true)
 	public CierreRutaResumenTotales getResumenCierreRuta(Long idrutaxemision);
+
+	@Query(value = """
+			SELECT
+				rx.idrutaxemision AS idrutaxemision,
+				r.idruta AS idruta,
+				r.codigo AS codigoRuta,
+				r.descripcion AS nombreRuta,
+				rx.estado AS estadoRuta,
+				COUNT(l.idlectura) AS lecturas,
+				COUNT(CASE WHEN l.idfactura IS NOT NULL THEN 1 END) AS lecturasConFactura,
+				COUNT(CASE WHEN l.idfactura IS NULL THEN 1 END) AS lecturasSinFactura,
+				COUNT(DISTINCT l.idabonado_abonados) AS abonados,
+				COALESCE(SUM(l.lecturaactual - l.lecturaanterior), 0) AS m3,
+				COALESCE(SUM(CASE
+					WHEN f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL
+					THEN f.totaltarifa
+					ELSE 0
+				END), 0) AS emitido,
+				COALESCE(SUM(CASE
+					WHEN f.fechaeliminacion IS NULL
+					 AND f.fechaanulacion IS NULL
+					 AND COALESCE(f.pagado, 0) <> 0
+					THEN f.totaltarifa
+					ELSE 0
+				END), 0) AS cobrado,
+				COALESCE(SUM(CASE
+					WHEN f.fechaeliminacion IS NULL
+					 AND f.fechaanulacion IS NULL
+					 AND COALESCE(f.pagado, 0) = 0
+					THEN f.totaltarifa
+					ELSE 0
+				END), 0) AS pendiente
+			FROM rutasxemision rx
+			JOIN rutas r ON rx.idruta_rutas = r.idruta
+			LEFT JOIN lecturas l ON l.idrutaxemision_rutasxemision = rx.idrutaxemision
+			LEFT JOIN facturas f ON l.idfactura = f.idfactura
+			WHERE rx.idemision_emisiones = ?1
+			GROUP BY rx.idrutaxemision, r.idruta, r.codigo, r.descripcion, rx.estado
+			ORDER BY r.codigo
+			""", nativeQuery = true)
+	List<ControlRutaStats> getControlRutaStatsByEmision(Long idemision);
 
 	@Query(value = """
 			SELECT
