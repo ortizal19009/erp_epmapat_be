@@ -6,6 +6,7 @@ import java.time.LocalDate;
 public interface CierreRutaMultaDetalle {
     Long getCuenta();
     String getNombre();
+    String getCedula();
     String getCategoria();
     Long getIdfactura();
     String getNrofactura();

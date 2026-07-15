@@ -563,9 +563,23 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 				FROM lecturas l
 				JOIN facturas f ON l.idfactura = f.idfactura
 				JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas AND (rf.estado IS NULL OR rf.estado <> 0)
+				CROSS JOIN cierre c
 				WHERE l.idrutaxemision_rutasxemision = ?1
 				  AND f.fechaeliminacion IS NULL
 				  AND f.fechaanulacion IS NULL
+				  AND f.feccrea <= c.fechacierre
+				  AND COALESCE(f.estadoconvenio, 0) = 0
+				  AND NOT EXISTS (
+					  SELECT 1
+					  FROM lecturas lx
+					  WHERE lx.idfactura = f.idfactura
+					    AND lx.idemision > c.idemision
+				  )
+				  AND (
+					  COALESCE(f.pagado, 0) = 0
+					  OR f.fechacobro IS NULL
+					  OR f.fechacobro > c.fechacierre
+				  )
 				  AND rf.idrubro_rubros = 6
 			),
 			pendientes_al_cierre AS (
@@ -596,6 +610,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			SELECT
 				a.idabonado AS cuenta,
 				cl.nombre AS nombre,
+				COALESCE(resp.cedula, '') AS cedula,
 				cat.descripcion AS categoria,
 				f.idfactura AS idfactura,
 				f.nrofactura AS nrofactura,
@@ -608,6 +623,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			JOIN facturas f ON cm.idfactura = f.idfactura
 			JOIN abonados a ON cm.cuenta = a.idabonado
 			JOIN clientes cl ON a.idcliente_clientes = cl.idcliente
+			LEFT JOIN clientes resp ON a.idresponsable = resp.idcliente
 			LEFT JOIN categorias cat ON a.idcategoria_categorias = cat.idcategoria
 			JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas
 				AND (rf.estado IS NULL OR rf.estado <> 0)
@@ -616,6 +632,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			GROUP BY
 				a.idabonado,
 				cl.nombre,
+				resp.cedula,
 				cat.descripcion,
 				f.idfactura,
 				f.nrofactura,
