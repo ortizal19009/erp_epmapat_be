@@ -35,15 +35,15 @@ cp $TARGET_DIR/$WAR_NAME $DEPLOY_DIR/
 
 echo "5. Deteniendo contenedor..."
 
-docker-compose down
+docker compose --env-file .env.prod down
 
 echo "6. Construyendo imagen..."
 
-docker-compose build
+docker compose --env-file .env.prod build
 
 echo "7. Iniciando contenedor..."
 
-docker-compose up -d
+docker compose --env-file .env.prod up -d --force-recreate
 
 echo "=============================="
 echo "Deploy terminado correctamente"
