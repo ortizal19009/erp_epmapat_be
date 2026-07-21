@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,9 @@ public class EmisionServicio {
 	private RutasxemisionR rutasxemisionR;
 
 	public List<Emisiones> findByDesdeHasta(String desde, String hasta) {
-		return dao.findByDesdeHasta(desde, hasta);
+		List<Emisiones> emisiones = dao.findByDesdeHasta(desde, hasta);
+		enriquecerLecturasEmisiones(emisiones);
+		return emisiones;
 	}
 
 	public <S extends Emisiones> S save(S entity) {
@@ -45,11 +48,51 @@ public class EmisionServicio {
 	}
 
 	public List<Emisiones> findAll(Sort sort) {
-		return dao.findAll(sort);
+		List<Emisiones> emisiones = dao.findAll(sort);
+		enriquecerLecturasEmisiones(emisiones);
+		return emisiones;
 	}
 
 	public List<Emisiones> findByIdEmisiones(Long idemision) {
-		return dao.findByIdEmisiones(idemision);
+		List<Emisiones> emisiones = dao.findByIdEmisiones(idemision);
+		enriquecerLecturasEmisiones(emisiones);
+		return emisiones;
+	}
+
+	private void enriquecerLecturasEmisiones(List<Emisiones> emisiones) {
+		if (emisiones == null || emisiones.isEmpty()) {
+			return;
+		}
+
+		Map<Long, long[]> resumenPorEmision = new HashMap<>();
+
+		for (Emisiones emision : emisiones) {
+			if (emision == null || emision.getIdemision() == null) {
+				continue;
+			}
+
+			List<ControlRutaStats> rutas = lecturasR.getControlRutaStatsByEmision(emision.getIdemision());
+			long totalLecturas = rutas.stream()
+					.map(ControlRutaStats::getLecturas)
+					.filter(java.util.Objects::nonNull)
+					.mapToLong(Long::longValue)
+					.sum();
+			long lecturasCargadas = rutas.stream()
+					.map(ControlRutaStats::getLecturasTomadas)
+					.filter(java.util.Objects::nonNull)
+					.mapToLong(Long::longValue)
+					.sum();
+			resumenPorEmision.put(emision.getIdemision(), new long[] { totalLecturas, lecturasCargadas });
+		}
+
+		for (Emisiones emision : emisiones) {
+			if (emision == null || emision.getIdemision() == null) {
+				continue;
+			}
+			long[] resumen = resumenPorEmision.get(emision.getIdemision());
+			emision.setTotalLecturas(resumen == null ? 0L : resumen[0]);
+			emision.setLecturasCargadas(resumen == null ? 0L : resumen[1]);
+		}
 	}
 
 	public List<ResEmisiones> getResEmisiones(Long limit) {

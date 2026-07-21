@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -48,5 +49,9 @@ public class Rutasxemision implements Serializable {
    private Rutas idruta_rutas;
    private Long m3;
    private BigDecimal total;
+   @Transient
+   private Long totalLecturas;
+   @Transient
+   private Long lecturasCargadas;
 
 }

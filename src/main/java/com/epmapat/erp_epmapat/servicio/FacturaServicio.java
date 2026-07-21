@@ -274,7 +274,9 @@ public class FacturaServicio {
 		if (factura == null || factura.getIdfactura() != null) {
 			return;
 		}
-		factura.setFeccrea(LocalDate.now().withDayOfMonth(1));
+		if (factura.getFeccrea() == null) {
+			factura.setFeccrea(LocalDate.now().withDayOfMonth(1));
+		}
 	}
 	@Transactional
 	public void eliminarFacturaElectronicaEnCascada(Long idfactura, Long idusuario, String observacion) {

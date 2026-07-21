@@ -9,6 +9,7 @@ public interface ControlRutaStats {
     String getNombreRuta();
     Integer getEstadoRuta();
     Long getLecturas();
+    Long getLecturasTomadas();
     Long getLecturasConFactura();
     Long getLecturasSinFactura();
     Long getAbonados();

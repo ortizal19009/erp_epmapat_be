@@ -484,6 +484,11 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 				r.descripcion AS nombreRuta,
 				rx.estado AS estadoRuta,
 				COUNT(l.idlectura) AS lecturas,
+				COUNT(CASE
+					WHEN COALESCE(l.lecturaanterior, -1) >= 0
+					 AND COALESCE(l.lecturaactual, -1) >= 0
+					THEN 1
+				END) AS lecturasTomadas,
 				COUNT(CASE WHEN l.idfactura IS NOT NULL THEN 1 END) AS lecturasConFactura,
 				COUNT(CASE WHEN l.idfactura IS NULL THEN 1 END) AS lecturasSinFactura,
 				COUNT(DISTINCT l.idabonado_abonados) AS abonados,

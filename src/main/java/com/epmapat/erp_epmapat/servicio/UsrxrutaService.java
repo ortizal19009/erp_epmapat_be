@@ -18,6 +18,7 @@ import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 import com.epmapat.erp_epmapat.repositorio.EmisionesR;
 import com.epmapat.erp_epmapat.repositorio.UsrxrutasR;
 import com.epmapat.erp_epmapat.repositorio.administracion.UsuariosR;
+import com.epmapat.erp_epmapat.websocket.MobileWebSocketHandler;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +30,7 @@ public class UsrxrutaService implements UsrxrutasService {
     private final UsrxrutasR usrxrutasRepository;
     private final UsuariosR usuariosRepository;
     private final EmisionesR emisionesRepository;
+    private final MobileWebSocketHandler mobileWebSocketHandler;
 
     @Override
     public Usrxrutas crear(Usrxrutas entity) {
@@ -74,12 +76,16 @@ public class UsrxrutaService implements UsrxrutasService {
         if (existente.isPresent()) {
             Usrxrutas reg = existente.get();
             reg.setRutas(entity.getRutas());
-            return usrxrutasRepository.save(reg);
+            Usrxrutas saved = usrxrutasRepository.save(reg);
+            mobileWebSocketHandler.notifyAssignmentChanged(idusuario, idemision);
+            return saved;
         }
 
         entity.setIdusuario_usuarios(usuario);
         entity.setIdemision_emisiones(emision);
-        return usrxrutasRepository.save(entity);
+        Usrxrutas saved = usrxrutasRepository.save(entity);
+        mobileWebSocketHandler.notifyAssignmentChanged(idusuario, idemision);
+        return saved;
     }
 
     @Override
@@ -136,7 +142,11 @@ public class UsrxrutaService implements UsrxrutasService {
             actual.setRutas(entity.getRutas());
         }
 
-        return usrxrutasRepository.save(actual);
+        Usrxrutas saved = usrxrutasRepository.save(actual);
+        Long userId = saved.getIdusuario_usuarios() != null ? saved.getIdusuario_usuarios().getIdusuario() : null;
+        Long emisionId = saved.getIdemision_emisiones() != null ? saved.getIdemision_emisiones().getIdemision() : null;
+        mobileWebSocketHandler.notifyAssignmentChanged(userId, emisionId);
+        return saved;
     }
 
     @Override
