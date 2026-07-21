@@ -10,10 +10,31 @@ import com.epmapat.erp_epmapat.interfaces.ErpModulosI;
 import com.epmapat.erp_epmapat.modelo.administracion.Usrxmodulos;
 
 public interface UsrxmodulosR extends JpaRepository<Usrxmodulos, Long> {
-        @Query(value = "SELECT em.descripcion, um.enabled FROM usrxmodulos um join erpmodulos em on um.iderpmodulo_erpmodulos = em.iderpmodulo where um.idusuario_usuarios = ?1 and um.platform = ?2 order by um.iderpmodulo_erpmodulos asc", nativeQuery = true)
+        @Query(value = """
+                        SELECT
+                                em.iderpmodulo AS iderpmodulo,
+                                em.descripcion AS descripcion,
+                                um.enabled AS enabled,
+                                COALESCE(um.platform, em.platform, 'WEB') AS plataform
+                        FROM usrxmodulos um
+                        JOIN erpmodulos em ON um.iderpmodulo_erpmodulos = em.iderpmodulo
+                        WHERE um.idusuario_usuarios = ?1
+                          AND um.platform = ?2
+                        ORDER BY um.iderpmodulo_erpmodulos ASC
+                        """, nativeQuery = true)
         public List<ErpModulosI> findModulosEnabledByUser(Long iduser, String platform);
 
-        @Query(value = "SELECT em.descripcion, um.enabled FROM usrxmodulos um join erpmodulos em on um.iderpmodulo_erpmodulos = em.iderpmodulo where um.idusuario_usuarios = ?1 order by um.iderpmodulo_erpmodulos asc", nativeQuery = true)
+        @Query(value = """
+                        SELECT
+                                em.iderpmodulo AS iderpmodulo,
+                                em.descripcion AS descripcion,
+                                um.enabled AS enabled,
+                                COALESCE(um.platform, em.platform, 'WEB') AS plataform
+                        FROM usrxmodulos um
+                        JOIN erpmodulos em ON um.iderpmodulo_erpmodulos = em.iderpmodulo
+                        WHERE um.idusuario_usuarios = ?1
+                        ORDER BY um.iderpmodulo_erpmodulos ASC
+                        """, nativeQuery = true)
         public List<ErpModulosI> findByUser(Long iduser);
 
         @Query(value = "SELECT * FROM usrxmodulos um where um.idusuario_usuarios = ?1 and um.iderpmodulo_erpmodulos = ?2", nativeQuery = true)

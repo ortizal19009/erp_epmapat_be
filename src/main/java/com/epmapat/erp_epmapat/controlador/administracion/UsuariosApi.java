@@ -1,8 +1,10 @@
 package com.epmapat.erp_epmapat.controlador.administracion;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -40,6 +42,46 @@ public class UsuariosApi {
    @GetMapping
    public List<Usuarios> getAll() {
       return usuServicio.findAll();
+   }
+
+   @GetMapping("/with-personal")
+   public ResponseEntity<List<Map<String, Object>>> getAllWithPersonal() {
+      List<Map<String, Object>> rows = usuServicio.findAll().stream().map(usuario -> {
+         Map<String, Object> row = new LinkedHashMap<>();
+         row.put("idusuario", usuario.getIdusuario());
+         row.put("identificausu", usuario.getIdentificausu());
+         row.put("nomusu", usuario.getNomusu());
+         row.put("alias", usuario.getAlias());
+         row.put("email", usuario.getEmail());
+         row.put("estado", usuario.getEstado());
+         row.put("perfil", usuario.getPerfil());
+         row.put("plataform_access", usuario.getPlataform_access());
+
+         Personal personal = usuario.getPersonal();
+         if (personal != null) {
+            row.put("personalIdpersonal", personal.getIdpersonal());
+            row.put(
+                  "personalNombre",
+                  String.join(" ",
+                        personal.getApellidos() == null ? "" : personal.getApellidos().trim(),
+                        personal.getNombres() == null ? "" : personal.getNombres().trim()).trim());
+
+            Map<String, Object> personalMap = new LinkedHashMap<>();
+            personalMap.put("idpersonal", personal.getIdpersonal());
+            personalMap.put("apellidos", personal.getApellidos());
+            personalMap.put("nombres", personal.getNombres());
+            personalMap.put("identificacion", personal.getIdentificacion());
+            row.put("personal", personalMap);
+         } else {
+            row.put("personalIdpersonal", null);
+            row.put("personalNombre", null);
+            row.put("personal", null);
+         }
+
+         return row;
+      }).collect(Collectors.toList());
+
+      return ResponseEntity.ok(rows);
    }
 
    @GetMapping("/usuario")
@@ -138,7 +180,9 @@ public class UsuariosApi {
    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
       // 1️⃣ Buscar usuario
-      UsuarioI user = usuServicio.chargeLogin(request.getUsername());
+      String username = request.getUsername() == null ? "" : request.getUsername().trim();
+      String password = request.getPassword() == null ? "" : request.getPassword().trim();
+      UsuarioI user = usuServicio.chargeLogin(username);
       if (user == null) {
          return ResponseEntity
                .status(HttpStatus.UNAUTHORIZED)
@@ -146,8 +190,8 @@ public class UsuariosApi {
       }
 
       // 2️⃣ Validar contraseña
-      String passEncrypt = myFun(request.getPassword());
-      boolean credencialesOk = user.getNomusu().equals(request.getUsername())
+      String passEncrypt = myFun(password);
+      boolean credencialesOk = user.getCodusu() != null
             && user.getCodusu().equals(passEncrypt);
 
       if (!credencialesOk) {

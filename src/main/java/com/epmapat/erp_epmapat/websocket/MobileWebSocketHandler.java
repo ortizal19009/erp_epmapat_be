@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.websocket;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
@@ -53,6 +54,10 @@ public class MobileWebSocketHandler extends TextWebSocketHandler {
         String reason = exception != null && exception.getMessage() != null
                 ? exception.getMessage()
                 : exception != null ? exception.getClass().getSimpleName() : "sin detalle";
+        if (isExpectedDisconnect(exception)) {
+            log.info("Mobile WebSocket desconectado {}: {}", session.getId(), reason);
+            return;
+        }
         log.warn("Error en Mobile WebSocket {}: {}", session.getId(), reason);
         super.handleTransportError(session, exception);
     }
@@ -120,5 +125,23 @@ public class MobileWebSocketHandler extends TextWebSocketHandler {
         session.sendMessage(new TextMessage(
                 "{\"type\":\"" + type + "\",\"message\":\"" + message + "\",\"ts\":" + System.currentTimeMillis() + "}"
         ));
+    }
+
+    private boolean isExpectedDisconnect(Throwable exception) {
+        if (exception == null) {
+            return false;
+        }
+        if (exception instanceof EOFException) {
+            return true;
+        }
+        String reason = exception.getMessage();
+        if (reason == null) {
+            return false;
+        }
+        String normalized = reason.toLowerCase();
+        return normalized.contains("broken pipe")
+                || normalized.contains("connection reset")
+                || normalized.contains("closed")
+                || normalized.contains("forcibly closed");
     }
 }

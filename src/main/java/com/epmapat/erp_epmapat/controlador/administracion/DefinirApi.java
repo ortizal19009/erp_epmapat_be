@@ -4,8 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -79,6 +84,36 @@ public class DefinirApi {
     @GetMapping("/encriptar")
     public ResponseEntity<Object> encriptar(@RequestParam String clave) throws Exception {
         return ResponseEntity.ok(defServicio.encriptar(clave));
+    }
+
+    @GetMapping("/instalador-impresion/{id}")
+    public ResponseEntity<Map<String, Object>> getInstaladorImpresion(@PathVariable Long id) {
+        return ResponseEntity.ok(defServicio.getInstaladorImpresion(id));
+    }
+
+    @PostMapping("/instalador-impresion/{id}")
+    public ResponseEntity<Map<String, Object>> subirInstaladorImpresion(
+            @PathVariable Long id,
+            @RequestParam("archivo") MultipartFile archivo) throws Exception {
+        return ResponseEntity.ok(defServicio.guardarInstaladorImpresion(id, archivo));
+    }
+
+    @GetMapping("/instalador-impresion/{id}/download")
+    public ResponseEntity<Resource> descargarInstaladorImpresion(@PathVariable Long id) throws Exception {
+        Resource resource = defServicio.loadInstaladorImpresion(id);
+        Map<String, Object> meta = defServicio.getInstaladorImpresion(id);
+        String nombreArchivo = String.valueOf(meta.get("nombreArchivo"));
+        if (!StringUtils.hasText(nombreArchivo) || "null".equalsIgnoreCase(nombreArchivo)) {
+            nombreArchivo = resource.getFilename();
+        }
+
+        MediaType contentType = MediaTypeFactory.getMediaType(nombreArchivo)
+                .orElse(MediaType.APPLICATION_OCTET_STREAM);
+
+        return ResponseEntity.ok()
+                .contentType(contentType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nombreArchivo + "\"")
+                .body(resource);
     }
 
 }

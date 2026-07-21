@@ -25,7 +25,22 @@ public interface UsuariosR extends JpaRepository<Usuarios, Long> {
    @Query(value = "select u.idusuario as idusuario, u.identificausu as identificacion, u.nomusu as nombre, u.alias as alias, u.estado as estado from usuarios u where idusuario = ?1", nativeQuery = true)
    UsuarioI findDatosById(Long idusuario);
 
-   @Query(value = "select u.nomusu, u.codusu , u.idusuario , u.plataform_access from usuarios u where u.nomusu = ?1 ", nativeQuery = true)
+   @Query(value = """
+         select
+            u.nomusu,
+            u.codusu,
+            u.idusuario,
+            u.alias,
+            u.estado,
+            u.plataform_access
+         from usuarios u
+         where upper(trim(u.nomusu)) = upper(trim(?1))
+            or upper(trim(coalesce(u.alias, ''))) = upper(trim(?1))
+         order by
+            case when upper(trim(u.nomusu)) = upper(trim(?1)) then 0 else 1 end,
+            u.idusuario
+         limit 1
+         """, nativeQuery = true)
    UsuarioI chargeLogin(String nomusu);
 
    @Query(value = "select u.idusuario,u.nomusu, u.estado as estado from usuarios u join personal p on u.personal_idpersonal = p.idpersonal where p.idcargo_cargos = ?1", nativeQuery = true)

@@ -1,12 +1,16 @@
 package com.epmapat.erp_epmapat.servicio.administracion;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.epmapat.erp_epmapat.config.AESUtil;
@@ -16,8 +20,12 @@ import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
 
 @Service
 public class DefinirServicio {
+    private static final String PRINT_BRIDGE_FOLDER = "print-bridge";
+
     @Autowired
     DefinirR dao;
+    @Autowired
+    StorageService storageService;
 
     @SuppressWarnings("null")
     public Optional<Definir> findById(Long id) {
@@ -83,5 +91,61 @@ public class DefinirServicio {
     public String encriptar(String clave) throws Exception {
         String claveCifrada = AESUtil.cifrar(clave);
         return claveCifrada;
+    }
+
+    public Map<String, Object> getInstaladorImpresion(Long id) {
+        Definir definir = dao.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Registro no encontrado con ID: " + id));
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        String path = definir.getUbidigi();
+        String nombre = definir.getUbimagenes();
+        boolean disponible = StringUtils.hasText(path);
+
+        body.put("disponible", disponible);
+        body.put("path", path);
+        body.put("nombreArchivo", nombre);
+        body.put("downloadUrl", disponible ? "/definir/instalador-impresion/" + id + "/download" : null);
+        return body;
+    }
+
+    public Map<String, Object> guardarInstaladorImpresion(Long id, MultipartFile archivo) throws Exception {
+        if (archivo == null || archivo.isEmpty()) {
+            throw new IllegalArgumentException("El archivo .exe es obligatorio");
+        }
+
+        String nombreOriginal = archivo.getOriginalFilename();
+        if (!StringUtils.hasText(nombreOriginal) || !nombreOriginal.toLowerCase().endsWith(".exe")) {
+            throw new IllegalArgumentException("Solo se permite subir archivos .exe");
+        }
+
+        Definir definir = dao.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Registro no encontrado con ID: " + id));
+
+        if (StringUtils.hasText(definir.getUbidigi())) {
+            try {
+                storageService.delete(definir.getUbidigi());
+            } catch (Exception ex) {
+                // Si el archivo anterior ya no existe, no bloqueamos la actualización.
+            }
+        }
+
+        String relativePath = storageService.store(archivo, PRINT_BRIDGE_FOLDER);
+        definir.setUbidigi(relativePath);
+        definir.setUbimagenes(nombreOriginal);
+        dao.save(definir);
+
+        return getInstaladorImpresion(id);
+    }
+
+    public Resource loadInstaladorImpresion(Long id) throws Exception {
+        Definir definir = dao.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Registro no encontrado con ID: " + id));
+
+        if (!StringUtils.hasText(definir.getUbidigi())) {
+            throw new IllegalArgumentException("No existe un instalador de impresión cargado");
+        }
+
+        return storageService.load(definir.getUbidigi());
     }
 }
