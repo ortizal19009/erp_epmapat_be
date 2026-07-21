@@ -11,7 +11,6 @@ TARGET_DIR="./target"
 DEPLOY_DIR="./deploy"
 BACKUP_DIR="./backup"
 ENV_FILE=".env.prod"
-ACTIVE_ENV_FILE=".env"
 
 DATE=$(date +"%Y%m%d_%H%M%S")
 
@@ -23,10 +22,6 @@ echo "2. Creando carpetas necesarias..."
 
 mkdir -p $BACKUP_DIR
 mkdir -p $DEPLOY_DIR
-
-echo "2.1. Activando variables de entorno de produccion..."
-
-cp $ENV_FILE $ACTIVE_ENV_FILE
 
 echo "3. Respaldando WAR anterior..."
 
@@ -41,15 +36,15 @@ cp $TARGET_DIR/$WAR_NAME $DEPLOY_DIR/
 
 echo "5. Deteniendo contenedor..."
 
-docker-compose down
+docker compose --env-file $ENV_FILE down
 
 echo "6. Construyendo imagen..."
 
-docker-compose build --no-cache
+docker compose --env-file $ENV_FILE build --no-cache
 
 echo "7. Iniciando contenedor..."
 
-docker-compose up -d --force-recreate
+docker compose --env-file $ENV_FILE up -d --force-recreate
 
 echo "=============================="
 echo "Deploy terminado correctamente"
