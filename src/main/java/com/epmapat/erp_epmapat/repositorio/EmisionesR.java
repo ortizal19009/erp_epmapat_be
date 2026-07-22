@@ -50,8 +50,7 @@ public interface EmisionesR extends JpaRepository<Emisiones, Long> {
 				COALESCE(SUM(GREATEST(COALESCE(l.lecturaactual, 0) - COALESCE(l.lecturaanterior, 0), 0)), 0) AS m3,
 				COUNT(l.idlectura) AS totalLecturas,
 				COALESCE(SUM(CASE
-					WHEN (COALESCE(l.lecturaactual, -1) - COALESCE(l.lecturaanterior, -1)) >= 0
-					  OR COALESCE(l.lecturaactual, 0) > 0
+					WHEN COALESCE(l.lecturaactual, 0) > 0
 					THEN 1 ELSE 0 END), 0) AS lecturasCargadas
 			FROM emisiones e
 			LEFT JOIN lecturas l ON l.idemision = e.idemision
