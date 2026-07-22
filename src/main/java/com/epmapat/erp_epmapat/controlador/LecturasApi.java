@@ -201,7 +201,7 @@ public class LecturasApi {
 	}
 
 	@PostMapping(value = "/{idlectura}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<LecturaDto> uploadLecturaFoto(@PathVariable Long idlectura,
+	public ResponseEntity<?> uploadLecturaFoto(@PathVariable Long idlectura,
 			@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
 			@RequestParam(required = false, defaultValue = "0") Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
@@ -210,8 +210,16 @@ public class LecturasApi {
 				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
 					"No existe la Lectura con Id: " + idlectura));
 
-		String fotoPath = lecturaFotoStorageService.saveImageFile(idlectura, file, resolveLecturaFolder(lectura));
-		lectura = lecServicio.actualizarFotoConAuditoria(idlectura, fotoPath, usumodi, observacion, tipo);
+		try {
+			String fotoPath = lecturaFotoStorageService.saveImageFile(idlectura, file, resolveLecturaFolder(lectura));
+			lectura = lecServicio.actualizarFotoConAuditoria(idlectura, fotoPath, usumodi, observacion, tipo);
+		} catch (IOException ex) {
+			return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+					.body(Map.of(
+							"message", ex.getMessage(),
+							"detail", ex.getCause() != null ? ex.getCause().getMessage() : "sin detalle",
+							"idlectura", idlectura));
+		}
 
 		return ResponseEntity.ok(LecturaMapper.toDto(lectura));
 	}

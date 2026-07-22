@@ -241,11 +241,19 @@ public class NextcloudStorageService implements StorageService {
                 log.debug("Created Nextcloud directory with alternate URL: {}", alternateUrl);
                 return;
             } catch (SardineException retryEx) {
+                if (retryEx.getStatusCode() == 404 && (sardine.exists(currentUrl) || sardine.exists(alternateUrl))) {
+                    log.debug("Nextcloud directory already exists after 404 response: {}", alternateUrl);
+                    return;
+                }
                 if (isIgnorableDirectoryStatus(retryEx.getStatusCode())) {
                     log.debug("Ignoring Nextcloud directory status {} for {}", retryEx.getStatusCode(), alternateUrl);
                     return;
                 }
-                throw retryEx;
+                throw new IllegalStateException(
+                        "No se pudo crear el directorio en Nextcloud. URL=" + alternateUrl
+                                + ", status=" + retryEx.getStatusCode()
+                                + ", reason=" + retryEx.getResponsePhrase(),
+                        retryEx);
             }
         }
     }
