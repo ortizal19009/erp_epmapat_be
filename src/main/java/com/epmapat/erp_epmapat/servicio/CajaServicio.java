@@ -28,7 +28,7 @@ public class CajaServicio implements CajasR {
 
 	@Override
 	public Optional<Cajas> findById(Long id) {
-		return dao.findById(id);
+		return dao.findDetalleById(id);
 	}
 
 	@Override

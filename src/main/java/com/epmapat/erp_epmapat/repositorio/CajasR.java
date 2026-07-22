@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.repositorio;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -54,6 +55,15 @@ public interface CajasR extends JpaRepository<Cajas, Long> {
          where u.idusuario = :idusuario
          """)
    public Cajas findCajaByIdUsuario(@org.springframework.data.repository.query.Param("idusuario") Long idusuario);
+
+   @Query("""
+         select c
+         from Cajas c
+         left join fetch c.idptoemision_ptoemision p
+         left join fetch c.idusuario_usuarios u
+         where c.idcaja = :idcaja
+         """)
+   Optional<Cajas> findDetalleById(@org.springframework.data.repository.query.Param("idcaja") Long idcaja);
 
    @Query("""
          select c
