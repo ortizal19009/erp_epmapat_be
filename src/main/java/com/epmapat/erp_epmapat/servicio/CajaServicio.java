@@ -32,6 +32,11 @@ public class CajaServicio implements CajasR {
 	}
 
 	@Override
+	public Optional<Cajas> findDetalleById(Long idcaja) {
+		return dao.findDetalleById(idcaja);
+	}
+
+	@Override
 	public List<Cajas> findByCodigos(Long idptoemision, String codigo) {
 		return dao.findByCodigos(idptoemision, codigo);
 	}
