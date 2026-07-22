@@ -126,7 +126,9 @@ public class UsuariosApi {
       }
       y.setFdesde(x.getFdesde());
       y.setFhasta(x.getFhasta());
-      y.setEstado(x.getEstado());
+      if (x.getEstado() != null) {
+         y.setEstado(x.getEstado());
+      }
       y.setEmail(x.getEmail());
 
       // ⚠️ no tocar feccrea en update
@@ -134,13 +136,21 @@ public class UsuariosApi {
 
       y.setUsumodi(x.getUsumodi());
       y.setFecmodi(x.getFecmodi());
-      y.setOtrapestania(x.getOtrapestania());
+      if (x.getOtrapestania() != null) {
+         y.setOtrapestania(x.getOtrapestania());
+      }
       y.setAlias(x.getAlias());
       y.setPriusu(x.getPriusu());
       y.setPerfil(x.getPerfil());
-      y.setToolbarframe(x.getToolbarframe());
-      y.setToolbarsheet(x.getToolbarsheet());
-      y.setPlataform_access(x.getPlataform_access());
+      if (x.getToolbarframe() != null) {
+         y.setToolbarframe(x.getToolbarframe());
+      }
+      if (x.getToolbarsheet() != null) {
+         y.setToolbarsheet(x.getToolbarsheet());
+      }
+      if (StringUtils.hasText(x.getPlataform_access())) {
+         y.setPlataform_access(x.getPlataform_access());
+      }
 
       // ✅ ACTUALIZAR RELACIÓN PERSONAL
       if (x.getPersonal() == null) {
