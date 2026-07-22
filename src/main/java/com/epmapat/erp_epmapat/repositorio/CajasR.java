@@ -9,17 +9,43 @@ import com.epmapat.erp_epmapat.modelo.Cajas;
 
 public interface CajasR extends JpaRepository<Cajas, Long> {
 
-   @Query(value = "SELECT * FROM cajas AS c JOIN ptoemision AS p ON c.idptoemision_ptoemision = p.idptoemision ORDER BY p.establecimiento, c.codigo ASC", nativeQuery = true)
+   @Query("""
+         select c
+         from Cajas c
+         left join fetch c.idptoemision_ptoemision p
+         left join fetch c.idusuario_usuarios u
+         order by p.establecimiento, c.codigo
+         """)
 	public List<Cajas> findAll();
-   //Validación de Códigos (Establecimiento + Pto de emision)
-   @Query(value = "SELECT * FROM cajas AS c JOIN ptoemision AS p ON c.idptoemision_ptoemision = p.idptoemision WHERE c.idptoemision_ptoemision=?1 AND c.codigo=?2", nativeQuery = true)
-	public List<Cajas> findByCodigos( Long idptoemision, String codigo);
-   //Validación de Descripcion
-   @Query(value = "SELECT * FROM cajas AS c WHERE c.descripcion=?1", nativeQuery = true)
+
+   @Query("""
+         select c
+         from Cajas c
+         left join fetch c.idptoemision_ptoemision p
+         left join fetch c.idusuario_usuarios u
+         where p.idptoemision = ?1 and c.codigo = ?2
+         """)
+	public List<Cajas> findByCodigos(Long idptoemision, String codigo);
+
+   @Query("""
+         select c
+         from Cajas c
+         left join fetch c.idptoemision_ptoemision p
+         left join fetch c.idusuario_usuarios u
+         where c.descripcion = ?1
+         """)
 	List<Cajas> findByDescri(String descripcion);
-   //Puntos de emision por Establecimiento
-   @Query(value = "SELECT * FROM cajas WHERE idptoemision_ptoemision=?1 ORDER BY codigo", nativeQuery=true)
+
+   @Query("""
+         select c
+         from Cajas c
+         left join fetch c.idptoemision_ptoemision p
+         left join fetch c.idusuario_usuarios u
+         where p.idptoemision = ?1
+         order by c.codigo
+         """)
 	public List<Cajas> findByIdptoemision(Long idptoemision);
+
    @Query("""
          select c
          from Cajas c
@@ -27,8 +53,17 @@ public interface CajasR extends JpaRepository<Cajas, Long> {
          left join fetch c.idusuario_usuarios u
          where u.idusuario = :idusuario
          """)
-   public Cajas findCajaByIdUsuario(@org.springframework.data.repository.query.Param("idusuario") Long idusuario); 
-   @Query(value = "SELECT * FROM cajas WHERE not idusuario_usuarios is null and estado = 1 ", nativeQuery = true)
-   public List<Cajas> findCajasActivas(); 
+   public Cajas findCajaByIdUsuario(@org.springframework.data.repository.query.Param("idusuario") Long idusuario);
+
+   @Query("""
+         select c
+         from Cajas c
+         left join fetch c.idptoemision_ptoemision p
+         left join fetch c.idusuario_usuarios u
+         where c.idusuario_usuarios is not null
+           and c.estado = 1
+         order by p.establecimiento, c.codigo
+         """)
+   public List<Cajas> findCajasActivas();
 
 }
