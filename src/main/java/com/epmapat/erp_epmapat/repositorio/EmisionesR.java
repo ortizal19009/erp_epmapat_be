@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.epmapat.erp_epmapat.interfaces.EmisionBasica;
+import com.epmapat.erp_epmapat.interfaces.EmisionControlResumen;
 import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
 import com.epmapat.erp_epmapat.interfaces.ResEmisiones;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
@@ -23,6 +25,42 @@ public interface EmisionesR extends JpaRepository<Emisiones, Long> {
 
 	@Query(value = "SELECT * FROM emisiones e join lecturas l on e.idemision = l.idemision join facturas f on l.idfactura = f.idfactura where not f.fechaeliminacion is null and l.idemision = ?1 order by f.idabonado", nativeQuery = true)
 	List<Emisiones> findByIdEmisiones(Long idemision);
+
+	@Query(value = """
+			SELECT
+				e.idemision AS idemision,
+				e.emision AS emision,
+				e.estado AS estado,
+				e.observaciones AS observaciones,
+				e.feccrea AS feccrea,
+				e.fechacierre AS fechacierre,
+				COALESCE(e.m3, 0) AS m3
+			FROM emisiones e
+			ORDER BY e.idemision DESC
+			""", nativeQuery = true)
+	List<EmisionBasica> findAllBasicas();
+
+	@Query(value = """
+			SELECT
+				e.idemision AS idemision,
+				e.emision AS emision,
+				e.estado AS estado,
+				e.feccrea AS feccrea,
+				e.fechacierre AS fechacierre,
+				COALESCE(SUM(GREATEST(COALESCE(l.lecturaactual, 0) - COALESCE(l.lecturaanterior, 0), 0)), 0) AS m3,
+				COUNT(l.idlectura) AS totalLecturas,
+				COALESCE(SUM(CASE
+					WHEN (COALESCE(l.lecturaactual, -1) - COALESCE(l.lecturaanterior, -1)) >= 0
+					  OR COALESCE(l.lecturaactual, 0) > 0
+					THEN 1 ELSE 0 END), 0) AS lecturasCargadas
+			FROM emisiones e
+			LEFT JOIN lecturas l ON l.idemision = e.idemision
+			WHERE e.emision >= :desde
+			  AND e.emision <= :hasta
+			GROUP BY e.idemision, e.emision, e.estado, e.feccrea, e.fechacierre
+			ORDER BY e.emision DESC
+			""", nativeQuery = true)
+	List<EmisionControlResumen> findControlResumenByDesdeHasta(@Param("desde") String desde, @Param("hasta") String hasta);
 
 	@Query(value = """
 						WITH resumen_rubros AS (

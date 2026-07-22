@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import com.epmapat.erp_epmapat.DTO.AnularEmisionRequest;
 import com.epmapat.erp_epmapat.DTO.EmisionGeneracionResponseDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.interfaces.EmisionBasica;
+import com.epmapat.erp_epmapat.interfaces.EmisionControlResumen;
 import com.epmapat.erp_epmapat.interfaces.ResEmisiones;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.servicio.AuditoriaGenericaService;
@@ -118,6 +120,11 @@ public class EmisionesApi {
 		return ResponseEntity.ok(emisiones);
 	}
 
+	@GetMapping("/findall-basic")
+	public ResponseEntity<List<EmisionBasica>> getAllEmisionesBasic() {
+		return ResponseEntity.ok(emiServicio.findAllBasicas());
+	}
+
 	@GetMapping("/id")
 	public ResponseEntity<List<Emisiones>> getByIdEmisiones(@RequestParam Long idemision) {
 		return ResponseEntity.ok(emiServicio.findByIdEmisiones(idemision));
@@ -131,6 +138,13 @@ public class EmisionesApi {
 	@GetMapping("/control/dashboard")
 	public ResponseEntity<?> getControlDashboard(@RequestParam(required = false, defaultValue = "24") Long limit) {
 		return ResponseEntity.ok(emiServicio.getControlDashboard(limit));
+	}
+
+	@GetMapping("/control/rango")
+	public ResponseEntity<List<EmisionControlResumen>> getControlRango(
+			@RequestParam String desde,
+			@RequestParam String hasta) {
+		return ResponseEntity.ok(emiServicio.findControlResumenByDesdeHasta(desde, hasta));
 	}
 
 	@GetMapping("/{idemision}/control-detalle")

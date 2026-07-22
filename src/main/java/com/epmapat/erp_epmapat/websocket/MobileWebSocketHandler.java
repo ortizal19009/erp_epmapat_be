@@ -82,6 +82,21 @@ public class MobileWebSocketHandler extends TextWebSocketHandler {
         });
     }
 
+    public void notifyLecturaUpdated(Long idemision, Long idrutaxemision) {
+        String payload = "{\"type\":\"lectura_update\",\"message\":\"lectura-actualizada\",\"ts\":"
+                + System.currentTimeMillis()
+                + ",\"idemision\":" + (idemision == null ? "null" : idemision)
+                + ",\"idrutaxemision\":" + (idrutaxemision == null ? "null" : idrutaxemision)
+                + "}";
+        sessions.values().forEach(session -> {
+            try {
+                sendRawJson(session, payload);
+            } catch (IOException e) {
+                log.warn("No se pudo notificar lectura_update a {}: {}", session.getId(), e.getMessage());
+            }
+        });
+    }
+
     public int activeConnections() {
         return sessions.size();
     }
@@ -119,12 +134,15 @@ public class MobileWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void sendJson(WebSocketSession session, String type, String message) throws IOException {
+        sendRawJson(session,
+                "{\"type\":\"" + type + "\",\"message\":\"" + message + "\",\"ts\":" + System.currentTimeMillis() + "}");
+    }
+
+    private void sendRawJson(WebSocketSession session, String payload) throws IOException {
         if (!session.isOpen()) {
             return;
         }
-        session.sendMessage(new TextMessage(
-                "{\"type\":\"" + type + "\",\"message\":\"" + message + "\",\"ts\":" + System.currentTimeMillis() + "}"
-        ));
+        session.sendMessage(new TextMessage(payload));
     }
 
     private boolean isExpectedDisconnect(Throwable exception) {

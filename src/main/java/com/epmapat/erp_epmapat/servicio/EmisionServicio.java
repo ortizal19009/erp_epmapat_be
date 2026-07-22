@@ -12,6 +12,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.ControlRutaStats;
+import com.epmapat.erp_epmapat.interfaces.EmisionBasica;
+import com.epmapat.erp_epmapat.interfaces.EmisionControlResumen;
 import com.epmapat.erp_epmapat.interfaces.ResEmisiones;
 import com.epmapat.erp_epmapat.modelo.Emisiones;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
@@ -51,6 +53,14 @@ public class EmisionServicio {
 		List<Emisiones> emisiones = dao.findAll(sort);
 		enriquecerLecturasEmisiones(emisiones);
 		return emisiones;
+	}
+
+	public List<EmisionBasica> findAllBasicas() {
+		return dao.findAllBasicas();
+	}
+
+	public List<EmisionControlResumen> findControlResumenByDesdeHasta(String desde, String hasta) {
+		return dao.findControlResumenByDesdeHasta(desde, hasta);
 	}
 
 	public List<Emisiones> findByIdEmisiones(Long idemision) {

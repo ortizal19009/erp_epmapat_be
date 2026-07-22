@@ -13,6 +13,8 @@ import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuer
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.CuentasByRutas;
+import com.epmapat.erp_epmapat.interfaces.RutaAsignacionResumen;
+import com.epmapat.erp_epmapat.interfaces.RutaResumen;
 import com.epmapat.erp_epmapat.modelo.Rutas;
 import com.epmapat.erp_epmapat.repositorio.RutasR;
 
@@ -33,6 +35,15 @@ public class RutaServicio implements RutasR {
 
 	public List<Rutas> findAllActive() {
 		return dao.findAllActive();
+	}
+
+	public List<RutaResumen> findResumenByEstado(Boolean estado) {
+		return dao.findResumenByEstado(estado);
+	}
+
+	public List<RutaAsignacionResumen> findRutasAsignacion(Long idemision, Boolean estado, String filtro, Integer limit) {
+		int safeLimit = limit == null || limit <= 0 ? 200 : Math.min(limit, 1000);
+		return dao.findRutasAsignacion(idemision, estado, filtro, safeLimit);
 	}
 
 	// @Override

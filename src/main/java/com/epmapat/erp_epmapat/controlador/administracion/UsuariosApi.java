@@ -7,9 +7,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -112,14 +114,16 @@ public class UsuariosApi {
    }
 
    @PutMapping("/{idusuario}")
-   public ResponseEntity<Usuarios> update(@PathVariable Long idusuario, @RequestBody Usuarios x) {
+   public ResponseEntity<?> update(@PathVariable Long idusuario, @RequestBody Usuarios x) {
 
       Usuarios y = usuServicio.findById(idusuario)
             .orElseThrow(() -> new ResourceNotFoundExcepciones("No existe Usuario con Id: " + idusuario));
 
       y.setIdentificausu(x.getIdentificausu());
       y.setNomusu(x.getNomusu());
-      y.setCodusu(x.getCodusu());
+      if (StringUtils.hasText(x.getCodusu())) {
+         y.setCodusu(x.getCodusu());
+      }
       y.setFdesde(x.getFdesde());
       y.setFhasta(x.getFhasta());
       y.setEstado(x.getEstado());
@@ -145,13 +149,27 @@ public class UsuariosApi {
       } else if (x.getPersonal().getIdpersonal() != null) {
          Long idpersonal = x.getPersonal().getIdpersonal();
 
-         Personal per = personalServicio.findById(idpersonal);
+         Personal per;
+         try {
+            per = personalServicio.findById(idpersonal);
+         } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                  .body(Map.of("message", "No existe Personal con id: " + idpersonal));
+         }
 
          y.setPersonal(per);
       }
 
-      Usuarios actualizar = usuServicio.save(y);
-      return ResponseEntity.ok(actualizar);
+      try {
+         Usuarios actualizar = usuServicio.save(y);
+         return ResponseEntity.ok(actualizar);
+      } catch (DataIntegrityViolationException ex) {
+         return ResponseEntity.status(HttpStatus.CONFLICT)
+               .body(Map.of("message", "No se pudo actualizar el usuario por una restricción de datos"));
+      } catch (IllegalArgumentException ex) {
+         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+               .body(Map.of("message", ex.getMessage()));
+      }
    }
 
    @PostMapping

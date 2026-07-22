@@ -42,6 +42,7 @@ import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.repositorio.LecturasR;
 import com.epmapat.erp_epmapat.repositorio.Pliego24R;
 import com.epmapat.erp_epmapat.repositorio.RubroxfacR;
+import com.epmapat.erp_epmapat.websocket.MobileWebSocketHandler;
 import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
 
 @Service
@@ -63,6 +64,8 @@ public class LecturaServicio {
 	private AuditoriaGenericaService auditoriaService;
 	@Autowired
 	private RutasxemisionServicio rutasxemisionServicio;
+	@Autowired
+	private MobileWebSocketHandler mobileWebSocketHandler;
 
 	// Lectura por Planilla
 	public Lecturas findOnefactura(Long idfactura) {
@@ -129,7 +132,9 @@ public class LecturaServicio {
 	}
 
 	public <S extends Lecturas> S saveLectura(S entity) {
-		return dao.save(entity);
+		S saved = dao.save(entity);
+		notificarLecturaActualizada(saved);
+		return saved;
 	}
 
 	public Lecturas actualizarLecturaConAuditoria(Long idlectura, Lecturas lecturaM, Long usumodi, String observacion, String tipo) {
@@ -162,7 +167,9 @@ public class LecturaServicio {
 		lecturaOriginal.setTotal32(lecturaM.getTotal32());
 		lecturaOriginal.setFotoPath(lecturaM.getFotoPath());
 
-		return dao.save(lecturaOriginal);
+		Lecturas saved = dao.save(lecturaOriginal);
+		notificarLecturaActualizada(saved);
+		return saved;
 	}
 
 	public Lecturas actualizarFotoConAuditoria(Long idlectura, String fotoPath, Long usumodi, String observacion, String tipo) {
@@ -174,6 +181,15 @@ public class LecturaServicio {
 
 		lecturaOriginal.setFotoPath(fotoPath);
 		return dao.save(lecturaOriginal);
+	}
+
+	private void notificarLecturaActualizada(Lecturas lectura) {
+		if (lectura == null) return;
+		Long idemision = lectura.getIdemision();
+		Long idrutaxemision = lectura.getIdrutaxemision_rutasxemision() == null
+				? null
+				: lectura.getIdrutaxemision_rutasxemision().getIdrutaxemision();
+		mobileWebSocketHandler.notifyLecturaUpdated(idemision, idrutaxemision);
 	}
 
 	private LecturasAuditDTO buildAuditDTO(Lecturas lectura) {

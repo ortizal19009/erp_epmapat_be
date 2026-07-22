@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.interfaces.CuentasByRutas;
+import com.epmapat.erp_epmapat.interfaces.RutaAsignacionResumen;
+import com.epmapat.erp_epmapat.interfaces.RutaResumen;
 import com.epmapat.erp_epmapat.modelo.Rutas;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 import com.epmapat.erp_epmapat.servicio.RutaServicio;
@@ -36,6 +38,20 @@ public class RutasApi {
 	@GetMapping
 	public List<Rutas> getAll() {
 		return rutServicio.findAllActive();
+	}
+
+	@GetMapping("/resumen")
+	public ResponseEntity<List<RutaResumen>> getResumen(@RequestParam(required = false) Boolean estado) {
+		return ResponseEntity.ok(rutServicio.findResumenByEstado(estado));
+	}
+
+	@GetMapping("/asignacion")
+	public ResponseEntity<List<RutaAsignacionResumen>> getRutasAsignacion(
+			@RequestParam(required = false) Long idemision,
+			@RequestParam(required = false) Boolean estado,
+			@RequestParam(required = false) String filtro,
+			@RequestParam(required = false, defaultValue = "200") Integer limit) {
+		return ResponseEntity.ok(rutServicio.findRutasAsignacion(idemision, estado, filtro, limit));
 	}
 
 	@GetMapping("/valCodigo")
