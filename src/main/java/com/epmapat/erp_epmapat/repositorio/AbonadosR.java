@@ -199,6 +199,15 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 			""")
 	java.util.Optional<Abonados> findById(@Param("id") Long id);
 
+	@Query("""
+			SELECT DISTINCT a
+			FROM Abonados a
+			LEFT JOIN FETCH a.idresponsable
+			LEFT JOIN FETCH a.idcliente_clientes
+			WHERE a.idabonado IN :ids
+			""")
+	List<Abonados> findPreviewByIds(@Param("ids") List<Long> ids);
+
 	@Query(value = "SELECT * FROM abonados a where a.idruta_rutas = ?1 order by a.idabonado asc", nativeQuery = true)
 	public List<Abonados> getCuentasByRutas(Long idruta);
 

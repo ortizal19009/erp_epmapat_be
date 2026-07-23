@@ -15,6 +15,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.epmapat.erp_epmapat.DTO.AbonadoGeoPreviewDto;
+import com.epmapat.erp_epmapat.DTO.AbonadoGeoUploadItemDto;
+import com.epmapat.erp_epmapat.DTO.AbonadoGeoUploadItemResultDto;
+import com.epmapat.erp_epmapat.DTO.AbonadoGeoUploadResultDto;
 import com.epmapat.erp_epmapat.DTO.AbonadosAuditDTO;
 import com.epmapat.erp_epmapat.DTO.EstadisticasAbonadosDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
@@ -120,6 +124,77 @@ public class AbonadoServicio {
 
 	public Optional<Abonados> findById(Long id) {
 		return dao.findById(id);
+	}
+
+	public List<AbonadoGeoPreviewDto> findGeoPreviewByIds(List<Long> ids) {
+		if (ids == null || ids.isEmpty()) {
+			return List.of();
+		}
+
+		return dao.findPreviewByIds(ids).stream()
+				.map(abonado -> new AbonadoGeoPreviewDto(
+						abonado.getIdabonado(),
+						abonado.getIdresponsable() != null ? abonado.getIdresponsable().getNombre()
+								: abonado.getIdcliente_clientes() != null ? abonado.getIdcliente_clientes().getNombre()
+								: "",
+						abonado.getGeolocalizacion()))
+				.collect(Collectors.toList());
+	}
+
+	public AbonadoGeoUploadResultDto aplicarGeoUploadMasivo(
+			List<AbonadoGeoUploadItemDto> items,
+			Long usumodi,
+			String observacion,
+			String tipo) {
+		if (items == null || items.isEmpty()) {
+			return new AbonadoGeoUploadResultDto(0, List.of(), List.of());
+		}
+
+		int actualizados = 0;
+		List<String> errores = new ArrayList<>();
+		List<AbonadoGeoUploadItemResultDto> detalles = new ArrayList<>();
+
+		for (AbonadoGeoUploadItemDto item : items) {
+			if (item == null || item.getIdabonado() == null) {
+				String mensaje = "Cuenta desconocida: registro invalido.";
+				errores.add(mensaje);
+				detalles.add(new AbonadoGeoUploadItemResultDto(null, false, mensaje, null));
+				continue;
+			}
+
+			try {
+				actualizarGeolocalizacionConAuditoria(
+						item.getIdabonado(),
+						item.getGeolocalizacion(),
+						usumodi,
+						observacion,
+						tipo);
+				actualizados++;
+				detalles.add(new AbonadoGeoUploadItemResultDto(
+						item.getIdabonado(),
+						true,
+						"Actualizado correctamente.",
+						item.getGeolocalizacion()));
+			} catch (RuntimeException ex) {
+				String mensaje = "Cuenta " + item.getIdabonado() + ": " + ex.getMessage();
+				errores.add(mensaje);
+				detalles.add(new AbonadoGeoUploadItemResultDto(
+						item.getIdabonado(),
+						false,
+						mensaje,
+						item.getGeolocalizacion()));
+			} catch (Exception ex) {
+				String mensaje = "Cuenta " + item.getIdabonado() + ": no se pudo actualizar.";
+				errores.add(mensaje);
+				detalles.add(new AbonadoGeoUploadItemResultDto(
+						item.getIdabonado(),
+						false,
+						mensaje,
+						item.getGeolocalizacion()));
+			}
+		}
+
+		return new AbonadoGeoUploadResultDto(actualizados, errores, detalles);
 	}
 
 	public void deleteById(Long id) {

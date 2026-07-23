@@ -29,7 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.util.StringUtils;
 
+import com.epmapat.erp_epmapat.DTO.AbonadoGeoPreviewDto;
 import com.epmapat.erp_epmapat.DTO.AbonadoGeoUploadItemDto;
+import com.epmapat.erp_epmapat.DTO.AbonadoGeoUploadResultDto;
 import com.epmapat.erp_epmapat.DTO.AbonadoMobileUpdateDto;
 import com.epmapat.erp_epmapat.DTO.EstadisticasAbonadosDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
@@ -183,6 +185,27 @@ public class AbonadosApi {
 	@PostMapping
 	public Abonados saveAbonados(@RequestBody Abonados x) {
 		return aboServicio.save(prepararAbonadoParaPersistencia(x, null));
+	}
+
+	@PostMapping("/geo-upload/preview")
+	public ResponseEntity<List<AbonadoGeoPreviewDto>> previewGeoUpload(
+			@RequestBody List<AbonadoGeoUploadItemDto> items) {
+		List<Long> ids = items == null ? List.of()
+				: items.stream()
+						.map(AbonadoGeoUploadItemDto::getIdabonado)
+						.filter(java.util.Objects::nonNull)
+						.distinct()
+						.toList();
+		return ResponseEntity.ok(aboServicio.findGeoPreviewByIds(ids));
+	}
+
+	@PostMapping("/geo-upload/apply")
+	public ResponseEntity<AbonadoGeoUploadResultDto> applyGeoUpload(
+			@RequestBody List<AbonadoGeoUploadItemDto> items,
+			@RequestParam Long usumodi,
+			@RequestParam(required = false, defaultValue = "Carga masiva de geolocalizacion") String observacion,
+			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo) {
+		return ResponseEntity.ok(aboServicio.aplicarGeoUploadMasivo(items, usumodi, observacion, tipo));
 	}
 
 	@GetMapping("/tmp")
