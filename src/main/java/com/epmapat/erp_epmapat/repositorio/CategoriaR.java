@@ -48,6 +48,6 @@ public interface CategoriaR extends JpaRepository<Categorias, Long> {
 	 * QUERYS PARA MOBILE
 	 * =============================================================
 	 */
-	@Query(value = "SELECT c.idcategoria , c.descripcion FROM categorias c", nativeQuery = true)
+	@Query(value = "SELECT c.idcategoria, c.descripcion, c.fijoagua, c.fijosanea FROM categorias c", nativeQuery = true)
 	List<CategoriasMobile> findAllCategorias();
 }
