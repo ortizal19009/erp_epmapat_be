@@ -106,9 +106,19 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			""")
 	public List<Rubroxfac> findByIdfactura1(@Param("idfactura") Long idfactura);
 
-	// Rubroxfac de un Rubro (movimientos de un Rubro)
-	@Query(value = "SELECT * FROM rubroxfac WHERE idrubro_rubros =?1 and (estado <> 0 or estado is null) order by idrubroxfac desc limit 100", nativeQuery = true)
-	public List<Rubroxfac> findByIdrubro(Long idrubro);
+	// Rubroxfac de un Rubro (movimientos de un Rubro) con factura y relaciones necesarias
+	@Query("""
+			select rf
+			from Rubroxfac rf
+			join fetch rf.idrubro_rubros rub
+			join fetch rf.idfactura_facturas fac
+			left join fetch fac.idcliente cli
+			left join fetch fac.idmodulo mod
+			where rub.idrubro = :idrubro
+			  and (rf.estado <> 0 or rf.estado is null)
+			order by rf.idrubroxfac desc
+			""")
+	public List<Rubroxfac> findByIdrubro(@Param("idrubro") Long idrubro);
 
 	// Rubro.descripcion y rubroxfac.valorunitario
 	@Query(value = "SELECT r.descripcion, rf.valorunitario "
