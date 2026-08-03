@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.controlador.contabilidad;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -62,16 +63,16 @@ public class TransaciApi {
 	// Mayor de una Cuenta
 	@GetMapping("/mayor")
 	public ResponseEntity<List<Transaci>> getByCodcue(@Param("codcue") String codcue,
-			@Param("desde") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desde,
-			@Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hasta) {
+			@Param("desde") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desde,
+			@Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
 		return ResponseEntity.ok(tranServicio.findByCodcue(codcue, desde, hasta));
 	}
 
 	// Suma débitos o créditos de una cuenta
 	@GetMapping("/sumValor")
 	public ResponseEntity<BigDecimal> sumValor(@Param("codcue") String codcue, @Param("debcre") Integer debcre,
-			@Param("desde") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desde,
-			@Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hasta) {
+			@Param("desde") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desde,
+			@Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
 		BigDecimal resultados = tranServicio.sumValor(codcue, debcre, desde, hasta);
 		return ResponseEntity.ok(resultados);
 	}
@@ -79,7 +80,7 @@ public class TransaciApi {
 	// Saldo Anterior cuenta deudora
 	@GetMapping("/saldo")
 	public ResponseEntity<BigDecimal> saldo(@Param("codcue") String codcue,
-			@Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hasta) {
+			@Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
 		BigDecimal saldo = tranServicio.saldo(codcue, hasta);
 		return ResponseEntity.ok(saldo);
 	}
@@ -87,23 +88,23 @@ public class TransaciApi {
 	// Balance de comprobación
 	@GetMapping("/balance")
 	public List<Map<String, Object>> obtenerBalance(
-			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
-			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
+			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desdeFecha,
+			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hastaFecha) {
 		return tranServicio.obtenerBalance(desdeFecha, hastaFecha);
 	}
 
 	// Estado de situación
 	@GetMapping("/estados")
 	public List<Map<String, Object>> obtenerEstados(@RequestParam(required = true) Long intgrupo,
-			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
-			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
+			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desdeFecha,
+			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hastaFecha) {
 		return tranServicio.obtenerEstados(intgrupo, desdeFecha, hastaFecha);
 	}
 
 	@GetMapping("/flujo")
 	public Double totalFlujo(@RequestParam(required = true) String codcue,
-			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
-			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha,
+			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desdeFecha,
+			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hastaFecha,
 			@Param("debcre") Long debcre) {
 		Double tdeven = tranServicio.totalFlujo(codcue, desdeFecha, hastaFecha, debcre);
 		return tdeven;
@@ -121,8 +122,8 @@ public class TransaciApi {
 			@Param(value = "tipcom") Integer tipcom,
 			@Param(value = "desdeNum") Long desdeNum,
 			@Param(value = "hastaNum") Long hastaNum,
-			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desdeFecha,
-			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hastaFecha) {
+			@Param("desdeFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desdeFecha,
+			@Param("hastaFecha") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hastaFecha) {
 		if (opcion == 1) {
 			return tranServicio.tranAsientos(desdeNum, hastaNum, desdeFecha, hastaFecha);
 		} else if (opcion == 2)

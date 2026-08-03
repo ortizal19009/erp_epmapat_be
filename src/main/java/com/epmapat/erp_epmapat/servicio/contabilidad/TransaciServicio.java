@@ -1,6 +1,7 @@
 package com.epmapat.erp_epmapat.servicio.contabilidad;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -57,17 +58,17 @@ public class TransaciServicio {
 	}
 
 	// Mayor de una Cuenta
-	public List<Transaci> findByCodcue(String codcue, Date desde, Date hasta) {
+	public List<Transaci> findByCodcue(String codcue, LocalDate desde, LocalDate hasta) {
 		return dao.findByCodcue(codcue, desde, hasta);
 	}
 
 	// Suma débitos o créditos de una cuenta
-	public BigDecimal sumValor(String codcue, Integer debcre, Date desde, Date hasta) {
+	public BigDecimal sumValor(String codcue, Integer debcre, LocalDate desde, LocalDate hasta) {
 		return dao.sumValor(codcue, debcre, desde, hasta);
 	}
 
 	// Saldo anterior cuenta deudora
-	public BigDecimal saldo(String codcue, Date hasta) {
+	public BigDecimal saldo(String codcue, LocalDate hasta) {
 		List<Transaci> transacciones = dao.findByCodcueHasta(codcue, hasta);
 		BigDecimal saldo = BigDecimal.ZERO;
 		for (Transaci transaccion : transacciones) {
@@ -90,7 +91,7 @@ public class TransaciServicio {
 	}
 
 	// Busca Transacciones por número y fechas de los Asientos
-	public List<Transaci> tranAsientos(Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
+	public List<Transaci> tranAsientos(Long desdeNum, Long hastaNum, LocalDate desdeFecha, LocalDate hastaFecha) {
 		return dao.tranAsientos(desdeNum, hastaNum, desdeFecha, hastaFecha);
 	}
 
@@ -183,17 +184,17 @@ public class TransaciServicio {
 	}
 
 	// Balance de comprobación
-	public List<Map<String, Object>> obtenerBalance(Date desdeFecha, Date hastaFecha) {
+	public List<Map<String, Object>> obtenerBalance(LocalDate desdeFecha, LocalDate hastaFecha) {
 		return dao.obtenerBalance(desdeFecha, hastaFecha);
 	}
 
 	// Estado de situación
-	public List<Map<String, Object>> obtenerEstados(Long intgrupo, Date desdeFecha, Date hastaFecha) {
+	public List<Map<String, Object>> obtenerEstados(Long intgrupo, LocalDate desdeFecha, LocalDate hastaFecha) {
 		return dao.obtenerEstados(intgrupo, desdeFecha, hastaFecha);
 	}
 
 	// Flujo del efectivo
-	public Double totalFlujo(String codcue, Date desdeFecha, Date hastaFecha, Long debcre) {
+	public Double totalFlujo(String codcue, LocalDate desdeFecha, LocalDate hastaFecha, Long debcre) {
 		Double tflujo = dao.totalFlujo(codcue, desdeFecha, hastaFecha, debcre);
 		return tflujo;
 	}
