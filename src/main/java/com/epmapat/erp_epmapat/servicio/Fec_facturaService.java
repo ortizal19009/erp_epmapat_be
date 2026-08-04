@@ -56,7 +56,7 @@ public class Fec_facturaService {
    private static final String CODIGO_PORCENTAJE_IVA_0 = "0";
    private static final String CODIGO_PORCENTAJE_IVA_12 = "2";
    private static final String CODIGO_PORCENTAJE_IVA_14 = "3";
-   private static final String CODIGO_PORCENTAJE_IVA_15 = "6";
+   private static final String CODIGO_PORCENTAJE_IVA_15 = "4";
    private static final DateTimeFormatter DDMMYYYY = DateTimeFormatter.ofPattern("ddMMyyyy");
    private static final int MAX_INTENTOS_AUTORIZACION = 10;
    private static final long DETALLE_RUBRO_FACTOR = 1_000_000L;
@@ -459,6 +459,7 @@ public class Fec_facturaService {
       for (Rubroxfac item : normales) {
          Long rubro = item.getIdrubro_rubros().getIdrubro();
          Long idDetalle = buildDetalleId(idfactura, rubro);
+         BigDecimal baseImponible = calcularBaseImponible(item);
 
          Fec_factura_detalles d = new Fec_factura_detalles();
          d.setIdfactura(idfactura);
@@ -474,8 +475,7 @@ public class Fec_facturaService {
 
       // consolidado 1006+1007 -> 1004
       BigDecimal suma = aConsolidar.stream()
-            .map(Rubroxfac::getValorunitario)
-            .filter(Objects::nonNull)
+            .map(this::calcularBaseImponible)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
       boolean hayConsolidado = suma.compareTo(BigDecimal.ZERO) > 0;
@@ -542,25 +542,21 @@ public class Fec_facturaService {
          Long idDetalle = buildDetalleId(idfactura, rubro);
 
          if (detalleIdsPersistidos.contains(idDetalle)) {
-            impuestos.add(crearImpuesto(idDetalle, rubro, item.getValorunitario(),
-                  Boolean.TRUE.equals(item.getIdrubro_rubros().getSwiva()), codigoPorcentajeIva));
+            impuestos.add(crearImpuesto(idDetalle, rubro, calcularBaseImponible(item),
+                  rubroGeneraIva(item), codigoPorcentajeIva));
          }
       }
 
       // impuesto Ãºnico consolidado (1004)
       if (hayConsolidado && detalleIdsPersistidos.contains(idDetalleConsolidado)) {
          boolean consolidadoGravaIva = aConsolidar.stream()
-               .map(Rubroxfac::getIdrubro_rubros)
-               .filter(Objects::nonNull)
-               .anyMatch(rubro -> Boolean.TRUE.equals(rubro.getSwiva()));
+               .anyMatch(this::rubroGeneraIva);
          impuestos.add(crearImpuesto(idDetalleConsolidado, 1004L, suma, consolidadoGravaIva, codigoPorcentajeIva));
       }
 
       if (hayInteres && idDetalleInteres != null && detalleIdsPersistidos.contains(idDetalleInteres)) {
          boolean interesGravaIva = rubrosInteres.stream()
-               .map(Rubroxfac::getIdrubro_rubros)
-               .filter(Objects::nonNull)
-               .anyMatch(rubro -> Boolean.TRUE.equals(rubro.getSwiva()));
+               .anyMatch(this::rubroGeneraIva);
          impuestos.add(crearImpuesto(idDetalleInteres, RUBRO_INTERES_ID, interesCobrado, interesGravaIva,
                codigoPorcentajeIva));
       }
@@ -606,9 +602,7 @@ public class Fec_facturaService {
    }
 
    private String resolverCodigoPorcentajeIva(DefinirProjection definir) {
-      BigDecimal porcentaje = definir == null || definir.getPorciva() == null
-            ? BigDecimal.ZERO
-            : definir.getPorciva().stripTrailingZeros();
+      BigDecimal porcentaje = normalizarPorcentajeIva(definir == null ? null : definir.getPorciva());
       if (BigDecimal.valueOf(12).compareTo(porcentaje) == 0) {
          return CODIGO_PORCENTAJE_IVA_12;
       }
@@ -619,6 +613,37 @@ public class Fec_facturaService {
          return CODIGO_PORCENTAJE_IVA_15;
       }
       return CODIGO_PORCENTAJE_IVA_0;
+   }
+
+   private BigDecimal normalizarPorcentajeIva(BigDecimal porcentaje) {
+      if (porcentaje == null) {
+         return BigDecimal.ZERO;
+      }
+
+      BigDecimal normalizado = porcentaje.stripTrailingZeros();
+      if (normalizado.compareTo(BigDecimal.ZERO) > 0 && normalizado.compareTo(BigDecimal.ONE) <= 0) {
+         normalizado = normalizado.multiply(BigDecimal.valueOf(100));
+      }
+
+      return normalizado.stripTrailingZeros();
+   }
+
+   private BigDecimal calcularBaseImponible(Rubroxfac rubroxfac) {
+      if (rubroxfac == null || rubroxfac.getValorunitario() == null) {
+         return BigDecimal.ZERO;
+      }
+
+      BigDecimal cantidad = rubroxfac.getCantidad() == null
+            ? BigDecimal.ONE
+            : BigDecimal.valueOf(rubroxfac.getCantidad());
+
+      return rubroxfac.getValorunitario().multiply(cantidad);
+   }
+
+   private boolean rubroGeneraIva(Rubroxfac rubroxfac) {
+      return rubroxfac != null
+            && rubroxfac.getIdrubro_rubros() != null
+            && Boolean.TRUE.equals(rubroxfac.getIdrubro_rubros().getSwiva());
    }
 
    public void generarFecFacturaDetallesImpuestos(Rubroxfac rxf, Long idfecfacturadetalle) {
