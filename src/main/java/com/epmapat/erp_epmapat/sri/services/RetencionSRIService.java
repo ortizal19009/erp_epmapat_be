@@ -499,8 +499,6 @@ public class RetencionSRIService {
       }
 
       if (baseImponible != null && baseImponible.compareTo(BigDecimal.ZERO) > 0) {
-         BigDecimal valorRet = resolverValorRetenido(retencion, detalle, codigoRetencion, baseImponible,
-               BigDecimal.ZERO);
          if (valorRet.compareTo(BigDecimal.ZERO) > 0) {
             return valorRet.multiply(BigDecimal.valueOf(100)).divide(baseImponible, 2, RoundingMode.HALF_UP);
          }
