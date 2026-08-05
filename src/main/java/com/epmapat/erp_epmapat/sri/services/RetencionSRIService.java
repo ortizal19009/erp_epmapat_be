@@ -247,7 +247,9 @@ public class RetencionSRIService {
             linea.fechaEmisionDocSustento = referencia.getFechaemisiondocumentosustento() != null
                   ? referencia.getFechaemisiondocumentosustento()
                   : retencion.getFechaemision();
-            resultado.add(linea);
+            if (debeIncluirLinea(linea)) {
+               resultado.add(linea);
+            }
          }
          return resultado;
       }
@@ -290,7 +292,9 @@ public class RetencionSRIService {
       linea.codDocSustento = codDocSustento;
       linea.numDocSustento = formatearNumeroDocumentoSustento(numDocSustento);
       linea.fechaEmisionDocSustento = fechaEmisionDocSustento;
-      resultado.add(linea);
+      if (debeIncluirLinea(linea)) {
+         resultado.add(linea);
+      }
    }
 
    private String construirXml(Retenciones retencion, Definir definir, List<ImpuestoRetencionXml> lineas) {
@@ -482,6 +486,14 @@ public class RetencionSRIService {
          }
       }
 
+      BigDecimal valorRet = resolverValorRetenido(retencion, detalle, codigoRetencion, baseImponible, BigDecimal.ZERO);
+      if (esIva(codigoRetencion, retencion)
+            && baseImponible != null
+            && baseImponible.compareTo(BigDecimal.ZERO) > 0
+            && valorRet.compareTo(baseImponible.setScale(2, RoundingMode.HALF_UP)) == 0) {
+         return BigDecimal.valueOf(100).setScale(2, RoundingMode.HALF_UP);
+      }
+
       if (retencion.getIdtabla17() != null && retencion.getIdtabla17().getPorciva() != null) {
          return BigDecimal.valueOf(retencion.getIdtabla17().getPorciva()).setScale(2, RoundingMode.HALF_UP);
       }
@@ -527,6 +539,22 @@ public class RetencionSRIService {
          tasa = tasa.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
       }
       return baseImponible.multiply(tasa).setScale(2, RoundingMode.HALF_UP);
+   }
+
+   private boolean debeIncluirLinea(ImpuestoRetencionXml linea) {
+      if (linea == null) {
+         return false;
+      }
+      BigDecimal base = linea.baseImponible == null ? BigDecimal.ZERO : linea.baseImponible;
+      BigDecimal valor = linea.valorRetenido == null ? BigDecimal.ZERO : linea.valorRetenido;
+      return base.compareTo(BigDecimal.ZERO) > 0 || valor.compareTo(BigDecimal.ZERO) > 0;
+   }
+
+   private boolean esIva(String codigoRetencion, Retenciones retencion) {
+      String codigo = normalizar(codigoRetencion);
+      return codigo.equals(normalizar(retencion != null ? retencion.getCodretbienes() : null))
+            || codigo.equals(normalizar(retencion != null ? retencion.getCodretservicios() : null))
+            || codigo.equals(normalizar(retencion != null ? retencion.getCodretserv100() : null));
    }
 
    private BigDecimal calcularValorRetenido(BigDecimal baseImponible, BigDecimal porcentajeRetener) {

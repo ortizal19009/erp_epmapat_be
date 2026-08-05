@@ -145,7 +145,9 @@ public class RetencionPdfService {
             linea.numeroDocumentoCompleto = formatearNumeroDocumentoPdf(linea.numDocSustento);
             linea.ejercicioFiscal = formatearPeriodoFiscal(referencia.getFechaemisiondocumentosustento());
             linea.impuestoDescripcion = resolverImpuestoDescripcion(linea.codigo);
-            lineas.add(linea);
+            if (debeIncluirLinea(linea)) {
+               lineas.add(linea);
+            }
          }
          return lineas;
       }
@@ -179,7 +181,9 @@ public class RetencionPdfService {
       linea.numeroDocumentoCompleto = formatearNumeroDocumentoPdf(linea.numDocSustento);
       linea.ejercicioFiscal = formatearPeriodoFiscal(fechaEmision);
       linea.impuestoDescripcion = resolverImpuestoDescripcion(linea.codigo);
-      lineas.add(linea);
+      if (debeIncluirLinea(linea)) {
+         lineas.add(linea);
+      }
    }
 
    private String resolverComprobanteDescripcion(String codDocSustento) {
@@ -218,8 +222,8 @@ public class RetencionPdfService {
 
    private String formatearNumeroDocumentoPdf(String numDocSustento) {
       String soloDigitos = numDocSustento == null ? "" : numDocSustento.replaceAll("[^0-9]", "").trim();
-      if (soloDigitos.length() == 15) {
-         return soloDigitos.substring(0, 3) + "-" + soloDigitos.substring(3, 6) + "-" + soloDigitos.substring(6);
+      if (!soloDigitos.isBlank()) {
+         return soloDigitos;
       }
       return valueOf(numDocSustento);
    }
@@ -259,10 +263,33 @@ public class RetencionPdfService {
       if (codigoRetencion.equals(valueOf(retencion.getCodretserv100())) && retencion.getPorretserv100() != null) {
          return retencion.getPorretserv100().setScale(2, RoundingMode.HALF_UP);
       }
+      BigDecimal valorRetenido = resolverValorRetenido(retencion, codigoRetencion, baseImponible, BigDecimal.ZERO);
+      if (esIva(codigoRetencion, retencion)
+            && baseImponible != null
+            && baseImponible.compareTo(BigDecimal.ZERO) > 0
+            && valorRetenido.compareTo(baseImponible.setScale(2, RoundingMode.HALF_UP)) == 0) {
+         return BigDecimal.valueOf(100).setScale(2, RoundingMode.HALF_UP);
+      }
       if (baseImponible != null && baseImponible.compareTo(BigDecimal.ZERO) > 0) {
          return BigDecimal.ZERO;
       }
       return BigDecimal.ZERO;
+   }
+
+   private boolean debeIncluirLinea(LineaRetencionPdf linea) {
+      if (linea == null) {
+         return false;
+      }
+      BigDecimal base = linea.baseImponible == null ? BigDecimal.ZERO : linea.baseImponible;
+      BigDecimal valor = linea.valorRetenido == null ? BigDecimal.ZERO : linea.valorRetenido;
+      return base.compareTo(BigDecimal.ZERO) > 0 || valor.compareTo(BigDecimal.ZERO) > 0;
+   }
+
+   private boolean esIva(String codigoRetencion, Retenciones retencion) {
+      String codigo = valueOf(codigoRetencion).trim();
+      return codigo.equals(valueOf(retencion != null ? retencion.getCodretbienes() : null).trim())
+            || codigo.equals(valueOf(retencion != null ? retencion.getCodretservicios() : null).trim())
+            || codigo.equals(valueOf(retencion != null ? retencion.getCodretserv100() : null).trim());
    }
 
    private BigDecimal resolverValorRetenido(Retenciones retencion, String codigoRetencion, BigDecimal baseImponible,
