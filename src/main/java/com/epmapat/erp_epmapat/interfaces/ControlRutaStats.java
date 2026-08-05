@@ -1,12 +1,14 @@
 package com.epmapat.erp_epmapat.interfaces;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 public interface ControlRutaStats {
     Long getIdrutaxemision();
     Long getIdruta();
     String getCodigoRuta();
     String getNombreRuta();
+    ZonedDateTime getFechacierre();
     Integer getEstadoRuta();
     Long getLecturas();
     Long getLecturasTomadas();

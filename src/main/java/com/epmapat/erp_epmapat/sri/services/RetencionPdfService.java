@@ -141,6 +141,10 @@ public class RetencionPdfService {
             linea.codDocSustento = valueOf(referencia.getCodigodocumentosustento());
             linea.numDocSustento = valueOf(referencia.getNumerodocumentosustento());
             linea.fechaEmisionDocSustento = formatearFecha(referencia.getFechaemisiondocumentosustento());
+            linea.comprobanteDescripcion = resolverComprobanteDescripcion(linea.codDocSustento);
+            linea.numeroDocumentoCompleto = formatearNumeroDocumentoPdf(linea.numDocSustento);
+            linea.ejercicioFiscal = formatearPeriodoFiscal(referencia.getFechaemisiondocumentosustento());
+            linea.impuestoDescripcion = resolverImpuestoDescripcion(linea.codigo);
             lineas.add(linea);
          }
          return lineas;
@@ -171,7 +175,53 @@ public class RetencionPdfService {
       linea.codDocSustento = "01";
       linea.numDocSustento = valueOf(numDocSustento);
       linea.fechaEmisionDocSustento = formatearFecha(fechaEmision);
+      linea.comprobanteDescripcion = resolverComprobanteDescripcion(linea.codDocSustento);
+      linea.numeroDocumentoCompleto = formatearNumeroDocumentoPdf(linea.numDocSustento);
+      linea.ejercicioFiscal = formatearPeriodoFiscal(fechaEmision);
+      linea.impuestoDescripcion = resolverImpuestoDescripcion(linea.codigo);
       lineas.add(linea);
+   }
+
+   private String resolverComprobanteDescripcion(String codDocSustento) {
+      String codigo = valueOf(codDocSustento).trim();
+      switch (codigo) {
+         case "01":
+            return "Factura";
+         case "03":
+            return "Liquidacion";
+         case "04":
+            return "Nota de credito";
+         case "05":
+            return "Nota de debito";
+         case "06":
+            return "Guia de remision";
+         case "07":
+            return "Comprobante de retencion";
+         default:
+            return codigo.isBlank() ? "Documento" : codigo;
+      }
+   }
+
+   private String resolverImpuestoDescripcion(String codigo) {
+      String valor = valueOf(codigo).trim();
+      switch (valor) {
+         case "1":
+            return "RENTA";
+         case "2":
+            return "IVA";
+         case "3":
+            return "ICE";
+         default:
+            return valor.isBlank() ? "OTRO" : valor;
+      }
+   }
+
+   private String formatearNumeroDocumentoPdf(String numDocSustento) {
+      String soloDigitos = numDocSustento == null ? "" : numDocSustento.replaceAll("[^0-9]", "").trim();
+      if (soloDigitos.length() == 15) {
+         return soloDigitos.substring(0, 3) + "-" + soloDigitos.substring(3, 6) + "-" + soloDigitos.substring(6);
+      }
+      return valueOf(numDocSustento);
    }
 
    private BigDecimal resolverBaseDesdeRetencion(Retenciones retencion, String codigoRetencion) {
@@ -347,6 +397,10 @@ public class RetencionPdfService {
       public String codDocSustento;
       public String numDocSustento;
       public String fechaEmisionDocSustento;
+      public String comprobanteDescripcion;
+      public String numeroDocumentoCompleto;
+      public String ejercicioFiscal;
+      public String impuestoDescripcion;
 
       public String getCodigo() {
          return codigo;
@@ -378,6 +432,22 @@ public class RetencionPdfService {
 
       public String getFechaEmisionDocSustento() {
          return fechaEmisionDocSustento;
+      }
+
+      public String getComprobanteDescripcion() {
+         return comprobanteDescripcion;
+      }
+
+      public String getNumeroDocumentoCompleto() {
+         return numeroDocumentoCompleto;
+      }
+
+      public String getEjercicioFiscal() {
+         return ejercicioFiscal;
+      }
+
+      public String getImpuestoDescripcion() {
+         return impuestoDescripcion;
       }
    }
 }

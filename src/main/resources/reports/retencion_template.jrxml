@@ -30,6 +30,10 @@
 	<field name="codDocSustento" class="java.lang.String"/>
 	<field name="numDocSustento" class="java.lang.String"/>
 	<field name="fechaEmisionDocSustento" class="java.lang.String"/>
+	<field name="comprobanteDescripcion" class="java.lang.String"/>
+	<field name="numeroDocumentoCompleto" class="java.lang.String"/>
+	<field name="ejercicioFiscal" class="java.lang.String"/>
+	<field name="impuestoDescripcion" class="java.lang.String"/>
 	<variable name="TOTAL_RETENIDO" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{valorRetenido}]]></variableExpression>
 		<initialValueExpression><![CDATA[new java.math.BigDecimal("0")]]></initialValueExpression>
@@ -201,7 +205,7 @@
 	<columnHeader>
 		<band height="25">
 			<staticText>
-				<reportElement x="0" y="0" width="70" height="20" uuid="e987898a-ba1c-4320-912c-5c6892e9a802"/>
+				<reportElement x="0" y="0" width="75" height="20" uuid="e987898a-ba1c-4320-912c-5c6892e9a802"/>
 				<box>
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -214,7 +218,7 @@
 				<text><![CDATA[Comprobante]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="70" y="0" width="70" height="20" uuid="e513a1e6-9198-489f-a0e3-628c8c9e7101"/>
+				<reportElement x="75" y="0" width="100" height="20" uuid="e513a1e6-9198-489f-a0e3-628c8c9e7101"/>
 				<box>
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -227,7 +231,7 @@
 				<text><![CDATA[Número]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="140" y="0" width="80" height="20" uuid="60fab7fa-5014-4f13-94bb-225f2d4294b8"/>
+				<reportElement x="175" y="0" width="65" height="20" uuid="60fab7fa-5014-4f13-94bb-225f2d4294b8"/>
 				<box>
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -240,7 +244,7 @@
 				<text><![CDATA[Fecha Emisión]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="220" y="0" width="60" height="20" uuid="11eded04-01c9-49ed-9f41-ff6f120baa41"/>
+				<reportElement x="240" y="0" width="55" height="20" uuid="11eded04-01c9-49ed-9f41-ff6f120baa41"/>
 				<box>
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -250,10 +254,10 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="7" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Impuesto]]></text>
+				<text><![CDATA[Ejercicio]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="280" y="0" width="85" height="20" uuid="273d88f8-136c-4167-b529-62ce5e951317"/>
+				<reportElement x="295" y="0" width="85" height="20" uuid="273d88f8-136c-4167-b529-62ce5e951317"/>
 				<box>
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -266,7 +270,7 @@
 				<text><![CDATA[Base imponible]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="365" y="0" width="70" height="20" uuid="8f998bb4-5585-4e84-87ca-54c4c5a1352d"/>
+				<reportElement x="380" y="0" width="55" height="20" uuid="8f998bb4-5585-4e84-87ca-54c4c5a1352d"/>
 				<box>
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -276,10 +280,10 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="7" isBold="true"/>
 				</textElement>
-				<text><![CDATA[% retención]]></text>
+				<text><![CDATA[Impuesto]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="435" y="0" width="60" height="20" uuid="07a16498-e037-4067-838b-ccaf16ee8f9f"/>
+				<reportElement x="435" y="0" width="55" height="20" uuid="07a16498-e037-4067-838b-ccaf16ee8f9f"/>
 				<box>
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -289,10 +293,10 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="7" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Cód. Ret]]></text>
+				<text><![CDATA[% Ret.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="495" y="0" width="60" height="20" uuid="95cc8e6d-6d4f-47fa-894c-f3bef7ad11a8"/>
+				<reportElement x="490" y="0" width="65" height="20" uuid="95cc8e6d-6d4f-47fa-894c-f3bef7ad11a8"/>
 				<box>
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -309,7 +313,7 @@
 	<detail>
 		<band height="25">
 			<textField>
-				<reportElement x="0" y="0" width="70" height="20" uuid="bd27c104-b7eb-465a-ab15-8b72465c10c9"/>
+				<reportElement x="0" y="0" width="75" height="20" uuid="bd27c104-b7eb-465a-ab15-8b72465c10c9"/>
 				<box leftPadding="3">
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -319,10 +323,10 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{codDocSustento}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{comprobanteDescripcion}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="70" y="0" width="70" height="20" uuid="18eed68b-336c-481b-819c-4b03463a8435"/>
+				<reportElement x="75" y="0" width="100" height="20" uuid="18eed68b-336c-481b-819c-4b03463a8435"/>
 				<box leftPadding="4">
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -332,10 +336,10 @@
 				<textElement verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{numDocSustento}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{numeroDocumentoCompleto}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="140" y="0" width="80" height="20" uuid="00df8097-0d57-4ca5-b85a-58f2145edc41"/>
+				<reportElement x="175" y="0" width="65" height="20" uuid="00df8097-0d57-4ca5-b85a-58f2145edc41"/>
 				<box leftPadding="4">
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -348,7 +352,7 @@
 				<textFieldExpression><![CDATA[$F{fechaEmisionDocSustento}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="220" y="0" width="60" height="20" uuid="c7f20a3e-0318-4b53-9e29-de78e6fe142d"/>
+				<reportElement x="240" y="0" width="55" height="20" uuid="c7f20a3e-0318-4b53-9e29-de78e6fe142d"/>
 				<box leftPadding="3" rightPadding="4">
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -358,10 +362,10 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{ejercicioFiscal}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="280" y="0" width="85" height="20" uuid="f2c872b0-6991-41ee-9179-1f45980dd3bd"/>
+				<reportElement x="295" y="0" width="85" height="20" uuid="f2c872b0-6991-41ee-9179-1f45980dd3bd"/>
 				<box leftPadding="3" rightPadding="4">
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -373,8 +377,21 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{baseImponible}]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement x="380" y="0" width="55" height="20" uuid="ae4b0adb-4a8f-44df-ac38-c29d82a7eb7e"/>
+				<box leftPadding="3" rightPadding="4">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{impuestoDescripcion}]]></textFieldExpression>
+			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="365" y="0" width="70" height="20" uuid="ae4b0adb-4a8f-44df-ac38-c29d82a7eb7e"/>
+				<reportElement x="435" y="0" width="55" height="20" uuid="188f4277-7abe-456f-b22e-169f75ee9855"/>
 				<box leftPadding="3" rightPadding="4">
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -386,21 +403,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{porcentajeRetener}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="435" y="0" width="60" height="20" uuid="188f4277-7abe-456f-b22e-169f75ee9855"/>
-				<box leftPadding="3" rightPadding="4">
-					<topPen lineWidth="1.0"/>
-					<leftPen lineWidth="1.0"/>
-					<bottomPen lineWidth="1.0"/>
-					<rightPen lineWidth="0.0"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{codigoRetencion}]]></textFieldExpression>
-			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="495" y="0" width="60" height="20" uuid="a57787eb-a002-4c8d-b43f-b75c1640bce3"/>
+				<reportElement x="490" y="0" width="65" height="20" uuid="a57787eb-a002-4c8d-b43f-b75c1640bce3"/>
 				<box leftPadding="3" rightPadding="4">
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>

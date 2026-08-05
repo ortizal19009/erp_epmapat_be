@@ -339,6 +339,11 @@ public class RetencionSRIService {
          xml.append("    </impuesto>\n");
       }
       xml.append("  </impuestos>\n");
+      xml.append("  <infoAdicional>\n");
+      appendCampoAdicional(xml, "Dirección", obtenerDireccionSujetoRetenido(retencion));
+      appendCampoAdicional(xml, "Teléfono", obtenerTelefono(retencion));
+      appendCampoAdicional(xml, "Email", obtenerEmail(retencion));
+      xml.append("  </infoAdicional>\n");
       xml.append("</comprobanteRetencion>\n");
       return xml.toString();
    }
@@ -400,6 +405,14 @@ public class RetencionSRIService {
          return retencion.getIdtabla01().getCodsustento().trim();
       }
       return "01";
+   }
+
+   private String obtenerDireccionSujetoRetenido(Retenciones retencion) {
+      Beneficiarios beneficiario = retencion.getIdbene();
+      if (beneficiario == null) {
+         return "";
+      }
+      return valueOf(beneficiario.getDirben());
    }
 
    private String obtenerCodigoRetencionDesdeRetencion(Retenciones retencion, Fec_reteimpu detalle) {
@@ -729,6 +742,17 @@ public class RetencionSRIService {
             .append("</")
             .append(tag)
             .append(">\n");
+   }
+
+   private void appendCampoAdicional(StringBuilder xml, String nombre, String valor) {
+      if (valor == null || valor.isBlank()) {
+         return;
+      }
+      xml.append("    <campoAdicional nombre=\"")
+            .append(escapeXml(nombre))
+            .append("\">")
+            .append(escapeXml(valor))
+            .append("</campoAdicional>\n");
    }
 
    private String escapeXml(String value) {

@@ -221,22 +221,14 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			""")
 	public List<Lecturas> findByIdemisionIdAbonado(Long idemision, Long idabonado);
 
-	@Query("""
-			SELECT l
-			FROM Lecturas l
-			LEFT JOIN FETCH l.idrutaxemision_rutasxemision re
-			LEFT JOIN FETCH re.idemision_emisiones
-			LEFT JOIN FETCH re.idruta_rutas
-			LEFT JOIN FETCH l.idnovedad_novedades
-			LEFT JOIN FETCH l.idabonado_abonados a
-			LEFT JOIN FETCH a.idresponsable
-			LEFT JOIN FETCH a.idcliente_clientes
-			LEFT JOIN FETCH a.idcategoria_categorias
-			LEFT JOIN FETCH a.idruta_rutas
-			WHERE l.idemision = ?1
-			  AND a.idabonado = ?2
-			ORDER BY l.idlectura DESC
-			""")
+	@Query(value = """
+			SELECT *
+			FROM lecturas
+			WHERE idemision = ?1
+			  AND idabonado_abonados = ?2
+			ORDER BY idlectura DESC
+			LIMIT 1
+			""", nativeQuery = true)
 	Optional<Lecturas> findFirstByIdemisionAndIdabonado(Long idemision, Long idabonado);
 
 	@Query(value = """
@@ -482,6 +474,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 				r.idruta AS idruta,
 				r.codigo AS codigoRuta,
 				r.descripcion AS nombreRuta,
+				rx.fechacierre AS fechacierre,
 				rx.estado AS estadoRuta,
 				COUNT(l.idlectura) AS lecturas,
 				COUNT(CASE
@@ -516,7 +509,7 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			LEFT JOIN lecturas l ON l.idrutaxemision_rutasxemision = rx.idrutaxemision
 			LEFT JOIN facturas f ON l.idfactura = f.idfactura
 			WHERE rx.idemision_emisiones = ?1
-			GROUP BY rx.idrutaxemision, r.idruta, r.codigo, r.descripcion, rx.estado
+			GROUP BY rx.idrutaxemision, r.idruta, r.codigo, r.descripcion, rx.fechacierre, rx.estado
 			ORDER BY r.codigo
 			""", nativeQuery = true)
 	List<ControlRutaStats> getControlRutaStatsByEmision(Long idemision);

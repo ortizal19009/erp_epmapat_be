@@ -501,7 +501,6 @@ public class EmisionGeneracionServicio {
 
     private Facturas crearFactura(Abonados abonado, LocalDate fechaEmision, Long idusuario) {
         Facturas factura = new Facturas();
-        LocalDate primerDiaMesActual = LocalDate.now(clock).withDayOfMonth(1);
 
         Modulos modulo = new Modulos();
         modulo.setIdmodulo(MODULO_LECTURAS);
@@ -521,7 +520,7 @@ public class EmisionGeneracionServicio {
         factura.setValorbase(BigDecimal.ZERO);
         factura.setUsucrea(idusuario);
         factura.setEstado(1L);
-        factura.setFeccrea(primerDiaMesActual);
+        factura.setFeccrea(fechaEmision);
 
         return facturasR.save(factura);
     }
