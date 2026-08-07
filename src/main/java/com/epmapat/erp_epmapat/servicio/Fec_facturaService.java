@@ -206,6 +206,7 @@ public class Fec_facturaService {
       response.put("idfactura", idfactura);
       response.put("claveacceso", fecFactura.getClaveacceso());
       response.put("estado", fecFactura.getEstado());
+      response.put("validacionSri", construirValidacionSri(idfactura));
       response.put("message", "Factura electronica generada correctamente");
       return response;
    }
@@ -638,6 +639,96 @@ public class Fec_facturaService {
             : BigDecimal.valueOf(rubroxfac.getCantidad());
 
       return rubroxfac.getValorunitario().multiply(cantidad);
+   }
+
+   public Map<String, Object> construirValidacionSri(Long idfactura) {
+      Map<String, Object> response = new LinkedHashMap<>();
+      List<Fec_factura_detalles> detalles = fecFacturaDetallesR.findByIdfactura(idfactura);
+      List<Long> idsDetalle = detalles.stream()
+            .map(Fec_factura_detalles::getIdfacturadetalle)
+            .filter(Objects::nonNull)
+            .toList();
+
+      List<Fec_factura_detalles_impuestos> impuestos = idsDetalle.isEmpty()
+            ? List.of()
+            : fecFacturaDetallesImpuestosR.findByIdfacturadetalleIn(idsDetalle);
+
+      DefinirProjection definir = definirR.findDefinirWithoutFirma(1L);
+      BigDecimal porcentajeIva = normalizarPorcentajeIva(definir == null ? null : definir.getPorciva());
+
+      List<Map<String, Object>> detalleValidacion = new ArrayList<>();
+      Map<String, Map<String, Object>> resumen = new LinkedHashMap<>();
+
+      for (Fec_factura_detalles_impuestos imp : impuestos) {
+         String codigo = imp.getCodigoimpuesto();
+         String codigoPorcentaje = imp.getCodigoporcentaje();
+         BigDecimal tarifa = obtenerTarifaDesdeCodigo(codigo, codigoPorcentaje, porcentajeIva);
+         BigDecimal base = imp.getBaseimponible() == null ? BigDecimal.ZERO : imp.getBaseimponible();
+         BigDecimal valor = calcularValorPorTarifa(base, tarifa);
+
+         Map<String, Object> item = new LinkedHashMap<>();
+         item.put("idfacturadetalle", imp.getIdfacturadetalle());
+         item.put("codigo", codigo);
+         item.put("codigoPorcentaje", codigoPorcentaje);
+         item.put("tarifa", tarifa);
+         item.put("baseImponible", base);
+         item.put("valor", valor);
+         item.put("etiqueta", etiquetaCodigoPorcentaje(codigoPorcentaje));
+         detalleValidacion.add(item);
+
+         String key = codigo + "|" + codigoPorcentaje;
+         Map<String, Object> acumulado = resumen.computeIfAbsent(key, x -> {
+            Map<String, Object> nuevo = new LinkedHashMap<>();
+            nuevo.put("codigo", codigo);
+            nuevo.put("codigoPorcentaje", codigoPorcentaje);
+            nuevo.put("tarifa", tarifa);
+            nuevo.put("baseImponible", BigDecimal.ZERO);
+            nuevo.put("valor", BigDecimal.ZERO);
+            nuevo.put("etiqueta", etiquetaCodigoPorcentaje(codigoPorcentaje));
+            return nuevo;
+         });
+
+         acumulado.put("baseImponible", ((BigDecimal) acumulado.get("baseImponible")).add(base));
+         acumulado.put("valor", ((BigDecimal) acumulado.get("valor")).add(valor));
+      }
+
+      response.put("detalle", detalleValidacion);
+      response.put("resumen", new ArrayList<>(resumen.values()));
+      return response;
+   }
+
+   private BigDecimal obtenerTarifaDesdeCodigo(String codigoImpuesto, String codigoPorcentaje, BigDecimal porcentajeIva) {
+      if (!CODIGO_IMPUESTO_IVA.equals(codigoImpuesto) || codigoPorcentaje == null || CODIGO_PORCENTAJE_IVA_0.equals(codigoPorcentaje)) {
+         return BigDecimal.ZERO.setScale(2);
+      }
+
+      if (Set.of(CODIGO_PORCENTAJE_IVA_12, CODIGO_PORCENTAJE_IVA_14, CODIGO_PORCENTAJE_IVA_15).contains(codigoPorcentaje)) {
+         return porcentajeIva == null ? BigDecimal.ZERO.setScale(2) : porcentajeIva.setScale(2);
+      }
+
+      if ("5".equals(codigoPorcentaje)) {
+         return BigDecimal.valueOf(5).setScale(2);
+      }
+
+      return BigDecimal.ZERO.setScale(2);
+   }
+
+   private BigDecimal calcularValorPorTarifa(BigDecimal baseImponible, BigDecimal tarifa) {
+      if (baseImponible == null || tarifa == null || tarifa.compareTo(BigDecimal.ZERO) <= 0) {
+         return BigDecimal.ZERO.setScale(2);
+      }
+      return baseImponible.multiply(tarifa).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+   }
+
+   private String etiquetaCodigoPorcentaje(String codigoPorcentaje) {
+      return switch (codigoPorcentaje == null ? "" : codigoPorcentaje.trim()) {
+         case "0" -> "IVA 0%";
+         case "2" -> "IVA 12%";
+         case "3" -> "IVA 14%";
+         case "4" -> "IVA 15%";
+         case "5" -> "IVA 5%";
+         default -> "CODIGO " + (codigoPorcentaje == null ? "-" : codigoPorcentaje);
+      };
    }
 
    private boolean rubroGeneraIva(Rubroxfac rubroxfac) {

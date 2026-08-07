@@ -24,4 +24,12 @@ public interface Fec_factura_detalles_impuestosR extends JpaRepository<Fec_factu
     @Modifying
     @Query("delete from Fec_factura_detalles_impuestos i where i.idfacturadetalle in :ids")
     void deleteByIdfacturadetalleIn(@Param("ids") List<Long> ids);
+
+    @Query("""
+            select i
+            from Fec_factura_detalles_impuestos i
+            where i.idfacturadetalle in :ids
+            order by i.idfacturadetalle asc, i.idfacturadetalleimpuestos asc
+            """)
+    List<Fec_factura_detalles_impuestos> findByIdfacturadetalleIn(@Param("ids") List<Long> ids);
 }

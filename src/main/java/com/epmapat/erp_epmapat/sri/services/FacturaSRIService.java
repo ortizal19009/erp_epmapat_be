@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -99,6 +100,12 @@ public class FacturaSRIService {
 
     private InfoFactura crearInfoFactura(Factura factura) {
         TotalSinImpuestos tSinImpuestos = fDetalleR.getTotalSinImpuestos(factura.getIdfactura());
+        BigDecimal totalSinImpuestos = tSinImpuestos != null && tSinImpuestos.getTotalsinimpuestos() != null
+                ? tSinImpuestos.getTotalsinimpuestos()
+                : BigDecimal.ZERO;
+        BigDecimal totalDescuento = tSinImpuestos != null && tSinImpuestos.getDescuento() != null
+                ? tSinImpuestos.getDescuento()
+                : BigDecimal.ZERO;
         InfoFactura infoFactura = new InfoFactura();
         infoFactura.setFechaEmision(formatToDDMMYYYY(factura.getFechaemision()));
         infoFactura.setObligadoContabilidad("SI");
@@ -106,25 +113,26 @@ public class FacturaSRIService {
         infoFactura.setRazonSocialComprador(factura.getRazonsocialcomprador());
         infoFactura.setIdentificacionComprador(factura.getIdentificacioncomprador());
         infoFactura.setDireccionComprador(factura.getDireccioncomprador());
-        infoFactura.setTotalSinImpuestos(tSinImpuestos.getTotalsinimpuestos().setScale(2, RoundingMode.HALF_UP));
-        infoFactura.setTotalDescuento(tSinImpuestos.getDescuento().setScale(2, RoundingMode.HALF_UP));
+        infoFactura.setTotalSinImpuestos(totalSinImpuestos.setScale(2, RoundingMode.HALF_UP));
+        infoFactura.setTotalDescuento(totalDescuento.setScale(2, RoundingMode.HALF_UP));
         infoFactura.setTotalConImpuestos(crearTotalConImpuestos(factura));
         infoFactura.setPropina(BigDecimal.ZERO);
-        infoFactura.setImporteTotal(tSinImpuestos.getTotalsinimpuestos().add(tSinImpuestos.getDescuento())
+        infoFactura.setImporteTotal(totalSinImpuestos.add(totalDescuento)
                 .setScale(2, RoundingMode.HALF_UP));
         infoFactura.setMoneda("DOLAR");
         return infoFactura;
     }
 
     private List<Detalle> mapearDetalles(List<FacturaDetalle> detallesFactura) {
+        List<FacturaDetalle> detalles = detallesFactura == null ? Collections.emptyList() : detallesFactura;
         BigDecimal tarifaIva = obtenerTarifaIva();
         Set<String> codigosConsolidar = Set.of("1006", "1007");
 
-        List<FacturaDetalle> aConsolidar = detallesFactura.stream()
+        List<FacturaDetalle> aConsolidar = detalles.stream()
                 .filter(d -> d.getCodigoprincipal() != null && codigosConsolidar.contains(d.getCodigoprincipal().trim()))
                 .collect(Collectors.toList());
 
-        List<FacturaDetalle> normales = detallesFactura.stream()
+        List<FacturaDetalle> normales = detalles.stream()
                 .filter(d -> d.getCodigoprincipal() == null || !codigosConsolidar.contains(d.getCodigoprincipal().trim()))
                 .collect(Collectors.toList());
 
@@ -137,7 +145,9 @@ public class FacturaSRIService {
             detalle.setDescuento(d.getDescuento());
             detalle.setPrecioTotalSinImpuesto(BigDecimal.ZERO);
 
-            detalle.setImpuestos(d.getImpuestos().stream().map(i -> {
+            List<FacturaDetalleImpuesto> impuestos = d.getImpuestos() == null ? Collections.emptyList() : d.getImpuestos();
+
+            detalle.setImpuestos(impuestos.stream().map(i -> {
                 Impuesto impuesto = new Impuesto();
                 impuesto.setCodigo(i.getCodigoimpuesto());
                 impuesto.setCodigoPorcentaje(i.getCodigoporcentaje());
@@ -209,9 +219,15 @@ public class FacturaSRIService {
     private TotalConImpuestos crearTotalConImpuestos(Factura factura) {
         TotalConImpuestos totalConImpuestos = new TotalConImpuestos();
         BigDecimal tarifaIva = obtenerTarifaIva();
+        List<FacturaDetalle> detalles = factura.getDetalles() == null ? Collections.emptyList() : factura.getDetalles();
 
-        Map<String, ResumenImpuesto> totalesPorImpuesto = factura.getDetalles().stream()
-                .flatMap(d -> d.getImpuestos().stream())
+        Map<String, ResumenImpuesto> totalesPorImpuesto = detalles.stream()
+                .flatMap(d -> {
+                    List<FacturaDetalleImpuesto> impuestos = d.getImpuestos() == null
+                            ? Collections.emptyList()
+                            : d.getImpuestos();
+                    return impuestos.stream();
+                })
                 .collect(Collectors.groupingBy(
                         i -> i.getCodigoimpuesto() + "|" + i.getCodigoporcentaje(),
                         Collectors.collectingAndThen(Collectors.toList(), items -> {

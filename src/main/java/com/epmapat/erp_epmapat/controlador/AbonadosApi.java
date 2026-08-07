@@ -451,7 +451,7 @@ public class AbonadosApi {
 
 	@GetMapping("/cuenta")
 	@ResponseStatus(HttpStatus.OK)
-	public List<Abonados> getByIdabonado(@Param(value = "idcliente") Long idabonado) {
+	public List<Abonados> getByIdabonado(@Param(value = "idabonado") Long idabonado) {
 		return aboServicio.getByIdabonado(idabonado);
 	}
 

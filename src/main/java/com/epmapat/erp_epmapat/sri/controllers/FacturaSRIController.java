@@ -8,6 +8,7 @@ import com.epmapat.erp_epmapat.emails.model.EmailType;
 import com.epmapat.erp_epmapat.emails.service.EmailAccountService;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.Fec_facturaR;
+import com.epmapat.erp_epmapat.servicio.Fec_facturaService;
 import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
 import com.epmapat.erp_epmapat.sri.exceptions.FacturaElectronicaException;
 import com.epmapat.erp_epmapat.sri.interfaces.fecFacturaDatos;
@@ -17,12 +18,15 @@ import com.epmapat.erp_epmapat.sri.services.EmailService;
 import com.epmapat.erp_epmapat.sri.services.FacturaSRIService;
 import com.epmapat.erp_epmapat.sri.services.XmlSignerService;
 import com.epmapat.erp_epmapat.sri.services.XmlToPdfService;
+import com.epmapat.erp_epmapat.sri.models.FacturaDetalle;
 
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.transaction.Transactional;
 
 import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +40,8 @@ import org.springframework.core.io.InputStreamResource;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/sri")
@@ -60,6 +66,8 @@ public class FacturaSRIController {
 
     @Autowired
     private Fec_facturaR fec_factura;
+    @Autowired
+    private Fec_facturaService fecFacturaService;
 
     public FacturaSRIController(FacturaSRIService facturaSRIService) {
         this.facturaSRIService = facturaSRIService;
@@ -69,7 +77,9 @@ public class FacturaSRIController {
     public ResponseEntity<String> generarXmlFactura(@RequestParam Long idfactura) throws Exception {
         Definir definir = definirService.findById(1L).orElseThrow(() -> new RuntimeException("Definir no encontrado"));
         try {
-            Factura factura = dao.findById(idfactura).orElseThrow(() -> new RuntimeException("Factura no encontrada"));
+            Factura factura = dao.findByIdWithDetalles(idfactura)
+                    .orElseThrow(() -> new RuntimeException("Factura no encontrada"));
+            inicializarRelacionesFactura(factura);
             if (factura == null) {
                 return ResponseEntity.noContent().build();
             } else {
@@ -84,6 +94,44 @@ public class FacturaSRIController {
         FacturaElectronicaException e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    @Transactional
+    @GetMapping("/generar-xml-previo")
+    public ResponseEntity<String> generarXmlFacturaPrevio(@RequestParam Long idfactura) {
+        try {
+            if (!fec_factura.existsById(idfactura)) {
+                fecFacturaService.generarFecFactura(idfactura);
+            }
+            Factura factura = dao.findByIdWithDetalles(idfactura)
+                    .orElseThrow(() -> new RuntimeException("Factura no encontrada"));
+            inicializarRelacionesFactura(factura);
+            if (factura.getDetalles() == null || factura.getDetalles().isEmpty()) {
+                fecFacturaService.generarFecFactura(idfactura);
+                factura = dao.findByIdWithDetalles(idfactura)
+                        .orElseThrow(() -> new RuntimeException("Factura no encontrada"));
+                inicializarRelacionesFactura(factura);
+            }
+            String xml = facturaSRIService.generarXmlFactura(factura);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_XML)
+                    .body(xml);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
+
+    private void inicializarRelacionesFactura(Factura factura) {
+        if (factura == null) {
+            return;
+        }
+
+        List<FacturaDetalle> detalles = factura.getDetalles() == null ? Collections.emptyList() : factura.getDetalles();
+        detalles.forEach(detalle -> {
+            if (detalle != null && detalle.getImpuestos() != null) {
+                detalle.getImpuestos().size();
+            }
+        });
     }
 
     @PostMapping(value = "/enviar", consumes = { "multipart/form-data" })
