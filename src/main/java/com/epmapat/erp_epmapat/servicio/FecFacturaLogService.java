@@ -29,4 +29,8 @@ public class FecFacturaLogService {
    public List<Fec_factura_log> listarPorFactura(Long idfactura) {
       return repository.findByIdfacturaOrderByFechaAsc(idfactura);
    }
+
+   public void registrarReasignacion(Long idfactura, String mensaje) {
+      registrar(idfactura, "R", mensaje);
+   }
 }

@@ -2,6 +2,7 @@ package com.epmapat.erp_epmapat.servicio;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -15,6 +16,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.management.RuntimeErrorException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,13 +37,17 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Facturas;
+import com.epmapat.erp_epmapat.modelo.FacturaReasignacionHistorial;
 import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.modelo.Fec_factura_detalles;
 import com.epmapat.erp_epmapat.modelo.Lecturas;
+import com.epmapat.erp_epmapat.modelo.Cajas;
+import com.epmapat.erp_epmapat.modelo.Recaudaxcaja;
 import com.epmapat.erp_epmapat.modelo.Rubros;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
+import com.epmapat.erp_epmapat.repositorio.FacturaReasignacionHistorialR;
 import com.epmapat.erp_epmapat.repositorio.Fec_facturaR;
 import com.epmapat.erp_epmapat.repositorio.Fec_factura_detallesR;
 import com.epmapat.erp_epmapat.repositorio.Fec_factura_detalles_impuestosR;
@@ -81,6 +88,18 @@ public class FacturaServicio {
 	@Autowired
 	@Lazy
 	private TmpinteresxfacService tmpinteresxfacService;
+	@Autowired
+	private CajaServicio cajaServicio;
+	@Autowired
+	private RecaudaxcajaServicio recaudaxcajaServicio;
+	@Autowired
+	private Fec_facturaService fecFacturaService;
+	@Autowired
+	private FecFacturaLogService fecFacturaLogService;
+	@Autowired
+	private FacturaReasignacionHistorialR facturaReasignacionHistorialR;
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	public Facturas validarUltimafactura(String codrecaudador) {
 		return dao.validarUltimafactura(codrecaudador);
@@ -349,6 +368,7 @@ public class FacturaServicio {
 		response.put("enviadaSri", fecFacturaOpt.map(this::fueEnviadaAlSri).orElse(false));
 		response.put("lecturas", lecturas);
 		response.put("emision", emision);
+		agregarPreviewReasignacion(response, factura);
 
 		if (!lecturas.isEmpty()) {
 			Lecturas lectura = lecturas.get(0);
@@ -360,6 +380,27 @@ public class FacturaServicio {
 		}
 
 		return response;
+	}
+
+	private void agregarPreviewReasignacion(Map<String, Object> response, Facturas factura) {
+		if (response == null || factura == null || factura.getUsuariocobro() == null) {
+			return;
+		}
+
+		Cajas caja = cajaServicio.findCajaByIdUsuario(factura.getUsuariocobro());
+		if (caja == null) {
+			return;
+		}
+
+		Recaudaxcaja recaudaxcaja = recaudaxcajaServicio.findLastConexion(caja.getIdcaja());
+		Long siguienteSecuencial = obtenerSiguienteSecuencial(caja, recaudaxcaja);
+		String siguienteNumeroFactura = formatearNumeroFactura(caja, siguienteSecuencial);
+
+		response.put("siguienteSecuencialReasignacion", siguienteSecuencial);
+		response.put("siguienteNumeroFacturaReasignacion", siguienteNumeroFactura);
+		response.put("idcajaReasignacion", caja.getIdcaja());
+		response.put("idrecaudaxcajaReasignacion",
+				recaudaxcaja != null ? recaudaxcaja.getIdrecaudaxcaja() : null);
 	}
 
 	@Transactional
@@ -436,6 +477,150 @@ public class FacturaServicio {
 
 		return findById(actualizada.getIdfactura())
 				.orElseThrow(() -> new RuntimeErrorException(null, "FACTURA NO ENCONTRADA"));
+	}
+
+	@Transactional
+	public Map<String, Object> reasignarNumeroFactura(Long idfactura, String motivo, Long idusuarioAccion) {
+		Facturas factura = findById(idfactura)
+				.orElseThrow(() -> new RuntimeErrorException(null, "FACTURA NO ENCONTRADA"));
+
+		if (factura.getUsuariocobro() == null) {
+			throw new RuntimeException("La factura no tiene recaudador asociado al cobro.");
+		}
+		if (factura.getFechacobro() == null || factura.getPagado() == null || factura.getPagado() == 0) {
+			throw new RuntimeException("Solo se puede reasignar una factura ya cobrada.");
+		}
+		if (factura.getNrofactura() == null || factura.getNrofactura().isBlank()) {
+			throw new RuntimeException("La factura no tiene número actual para reasignar.");
+		}
+
+		Cajas caja = cajaServicio.findCajaByIdUsuario(factura.getUsuariocobro());
+		if (caja == null) {
+			throw new RuntimeException("No existe una caja asociada al recaudador que realizó el cobro.");
+		}
+
+		Recaudaxcaja recaudaxcaja = recaudaxcajaServicio.findLastConexion(caja.getIdcaja());
+		if (recaudaxcaja == null) {
+			throw new RuntimeException("No existe historial de secuencial para la caja del recaudador.");
+		}
+
+		Recaudaxcaja recaudaxcajaLock = recaudaxcajaServicio.findByIdForUpdate(recaudaxcaja.getIdrecaudaxcaja());
+		if (recaudaxcajaLock == null) {
+			throw new RuntimeException("No fue posible bloquear la caja para reservar el secuencial.");
+		}
+
+		Fec_factura fecAnterior = fecFacturaR.findById(idfactura).orElse(null);
+		String claveAccesoAnterior = fecAnterior != null ? fecAnterior.getClaveacceso() : null;
+		String estadoAnterior = fecAnterior != null ? fecAnterior.getEstado() : null;
+		String xmlAnterior = fecAnterior != null ? fecAnterior.getXmlautorizado() : null;
+		String secuencialFecAnterior = fecAnterior != null ? fecAnterior.getSecuencial() : null;
+		String nroAnterior = factura.getNrofactura();
+		String secAnterior = extraerSecuencial(nroAnterior);
+		Long siguienteSecuencial = obtenerSiguienteSecuencial(caja, recaudaxcajaLock);
+		String nuevoNumero = formatearNumeroFactura(caja, siguienteSecuencial);
+
+		if (dao.findByNrofactura(nuevoNumero).stream().anyMatch(f -> !Objects.equals(f.getIdfactura(), idfactura))) {
+			throw new RuntimeException("El número de factura generado ya existe: " + nuevoNumero);
+		}
+
+		Map<String, Object> auditoria = new LinkedHashMap<>();
+		auditoria.put("idfactura", factura.getIdfactura());
+		auditoria.put("idrecaudadorCobro", factura.getUsuariocobro());
+		auditoria.put("idusuarioAccion", idusuarioAccion);
+		auditoria.put("idcaja", caja.getIdcaja());
+		auditoria.put("idrecaudaxcaja", recaudaxcajaLock.getIdrecaudaxcaja());
+		auditoria.put("nrofacturaAnterior", nroAnterior);
+		auditoria.put("nrofacturaNuevo", nuevoNumero);
+		auditoria.put("secuencialAnterior", secAnterior);
+		auditoria.put("secuencialNuevo", String.format("%09d", siguienteSecuencial));
+		auditoria.put("fecFacturaAnterior", Map.of(
+				"claveacceso", claveAccesoAnterior == null ? "" : claveAccesoAnterior,
+				"estado", estadoAnterior == null ? "" : estadoAnterior,
+				"xmlautorizado", xmlAnterior == null ? "" : xmlAnterior,
+				"secuencial", secuencialFecAnterior == null ? "" : secuencialFecAnterior));
+
+		auditoriaGenericaService.saveAudit(
+				"facturas",
+				idfactura,
+				auditoria,
+				idusuarioAccion == null ? 0L : idusuarioAccion,
+				motivo == null || motivo.isBlank() ? "REASIGNACION DE NUMERO DE FACTURA" : motivo,
+				"MODIFICACION");
+
+		factura.setNrofactura(nuevoNumero);
+		factura.setUsumodi(idusuarioAccion);
+		factura.setFecmodi(LocalDate.now());
+		dao.save(factura);
+
+		recaudaxcajaLock.setFacfin(siguienteSecuencial);
+		recaudaxcajaServicio.save(recaudaxcajaLock);
+		caja.setUltimafact(String.valueOf(siguienteSecuencial));
+		cajaServicio.save(caja);
+
+		Map<String, Object> fecGenerada = fecFacturaService.generarFecFactura(idfactura);
+		entityManager.flush();
+		Fec_factura fecNueva = fecFacturaR.findById(idfactura)
+				.orElseThrow(() -> new RuntimeException("No se pudo regenerar la factura electrónica."));
+
+		FacturaReasignacionHistorial historial = new FacturaReasignacionHistorial();
+		historial.setIdfactura(idfactura);
+		historial.setIdusuarioaccion(idusuarioAccion);
+		historial.setIdrecaudador(factura.getUsuariocobro());
+		historial.setIdcaja(caja.getIdcaja());
+		historial.setIdrecaudaxcaja(recaudaxcajaLock.getIdrecaudaxcaja());
+		historial.setNrofacturaanterior(nroAnterior);
+		historial.setNrofacturanuevo(nuevoNumero);
+		historial.setSecuencialanterior(secuencialFecAnterior != null ? secuencialFecAnterior : secAnterior);
+		historial.setSecuencialnuevo(fecNueva.getSecuencial());
+		historial.setClaveaccesoanterior(claveAccesoAnterior);
+		historial.setClaveaccesonueva(fecNueva.getClaveacceso());
+		historial.setEstadoanterior(estadoAnterior);
+		historial.setEstadonuevo(fecNueva.getEstado());
+		historial.setXmlanterior(xmlAnterior);
+		historial.setXmlnuevo(fecNueva.getXmlautorizado());
+		historial.setObservacion(motivo);
+		historial.setFechareasignacion(LocalDateTime.now());
+		facturaReasignacionHistorialR.save(historial);
+
+		fecFacturaLogService.registrarReasignacion(idfactura,
+				"Reasignación de factura " + nroAnterior + " -> " + nuevoNumero);
+
+		Map<String, Object> response = new LinkedHashMap<>();
+		response.put("factura", factura);
+		response.put("fecFactura", fecNueva);
+		response.put("fecGenerada", fecGenerada);
+		response.put("historial", historial);
+		response.put("numeroAnterior", nroAnterior);
+		response.put("numeroNuevo", nuevoNumero);
+		response.put("siguienteSecuencialReservado", siguienteSecuencial);
+		return response;
+	}
+
+	private Long obtenerSiguienteSecuencial(Cajas caja, Recaudaxcaja recaudaxcaja) {
+		Long base = null;
+		if (recaudaxcaja != null && recaudaxcaja.getFacfin() != null) {
+			base = recaudaxcaja.getFacfin();
+		} else if (caja != null && caja.getUltimafact() != null && !caja.getUltimafact().isBlank()) {
+			base = Long.parseLong(caja.getUltimafact());
+		}
+		return base == null ? 1L : base + 1L;
+	}
+
+	private String extraerSecuencial(String nrofactura) {
+		if (nrofactura == null || nrofactura.isBlank()) {
+			return null;
+		}
+		String[] partes = nrofactura.split("-");
+		return partes.length == 3 ? partes[2] : null;
+	}
+
+	private String formatearNumeroFactura(Cajas caja, Long secuencial) {
+		String establecimiento = caja != null && caja.getIdptoemision_ptoemision() != null
+				? caja.getIdptoemision_ptoemision().getEstablecimiento()
+				: "000";
+		String codigo = caja != null && caja.getCodigo() != null ? caja.getCodigo() : "000";
+		String sec = secuencial != null ? String.format("%09d", secuencial) : "000000000";
+		return establecimiento + "-" + codigo + "-" + sec;
 	}
 
 	public FacturasR getDao() {

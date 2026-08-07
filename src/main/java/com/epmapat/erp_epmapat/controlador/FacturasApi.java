@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.epmapat.erp_epmapat.DTO.FacturaAnulacionBajaRequestDto;
+import com.epmapat.erp_epmapat.DTO.FacturaReasignacionRequestDto;
 import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +39,10 @@ import com.epmapat.erp_epmapat.DTO.RemiDTO;
 import com.epmapat.erp_epmapat.DTO.ValorFactDTO;
 import com.epmapat.erp_epmapat.config.jasperConfig.ReportRequest;
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.modelo.FacturaReasignacionHistorial;
 import com.epmapat.erp_epmapat.modelo.Facturas;
 import com.epmapat.erp_epmapat.modelo.administracion.ReporteModelDTO;
+import com.epmapat.erp_epmapat.repositorio.FacturaReasignacionHistorialR;
 import com.epmapat.erp_epmapat.reportes.facturas.interfaces.i_ReporteFacturasCobradas_G;
 import com.epmapat.erp_epmapat.servicio.FacturaServicio;
 import com.epmapat.erp_epmapat.servicio.RubroxfacServicio;
@@ -66,6 +69,8 @@ public class FacturasApi {
 	private RubroxfacServicio rxfServicio;
 	@Autowired
 	private i_ReporteFacturasCobradas_G i_reportefacturascobradas_g;
+	@Autowired
+	private FacturaReasignacionHistorialR facturaReasignacionHistorialR;
 
 	@GetMapping
 	public List<Facturas> getAll(@Param(value = "desde") Long desde, @Param(value = "hasta") Long hasta,
@@ -348,6 +353,32 @@ public class FacturasApi {
 		}
 
 		throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Accion no soportada: " + request.getAccion());
+	}
+
+	@PostMapping("/reasignar-numero")
+	public ResponseEntity<Map<String, Object>> reasignarNumeroFactura(@RequestBody FacturaReasignacionRequestDto request) {
+		if (request.getIdfactura() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El idfactura es obligatorio");
+		}
+		return ResponseEntity.ok(
+				facServicio.reasignarNumeroFactura(
+						request.getIdfactura(),
+						request.getMotivo(),
+						request.getIdusuario()));
+	}
+
+	@GetMapping("/{idfactura}/reasignaciones")
+	public ResponseEntity<List<FacturaReasignacionHistorial>> getReasignacionesByFactura(@PathVariable Long idfactura) {
+		return ResponseEntity.ok(facturaReasignacionHistorialR.findByIdfacturaOrderByFechareasignacionDesc(idfactura));
+	}
+
+	@GetMapping("/reasignaciones")
+	public ResponseEntity<List<FacturaReasignacionHistorial>> getReasignaciones(
+			@RequestParam(required = false) Long idfactura) {
+		if (idfactura != null) {
+			return ResponseEntity.ok(facturaReasignacionHistorialR.findByIdfacturaOrderByFechareasignacionDesc(idfactura));
+		}
+		return ResponseEntity.ok(facturaReasignacionHistorialR.findAll());
 	}
 
 	/*

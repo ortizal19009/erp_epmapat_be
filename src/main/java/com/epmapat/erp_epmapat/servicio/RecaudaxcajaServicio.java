@@ -36,4 +36,8 @@ public class RecaudaxcajaServicio {
 		return dao.findById(idrecaudaxcaja);
 	}
 
+	public Recaudaxcaja findByIdForUpdate(Long idrecaudaxcaja) {
+		return dao.findByIdForUpdate(idrecaudaxcaja);
+	}
+
 }
