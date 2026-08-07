@@ -57,12 +57,13 @@ public class FacturaSRIService {
 
     public String generarXmlFactura(Factura factura) throws FacturaElectronicaException {
         try {
+            List<Detalle> detalles = mapearDetalles(factura.getDetalles());
             Comprobante comprobante = new Comprobante();
             comprobante.setVersion(VERSION);
             comprobante.setId("comprobante");
             comprobante.setInfoTributaria(crearInfoTributaria(factura));
-            comprobante.setInfoFactura(crearInfoFactura(factura));
-            comprobante.setDetalles(mapearDetalles(factura.getDetalles()));
+            comprobante.setInfoFactura(crearInfoFactura(factura, detalles));
+            comprobante.setDetalles(detalles);
             return convertirObjetoAXml(comprobante);
         } catch (Exception e) {
             throw new FacturaElectronicaException("Error al generar XML para el SRI", e);
@@ -98,14 +99,16 @@ public class FacturaSRIService {
         return infoTributaria;
     }
 
-    private InfoFactura crearInfoFactura(Factura factura) {
-        TotalSinImpuestos tSinImpuestos = fDetalleR.getTotalSinImpuestos(factura.getIdfactura());
-        BigDecimal totalSinImpuestos = tSinImpuestos != null && tSinImpuestos.getTotalsinimpuestos() != null
-                ? tSinImpuestos.getTotalsinimpuestos()
-                : BigDecimal.ZERO;
-        BigDecimal totalDescuento = tSinImpuestos != null && tSinImpuestos.getDescuento() != null
-                ? tSinImpuestos.getDescuento()
-                : BigDecimal.ZERO;
+    private InfoFactura crearInfoFactura(Factura factura, List<Detalle> detalles) {
+        BigDecimal totalSinImpuestos = calcularTotalSinImpuestos(detalles);
+        BigDecimal totalDescuento = calcularTotalDescuento(detalles);
+        TotalConImpuestos totalConImpuestos = crearTotalConImpuestos(detalles);
+        BigDecimal totalImpuestos = totalConImpuestos.getTotalImpuestos() == null
+                ? BigDecimal.ZERO
+                : totalConImpuestos.getTotalImpuestos().stream()
+                        .map(TotalImpuesto::getValor)
+                        .filter(Objects::nonNull)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
         InfoFactura infoFactura = new InfoFactura();
         infoFactura.setFechaEmision(formatToDDMMYYYY(factura.getFechaemision()));
         infoFactura.setObligadoContabilidad("SI");
@@ -115,9 +118,9 @@ public class FacturaSRIService {
         infoFactura.setDireccionComprador(factura.getDireccioncomprador());
         infoFactura.setTotalSinImpuestos(totalSinImpuestos.setScale(2, RoundingMode.HALF_UP));
         infoFactura.setTotalDescuento(totalDescuento.setScale(2, RoundingMode.HALF_UP));
-        infoFactura.setTotalConImpuestos(crearTotalConImpuestos(factura));
+        infoFactura.setTotalConImpuestos(totalConImpuestos);
         infoFactura.setPropina(BigDecimal.ZERO);
-        infoFactura.setImporteTotal(totalSinImpuestos.add(totalDescuento)
+        infoFactura.setImporteTotal(totalSinImpuestos.add(totalImpuestos)
                 .setScale(2, RoundingMode.HALF_UP));
         infoFactura.setMoneda("DOLAR");
         return infoFactura;
@@ -143,7 +146,8 @@ public class FacturaSRIService {
             detalle.setCantidad(d.getCantidad());
             detalle.setPrecioUnitario(d.getPreciounitario());
             detalle.setDescuento(d.getDescuento());
-            detalle.setPrecioTotalSinImpuesto(BigDecimal.ZERO);
+            detalle.setPrecioTotalSinImpuesto(
+                    calcularPrecioTotalSinImpuesto(d.getCantidad(), d.getPreciounitario(), d.getDescuento()));
 
             List<FacturaDetalleImpuesto> impuestos = d.getImpuestos() == null ? Collections.emptyList() : d.getImpuestos();
 
@@ -200,7 +204,8 @@ public class FacturaSRIService {
             consolidado.setCantidad(BigDecimal.ONE);
             consolidado.setPrecioUnitario(precioUnitarioTotal);
             consolidado.setDescuento(descuentoTotal);
-            consolidado.setPrecioTotalSinImpuesto(BigDecimal.ZERO);
+            consolidado.setPrecioTotalSinImpuesto(
+                    calcularPrecioTotalSinImpuesto(BigDecimal.ONE, precioUnitarioTotal, descuentoTotal));
             consolidado.setImpuestos(List.of(impuestoUnico));
             resultado.add(consolidado);
         }
@@ -216,14 +221,14 @@ public class FacturaSRIService {
         return dateTime.format(formatter);
     }
 
-    private TotalConImpuestos crearTotalConImpuestos(Factura factura) {
+    private TotalConImpuestos crearTotalConImpuestos(List<Detalle> detallesFactura) {
         TotalConImpuestos totalConImpuestos = new TotalConImpuestos();
         BigDecimal tarifaIva = obtenerTarifaIva();
-        List<FacturaDetalle> detalles = factura.getDetalles() == null ? Collections.emptyList() : factura.getDetalles();
+        List<Detalle> detalles = detallesFactura == null ? Collections.emptyList() : detallesFactura;
 
         Map<String, ResumenImpuesto> totalesPorImpuesto = detalles.stream()
                 .flatMap(d -> {
-                    List<FacturaDetalleImpuesto> impuestos = d.getImpuestos() == null
+                    List<Impuesto> impuestos = d.getImpuestos() == null
                             ? Collections.emptyList()
                             : d.getImpuestos();
                     return impuestos.stream();
@@ -231,16 +236,16 @@ public class FacturaSRIService {
                 .collect(Collectors.groupingBy(
                         i -> i.getCodigoimpuesto() + "|" + i.getCodigoporcentaje(),
                         Collectors.collectingAndThen(Collectors.toList(), items -> {
-                            FacturaDetalleImpuesto ref = items.get(0);
+                            Impuesto ref = items.get(0);
                             BigDecimal base = items.stream()
-                                    .map(FacturaDetalleImpuesto::getBaseimponible)
+                                    .map(Impuesto::getBaseImponible)
                                     .filter(Objects::nonNull)
                                     .reduce(BigDecimal.ZERO, BigDecimal::add);
                             return new ResumenImpuesto(
-                                    ref.getCodigoimpuesto(),
-                                    ref.getCodigoporcentaje(),
+                                    ref.getCodigo(),
+                                    ref.getCodigoPorcentaje(),
                                     base,
-                                    calcularValorImpuesto(ref.getCodigoimpuesto(), ref.getCodigoporcentaje(), base, tarifaIva));
+                                    calcularValorImpuesto(ref.getCodigo(), ref.getCodigoPorcentaje(), base, tarifaIva));
                         })));
 
         List<TotalImpuesto> totales = totalesPorImpuesto.values().stream()
@@ -278,7 +283,11 @@ public class FacturaSRIService {
         if (definir.getPorciva() == null) {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }
-        return definir.getPorciva().setScale(2, RoundingMode.HALF_UP);
+        BigDecimal tarifa = definir.getPorciva();
+        if (tarifa.compareTo(BigDecimal.ZERO) > 0 && tarifa.compareTo(BigDecimal.ONE) <= 0) {
+            tarifa = tarifa.multiply(CIEN);
+        }
+        return tarifa.setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal obtenerTarifaParaCodigo(String codigoImpuesto, String codigoPorcentaje, BigDecimal tarifaIva) {
@@ -298,6 +307,35 @@ public class FacturaSRIService {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }
         return baseImponible.multiply(tarifa).divide(CIEN, 2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calcularPrecioTotalSinImpuesto(BigDecimal cantidad, BigDecimal precioUnitario, BigDecimal descuento) {
+        BigDecimal qty = cantidad == null ? BigDecimal.ONE : cantidad;
+        BigDecimal precio = precioUnitario == null ? BigDecimal.ZERO : precioUnitario;
+        BigDecimal desc = descuento == null ? BigDecimal.ZERO : descuento;
+        return qty.multiply(precio).subtract(desc).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calcularTotalSinImpuestos(List<Detalle> detalles) {
+        if (detalles == null) {
+            return BigDecimal.ZERO;
+        }
+        return detalles.stream()
+                .map(Detalle::getPrecioTotalSinImpuesto)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calcularTotalDescuento(List<Detalle> detalles) {
+        if (detalles == null) {
+            return BigDecimal.ZERO;
+        }
+        return detalles.stream()
+                .map(Detalle::getDescuento)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     public void processAndSendInvoice(String toEmail, String subject, String body, MultipartFile xmlFile)
