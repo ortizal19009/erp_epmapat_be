@@ -234,7 +234,7 @@ public class FacturaSRIService {
                     return impuestos.stream();
                 })
                 .collect(Collectors.groupingBy(
-                        i -> i.getCodigoimpuesto() + "|" + i.getCodigoporcentaje(),
+                        i -> i.getCodigo() + "|" + i.getCodigoPorcentaje(),
                         Collectors.collectingAndThen(Collectors.toList(), items -> {
                             Impuesto ref = items.get(0);
                             BigDecimal base = items.stream()
