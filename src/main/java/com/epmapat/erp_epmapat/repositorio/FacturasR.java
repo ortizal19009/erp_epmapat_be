@@ -318,7 +318,15 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	}
 
 	// Planilla por nrofactura
-	@Query(value = "SELECT * FROM facturas WHERE nrofactura=?1 order by idfactura", nativeQuery = true)
+	@Query("""
+			SELECT DISTINCT f
+			FROM Facturas f
+			LEFT JOIN FETCH f.idcliente c
+			LEFT JOIN FETCH c.idtpidentifica_tpidentifica
+			LEFT JOIN FETCH f.idmodulo
+			WHERE f.nrofactura = ?1
+			ORDER BY f.idfactura
+			""")
 	public List<Facturas> findByNrofactura(String nrofactura);
 
 	// ID de las Planillas Sin cobrar por Abonado (para Multas)
