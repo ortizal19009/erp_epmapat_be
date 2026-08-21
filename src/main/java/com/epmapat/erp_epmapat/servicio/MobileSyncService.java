@@ -91,6 +91,18 @@ public class MobileSyncService {
                 .map(LecturaMapper::toDto)
                 .collect(Collectors.toList());
 
+        List<com.epmapat.erp_epmapat.DTO.Pliego24Dto> pliegosDto = pliego24R.findTodos().stream()
+                .map(p -> com.epmapat.erp_epmapat.DTO.Pliego24Dto.builder()
+                        .idpliego(p.getIdpliego())
+                        .desde(p.getDesde())
+                        .hasta(p.getHasta())
+                        .agua(p.getAgua())
+                        .saneamiento(p.getSaneamiento())
+                        .porc(p.getPorc())
+                        .idcategoria(p.getIdcategoria() != null ? p.getIdcategoria().getIdcategoria() : null)
+                        .build())
+                .collect(Collectors.toList());
+
         return SmartSyncResponseDto.builder()
                 .lecturas(lecturasDto)
                 .abonados(abonados)
@@ -99,7 +111,7 @@ public class MobileSyncService {
                 .categorias(categoriaR.findAll())
                 .novedades(novedadR.getNovedadesToMobile())
                 .nacionalidades(nacionalidadR.findAll())
-                .pliegos(pliego24R.findAll())
+                .pliegos(pliegosDto)
                 .build();
     }
 }

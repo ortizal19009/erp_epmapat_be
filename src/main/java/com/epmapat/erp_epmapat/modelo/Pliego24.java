@@ -22,6 +22,7 @@ public class Pliego24 {
    private Integer hasta;
    private BigDecimal agua;
    private BigDecimal saneamiento;
+   @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "idcategoria")
    private Categorias idcategoria;

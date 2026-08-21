@@ -517,7 +517,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[MÃ³dulo:]]></text>
+				<text><![CDATA[Módulo:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="21" y="157" width="80" height="14" uuid="92eebb7d-ea1a-46c1-93de-53edba6b3f88"/>
@@ -741,7 +741,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle" rotation="None">
 					<font size="7" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{fechacobro}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd/MM/yyyy").format($F{fechacobro})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="101" y="171" width="100" height="14" uuid="ce86168c-0c87-413e-8826-381e53b01208"/>
@@ -811,7 +811,7 @@ where l.idfactura = $P{idfactura}]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[EmisiÃ³n:]]></text>
+				<text><![CDATA[Emisión:]]></text>
 			</staticText>
 		</band>
 	</pageHeader>

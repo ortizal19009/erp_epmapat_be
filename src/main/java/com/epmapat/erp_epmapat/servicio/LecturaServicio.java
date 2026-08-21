@@ -785,4 +785,8 @@ public class LecturaServicio {
 		dao.eliminarRubrosByEmision(idemision);
 	}
 
+	public List<com.epmapat.erp_epmapat.interfaces.ConsumoHistorialI> getHistorialConsumo(Long idabonado) {
+		return dao.findHistorialConsumo(idabonado);
+	}
+
 }

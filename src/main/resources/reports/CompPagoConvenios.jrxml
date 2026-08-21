@@ -740,7 +740,7 @@ where
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[MÃ³dulo:]]></text>
+				<text><![CDATA[Módulo:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="20" y="116" width="80" height="20" uuid="92eebb7d-ea1a-46c1-93de-53edba6b3f88"/>

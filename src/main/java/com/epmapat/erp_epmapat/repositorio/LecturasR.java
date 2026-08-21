@@ -759,6 +759,23 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			  AND l.idemision = :idemision
 			""", nativeQuery = true)
 	int eliminarRubrosByEmision(@Param("idemision") Long idemision);
+
+	@Query(value = """
+			SELECT 
+			    e.emision AS emision,
+			    TO_CHAR(f.feccrea, 'TMMonth YYYY') AS mes,
+			    (l.lecturaactual - l.lecturaanterior) AS m3,
+			    f.totaltarifa AS total,
+			    f.pagado AS pagado
+			FROM lecturas l
+			JOIN emisiones e ON l.idemision = e.idemision
+			JOIN facturas f ON l.idfactura = f.idfactura
+			WHERE l.idabonado_abonados = :idabonado
+			  AND f.fechaeliminacion IS NULL
+			ORDER BY e.idemision DESC
+			LIMIT 12
+			""", nativeQuery = true)
+	List<com.epmapat.erp_epmapat.interfaces.ConsumoHistorialI> findHistorialConsumo(@Param("idabonado") Long idabonado);
 }
 
 

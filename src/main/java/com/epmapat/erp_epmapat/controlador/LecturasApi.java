@@ -553,4 +553,9 @@ public class LecturasApi {
 		BigDecimal multa = emisionServicioOptimizadoV2.multas(cuenta);
 		return ResponseEntity.ok(multa);
 	}
+
+	@GetMapping("/historial-consumo/{idabonado}")
+	public ResponseEntity<List<com.epmapat.erp_epmapat.interfaces.ConsumoHistorialI>> getHistorialConsumo(@PathVariable Long idabonado) {
+		return ResponseEntity.ok(lecServicio.getHistorialConsumo(idabonado));
+	}
 }
