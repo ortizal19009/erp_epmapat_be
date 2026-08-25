@@ -178,7 +178,7 @@ public class Fec_facturaService {
       fecFactura.setDireccionestablecimiento(definir.getDirmatriz());
       fecFactura.setEmailcomprador(factura.getEmail());
       fecFactura.setRecaudador(factura.getNomusu());
-      fecFactura.setFechaemision(factura.getFechacobro().atStartOfDay());
+      fecFactura.setFechaemision(LocalDateTime.now());
       fecFactura.setEstablecimiento(establecimiento);
       fecFactura.setPuntoemision(puntoEmision);
       fecFactura.setSecuencial(secuencial);
