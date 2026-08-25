@@ -240,13 +240,13 @@ public class RetencionSRIService {
                   linea.baseImponible);
             linea.valorRetenido = resolverValorRetenido(retencion, referencia, linea.codigoRetencion,
                   linea.baseImponible, linea.porcentajeRetener);
+            normalizarConsistenciaLinea(retencion, linea, referencia);
             linea.codDocSustento = firstNonBlank(referencia.getCodigodocumentosustento(),
                   obtenerCodigoSustento(retencion));
-            linea.numDocSustento = formatearNumeroDocumentoSustento(
-                  firstNonBlank(referencia.getNumerodocumentosustento(), retencion.getNumdoc()));
+            linea.numDocSustento = resolverNumeroDocumentoSustento(retencion, referencia);
             linea.fechaEmisionDocSustento = referencia.getFechaemisiondocumentosustento() != null
                   ? referencia.getFechaemisiondocumentosustento()
-                  : retencion.getFechaemision();
+                  : obtenerFechaEmisionRetencion(retencion);
             if (debeIncluirLinea(linea)) {
                resultado.add(linea);
             }
@@ -289,9 +289,11 @@ public class RetencionSRIService {
             : BigDecimal.ZERO;
       linea.valorRetenido = valorRetenido != null ? valorRetenido
             : calcularValorRetenido(linea.baseImponible, linea.porcentajeRetener);
+      normalizarConsistenciaLinea(retencion, linea, null);
       linea.codDocSustento = codDocSustento;
-      linea.numDocSustento = formatearNumeroDocumentoSustento(numDocSustento);
-      linea.fechaEmisionDocSustento = fechaEmisionDocSustento;
+      linea.numDocSustento = resolverNumeroDocumentoSustento(retencion, null, numDocSustento);
+      linea.fechaEmisionDocSustento = fechaEmisionDocSustento != null ? fechaEmisionDocSustento
+            : obtenerFechaEmisionRetencion(retencion);
       if (debeIncluirLinea(linea)) {
          resultado.add(linea);
       }
@@ -307,8 +309,8 @@ public class RetencionSRIService {
       xml.append("  <infoTributaria>\n");
       appendTag(xml, "    ", "ambiente", valueOf(definir != null ? definir.getTipoambiente() : null, "1"));
       appendTag(xml, "    ", "tipoEmision", "1");
-      appendTag(xml, "    ", "razonSocial", valueOf(definir != null ? definir.getRazonsocial() : null));
-      appendTag(xml, "    ", "nombreComercial", valueOf(definir != null ? definir.getNombrecomercial() : null));
+      appendTag(xml, "    ", "razonSocial", obtenerRazonSocialEmisor(definir));
+      appendTag(xml, "    ", "nombreComercial", obtenerNombreComercialEmisor(definir));
       appendTag(xml, "    ", "ruc", valueOf(definir != null ? definir.getRuc() : null));
       appendTag(xml, "    ", "claveAcceso",
             valueOf(retencion.getClaveacceso() != null ? retencion.getClaveacceso() : retencion.getNumautoriza()));
@@ -320,13 +322,13 @@ public class RetencionSRIService {
       xml.append("  </infoTributaria>\n");
 
       xml.append("  <infoCompRetencion>\n");
-      appendTag(xml, "    ", "fechaEmision", formatearFecha(retencion.getFechaemision()));
+      appendTag(xml, "    ", "fechaEmision", formatearFecha(obtenerFechaEmisionRetencion(retencion)));
       appendTag(xml, "    ", "dirEstablecimiento", obtenerDireccionEstablecimiento(definir));
       appendTag(xml, "    ", "obligadoContabilidad", "SI");
       appendTag(xml, "    ", "tipoIdentificacionSujetoRetenido", obtenerTipoIdentificacion(retencion));
       appendTag(xml, "    ", "razonSocialSujetoRetenido", obtenerRazonSocial(retencion));
       appendTag(xml, "    ", "identificacionSujetoRetenido", obtenerIdentificacion(retencion));
-      appendTag(xml, "    ", "periodoFiscal", formatearPeriodoFiscal(retencion.getFechaemision()));
+      appendTag(xml, "    ", "periodoFiscal", formatearPeriodoFiscal(obtenerFechaEmisionRetencion(retencion)));
       xml.append("  </infoCompRetencion>\n");
 
       xml.append("  <impuestos>\n");
@@ -471,6 +473,10 @@ public class RetencionSRIService {
 
    private BigDecimal resolverPorcentajeRetener(Retenciones retencion, Fec_reteimpu detalle, String codigoRetencion,
          BigDecimal baseImponible) {
+      String codigoCanonico = resolverCodigoRetencionCanonico(retencion, detalle, codigoRetencion, baseImponible);
+      if (!codigoCanonico.isBlank()) {
+         codigoRetencion = codigoCanonico;
+      }
       if (codigoRetencion != null) {
          if (codigoRetencion.equals(retencion.getCodretair()) && retencion.getPorcentajeair() != null) {
             return retencion.getPorcentajeair().setScale(2, RoundingMode.HALF_UP);
@@ -508,6 +514,10 @@ public class RetencionSRIService {
 
    private BigDecimal resolverValorRetenido(Retenciones retencion, Fec_reteimpu detalle, String codigoRetencion,
          BigDecimal baseImponible, BigDecimal porcentajeRetener) {
+      String codigoCanonico = resolverCodigoRetencionCanonico(retencion, detalle, codigoRetencion, baseImponible);
+      if (!codigoCanonico.isBlank()) {
+         codigoRetencion = codigoCanonico;
+      }
       if (codigoRetencion != null) {
          if (codigoRetencion.equals(retencion.getCodretair()) && retencion.getValretair() != null) {
             return retencion.getValretair().setScale(2, RoundingMode.HALF_UP);
@@ -553,6 +563,70 @@ public class RetencionSRIService {
       return codigo.equals(normalizar(retencion != null ? retencion.getCodretbienes() : null))
             || codigo.equals(normalizar(retencion != null ? retencion.getCodretservicios() : null))
             || codigo.equals(normalizar(retencion != null ? retencion.getCodretserv100() : null));
+   }
+
+   private void normalizarConsistenciaLinea(Retenciones retencion, ImpuestoRetencionXml linea, Fec_reteimpu detalle) {
+      if (linea == null) {
+         return;
+      }
+      linea.baseImponible = escalar(linea.baseImponible);
+      linea.valorRetenido = escalar(linea.valorRetenido);
+      linea.porcentajeRetener = escalar(linea.porcentajeRetener);
+
+      String codigoCanonico = resolverCodigoRetencionCanonico(retencion, detalle, linea.codigoRetencion, linea.baseImponible);
+      if (!codigoCanonico.isBlank()) {
+         linea.codigoRetencion = codigoCanonico;
+      }
+
+      if (esRetencionIvaTotal(linea, retencion)) {
+         linea.porcentajeRetener = BigDecimal.valueOf(100).setScale(2, RoundingMode.HALF_UP);
+         linea.valorRetenido = linea.baseImponible;
+         linea.codigoRetencion = firstNonBlank(retencion != null ? retencion.getCodretserv100() : null,
+               linea.codigoRetencion, "3");
+         return;
+      }
+
+      BigDecimal valorCalculado = calcularValorRetenido(linea.baseImponible, linea.porcentajeRetener);
+      if (linea.baseImponible.compareTo(BigDecimal.ZERO) > 0 && linea.porcentajeRetener.compareTo(BigDecimal.ZERO) > 0) {
+         if (linea.valorRetenido.compareTo(BigDecimal.ZERO) <= 0 || !montoEquivalente(linea.valorRetenido, valorCalculado)) {
+            linea.valorRetenido = valorCalculado;
+         }
+      }
+   }
+
+   private boolean esRetencionIvaTotal(ImpuestoRetencionXml linea, Retenciones retencion) {
+      if (linea == null || !("2".equals(normalizar(linea.codigo)) || esIva(linea.codigoRetencion, retencion))) {
+         return false;
+      }
+      return linea.baseImponible != null
+            && linea.valorRetenido != null
+            && linea.baseImponible.compareTo(BigDecimal.ZERO) > 0
+            && montoEquivalente(linea.baseImponible, linea.valorRetenido);
+   }
+
+   private String resolverCodigoRetencionCanonico(Retenciones retencion, Fec_reteimpu detalle, String codigoRetencion,
+         BigDecimal baseImponible) {
+      if (retencion == null) {
+         return normalizar(codigoRetencion);
+      }
+      BigDecimal valorDetalle = detalle != null ? detalle.getBaseimponible() : null;
+      if (montoEquivalente(baseImponible, retencion.getMontoivaserv100())
+            || montoEquivalente(valorDetalle, retencion.getMontoivaserv100())) {
+         return firstNonBlank(retencion.getCodretserv100(), codigoRetencion, "3");
+      }
+      if (montoEquivalente(baseImponible, retencion.getMontoivabienes())
+            || montoEquivalente(valorDetalle, retencion.getMontoivabienes())) {
+         return firstNonBlank(retencion.getCodretbienes(), codigoRetencion, "1");
+      }
+      if (montoEquivalente(baseImponible, retencion.getMontoivaservicios())
+            || montoEquivalente(valorDetalle, retencion.getMontoivaservicios())) {
+         return firstNonBlank(retencion.getCodretservicios(), codigoRetencion, "1");
+      }
+      if (montoEquivalente(baseImponible, retencion.getBaseimpair())
+            || montoEquivalente(valorDetalle, retencion.getBaseimpair())) {
+         return firstNonBlank(retencion.getCodretair(), codigoRetencion, "1");
+      }
+      return normalizar(codigoRetencion);
    }
 
    private BigDecimal calcularValorRetenido(BigDecimal baseImponible, BigDecimal porcentajeRetener) {
@@ -654,7 +728,10 @@ public class RetencionSRIService {
    }
 
    private String obtenerEstablecimiento(Retenciones retencion) {
-      String serie = normalizarSerie(retencion != null ? retencion.getNumserie() : null);
+      String serie = extraerSerieDesdeClaveAcceso(retencion);
+      if (serie.isBlank()) {
+         serie = normalizarSerie(retencion != null ? retencion.getNumserie() : null);
+      }
       if (serie.length() >= 3) {
          return serie.substring(0, 3);
       }
@@ -662,11 +739,40 @@ public class RetencionSRIService {
    }
 
    private String obtenerPuntoEmision(Retenciones retencion) {
-      String serie = normalizarSerie(retencion != null ? retencion.getNumserie() : null);
+      String serie = extraerSerieDesdeClaveAcceso(retencion);
+      if (serie.isBlank()) {
+         serie = normalizarSerie(retencion != null ? retencion.getNumserie() : null);
+      }
       if (serie.length() >= 6) {
          return serie.substring(3, 6);
       }
       return "000";
+   }
+
+   private String extraerSerieDesdeClaveAcceso(Retenciones retencion) {
+      String clave = normalizarNumero(firstNonBlank(
+            retencion != null ? retencion.getClaveacceso() : null,
+            retencion != null ? retencion.getNumautoriza() : null));
+      if (clave.length() >= 30) {
+         return clave.substring(24, 30);
+      }
+      return "";
+   }
+
+   private Date obtenerFechaEmisionRetencion(Retenciones retencion) {
+      String clave = normalizarNumero(firstNonBlank(
+            retencion != null ? retencion.getClaveacceso() : null,
+            retencion != null ? retencion.getNumautoriza() : null));
+      if (clave.length() >= 8) {
+         try {
+            return new SimpleDateFormat("ddMMyyyy", Locale.US).parse(clave.substring(0, 8));
+         } catch (Exception ignored) {
+         }
+      }
+      if (retencion != null && retencion.getFechaemision() != null) {
+         return retencion.getFechaemision();
+      }
+      return retencion != null ? retencion.getFechaemiret1() : null;
    }
 
    private String normalizarSerie(String serie) {
@@ -689,6 +795,30 @@ public class RetencionSRIService {
 
    private String valueOf(Object value) {
       return value == null ? "" : String.valueOf(value);
+   }
+
+   private String resolverNumeroDocumentoSustento(Retenciones retencion, Fec_reteimpu detalle) {
+      return resolverNumeroDocumentoSustento(retencion, detalle,
+            firstNonBlank(detalle != null ? detalle.getNumerodocumentosustento() : null,
+                  retencion != null ? retencion.getNumdoc() : null));
+   }
+
+   private String resolverNumeroDocumentoSustento(Retenciones retencion, Fec_reteimpu detalle, String valorBase) {
+      String directo = formatearNumeroDocumentoSustento(valorBase);
+      if (directo.length() == 15 && !directo.equals("000000000000000") && normalizarNumero(valorBase).length() >= 15) {
+         return directo;
+      }
+
+      String serieSustento = firstNonBlank(
+            detalle != null ? detalle.getNumerodocumentosustento() : null,
+            retencion != null ? retencion.getNumserie() : null);
+      String serie = normalizarSerie(serieSustento);
+      String secuencial = normalizarNumero(firstNonBlank(valorBase, retencion != null ? retencion.getNumdoc() : null));
+
+      if (serie.length() >= 6 && secuencial.length() > 0 && secuencial.length() <= 9) {
+         return serie.substring(0, 6) + String.format("%09d", Long.parseLong(secuencial));
+      }
+      return directo;
    }
 
    private String formatearNumeroDocumentoSustento(String valor) {
@@ -742,6 +872,18 @@ public class RetencionSRIService {
       return value == null ? "" : value.trim();
    }
 
+   private String obtenerRazonSocialEmisor(Definir definir) {
+      return valueOf(firstNonBlank(
+            definir != null ? definir.getNombrecomercial() : null,
+            definir != null ? definir.getRazonsocial() : null));
+   }
+
+   private String obtenerNombreComercialEmisor(Definir definir) {
+      return valueOf(firstNonBlank(
+            definir != null ? definir.getNombrecomercial() : null,
+            definir != null ? definir.getRazonsocial() : null));
+   }
+
    private boolean matchesAny(String candidate, String... values) {
       if (candidate == null) {
          return false;
@@ -757,6 +899,14 @@ public class RetencionSRIService {
    private String formatDecimal(BigDecimal value) {
       BigDecimal normalized = value == null ? BigDecimal.ZERO : value.setScale(2, RoundingMode.HALF_UP);
       return normalized.toPlainString();
+   }
+
+   private BigDecimal escalar(BigDecimal value) {
+      return value == null ? BigDecimal.ZERO : value.setScale(2, RoundingMode.HALF_UP);
+   }
+
+   private boolean montoEquivalente(BigDecimal left, BigDecimal right) {
+      return escalar(left).compareTo(escalar(right)) == 0;
    }
 
    private void appendTag(StringBuilder xml, String indent, String tag, String value) {
