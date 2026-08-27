@@ -1,8 +1,10 @@
 package com.epmapat.erp_epmapat.controlador;
 
 import java.util.List;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -120,6 +122,8 @@ public class ConveniosApi {
    public ResponseEntity<Page<ConvenioDetalle>> buscarConvenios(
          @RequestParam(required = false) Integer nroDesde,
          @RequestParam(required = false) Integer nroHasta,
+         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaDesde,
+         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechaHasta,
          @RequestParam(required = false) String nombre,
          @RequestParam(required = false) Integer estado,
          @RequestParam(required = false) Long minPendientes,
@@ -131,7 +135,7 @@ public class ConveniosApi {
 
       Long cuentaFiltro = idabonado != null ? idabonado : cuenta;
       return ResponseEntity.ok(
-            convServicio.buscarConvenios(nroDesde, nroHasta, nombre, estado, minPendientes, maxPendientes, cuentaFiltro, page, size));
+            convServicio.buscarConvenios(nroDesde, nroHasta, fechaDesde, fechaHasta, nombre, estado, minPendientes, maxPendientes, cuentaFiltro, page, size));
    }
 
    @GetMapping("/sin-pendientes")

@@ -127,6 +127,8 @@ public class ConvenioServicio {
     public Page<ConvenioDetalle> buscarConvenios(
             Integer nroDesde,
             Integer nroHasta,
+            LocalDate fechaDesde,
+            LocalDate fechaHasta,
             String nombre,
             Integer estado,
             Long minPendientes,
@@ -136,7 +138,7 @@ public class ConvenioServicio {
             int size) {
         Pageable pageable = PageRequest.of(page, size);
         String nombreNormalizado = (nombre == null || nombre.isBlank()) ? null : nombre.trim().toLowerCase();
-        return dao.buscarConvenios(nroDesde, nroHasta, nombreNormalizado, estado, minPendientes, maxPendientes, idabonado, pageable);
+        return dao.buscarConvenios(nroDesde, nroHasta, fechaDesde, fechaHasta, nombreNormalizado, estado, minPendientes, maxPendientes, idabonado, pageable);
     }
 
     public List<ConvenioDetalle> getConveniosSinPendientes(Integer estado) {

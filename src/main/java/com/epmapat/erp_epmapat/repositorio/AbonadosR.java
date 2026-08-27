@@ -211,7 +211,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	@Query(value = "SELECT * FROM abonados a where a.idruta_rutas = ?1 order by a.idabonado asc", nativeQuery = true)
 	public List<Abonados> getCuentasByRutas(Long idruta);
 
-	@Query(value = "select a.idcategoria_categorias, c.descripcion , count(*) as ncuentas from abonados a join categorias c on a.idcategoria_categorias = c.idcategoria group by a.idcategoria_categorias, c.descripcion", nativeQuery = true)
+	@Query(value = "select a.idcategoria_categorias as idcategoria, c.descripcion , count(*) as ncuentas from abonados a join categorias c on a.idcategoria_categorias = c.idcategoria group by a.idcategoria_categorias, c.descripcion", nativeQuery = true)
 	public List<EstadisticasAbonados> getCuentasByCategoria();
 
 	@Query(value = "select a.estado, count(*) as ncuentas from abonados a group by a.estado", nativeQuery = true)

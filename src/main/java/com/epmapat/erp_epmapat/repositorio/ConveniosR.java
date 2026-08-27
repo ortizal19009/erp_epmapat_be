@@ -1,5 +1,6 @@
 package com.epmapat.erp_epmapat.repositorio;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -230,6 +231,8 @@ public interface ConveniosR extends JpaRepository<Convenios, Long> {
           LEFT JOIN clientes c ON a.idresponsable = c.idcliente
           WHERE (:nroDesde IS NULL OR cv.nroconvenio >= :nroDesde)
             AND (:nroHasta IS NULL OR cv.nroconvenio <= :nroHasta)
+            AND (CAST(:fechaDesde AS date) IS NULL OR cv.feccrea >= CAST(:fechaDesde AS date))
+            AND (CAST(:fechaHasta AS date) IS NULL OR cv.feccrea < CAST(:fechaHasta AS date) + 1)
             AND (:estado IS NULL OR cv.estado = :estado)
             AND (:idabonado IS NULL OR cv.idabonado = :idabonado)
             AND (:nombre IS NULL OR LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
@@ -257,6 +260,8 @@ public interface ConveniosR extends JpaRepository<Convenios, Long> {
           LEFT JOIN clientes c ON a.idresponsable = c.idcliente
           WHERE (:nroDesde IS NULL OR cv.nroconvenio >= :nroDesde)
             AND (:nroHasta IS NULL OR cv.nroconvenio <= :nroHasta)
+            AND (CAST(:fechaDesde AS date) IS NULL OR cv.feccrea >= CAST(:fechaDesde AS date))
+            AND (CAST(:fechaHasta AS date) IS NULL OR cv.feccrea < CAST(:fechaHasta AS date) + 1)
             AND (:estado IS NULL OR cv.estado = :estado)
             AND (:idabonado IS NULL OR cv.idabonado = :idabonado)
             AND (:nombre IS NULL OR LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
@@ -276,6 +281,8 @@ public interface ConveniosR extends JpaRepository<Convenios, Long> {
   Page<ConvenioDetalle> buscarConvenios(
       @Param("nroDesde") Integer nroDesde,
       @Param("nroHasta") Integer nroHasta,
+      @Param("fechaDesde") LocalDate fechaDesde,
+      @Param("fechaHasta") LocalDate fechaHasta,
       @Param("nombre") String nombre,
       @Param("estado") Integer estado,
       @Param("minPendientes") Long minPendientes,
