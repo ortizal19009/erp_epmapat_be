@@ -234,6 +234,11 @@ public class InteresServicio {
 
     // ===== Versión configurable =====
     public BigDecimal calcularInteresFactura(Long idfactura, LocalDate hoy, ReglaInteres regla) {
+        var facturaCabecera = s_factura.findById(idfactura).orElse(null);
+        if (facturaCabecera != null && Boolean.TRUE.equals(facturaCabecera.getSwinteres())) {
+            return BigDecimal.ZERO.setScale(InteresUtils.SCALE_MONEY, RoundingMode.HALF_UP);
+        }
+
         List<FacIntereses> factura = s_lectura.getForIntereses(idfactura);
         if (factura == null || factura.isEmpty()) factura = s_factura.getForIntereses(idfactura);
         if (factura == null || factura.isEmpty()) return BigDecimal.ZERO.setScale(InteresUtils.SCALE_MONEY);

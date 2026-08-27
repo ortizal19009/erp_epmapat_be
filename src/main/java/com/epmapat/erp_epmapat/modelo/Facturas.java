@@ -66,5 +66,7 @@ public class Facturas implements Serializable {
 	private BigDecimal valornotacredito;
 	private String secuencialfacilito;
 	private Timestamp fechacompensacion;
+	private Boolean swinteres;
+	private Boolean swmulta;
 
 }

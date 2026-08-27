@@ -88,6 +88,12 @@ public class TmpinteresxfacService {
 
     @Transactional
     public BigDecimal findByIdFactura(Long idfactura){
+        if (idfactura != null) {
+            var factura = facturasR.findById(idfactura).orElse(null);
+            if (factura != null && Boolean.TRUE.equals(factura.getSwinteres())) {
+                return BigDecimal.ZERO;
+            }
+        }
         return tmpinteresxfacR.findByIdfactura(idfactura)
                 .map(Tmpinteresxfac::getInteresapagar)
                 .orElseGet(() -> upsertInteresFactura(idfactura));
@@ -110,7 +116,14 @@ public class TmpinteresxfacService {
         idfacturas.stream()
                 .filter(Objects::nonNull)
                 .distinct()
-                .forEach(idfactura -> intereses.computeIfAbsent(idfactura, this::upsertInteresFactura));
+                .forEach(idfactura -> {
+                    var factura = facturasR.findById(idfactura).orElse(null);
+                    if (factura != null && Boolean.TRUE.equals(factura.getSwinteres())) {
+                        intereses.put(idfactura, BigDecimal.ZERO);
+                    } else {
+                        intereses.computeIfAbsent(idfactura, this::upsertInteresFactura);
+                    }
+                });
 
         return intereses;
     }

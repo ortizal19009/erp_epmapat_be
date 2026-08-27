@@ -1,7 +1,7 @@
 package com.epmapat.erp_epmapat.modelo;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,6 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 
 @Entity
 @Table(name = "condmultasintereses")
@@ -25,7 +27,13 @@ public class CondMultasIntereses {
     private BigDecimal totalmultas;
     private String razoncondonacion;
     private Long usucrea;
-    private Date feccrea;
+    private LocalDateTime feccrea;
+    private String estado;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idusaprueba")
+    private Usuarios usuarioAprueba;
+    private LocalDateTime fecaprobacion;
+    private String observacion_aprobacion;
     public Long getIdcondmultainteres() {
         return idcondmultainteres;
     }
@@ -62,12 +70,36 @@ public class CondMultasIntereses {
     public void setUsucrea(Long usucrea) {
         this.usucrea = usucrea;
     }
-    public Date getFeccrea() {
+    public LocalDateTime getFeccrea() {
         return feccrea;
     }
-    public void setFeccrea(Date feccrea) {
+    public void setFeccrea(LocalDateTime feccrea) {
         this.feccrea = feccrea;
     }
-    
+    public String getEstado() {
+        return estado;
+    }
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+    public Usuarios getUsuarioAprueba() {
+        return usuarioAprueba;
+    }
+    public void setUsuarioAprueba(Usuarios usuarioAprueba) {
+        this.usuarioAprueba = usuarioAprueba;
+    }
+    public LocalDateTime getFecaprobacion() {
+        return fecaprobacion;
+    }
+    public void setFecaprobacion(LocalDateTime fecaprobacion) {
+        this.fecaprobacion = fecaprobacion;
+    }
+    public String getObservacion_aprobacion() {
+        return observacion_aprobacion;
+    }
+    public void setObservacion_aprobacion(String observacion_aprobacion) {
+        this.observacion_aprobacion = observacion_aprobacion;
+    }
+
 
 }

@@ -64,6 +64,8 @@ import com.epmapat.erp_epmapat.servicio.administracion.UsuarioServicio;
 @Service
 public class RecaudacionCobroServicio {
     private static final long RUBRO_INTERES_ID = 5L;
+    private static final long RUBRO_MULTA_ID = 6L;
+    private static final long RUBRO_MULTA_BASURA_ID = 1011L;
 
     @Autowired
     private FacturaServicio facturaServicio;
@@ -149,6 +151,7 @@ public class RecaudacionCobroServicio {
             dto.setTotal(item.getTotal() != null ? item.getTotal() : BigDecimal.ZERO);
             dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
             dto.setIva(BigDecimal.ZERO);
+            aplicarExoneracionesPendiente(dto);
             respuesta.add(dto);
         }
 
@@ -223,6 +226,7 @@ public class RecaudacionCobroServicio {
             dto.setTotal(item.getTotal() != null ? item.getTotal() : BigDecimal.ZERO);
             dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
             dto.setIva(BigDecimal.ZERO);
+            aplicarExoneracionesPendiente(dto);
             pendientesPorId.putIfAbsent(dto.getIdfactura(), dto);
         }
     }
@@ -251,6 +255,7 @@ public class RecaudacionCobroServicio {
             dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
             dto.setModulo(null);
             dto.setIva(BigDecimal.ZERO);
+            aplicarExoneracionesPendiente(dto);
             pendientesPorId.putIfAbsent(dto.getIdfactura(), dto);
         }
     }
@@ -651,6 +656,7 @@ public class RecaudacionCobroServicio {
         dto.setTotal(subtotal != null ? subtotal : BigDecimal.ZERO);
         dto.setInteres(interes != null ? interes : BigDecimal.ZERO);
         dto.setIva(calcularIva(factura.getIdfactura()));
+        aplicarExoneraciones(factura, dto);
         recomputarTotal(dto);
         return dto;
     }
@@ -662,7 +668,7 @@ public class RecaudacionCobroServicio {
 
         cargarInteresesMasivos(facturas);
         cargarIvasMasivos(facturas);
-        facturas.forEach(this::recomputarTotal);
+        facturas.forEach(this::aplicarExoneracionesPendiente);
     }
 
     private void completarMontosPendiente(ValorFactDTO dto) {
@@ -737,6 +743,32 @@ public class RecaudacionCobroServicio {
         BigDecimal interes = dto.getInteres() != null ? dto.getInteres() : BigDecimal.ZERO;
         BigDecimal iva = dto.getIva() != null ? dto.getIva() : BigDecimal.ZERO;
         dto.setTotal(subtotal.add(interes).add(iva));
+    }
+
+    private void aplicarExoneracionesPendiente(ValorFactDTO dto) {
+        if (dto == null || dto.getIdfactura() == null) {
+            return;
+        }
+        Facturas factura = facturaServicio.findById(dto.getIdfactura()).orElse(null);
+        aplicarExoneraciones(factura, dto);
+        recomputarTotal(dto);
+    }
+
+    private void aplicarExoneraciones(Facturas factura, ValorFactDTO dto) {
+        if (factura == null || dto == null) {
+            return;
+        }
+        if (Boolean.TRUE.equals(factura.getSwinteres())) {
+            dto.setInteres(BigDecimal.ZERO);
+        }
+        if (Boolean.TRUE.equals(factura.getSwmulta())) {
+            BigDecimal subtotalSinMulta = sumarSubtotalFacturaSinRubros(
+                    factura.getIdfactura(),
+                    RUBRO_MULTA_ID,
+                    RUBRO_MULTA_BASURA_ID);
+            dto.setSubtotal(subtotalSinMulta.floatValue());
+            dto.setTotal(subtotalSinMulta);
+        }
     }
 
     private BigDecimal calcularIva(Long idfactura) {
@@ -814,6 +846,19 @@ public class RecaudacionCobroServicio {
         }
         return rubroxfacServicio.getByIdfactura1(idfactura).stream()
                 .filter(Objects::nonNull)
+                .map(r -> {
+                    BigDecimal valor = r.getValorunitario() != null ? r.getValorunitario() : BigDecimal.ZERO;
+                    BigDecimal cantidad = r.getCantidad() != null ? BigDecimal.valueOf(r.getCantidad()) : BigDecimal.ONE;
+                    return valor.multiply(cantidad);
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal sumarSubtotalFacturaSinRubros(Long idfactura, Long... rubrosExcluir) {
+        List<Long> excluir = java.util.Arrays.asList(rubrosExcluir);
+        return rubroxfacServicio.getByIdfactura1(idfactura).stream()
+                .filter(Objects::nonNull)
+                .filter(r -> r.getIdrubro_rubros() != null && !excluir.contains(r.getIdrubro_rubros().getIdrubro()))
                 .map(r -> {
                     BigDecimal valor = r.getValorunitario() != null ? r.getValorunitario() : BigDecimal.ZERO;
                     BigDecimal cantidad = r.getCantidad() != null ? BigDecimal.valueOf(r.getCantidad()) : BigDecimal.ONE;

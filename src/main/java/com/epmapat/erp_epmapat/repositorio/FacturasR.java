@@ -27,6 +27,15 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Override
 	java.util.Optional<Facturas> findById(Long id);
 
+	@Query("""
+			SELECT f
+			FROM Facturas f
+			LEFT JOIN FETCH f.idcliente
+			LEFT JOIN FETCH f.idmodulo
+			WHERE f.idfactura = :idfactura
+			""")
+	Optional<Facturas> findDetalleById(@Param("idfactura") Long idfactura);
+
 	// VALIDACION DE LA ULTIMA FACTURA DEL RECAUDADOR
 	@Query(value = "select *, substring(nrofactura, 9) as nrofac from facturas where nrofactura like %?1% and not nrofactura  is null order by nrofac desc limit 1;", nativeQuery = true)
 	public Facturas validarUltimafactura(String codrecaudador);

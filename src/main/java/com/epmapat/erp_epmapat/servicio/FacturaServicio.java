@@ -1210,6 +1210,12 @@ public class FacturaServicio {
 	private BigDecimal multas(Long cuenta, Long idfacturaActual) {
 		if (cuenta == null)
 			return BigDecimal.ZERO;
+		if (idfacturaActual != null) {
+			Facturas facturaActual = dao.findById(idfacturaActual).orElse(null);
+			if (facturaActual != null && Boolean.TRUE.equals(facturaActual.getSwmulta())) {
+				return BigDecimal.ZERO;
+			}
+		}
 
 		long pendientes = (idfacturaActual == null)
 				? dao.findSinCobroAbo(cuenta).size()
