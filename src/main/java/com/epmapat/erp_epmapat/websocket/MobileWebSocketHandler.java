@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import lombok.extern.slf4j.Slf4j;
@@ -23,23 +24,26 @@ public class MobileWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        sessions.put(session.getId(), session);
-        Long userId = extractUserId(session);
+        WebSocketSession concurrentSession = new ConcurrentWebSocketSessionDecorator(session, 10_000, 64 * 1024);
+        sessions.put(concurrentSession.getId(), concurrentSession);
+        Long userId = extractUserId(concurrentSession);
         if (userId != null) {
-            sessionsByUser.computeIfAbsent(userId, key -> new ConcurrentHashMap<>()).put(session.getId(), session);
+            sessionsByUser.computeIfAbsent(userId, key -> new ConcurrentHashMap<>())
+                    .put(concurrentSession.getId(), concurrentSession);
         }
-        log.info("Mobile WebSocket conectado: {} userId={}", session.getId(), userId);
-        sendJson(session, "welcome", "Canal movil conectado");
+        log.info("Mobile WebSocket conectado: {} userId={}", concurrentSession.getId(), userId);
+        sendJson(concurrentSession, "welcome", "Canal movil conectado");
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        WebSocketSession concurrentSession = managedSession(session);
         String payload = message.getPayload();
         if (payload != null && payload.contains("\"type\":\"ping\"")) {
-            sendJson(session, "pong", "heartbeat-ok");
+            sendJson(concurrentSession, "pong", "heartbeat-ok");
             return;
         }
-        sendJson(session, "ack", "mensaje-recibido");
+        sendJson(concurrentSession, "ack", "mensaje-recibido");
     }
 
     @Override
@@ -113,6 +117,11 @@ public class MobileWebSocketHandler extends TextWebSocketHandler {
                 }
             }
         }
+    }
+
+    private WebSocketSession managedSession(WebSocketSession session) {
+        WebSocketSession concurrentSession = sessions.get(session.getId());
+        return concurrentSession != null ? concurrentSession : session;
     }
 
     private Long extractUserId(WebSocketSession session) {

@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="EmisionFinal" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="25" uuid="9e90306b-f891-40fc-b0ad-f55d9c46e03b">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="SERVIDOR EPMAPAT"/>
+	<parameter name="idemision" class="java.lang.Long"/>
+	<parameter name="idusuario" class="java.lang.Long"/>
+	<queryString language="SQL">
+		<![CDATA[WITH fecha_inicial AS (
+ SELECT l.fechaemision FROM lecturas l WHERE l.idemision = $P{idemision}
+ GROUP BY l.fechaemision ORDER BY COUNT(*) DESC, l.fechaemision ASC LIMIT 1
+), datos AS (
+ SELECT 1 orden, 'EMISION INICIAL' seccion, rf.idrubro_rubros id_rubro, r.descripcion, COUNT(DISTINCT l.idabonado_abonados) abonados, SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) valor, NULL::bigint cuenta, NULL::text nombre, NULL::text cedula, NULL::text direccion, NULL::bigint idfactura, NULL::date fechaeliminacion
+ FROM lecturas l JOIN rubroxfac rf ON rf.idfactura_facturas = l.idfactura AND (rf.estado IS NULL OR rf.estado <> 0) JOIN rubros r ON r.idrubro = rf.idrubro_rubros
+ WHERE l.idemision = $P{idemision} AND l.fechaemision = (SELECT fechaemision FROM fecha_inicial) AND rf.idrubro_rubros <> 5 GROUP BY rf.idrubro_rubros, r.descripcion
+ UNION ALL
+ SELECT 2, 'EMISIONES ELIMINADAS', rf.idrubro_rubros, r.descripcion, COUNT(DISTINCT l.idabonado_abonados), SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)), NULL::bigint, NULL::text, NULL::text, NULL::text, NULL::bigint, NULL::date
+ FROM lecturas l JOIN facturas f ON f.idfactura = l.idfactura JOIN rubroxfac rf ON rf.idfactura_facturas = l.idfactura AND (rf.estado IS NULL OR rf.estado <> 0) JOIN rubros r ON r.idrubro = rf.idrubro_rubros
+ WHERE l.idemision = $P{idemision} AND f.fechaeliminacion IS NOT NULL AND rf.idrubro_rubros <> 5 GROUP BY rf.idrubro_rubros, r.descripcion
+ UNION ALL
+ SELECT 3, 'EMISIONES NUEVAS', rf.idrubro_rubros, r.descripcion, COUNT(DISTINCT l.idabonado_abonados), SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)), NULL::bigint, NULL::text, NULL::text, NULL::text, NULL::bigint, NULL::date
+ FROM emisionindividual ei JOIN lecturas l ON l.idlectura = ei.idlecturanueva JOIN facturas f ON f.idfactura = l.idfactura JOIN rubroxfac rf ON rf.idfactura_facturas = l.idfactura AND (rf.estado IS NULL OR rf.estado <> 0) JOIN rubros r ON r.idrubro = rf.idrubro_rubros
+ WHERE ei.idemision = $P{idemision} AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros <> 5 GROUP BY rf.idrubro_rubros, r.descripcion
+ UNION ALL
+ SELECT 4, 'EMISION FINAL', rf.idrubro_rubros, r.descripcion, COUNT(DISTINCT l.idabonado_abonados), SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)), NULL::bigint, NULL::text, NULL::text, NULL::text, NULL::bigint, NULL::date
+ FROM lecturas l JOIN facturas f ON f.idfactura = l.idfactura JOIN rubroxfac rf ON rf.idfactura_facturas = l.idfactura AND (rf.estado IS NULL OR rf.estado <> 0) JOIN rubros r ON r.idrubro = rf.idrubro_rubros
+ WHERE l.idemision = $P{idemision} AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros <> 5 GROUP BY rf.idrubro_rubros, r.descripcion
+ UNION ALL
+ SELECT 5, 'FACTURAS ELIMINADAS - DETALLE', NULL::bigint, NULL::text, NULL::bigint, COALESCE(SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)), 0), a.idabonado, c.nombre, c.cedula, a.direccionubicacion, f.idfactura, f.fechaeliminacion
+ FROM lecturas l JOIN facturas f ON f.idfactura = l.idfactura LEFT JOIN abonados a ON a.idabonado = l.idabonado_abonados LEFT JOIN clientes c ON c.idcliente = a.idcliente_clientes LEFT JOIN rubroxfac rf ON rf.idfactura_facturas = l.idfactura AND (rf.estado IS NULL OR rf.estado <> 0)
+ WHERE l.idemision = $P{idemision} AND f.fechaeliminacion IS NOT NULL GROUP BY f.idfactura, f.nrofactura, f.fechaeliminacion, a.idabonado, c.nombre, c.cedula, a.direccionubicacion
+ UNION ALL
+ SELECT 6, 'NUEVAS FACTURAS CREADAS - DETALLE', NULL::bigint, NULL::text, NULL::bigint, SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)), a.idabonado, c.nombre, c.cedula, a.direccionubicacion, f.idfactura, NULL::date
+ FROM emisionindividual ei JOIN lecturas l ON l.idlectura = ei.idlecturanueva JOIN facturas f ON f.idfactura = l.idfactura JOIN abonados a ON a.idabonado = l.idabonado_abonados JOIN clientes c ON c.idcliente = a.idcliente_clientes JOIN rubroxfac rf ON rf.idfactura_facturas = l.idfactura AND (rf.estado IS NULL OR rf.estado <> 0)
+ WHERE ei.idemision = $P{idemision} AND f.fechaeliminacion IS NULL GROUP BY f.idfactura, f.nrofactura, a.idabonado, c.nombre, c.cedula, a.direccionubicacion
+) SELECT datos.*, (SELECT u.nomusu FROM usuarios u WHERE u.idusuario = $P{idusuario}) AS usuario_impresion
+  FROM datos
+  ORDER BY orden, descripcion NULLS LAST, cuenta, idfactura]]>
+	</queryString>
+	<field name="orden" class="java.lang.Integer"/>
+	<field name="seccion" class="java.lang.String"/>
+	<field name="id_rubro" class="java.lang.Long"/>
+	<field name="descripcion" class="java.lang.String"/>
+	<field name="abonados" class="java.lang.Long"/>
+	<field name="valor" class="java.math.BigDecimal"/>
+	<field name="cuenta" class="java.lang.Long"/>
+	<field name="nombre" class="java.lang.String"/>
+	<field name="cedula" class="java.lang.String"/>
+	<field name="direccion" class="java.lang.String"/>
+	<field name="idfactura" class="java.lang.Long"/>
+	<field name="fechaeliminacion" class="java.sql.Date"/>
+	<field name="usuario_impresion" class="java.lang.String"/>
+	<variable name="TotalValor" class="java.math.BigDecimal" resetType="Group" resetGroup="Seccion" calculation="Sum">
+		<variableExpression><![CDATA[$F{valor}]]></variableExpression>
+	</variable>
+	<group name="Seccion" keepTogether="true">
+		<groupExpression><![CDATA[$F{orden}]]></groupExpression>
+		<groupHeader>
+			<band height="42">
+				<textField>
+					<reportElement mode="Opaque" x="0" y="0" width="555" height="20" forecolor="#0C4A6E" backcolor="#DCEEF7" uuid="5fb548ee-db36-4ce7-89e4-d43c0da6d6a3">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{seccion}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="20" width="45" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="db732c5e-b618-4251-8aef-38c10990ed71">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[ID]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="45" y="20" width="300" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="3108962e-b690-412d-83b6-700ae5e8f33d">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[DESCRIPCION]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="345" y="20" width="95" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="fb8247e7-bc17-41f6-aedf-e3f61bde66aa">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[ABONADOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="440" y="20" width="115" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="92f34f85-6052-4102-b1ac-e4682d5bfeb5">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[VALOR]]></text>
+				</staticText>
+				<textField>
+					<reportElement mode="Opaque" x="0" y="0" width="555" height="20" forecolor="#0C4A6E" backcolor="#DCEEF7" uuid="00fe3b72-408e-4033-9ebd-8fa31ea88bf5">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{seccion}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="20" width="65" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="cbec5b98-ccda-45a6-9849-bf66640f1606">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[FACTURA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="65" y="20" width="50" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="c01b7885-f500-4ea1-8272-06116afbca4a">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[CUENTA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="115" y="20" width="120" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="3b76a972-a1e3-4f27-a6f2-e991b498f38d">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NOMBRE]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="235" y="20" width="70" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="4e84e711-d973-415a-8d7d-d4901125e626">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[CEDULA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="305" y="20" width="100" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="551ab914-9825-4125-8e32-d27db185de03">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() == 5]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[DIRECCION]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="305" y="20" width="165" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="a02e0c76-4a96-416b-90d9-fcd40aece51a">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() == 6]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[DIRECCION]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="405" y="20" width="65" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="8876f4f8-8b83-48fa-8b0e-5ece8af8fb1f">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() == 5]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[F. ELIM.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="470" y="20" width="85" height="22" forecolor="#FFFFFF" backcolor="#164E63" uuid="bfa5bd26-1f78-49fe-b3ce-a80ba463a15e">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[VALOR]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="20">
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="0" width="440" height="20" backcolor="#F1F5F9" uuid="bf3c7d7a-f5be-446c-a575-90f53ecf880e">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[TOTAL VALOR DE LA SECCION]]></text>
+				</staticText>
+				<textField pattern="#,#00.00">
+					<reportElement mode="Opaque" x="440" y="0" width="115" height="20" backcolor="#F1F5F9" uuid="30c4075b-b9a3-4a4d-84c5-180ce044c96f">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{TotalValor}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="0" width="470" height="20" backcolor="#F1F5F9" uuid="e8c7d2e7-7d1e-4778-9ba0-6edb67245159">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[TOTAL VALOR DE LA SECCION]]></text>
+				</staticText>
+				<textField pattern="#,#00.00">
+					<reportElement mode="Opaque" x="470" y="0" width="85" height="20" backcolor="#F1F5F9" uuid="0bbf0ed9-e3b1-4454-95c7-c43b517a9f5a">
+						<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{TotalValor}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band height="797">
+			<image scaleImage="FillFrame" hAlign="Center" vAlign="Middle" isUsingCache="true" onErrorType="Blank">
+				<reportElement positionType="FixRelativeToBottom" mode="Transparent" x="24" y="176" width="512" height="342" uuid="cad482fc-7e6a-44ec-9cd0-652bb2adca3d"/>
+				<imageExpression><![CDATA["marca_agua.png"]]></imageExpression>
+			</image>
+		</band>
+	</background>
+	<title>
+		<band height="70">
+			<rectangle>
+				<reportElement mode="Opaque" x="0" y="0" width="555" height="70" backcolor="#0F172A" uuid="8616cfb2-151e-4a7c-96e8-20f24b7de31f"/>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="15" y="12" width="250" height="16" forecolor="#FFFFFF" uuid="bf617e75-28f7-41d9-826c-f31d024750ff"/>
+				<textElement>
+					<font size="13" isBold="true"/>
+				</textElement>
+				<text><![CDATA[EPMAPA-T]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="15" y="32" width="350" height="22" forecolor="#BAE6FD" uuid="31355fac-8b30-4052-903a-d89834bece41"/>
+				<textElement>
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REPORTE DE EMISION FINAL]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="12" width="145" height="14" forecolor="#FFFFFF" uuid="e151b50e-06f5-4fb3-bb93-d6e61c248c62"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Emision ID: " + $P{idemision}]]></textFieldExpression>
+			</textField>
+			<image scaleImage="RetainShape" hAlign="Right" vAlign="Middle" isUsingCache="true" onErrorType="Blank">
+				<reportElement x="390" y="30" width="145" height="30" uuid="bc94b291-8eb7-44be-8850-1429d15073a3"/>
+				<imageExpression><![CDATA["logo_epmapat-01.png"]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<detail>
+		<band height="20">
+			<textField>
+				<reportElement x="0" y="0" width="45" height="20" uuid="538b2175-4647-4a2e-8a13-82527c207d0f">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{id_rubro}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="45" y="0" width="300" height="20" uuid="36c002f8-fc87-437d-83e5-55fe06fb06e3">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{descripcion}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="345" y="0" width="95" height="20" uuid="c54bffd1-1c7b-40fc-91b7-db2588faef22">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{abonados}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,#00.00">
+				<reportElement x="440" y="0" width="115" height="20" uuid="fefa548a-a59c-4072-8e0e-1afee28ff0c9">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() <= 4]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{valor}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="65" height="20" uuid="e09b415d-249a-48b4-a059-299c3e4d8f3c">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{idfactura}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="65" y="0" width="50" height="20" uuid="2dda8703-6fe3-4700-8d2e-58f7c7af2a7b">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cuenta}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="115" y="0" width="120" height="20" uuid="60357565-5407-45da-9d43-7ab03340036f">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nombre}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="235" y="0" width="70" height="20" uuid="f9d38678-2922-423d-8120-5ee97700e060">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cedula}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="305" y="0" width="100" height="20" uuid="bdbffc48-344b-4197-aee0-28633a39ae2c">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() == 5]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{direccion}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="305" y="0" width="165" height="20" uuid="9de466a9-1077-4564-9e31-a7821f4f0b0e">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() == 6]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{direccion}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="405" y="0" width="65" height="20" uuid="f1ef0940-8618-4e74-8d80-33094647783a">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() == 5]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fechaeliminacion}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,#00.00">
+				<reportElement x="470" y="0" width="85" height="20" uuid="e78bc787-ca17-4a56-96d9-1ac9add4e9a1">
+					<printWhenExpression><![CDATA[$F{orden}.intValue() > 4]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{valor}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="18">
+			<line>
+				<reportElement x="0" y="0" width="555" height="1" uuid="1f32cd64-65a6-4be6-aa31-916534231d98"/>
+				<graphicElement>
+					<pen lineWidth="0.4" lineColor="#94A3B8"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="4" width="390" height="12" forecolor="#475569" uuid="611dd642-4d27-4862-9ac9-c5ae9889f785"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Impreso: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new java.util.Date()) + " | Usuario: " + $F{usuario_impresion}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="4" width="135" height="12" forecolor="#475569" uuid="a16f80f7-ef74-46ca-a560-f143e2b6b01c"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Pagina " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

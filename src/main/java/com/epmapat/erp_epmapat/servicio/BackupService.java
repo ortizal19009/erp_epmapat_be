@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -27,6 +28,12 @@ public class BackupService {
 
 
     private static final Logger logger = LoggerFactory.getLogger(BackupService.class);
+
+    private final TelegramNotificationService telegramNotificationService;
+
+    public BackupService(TelegramNotificationService telegramNotificationService) {
+        this.telegramNotificationService = telegramNotificationService;
+    }
 
     // Configuración inyectable
     @Value("${backup.db.username:postgres}")
@@ -50,13 +57,34 @@ public class BackupService {
     @Value("${backup.folder.linux:/var/backups/postgres/}")
     private String backupFolderLinux;
 
-    @Value("${pgdump.path.windows:C:\\Program Files\\PostgreSQL\\16\\bin\\pg_dump.exe}")
+    @Value("${pgdump.path.windows:}")
     private String pgDumpPathWindows;
 
     @Value("${pgdump.path.linux:/usr/bin/pg_dump}")
     private String pgDumpPathLinux;
 
     public void generarBackup() throws IOException, InterruptedException {
+        LocalDateTime startedAt = LocalDateTime.now();
+        try {
+            String backupFile = generarBackupInterno();
+            telegramNotificationService.notifyBackup(
+                    true,
+                    backupFile,
+                    Duration.between(startedAt, LocalDateTime.now()).toSeconds(),
+                    "Respaldo generado correctamente"
+            );
+        } catch (IOException | InterruptedException exception) {
+            telegramNotificationService.notifyBackup(
+                    false,
+                    "No generado",
+                    Duration.between(startedAt, LocalDateTime.now()).toSeconds(),
+                    exception.getMessage()
+            );
+            throw exception;
+        }
+    }
+
+    private String generarBackupInterno() throws IOException, InterruptedException {
         String os = System.getProperty("os.name").toLowerCase();
         boolean isWindows = os.contains("win");
 
@@ -99,6 +127,7 @@ public class BackupService {
         int exitCode = process.waitFor();
         if (exitCode == 0) {
             logger.info("✅ Backup generado exitosamente en {}", archivoBackup);
+            return archivoBackup;
         } else {
             logger.error("❌ Error al generar backup. Código: {}", exitCode);
             throw new IOException("Backup falló con código " + exitCode);
@@ -107,7 +136,16 @@ public class BackupService {
 
     private String resolvePgDumpCommand(boolean isWindows) {
         if (isWindows) {
-            return pgDumpPathWindows;
+            if (pgDumpPathWindows != null && !pgDumpPathWindows.isBlank()) {
+                Path configuredPath = Paths.get(pgDumpPathWindows);
+                if (Files.isRegularFile(configuredPath)) {
+                    return configuredPath.toString();
+                }
+
+                logger.warn("No se encontro pg_dump en {}. Se usara pg_dump desde el PATH.", pgDumpPathWindows);
+            }
+
+            return "pg_dump";
         }
 
         Path configuredPath = Paths.get(pgDumpPathLinux);

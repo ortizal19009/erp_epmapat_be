@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
@@ -63,11 +64,11 @@ public class PregastosApi {
    // return ResponseEntity.ok(count);
    // }
 
-   // Cuenta las Partidas por Actividad
-   // @GetMapping("/actividad")
-   // public List<Presupue> findByActividad(@RequestParam("intest") Long intest) {
-   // return presuServicio.findByActividad(intest);
-   // }
+   // Partidas de gasto de una actividad funcional.
+   @GetMapping("/actividad")
+   public List<Presupue> findByActividad(@RequestParam("intest") Long intest) {
+      return presuServicio.findByActividad(intest);
+   }
 
    @PostMapping
    public ResponseEntity<Presupue> save(@RequestBody Presupue x) {

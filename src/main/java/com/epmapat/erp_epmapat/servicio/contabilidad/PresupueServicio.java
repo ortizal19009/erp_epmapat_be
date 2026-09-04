@@ -73,6 +73,10 @@ public class PresupueServicio {
       return dao.buscaByCodpar(codpar);
    }
 
+   public List<Presupue> findByActividad(Long intest) {
+      return dao.findByActividad(intest);
+   }
+
    // Partidas de un partida del clasificador
    public List<Presupue> buscaClasificador(String codigo) {
       return dao.buscaClasificador(codigo);

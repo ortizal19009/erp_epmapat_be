@@ -1,7 +1,6 @@
 package com.epmapat.erp_epmapat.repositorio.contabilidad;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,8 +14,21 @@ public interface BenexTranR extends JpaRepository<BenexTran, Long> {
 	public List<BenexTran> getEgresos(String codcue);
 
 	// Benextran de un Beneficiario desde/hasta
-	@Query(value = "select * from benextran b join transaci t on b.inttra = t.inttra join asientos a on t.idasiento = a.idasiento where t.idbene = ?1 and a.fecha >=?2 and a.fecha <=?3 order by a.fecha", nativeQuery = true)
-	public List<BenexTran> getByIdBeneDesdeHasta(Long idbene, Date desde, Date hasta);
+	@Query("""
+			SELECT b
+			FROM BenexTran b
+			JOIN FETCH b.inttra t
+			JOIN FETCH t.idasiento a
+			LEFT JOIN FETCH t.idcuenta
+			LEFT JOIN FETCH t.intdoc
+			LEFT JOIN FETCH b.idbene
+			WHERE t.idbene.idbene = :idbene
+			  AND a.fecha BETWEEN :desde AND :hasta
+			ORDER BY a.fecha, t.orden
+			""")
+	public List<BenexTran> getByIdBeneDesdeHasta(@org.springframework.data.repository.query.Param("idbene") Long idbene,
+			@org.springframework.data.repository.query.Param("desde") LocalDate desde,
+			@org.springframework.data.repository.query.Param("hasta") LocalDate hasta);
 
 	// Benextran de un Beneficiario de la 213 ??
 	@Query(value = "select * from benextran b join transaci t on b.inttra = t.inttra join asientos a on t.idasiento = a.idasiento where t.codcue like '213%' and t.idbene = ?1", nativeQuery = true)
@@ -56,8 +68,15 @@ public interface BenexTranR extends JpaRepository<BenexTran, Long> {
 	@Query(value = "SELECT EXISTS (SELECT 1 FROM benextran WHERE idbene = ?1)", nativeQuery = true)
 	boolean existeByIdbene(Long idbene);
 
-	// Benextran de una transaci
-	List<BenexTran> findByInttra_Inttra(Long inttra);
+	// Benextran de una transaci con sus beneficiarios para el formulario de modificacion.
+	@Query("""
+			SELECT b
+			FROM BenexTran b
+			LEFT JOIN FETCH b.idbene
+			WHERE b.inttra.inttra = :inttra
+			ORDER BY b.idbenxtra
+			""")
+	List<BenexTran> findByInttra_Inttra(@org.springframework.data.repository.query.Param("inttra") Long inttra);
 
 	// Cuenta los Benextran de una transaci.inttra
 	short countByInttra_Inttra(Long inttra);

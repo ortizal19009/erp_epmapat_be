@@ -82,9 +82,13 @@ public class BeneficiarioServicio {
    }
 
    // Cuenta por Idifinan (Instituciones financieras)
-   public Long countByIdifinan(Long idifinan) {
-      return dao.countByIdifinan(idifinan);
-   }
+	public Long countByIdifinan(Long idifinan) {
+		return dao.countByIdifinan(idifinan);
+	}
+
+	public List<Beneficiarios> findByIdifinan(Long idifinan) {
+		return dao.findByIdifinan_IdifinanOrderByNombenAsc(idifinan);
+	}
 
    public <S extends Beneficiarios> S save(S entity) {
       return dao.save(entity);

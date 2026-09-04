@@ -51,6 +51,7 @@ public class Usuarios {
    private Boolean otrapestania;
    private String alias;
    private String priusu;
+   @Column(length = 30)
    private String perfil;
    private Long toolbarframe;
    private Long toolbarsheet;

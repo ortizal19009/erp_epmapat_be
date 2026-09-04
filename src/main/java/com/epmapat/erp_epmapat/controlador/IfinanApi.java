@@ -3,22 +3,20 @@ package com.epmapat.erp_epmapat.controlador;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-// import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Ifinan;
 import com.epmapat.erp_epmapat.servicio.IfinanServicio;
-import org.springframework.web.bind.annotation.GetMapping;
-
-
 @RestController
 @RequestMapping("/ifinan")
 public class IfinanApi {
@@ -26,14 +24,16 @@ public class IfinanApi {
     @Autowired
     IfinanServicio ifinanServicio;
     
-    public List<Ifinan> getIfinan(@Param(value = "codifinan") String codifinan,
-            @Param(value = "nomifinan") String nomifinan) {
+    @GetMapping
+    public List<Ifinan> getIfinan(@RequestParam(required = false) String codifinan,
+            @RequestParam(required = false) String nomifinan) {
         if (codifinan != null) {
             return ifinanServicio.findByCodifinan(codifinan);
         }
         if (nomifinan != null) {
             return ifinanServicio.findByNomifinan(nomifinan.toLowerCase());
-        } else return null;
+        }
+        return ifinanServicio.findAll(Sort.by(Sort.Direction.ASC, "codifinan"));
     }
 
     @PostMapping

@@ -121,7 +121,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			    c.nombre AS nombre,
 			    c.idcliente AS idcliente,
 			    m.descripcion AS modulo,
-			    CAST(SUM(rf.cantidad * rf.valorunitario) AS numeric(18,2)) AS total,
+			    CAST(SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS numeric(18,2)) AS total,
 			    f.idabonado AS cuenta,
 			    CAST(tf.totalFactura AS numeric(18,2)) AS totalFactura,
 			    f.feccrea AS feccrea
@@ -133,7 +133,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			JOIN (
 			    SELECT
 			        rf2.idfactura_facturas,
-			        SUM(rf2.cantidad * rf2.valorunitario) AS totalFactura
+			        SUM(ROUND(CAST(rf2.cantidad * rf2.valorunitario AS numeric), 2)) AS totalFactura
 			    FROM rubroxfac rf2
 			    WHERE (rf2.estado <> 0 OR rf2.estado IS NULL)
 			    GROUP BY rf2.idfactura_facturas
@@ -174,7 +174,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				JOIN (
 				  SELECT
 				    rf.idfactura_facturas,
-				    SUM(rf.cantidad * rf.valorunitario) AS total
+				    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total
 				  FROM rubroxfac rf
 				  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
 				  GROUP BY rf.idfactura_facturas
@@ -214,7 +214,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			JOIN (
 			  SELECT
 			    rf.idfactura_facturas,
-			    SUM(rf.cantidad * rf.valorunitario) AS total
+			    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total
 			  FROM rubroxfac rf
 			  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
 			  GROUP BY rf.idfactura_facturas
@@ -245,7 +245,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			JOIN (
 			  SELECT
 			    rf.idfactura_facturas,
-			    SUM(rf.cantidad * rf.valorunitario) AS total
+			    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total
 			  FROM rubroxfac rf
 			  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
 			  GROUP BY rf.idfactura_facturas
@@ -275,7 +275,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			JOIN (
 			  SELECT
 			    rf.idfactura_facturas,
-			    SUM(rf.cantidad * rf.valorunitario) AS total
+			    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total
 			  FROM rubroxfac rf
 			  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
 			  GROUP BY rf.idfactura_facturas
@@ -307,7 +307,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// idcliente=?1 and feccrea<=?2 and (( (estado = 1 or estado = 2) and (
 	// fechacobro>?2 or fechacobro is null)) or estado = 3 ) and fechaconvenio is
 	// null and fechaeliminacion is null", nativeQuery = true)
-	@Query(value = "SELECT SUM(rf.cantidad * rf.valorunitario) AS totalGeneral FROM facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas and (rf.estado <> 0 or rf.estado is null) join rubros r on r.idrubro = rf.idrubro_rubros WHERE f.totaltarifa > 0 and f.idcliente = ?1 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro> ?2 or f.fechacobro is null)) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and not r.idrubro = 165 and not r.idrubro = 5 and (rf.estado <> 0 or rf.estado is null)", nativeQuery = true)
+	@Query(value = "SELECT SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS totalGeneral FROM facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas and (rf.estado <> 0 or rf.estado is null) join rubros r on r.idrubro = rf.idrubro_rubros WHERE f.totaltarifa > 0 and f.idcliente = ?1 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro> ?2 or f.fechacobro is null)) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and not r.idrubro = 165 and not r.idrubro = 5 and (rf.estado <> 0 or rf.estado is null)", nativeQuery = true)
 	Double totCarteraCliente(@Param("idcliente") Long idcliente, LocalDate hasta);
 
 	// Planilla por ID de factura
@@ -386,7 +386,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// Recaudacion diaria - Facturas cobradas
 
 	/*
-	 * @Query("SELECT f, SUM(rf.cantidad * rf.valorunitario)AS total, f.swiva FROM Rubroxfac rf "
+	 * @Query("SELECT f, SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2))AS total, f.swiva FROM Rubroxfac rf "
 	 * + "JOIN Facturas f ON rf.idfactura_facturas = f.idfactura "
 	 * +
 	 * "WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165  "
@@ -395,7 +395,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 */
 
 	@Query(value = "SELECT f.idfactura AS idfactura, "
-			+ "SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , f.swiva as iva "
+			+ "SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , f.swiva as iva "
 			+ "FROM rubroxfac rf " + "JOIN facturas f ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "WHERE date(f.fechacobro) = ?1 " + "AND (f.estado = 1 OR f.estado = 2) "
@@ -407,12 +407,12 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	/*
 	 * @Query(value =
-	 * "SELECT f as facturas, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END )AS total FROM rubroxfac rf JOIN facturas f ON rf.idfactura_facturas = f.idfactura WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura"
+	 * "SELECT f as facturas, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END )AS total FROM rubroxfac rf JOIN facturas f ON rf.idfactura_facturas = f.idfactura WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura"
 	 * , nativeQuery = true)
 	 */
 
 	/*
-	 * @Query("SELECT f, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
+	 * @Query("SELECT f, SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total FROM Facturas f "
 	 * + "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura and rf.estado = 1 " +
 	 * "WHERE date(f.fechacobro) = ?1 AND (f.estado = 1 or f.estado = 2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL)"
 	 * + "GROUP BY f.idfactura, f.nrofactura  ORDER BY f.idfactura") List<Object[]>
@@ -420,7 +420,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 */
 
 	// Total diario por Forma de cobro
-	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total FROM Rubroxfac rf "
+	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total FROM Rubroxfac rf "
 			+ "JOIN Facturas f ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
@@ -429,7 +429,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	List<Object[]> totalFechaFormacobro(@Param("fecha") LocalDate fecha);
 	/*
 	 * @Query(value =
-	 * "SELECT fc.descripcion AS formaCobro, SUM(rf.cantidad * rf.valorunitario) AS total FROM Facturas f "
+	 * "SELECT fc.descripcion AS formaCobro, SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total FROM Facturas f "
 	 * + "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura and rf.estado = 1 " +
 	 * "JOIN Formacobro fc ON fc.idformacobro = f.formapago " +
 	 * "WHERE f.fechacobro = ?1 AND (f.estado = 1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <= ?1 or f.fechaanulacion IS NULL)"
@@ -441,7 +441,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * POR RANGOS
 	 */
 	// Total diario por Forma de cobro
-	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total FROM Facturas f "
+	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total FROM Facturas f "
 			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 OR rf.estado IS NULL) "
 			+ "JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
@@ -449,7 +449,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	List<Object[]> totalFechaFormacobroRangos(@Param("d_fecha") LocalDate d_fecha, @Param("d_fecha") LocalDate h_fecha);
 
 	@Query(value = "SELECT f.idfactura AS idfactura, "
-			+ "SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total , f.swiva as iva "
+			+ "SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , f.swiva as iva "
 			+ "FROM rubroxfac rf JOIN facturas f ON rf.idfactura_facturas = f.idfactura JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND (f.estado = 1 OR f.estado = 2) "
 			+ "AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros != 165 AND (rf.estado <> 0 OR rf.estado IS NULL) "
@@ -459,14 +459,14 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	/*
 	 * POR RECAUDADOR CON RANGO
 	 */
-	@Query(value = "SELECT  f.idfactura AS idfactura, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total ,f.swiva as iva FROM Facturas f "
+	@Query(value = "SELECT  f.idfactura AS idfactura, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total ,f.swiva as iva FROM Facturas f "
 			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 OR rf.estado IS NULL) "
 			+ "JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 AND (rf.estado <> 0 OR rf.estado IS NULL) "
 			+ "GROUP BY f.idfactura ORDER BY f.nrofactura", nativeQuery = true)
 	List<RepFacGlobal> findByFechacobroTotByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador);
 
-	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END) AS total FROM Facturas f "
+	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total FROM Facturas f "
 			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 OR rf.estado IS NULL) "
 			+ "JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
@@ -525,11 +525,11 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<Facturas> findFechaCobro(LocalDate d, LocalDate h);
 
 	/* REPORTE DE FACTURAS ELIMINADAS POR RANGO DE FECHA */
-	@Query(value = "select f.idfactura as idfactura ,u.nomusu as nomusu, f.razoneliminacion as razoneliminacion, m.descripcion as modulo ,c.nombre as nombre, sum(rf.valorunitario * rf.cantidad) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join modulos m on f.idmodulo = m.idmodulo join usuarios u on f.usuarioeliminacion = u.idusuario left join clientes c on f.idcliente = c.idcliente where f.fechaeliminacion between ?1 and ?2 and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, m.idmodulo, u.idusuario, c.nombre ", nativeQuery = true)
+	@Query(value = "select f.idfactura as idfactura ,u.nomusu as nomusu, f.razoneliminacion as razoneliminacion, m.descripcion as modulo ,c.nombre as nombre, sum(ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2)) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join modulos m on f.idmodulo = m.idmodulo join usuarios u on f.usuarioeliminacion = u.idusuario left join clientes c on f.idcliente = c.idcliente where f.fechaeliminacion between ?1 and ?2 and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, m.idmodulo, u.idusuario, c.nombre ", nativeQuery = true)
 	public List<RepFacEliminadas> findEliminadasXfecha(LocalDate d, LocalDate h);
 
 	/* REPORTE DE FACTURAS ANULADAS POR RANGO DE FECHA */
-	@Query(value = "select f.idfactura as idfactura ,u.nomusu as nomusu, f.razonanulacion  as razoneliminacion, m.descripcion as modulo ,c.nombre as nombre, sum(rf.valorunitario * rf.cantidad) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join modulos m on f.idmodulo = m.idmodulo join usuarios u on f.usuarioanulacion = u.idusuario left join clientes c on f.idcliente = c.idcliente where f.fechaanulacion between ?1 and ?2 and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, m.idmodulo, u.idusuario, c.nombre ", nativeQuery = true)
+	@Query(value = "select f.idfactura as idfactura ,u.nomusu as nomusu, f.razonanulacion  as razoneliminacion, m.descripcion as modulo ,c.nombre as nombre, sum(ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2)) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join modulos m on f.idmodulo = m.idmodulo join usuarios u on f.usuarioanulacion = u.idusuario left join clientes c on f.idcliente = c.idcliente where f.fechaanulacion between ?1 and ?2 and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, m.idmodulo, u.idusuario, c.nombre ", nativeQuery = true)
 	public List<RepFacEliminadas> findAnuladasXfecha(LocalDate d, LocalDate h);
 
 	// @Query(value = "select rf.idfactura_facturas as idfactura, sum(rf.cantidad *
@@ -537,23 +537,23 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	// f.idfactura = rf.idfactura_facturas and rf.estado = 1 where f.idfactura = ?1 and not (
 	// rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5) group by
 	// rf.idfactura_facturas , f.feccrea ", nativeQuery = true)
-	@Query(value = "select rf.idfactura_facturas as idfactura, sum(rf.cantidad * rf.valorunitario) as suma, f.feccrea, f.formapago, f.fechatransferencia from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas and (rf.estado <> 0 or rf.estado is null) join rubros r on r.idrubro = rf.idrubro_rubros  where f.idfactura = ?1 and not ( rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5 ) and (rf.estado <> 0 or rf.estado is null) group by rf.idfactura_facturas , f.feccrea, f.formapago, f.fechatransferencia ", nativeQuery = true)
+	@Query(value = "select rf.idfactura_facturas as idfactura, sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as suma, f.feccrea, f.formapago, f.fechatransferencia from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas and (rf.estado <> 0 or rf.estado is null) join rubros r on r.idrubro = rf.idrubro_rubros  where f.idfactura = ?1 and not ( rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5 ) and (rf.estado <> 0 or rf.estado is null) group by rf.idfactura_facturas , f.feccrea, f.formapago, f.fechatransferencia ", nativeQuery = true)
 	public List<FacIntereses> getForIntereses(Long idfactura);
 
 	/*
 	 * REPORTE DE TRANSFERENCIAS
 	 */
 	// TRANSFERENCIAS REALIZADAS POR RANGO
-	@Query(value = "select f.idfactura as idfactura, f.fechatransferencia as fechatransferencia, f.nrofactura as nrofactura, f.formapago as formapago, sum(rf.cantidad * rf.valorunitario) as valor, c.nombre as nombre, c.cedula as cedula, f.swiva as swiva from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechacobro between ?1 and ?2 and f.formapago = 4 and f.estado = 1 and f.fechaeliminacion is null and f.fechaconvenio is null and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, f.nrofactura, f.fechatransferencia, f.formapago, f.swiva, c.nombre, c.cedula", nativeQuery = true)
+	@Query(value = "select f.idfactura as idfactura, f.fechatransferencia as fechatransferencia, f.nrofactura as nrofactura, f.formapago as formapago, sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as valor, c.nombre as nombre, c.cedula as cedula, f.swiva as swiva from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechacobro between ?1 and ?2 and f.formapago = 4 and f.estado = 1 and f.fechaeliminacion is null and f.fechaconvenio is null and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, f.nrofactura, f.fechatransferencia, f.formapago, f.swiva, c.nombre, c.cedula", nativeQuery = true)
 	public List<R_transferencias> transferenciasCobradas(Date d_fecha, Date h_fecha);
 
-	@Query(value = "select f.idfactura,f.nrofactura, sum(rf.cantidad * rf.valorunitario ) as total, f.fechatransferencia, f.idmodulo, c.nombre from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechatransferencia between ?1 and ?2 and f.formapago = 4 and f.fechaeliminacion is null and f.fechaconvenio is null and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, f.nrofactura, c.nombre", nativeQuery = true)
+	@Query(value = "select f.idfactura,f.nrofactura, sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2) ) as total, f.fechatransferencia, f.idmodulo, c.nombre from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechatransferencia between ?1 and ?2 and f.formapago = 4 and f.fechaeliminacion is null and f.fechaconvenio is null and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, f.nrofactura, c.nombre", nativeQuery = true)
 	public List<FacTransferencias> getFacAllTransferidas(LocalDate d, LocalDate h);
 
-	@Query(value = "select f.idfactura, sum(rf.cantidad * rf.valorunitario ) as total, f.fechatransferencia, f.idmodulo, c.nombre from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechatransferencia between ?1 and ?2 and f.formapago = 4 and f.pagado = 1 and f.estado = 1 and f.fechaeliminacion is null and f.fechaconvenio is null and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, c.nombre", nativeQuery = true)
+	@Query(value = "select f.idfactura, sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2) ) as total, f.fechatransferencia, f.idmodulo, c.nombre from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechatransferencia between ?1 and ?2 and f.formapago = 4 and f.pagado = 1 and f.estado = 1 and f.fechaeliminacion is null and f.fechaconvenio is null and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, c.nombre", nativeQuery = true)
 	public List<FacTransferencias> getFacPagadasTransferidas(LocalDate d, LocalDate h);
 
-	@Query(value = "select f.idfactura, sum(rf.cantidad * rf.valorunitario ) as total, f.fechatransferencia, f.idmodulo, c.nombre from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechatransferencia between ?1 and ?2 and f.formapago = 4 and f.pagado = 1 and f.estado = 3 and f.fechaeliminacion is null and f.fechaconvenio is null and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, c.nombre", nativeQuery = true)
+	@Query(value = "select f.idfactura, sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2) ) as total, f.fechatransferencia, f.idmodulo, c.nombre from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on r.idrubro = rf.idrubro_rubros join abonados a on f.idabonado = a.idabonado join clientes c on a.idresponsable = c.idcliente where f.fechatransferencia between ?1 and ?2 and f.formapago = 4 and f.pagado = 1 and f.estado = 3 and f.fechaeliminacion is null and f.fechaconvenio is null and (rf.estado <> 0 or rf.estado is null) group by f.idfactura, c.nombre", nativeQuery = true)
 	public List<FacTransferencias> getFacNoPagadasTransferidas(LocalDate d, LocalDate h);
 
 	/* CARTERA VENCIDA POR FACTURAS */
@@ -561,7 +561,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"    rf.idfactura_facturas as factura," +
 			"    c.nombre," +
 			"    m.descripcion as modulo," +
-			"    SUM(rf.cantidad * rf.valorunitario) AS total," +
+			"    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total," +
 			"    l.idabonado_abonados as cuenta," +
 			"    e.emision ," +
 			"    l.lecturaactual - l.lecturaanterior as m3" +
@@ -590,7 +590,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"    rf.idfactura_facturas as factura," +
 			"    c.nombre, c.idcliente," +
 			"    m.descripcion as modulo," +
-			"    SUM(rf.cantidad * rf.valorunitario) AS total," +
+			"    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total," +
 			"    l.idabonado_abonados as cuenta," +
 			"    e.emision," +
 			"    l.lecturaactual - l.lecturaanterior as m3" +
@@ -625,7 +625,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"    rf.idfactura_facturas as factura," + //
 			"    c.nombre," + //
 			"    m.descripcion as modulo," + //
-			"    SUM(rf.cantidad * rf.valorunitario) AS total, " + //
+			"    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total, " + //
 			"    f.idabonado as cuenta " + //
 			" FROM" + //
 			"    rubroxfac rf" + //
@@ -651,7 +651,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"    rf.idfactura_facturas as factura," + //
 			"    c.nombre, c.idcliente," + //
 			"    m.descripcion as modulo," + //
-			"    SUM(rf.cantidad * rf.valorunitario) AS total, " + //
+			"    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total, " + //
 			"    f.idabonado as cuenta " + //
 			" FROM" + //
 			"    rubroxfac rf" + //
@@ -703,7 +703,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			rubros_por_factura AS (
 			    SELECT
 			        rf.idfactura_facturas AS idfactura,
-			        CAST(COALESCE(SUM(rf.cantidad * rf.valorunitario), 0) AS numeric(18,2)) AS valor
+			        CAST(COALESCE(SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)), 0) AS numeric(18,2)) AS valor
 			    FROM rubroxfac rf
 			    WHERE rf.idrubro_rubros NOT IN (79, 5, 165)
 			      AND (rf.estado <> 0 OR rf.estado IS NULL)
@@ -809,7 +809,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			  AND (:idcategoria IS NULL OR a.idcategoria_categorias = :idcategoria)
 			  AND (:idruta IS NULL OR a.idruta_rutas = :idruta)
 			GROUP BY a.idabonado
-			ORDER BY CAST(COALESCE(SUM(rf.cantidad * rf.valorunitario), 0) AS numeric(18,2)) DESC
+			ORDER BY CAST(COALESCE(SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)), 0) AS numeric(18,2)) DESC
 			""", countQuery = """
 			SELECT COUNT(*)
 			FROM (
@@ -852,9 +852,9 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			    c.nombre,
 			    c.idcliente,
 			    m.descripcion AS modulo,
-			    CAST(COALESCE(SUM(rf.cantidad * rf.valorunitario), 0) AS numeric(18,2)) AS total,
+			    CAST(COALESCE(SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)), 0) AS numeric(18,2)) AS total,
 			    CAST(COALESCE(MAX(ipf.interes), 0) AS numeric(18,2)) AS interes,
-			    CAST(COALESCE(SUM(rf.cantidad * rf.valorunitario), 0) + COALESCE(MAX(ipf.interes), 0) AS numeric(18,2)) AS totaldeuda,
+			    CAST(COALESCE(SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)), 0) + COALESCE(MAX(ipf.interes), 0) AS numeric(18,2)) AS totaldeuda,
 			    f.idabonado AS cuenta,
 			    f.feccrea
 			FROM rubroxfac rf
@@ -904,7 +904,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	List<Long> getCvFacturaIdsByAbonados(@Param("cuentas") List<Long> cuentas, @Param("fecha") LocalDate fecha);
 
 	/* CONSULTA PARA LAS REMISIONES DE MULTAS HE INTERESES */
-	@Query(value = "SELECT f.idfactura, m.descripcion, f.feccrea, SUM(rf.valorunitario * rf.cantidad) AS total " +
+	@Query(value = "SELECT f.idfactura, m.descripcion, f.feccrea, SUM(ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2)) AS total " +
 			"FROM rubroxfac rf " +
 			"JOIN facturas f ON rf.idfactura_facturas = f.idfactura " +
 			"JOIN rubros r ON r.idrubro = rf.idrubro_rubros " +
@@ -923,7 +923,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"ORDER BY m.descripcion ASC", nativeQuery = true)
 	public List<Remision> getFacForRemisiones(Long idcliente, LocalDate topefecha);
 
-	@Query(value = "SELECT f.idfactura,f.nrofactura, m.descripcion, f.feccrea, SUM(rf.valorunitario * rf.cantidad) AS total "
+	@Query(value = "SELECT f.idfactura,f.nrofactura, m.descripcion, f.feccrea, SUM(ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2)) AS total "
 			+
 			"FROM rubroxfac rf " +
 			"JOIN facturas f ON rf.idfactura_facturas = f.idfactura " +
@@ -948,7 +948,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * 
 	 * 
 	 * 
-	 * SELECT r.fechacobro, f.idfactura, sum(rf.cantidad * rf.valorunitario)
+	 * SELECT r.fechacobro, f.idfactura, sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2))
 	 * FROM facxrecauda fr
 	 * JOIN facturas f ON fr.idfactura = f.idfactura
 	 * JOIN recaudacion r ON fr.idrecaudacion = r.idrecaudacion
@@ -963,7 +963,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 
 	/*
 	 * @Query(value =
-	 * "select f.idfactura as factura, c.nombre , sum(rf.cantidad * rf.valorunitario) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro join clientes c on f.idcliente = c.idcliente "
+	 * "select f.idfactura as factura, c.nombre , sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as total from rubroxfac rf join facturas f on rf.idfactura_facturas = f.idfactura join rubros r on rf.idrubro_rubros = r.idrubro join clientes c on f.idcliente = c.idcliente "
 	 * +
 	 * "where r.idrubro = ?1 and f.totaltarifa > 0 and f.feccrea <= ?2 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro >= ?2 or f.fechacobro is null)) or f.estado = 3 ) "
 	 * +
@@ -974,7 +974,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 						SELECT
 			    f.idfactura AS factura,
 			    c.nombre AS nombre,
-			    SUM(rf.cantidad * rf.valorunitario) AS total,
+			    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total,
 			    tf.totalFactura
 			FROM
 			    facturas f
@@ -982,7 +982,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura AND (rf.estado <> 0 OR rf.estado IS NULL)
 			JOIN rubros r ON rf.idrubro_rubros = r.idrubro
 			JOIN (
-			    SELECT rf2.idfactura_facturas, SUM(rf2.cantidad * rf2.valorunitario) AS totalFactura
+			    SELECT rf2.idfactura_facturas, SUM(ROUND(CAST(rf2.cantidad * rf2.valorunitario AS numeric), 2)) AS totalFactura
 			    FROM rubroxfac rf2
 			    JOIN rubros r2 ON r2.idrubro = rf2.idrubro_rubros
 			    WHERE (rf2.estado <> 0 OR rf2.estado IS NULL)
@@ -1044,7 +1044,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * 
 	 * select
 	 * a.idabonado ,
-	 * sum(rf.cantidad * rf.valorunitario),
+	 * sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)),
 	 * count(f) as facturas
 	 * from
 	 * facturas f
@@ -1085,7 +1085,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = """
 			    SELECT
 			      f.idfactura                               AS id,
-			      SUM(rf.cantidad * rf.valorunitario)       AS suma,
+			      SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2))       AS suma,
 			      f.formapago                               AS formaPago,
 			      CASE
 			        WHEN f.formapago = 4 THEN f.fechatransferencia
@@ -1134,7 +1134,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			rubros_por_factura AS (
 			  SELECT
 			    rf.idfactura_facturas AS idfactura,
-			    CAST(SUM(rf.cantidad * rf.valorunitario) AS numeric(18,2)) AS subtotal
+			    CAST(SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS numeric(18,2)) AS subtotal
 			  FROM rubroxfac rf
 			  JOIN rubros r ON r.idrubro = rf.idrubro_rubros
 			  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
@@ -1253,7 +1253,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				fc.descripcion,
 				e.emision,
 				l.idabonado_abonados,
-				sum( rf.cantidad * rf.valorunitario)
+				sum( ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2))
 			FROM lecturas l
 				join facturas f ON
 				 l.idfactura = f.idfactura

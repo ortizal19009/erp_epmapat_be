@@ -35,6 +35,7 @@ import com.epmapat.erp_epmapat.servicio.rrhh.PersonalServicio;
 @RequestMapping("/usuarios")
 
 public class UsuariosApi {
+   private static final int PERFIL_MAX_LENGTH = 30;
 
    @Autowired
    UsuarioServicio usuServicio;
@@ -141,7 +142,7 @@ public class UsuariosApi {
       }
       y.setAlias(x.getAlias());
       y.setPriusu(x.getPriusu());
-      y.setPerfil(x.getPerfil());
+      y.setPerfil(normalizePerfil(x.getPerfil()));
       if (x.getToolbarframe() != null) {
          y.setToolbarframe(x.getToolbarframe());
       }
@@ -180,6 +181,40 @@ public class UsuariosApi {
          return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                .body(Map.of("message", ex.getMessage()));
       }
+   }
+
+   @PutMapping("/{idusuario}/perfil")
+   public ResponseEntity<?> updatePerfil(@PathVariable Long idusuario, @RequestBody Map<String, Object> payload) {
+      Usuarios usuario = usuServicio.findById(idusuario)
+            .orElseThrow(() -> new ResourceNotFoundExcepciones("No existe Usuario con Id: " + idusuario));
+
+      try {
+         Object perfil = payload.get("perfil");
+         usuario.setPerfil(normalizePerfil(perfil == null ? null : String.valueOf(perfil)));
+         usuario.setUsumodi(
+               payload.get("usumodi") == null ? usuario.getUsumodi() : Long.valueOf(String.valueOf(payload.get("usumodi"))));
+         Usuarios actualizado = usuServicio.save(usuario);
+         return ResponseEntity.ok(actualizado);
+      } catch (DataIntegrityViolationException ex) {
+         return ResponseEntity.status(HttpStatus.CONFLICT)
+               .body(Map.of("message", "No se pudo actualizar el perfil por una restricción de datos"));
+      } catch (IllegalArgumentException ex) {
+         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+               .body(Map.of("message", ex.getMessage()));
+      }
+   }
+
+   private String normalizePerfil(String perfil) {
+      if (perfil == null) {
+         return null;
+      }
+
+      String perfilNormalizado = perfil.trim();
+      if (perfilNormalizado.length() > PERFIL_MAX_LENGTH) {
+         throw new IllegalArgumentException(
+               "El perfil no puede exceder " + PERFIL_MAX_LENGTH + " caracteres.");
+      }
+      return perfilNormalizado;
    }
 
    @PostMapping

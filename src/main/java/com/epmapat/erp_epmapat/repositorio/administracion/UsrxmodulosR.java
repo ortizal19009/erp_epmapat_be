@@ -11,6 +11,26 @@ import com.epmapat.erp_epmapat.modelo.administracion.Usrxmodulos;
 
 public interface UsrxmodulosR extends JpaRepository<Usrxmodulos, Long> {
         @Query(value = """
+                        SELECT em.descripcion
+                        FROM usrxmodulos um
+                        JOIN erpmodulos em ON um.iderpmodulo_erpmodulos = em.iderpmodulo
+                        WHERE um.idusuario_usuarios = ?1
+                          AND COALESCE(um.enabled, false) = true
+                          AND UPPER(COALESCE(um.platform, em.platform, 'WEB')) IN ('WEB', 'BOTH')
+                        """, nativeQuery = true)
+        List<String> findActiveModuleDescriptionsByUser(Long iduser);
+
+        @Query(value = """
+                        SELECT um.iderpmodulo_erpmodulos
+                        FROM usrxmodulos um
+                        JOIN erpmodulos em ON em.iderpmodulo = um.iderpmodulo_erpmodulos
+                        WHERE um.idusuario_usuarios = ?1
+                          AND COALESCE(um.enabled, false) = true
+                          AND UPPER(COALESCE(um.platform, em.platform, 'WEB')) IN ('WEB', 'BOTH')
+                        """, nativeQuery = true)
+        List<Long> findActiveModuleIdsByUser(Long iduser);
+
+        @Query(value = """
                         SELECT
                                 em.iderpmodulo AS iderpmodulo,
                                 em.descripcion AS descripcion,
@@ -19,7 +39,8 @@ public interface UsrxmodulosR extends JpaRepository<Usrxmodulos, Long> {
                         FROM usrxmodulos um
                         JOIN erpmodulos em ON um.iderpmodulo_erpmodulos = em.iderpmodulo
                         WHERE um.idusuario_usuarios = ?1
-                          AND um.platform = ?2
+                          AND COALESCE(um.enabled, false) = true
+                          AND UPPER(COALESCE(um.platform, em.platform, 'WEB')) IN (UPPER(?2), 'BOTH')
                         ORDER BY um.iderpmodulo_erpmodulos ASC
                         """, nativeQuery = true)
         public List<ErpModulosI> findModulosEnabledByUser(Long iduser, String platform);
@@ -46,7 +67,7 @@ public interface UsrxmodulosR extends JpaRepository<Usrxmodulos, Long> {
                         JOIN erpmodulos m ON m.iderpmodulo = um.iderpmodulo_erpmodulos
                         WHERE um.idusuario_usuarios = :userId
                             AND um.enabled = true
-                            AND um.platform IN (:platform, 'BOTH')
+                            AND UPPER(COALESCE(um.platform, m.platform, 'WEB')) IN (UPPER(:platform), 'BOTH')
                         """, nativeQuery = true)
         List<String> findEnabledModule(@Param("userId") Long userId, @Param("platform") String platform);
 

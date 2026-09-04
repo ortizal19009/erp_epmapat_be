@@ -2,7 +2,6 @@ package com.epmapat.erp_epmapat.servicio.contabilidad;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +37,7 @@ public class BenexTranServicio {
 		return dao.getEgresos(codcue);
 	}
 
-	public List<BenexTran> getByIdBene(Long idbene, Date desde, Date hasta) {
+	public List<BenexTran> getByIdBene(Long idbene, LocalDate desde, LocalDate hasta) {
 		return dao.getByIdBeneDesdeHasta(idbene, desde, hasta);
 	}
 

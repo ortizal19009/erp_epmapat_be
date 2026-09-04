@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.epmapat.erp_epmapat.DTO.CondonacionCreateRequest;
+import com.epmapat.erp_epmapat.DTO.CondonacionAprobacionLoteRequest;
+import com.epmapat.erp_epmapat.DTO.CondonacionAprobacionLoteResponse;
 import com.epmapat.erp_epmapat.DTO.CondonacionDecisionRequest;
 import com.epmapat.erp_epmapat.DTO.CondonacionResponse;
 import com.epmapat.erp_epmapat.modelo.CondMultasIntereses;
@@ -133,6 +135,34 @@ public class CondMultasInteresesServicio {
     public CondonacionResponse aprobar(Long id, Long idusuario, CondonacionDecisionRequest request) {
         Usuarios aprobador = validarUsuario(idusuario);
         validarPermisoAprobacion(idusuario);
+        return procesarAprobacion(id, idusuario, aprobador, request);
+    }
+
+    @Transactional
+    public CondonacionAprobacionLoteResponse aprobarLote(
+            CondonacionAprobacionLoteRequest request, Long idusuario) {
+        Usuarios aprobador = validarUsuario(idusuario);
+        validarPermisoAprobacion(idusuario);
+        if (request == null || request.getIds() == null || request.getIds().isEmpty()) {
+            throw new IllegalArgumentException("Debe seleccionar al menos una solicitud pendiente.");
+        }
+
+        List<CondonacionResponse> aprobadas = new ArrayList<>();
+        List<String> omitidas = new ArrayList<>();
+        CondonacionDecisionRequest decision = new CondonacionDecisionRequest();
+        decision.setObservacion(request.getObservacion());
+        for (Long id : request.getIds().stream().filter(Objects::nonNull).distinct().toList()) {
+            try {
+                aprobadas.add(procesarAprobacion(id, idusuario, aprobador, decision));
+            } catch (IllegalArgumentException exception) {
+                omitidas.add("Solicitud " + id + ": " + exception.getMessage());
+            }
+        }
+        return new CondonacionAprobacionLoteResponse(aprobadas, omitidas);
+    }
+
+    private CondonacionResponse procesarAprobacion(
+            Long id, Long idusuario, Usuarios aprobador, CondonacionDecisionRequest request) {
         CondMultasIntereses entity = dao.findForUpdate(id)
                 .orElseThrow(() -> new IllegalArgumentException("No existe la solicitud " + id));
         validarPendiente(entity);
@@ -207,9 +237,17 @@ public class CondMultasInteresesServicio {
         if (factura.getFechaeliminacion() != null || factura.getFechaanulacion() != null) {
             throw new IllegalArgumentException("La factura no esta disponible para exoneracion.");
         }
-        if (factura.getFechacobro() != null || (factura.getPagado() != null && factura.getPagado() != 0)) {
+        if (!esFacturaInstitucionalPreemitida(factura)
+                && (factura.getFechacobro() != null || (factura.getPagado() != null && factura.getPagado() != 0))) {
             throw new IllegalArgumentException("No se puede procesar una factura pagada.");
         }
+    }
+
+    private boolean esFacturaInstitucionalPreemitida(Facturas factura) {
+        // Estas facturas usan pagado=1 como estado tecnico antes de su validacion institucional.
+        return Objects.equals(factura.getEstado(), 3L)
+                && Objects.equals(factura.getFormapago(), 4L)
+                && Objects.equals(factura.getPagado(), 1);
     }
 
     private BigDecimal obtenerMultaFactura(Facturas factura) {

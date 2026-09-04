@@ -13,12 +13,17 @@ import com.epmapat.erp_epmapat.modelo.contabilidad.Transaci;
 
 public interface TransaciR extends JpaRepository<Transaci, Long> {
 
+	@Override
+	@org.springframework.data.jpa.repository.EntityGraph(attributePaths = { "idasiento", "idcuenta", "idbene", "intdoc" })
+	java.util.Optional<Transaci> findById(Long inttra);
+
 	// Bancos
 	@Query("""
 			SELECT t
 			FROM Transaci t
 			JOIN FETCH t.idasiento a
-			LEFT JOIN FETCH t.idbene b
+			LEFT JOIN FETCH a.idbene
+			LEFT JOIN FETCH t.intdoc
 			WHERE t.idcuenta.idcuenta = ?1
 			  AND t.mesconcili = ?2
 			ORDER BY a.fecha ASC, t.orden ASC
@@ -35,6 +40,8 @@ public interface TransaciR extends JpaRepository<Transaci, Long> {
 			FROM Transaci t
 			JOIN FETCH t.idasiento a
 			LEFT JOIN FETCH t.idbene b
+			LEFT JOIN FETCH t.idcuenta
+			LEFT JOIN FETCH t.intdoc
 			WHERE a.idasiento = ?1
 			ORDER BY t.orden ASC
 			""")

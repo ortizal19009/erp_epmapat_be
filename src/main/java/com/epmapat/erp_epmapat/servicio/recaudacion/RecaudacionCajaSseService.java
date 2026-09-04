@@ -124,15 +124,19 @@ public class RecaudacionCajaSseService {
     }
 
     private void sendEvent(SseEmitter emitter, String eventName, Object payload) throws IOException {
-        emitter.send(SseEmitter.event()
-                .name(eventName)
-                .data(payload));
+        synchronized (emitter) {
+            emitter.send(SseEmitter.event()
+                    .name(eventName)
+                    .data(payload));
+        }
     }
 
     private void sendHeartbeat(SseEmitter emitter) throws IOException {
-        emitter.send(SseEmitter.event()
-                .name("heartbeat")
-                .data(Map.of("ts", System.currentTimeMillis(), "status", "alive")));
+        synchronized (emitter) {
+            emitter.send(SseEmitter.event()
+                    .name("heartbeat")
+                    .data(Map.of("ts", System.currentTimeMillis(), "status", "alive")));
+        }
     }
 
     private boolean safeSendEvent(
@@ -154,10 +158,6 @@ public class RecaudacionCajaSseService {
             log.debug("SSE ya cerrado [{}:{}] al enviar {}: {}", scope, emitterId, eventName, ex.getMessage());
         }
 
-        try {
-            emitter.complete();
-        } catch (Exception ignored) {
-        }
         return false;
     }
 
@@ -189,10 +189,6 @@ public class RecaudacionCajaSseService {
             log.debug("Heartbeat SSE ya cerrado [{}:{}]: {}", scope, emitterId, ex.getMessage());
         }
 
-        try {
-            emitter.complete();
-        } catch (Exception ignored) {
-        }
         return false;
     }
 

@@ -1,5 +1,8 @@
 package com.epmapat.erp_epmapat.controlador.administracion;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
@@ -55,6 +58,34 @@ public class VentanasApi {
 
       Ventanas actualizar = venServicio.save(y);
       return ResponseEntity.ok(actualizar);
+   }
+
+   @GetMapping("/catalogo")
+   public ResponseEntity<List<String>> getCatalogoVentanas() {
+      return ResponseEntity.ok(venServicio.findCatalogoVentanas());
+   }
+
+   @GetMapping("/catalogo-modulos")
+   public ResponseEntity<List<Map<String, Object>>> getCatalogoModulosVentanas() {
+      return ResponseEntity.ok(venServicio.getCatalogoModulosVentanas());
+   }
+
+   @PostMapping("/catalogo-modulos")
+   public ResponseEntity<Void> saveCatalogoModulosVentanas(@RequestBody List<Map<String, Object>> catalogo) {
+      venServicio.saveCatalogoModulosVentanas(catalogo);
+      return ResponseEntity.noContent().build();
+   }
+
+   @GetMapping("/usuario/{idusuario}")
+   public ResponseEntity<List<Map<String, Object>>> getPermisosUsuario(@PathVariable Long idusuario) {
+      return ResponseEntity.ok(venServicio.getResumenPermisosUsuario(idusuario));
+   }
+
+   @PostMapping("/usuario/{idusuario}")
+   public ResponseEntity<List<Ventanas>> savePermisosUsuario(
+         @PathVariable Long idusuario,
+         @RequestBody List<Ventanas> permisos) {
+      return ResponseEntity.ok(venServicio.savePermisosUsuario(idusuario, permisos));
    }
 
 }

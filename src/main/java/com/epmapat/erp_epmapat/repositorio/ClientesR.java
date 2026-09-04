@@ -65,7 +65,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 	Long totalClientes();
 
 	/* CARTERA VENCIDA */
-	@Query(value = "select rf.idfactura_facturas as planilla, c.idcliente, c.nombre, sum(rf.cantidad * rf.valorunitario) as valor, c.cedula , c.direccion, c.email, m.descripcion as modulo"
+	@Query(value = "select rf.idfactura_facturas as planilla, c.idcliente, c.nombre, sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as valor, c.cedula , c.direccion, c.email, m.descripcion as modulo"
 			+ " from clientes c "
 			+ " join facturas f on c.idcliente = f.idcliente "
 			+ " join rubroxfac rf on rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 or rf.estado is null)  "
@@ -82,7 +82,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 			select
 			c.idcliente,
 				c.nombre,
-				sum(rf.cantidad * rf.valorunitario) as valor,
+				sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as valor,
 				c.cedula ,
 				c.direccion,
 				c.email,
@@ -152,7 +152,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 			select
 			c.idcliente,
 				c.nombre,
-				sum(rf.cantidad * rf.valorunitario) as valor,
+				sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as valor,
 				c.cedula ,
 				c.direccion,
 				c.email,

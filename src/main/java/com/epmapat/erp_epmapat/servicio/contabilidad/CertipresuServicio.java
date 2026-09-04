@@ -2,7 +2,6 @@ package com.epmapat.erp_epmapat.servicio.contabilidad;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +26,8 @@ public class CertipresuServicio {
 	private final PartixcertiR daoPartixcerti;
 
 	// Busca Certificaciones o Reintegradas (desde/hasta)
-	public List<Certipresu> findDesdeHasta(int tipo, Long desdeNum, Long hastaNum, Date desdeFecha, Date hastaFecha) {
+	public List<Certipresu> findDesdeHasta(int tipo, Long desdeNum, Long hastaNum, LocalDate desdeFecha,
+			LocalDate hastaFecha) {
 		return dao.findDesdeHasta(tipo, desdeNum, hastaNum, desdeFecha, hastaFecha);
 	}
 

@@ -28,7 +28,7 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
 
         //
         @Query(value = "select f.idfactura,c.nombre,f.nrofactura,f.estado,f.formapago, f.fechacobro, u.nomusu, f.idabonado," +
-                        "sum((rf.cantidad * rf.valorunitario)+f.swiva ) as valor " +
+                        "sum((ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2))+f.swiva ) as valor " +
                         "from recaudacion r " +
                         "join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
                         "join facturas f on fr.idfactura = f.idfactura " +
@@ -41,7 +41,7 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
                         "order by f.nrofactura asc", nativeQuery = true)
         public List<RecaudaFacturasI> findFacturasToReport(LocalDateTime d, LocalDateTime h);
 
-        @Query(value = "select rf.idrubro_rubros, rb.descripcion, COUNT(f.idfactura) as nfacturas, sum((rf.cantidad * rf.valorunitario)+f.swiva) as valor "
+        @Query(value = "select rf.idrubro_rubros, rb.descripcion, COUNT(f.idfactura) as nfacturas, sum((ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2))+f.swiva) as valor "
                         +
                         "from recaudacion r join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
                         "join facturas f on fr.idfactura = f.idfactura " +
@@ -51,7 +51,7 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
                         "group by rf.idrubro_rubros, rb.descripcion", nativeQuery = true)
         public Object[] findRubrosAnterioresToReport(LocalDateTime d, LocalDateTime h, LocalDate t);
 
-        @Query(value = "select rf.idrubro_rubros, rb.descripcion, COUNT(f.idfactura) as nfacturas, sum((rf.cantidad * rf.valorunitario)+f.swiva ) as valor "
+        @Query(value = "select rf.idrubro_rubros, rb.descripcion, COUNT(f.idfactura) as nfacturas, sum((ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2))+f.swiva ) as valor "
                         +
                         "from recaudacion r join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
                         "join facturas f on fr.idfactura = f.idfactura " +

@@ -67,9 +67,19 @@ public interface PresupueR extends JpaRepository<Presupue, Long> {
    // Cuenta las Partidas por Actividad
    // Long countByIdestrfunc(Long intest);
 
-   // Partidas por Actividad
-   // @Query("SELECT p FROM Presupue p WHERE p.intest = :intest ORDER BY codpar")
-   // List<Presupue> findByActividad(@Param("intest") Long intest);
+   // Partidas de gasto asociadas al codigo de una actividad funcional.
+   @Query("""
+         SELECT p
+         FROM Presupue p
+         WHERE p.tippar = 2
+           AND p.codacti = (
+             SELECT e.codigo
+             FROM Estrfunc e
+             WHERE e.intest = :intest
+           )
+         ORDER BY p.codpar
+         """)
+   List<Presupue> findByActividad(@Param("intest") Long intest);
 
    @Query(value = "SELECT sum(inicia) FROM presupue where tippar = ?1 AND codpar LIKE ?2%", nativeQuery = true)
    Double totalCodpar(Long tippar, String codpar);

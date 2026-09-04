@@ -76,7 +76,8 @@ public class NextcloudStorageService implements StorageService {
     }
 
     private String davBase() {
-        return trimTrailingSlash(baseUrl) + "/remote.php/dav/files/" + username;
+        // Usar la ruta WebDAV universal de Nextcloud
+        return trimTrailingSlash(baseUrl) + "/remote.php/webdav";
     }
 
     private Sardine sardine() {

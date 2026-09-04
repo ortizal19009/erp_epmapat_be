@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -46,6 +47,10 @@ public interface AsientosR extends JpaRepository<Asientos, Long> {
 
 	// Un Asiento por Comprobante
 	Optional<Asientos> findByTipcomAndCompro(Integer tipcom, Long compro);
+
+	@Override
+	@EntityGraph(attributePaths = { "intdoc", "idbene" })
+	Optional<Asientos> findById(Long idasiento);
 
 	// Siguiente
 	@Query(value = "SELECT * FROM asientos ORDER BY asiento DESC LIMIT 1", nativeQuery = true)

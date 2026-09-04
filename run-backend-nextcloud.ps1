@@ -1,10 +1,10 @@
 $ErrorActionPreference = "Stop"
 
 param(
-    [string]$NextcloudBaseUrl = "https://192.168.0.52",
+    [string]$NextcloudBaseUrl = "https://192.168.0.52/nextcloud",
     [string]$NextcloudUsername = "",
     [string]$NextcloudAppToken = "",
-    [string]$NextcloudBaseFolder = "/epmapat",
+    [string]$NextcloudBaseFolder = "/EPMAPAT-PHOTOS",
     [string]$SpringProfile = "local",
     [string]$StorageType = "nextcloud",
     [string]$MavenArgs = "spring-boot:run"

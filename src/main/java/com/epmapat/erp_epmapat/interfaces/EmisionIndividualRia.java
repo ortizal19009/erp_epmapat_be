@@ -9,6 +9,10 @@ public interface EmisionIndividualRia {
 
     Long getCuenta();
 
+    String getNombrecliente();
+
+    String getFechaeliminacion();
+
     BigDecimal getTanterior();
 
 }

@@ -1,7 +1,6 @@
 package com.epmapat.erp_epmapat.controlador.contabilidad;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +41,9 @@ public class BenexTranApi {
 	}
 
 	@GetMapping("/movibenefi")
-	public ResponseEntity<List<BenexTran>> getByIdBene(@Param("idbene") Long idbene,
-			@Param("desde") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desde,
-			@Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hasta) {
+	public ResponseEntity<List<BenexTran>> getByIdBene(@RequestParam("idbene") Long idbene,
+			@RequestParam("desde") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desde,
+			@RequestParam("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
 		return ResponseEntity.ok(benxtraServicio.getByIdBene(idbene, desde, hasta));
 	}
 

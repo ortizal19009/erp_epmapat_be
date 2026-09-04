@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epmapat.erp_epmapat.DTO.CondonacionCreateRequest;
+import com.epmapat.erp_epmapat.DTO.CondonacionAprobacionLoteRequest;
+import com.epmapat.erp_epmapat.DTO.CondonacionAprobacionLoteResponse;
 import com.epmapat.erp_epmapat.DTO.CondonacionDecisionRequest;
 import com.epmapat.erp_epmapat.DTO.CondonacionResponse;
 import com.epmapat.erp_epmapat.servicio.CondMultasInteresesServicio;
@@ -64,6 +66,14 @@ public class CondMultasInteresesApi {
     @GetMapping("/{id}")
     public ResponseEntity<CondonacionResponse> detalle(@PathVariable Long id) {
         return ResponseEntity.ok(codservice.obtener(id));
+    }
+
+    @PutMapping("/aprobar-lote")
+    public ResponseEntity<CondonacionAprobacionLoteResponse> aprobarLote(
+            @RequestBody CondonacionAprobacionLoteRequest request,
+            @RequestParam(name = "idusuario", required = false) Long idusuario,
+            @RequestHeader(name = "X-User-Id", required = false) Long idusuarioHeader) {
+        return ResponseEntity.ok(codservice.aprobarLote(request, resolverIdusuario(idusuario, idusuarioHeader)));
     }
 
     @PutMapping("/{id}/aprobar")

@@ -97,6 +97,11 @@ public class BeneficiariosApi {
 		return beneServicio.countByIdifinan(idifinan);
 	}
 
+	@GetMapping("/institucion/{idifinan}")
+	public List<Beneficiarios> findByInstitucion(@PathVariable Long idifinan) {
+		return beneServicio.findByIdifinan(idifinan);
+	}
+
 	@PostMapping
 	public ResponseEntity<Beneficiarios> save(@RequestBody Beneficiarios x) {
 		return ResponseEntity.ok(beneServicio.save(x));

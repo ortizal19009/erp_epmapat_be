@@ -32,11 +32,11 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
         List<EmisionIndividual> findByIdEmision(@Param("idemision") Long idemision);
 
         /* REPORTE DE LECTURAS NUEVAS */
-        @Query(value = "select r.idrubro_rubros as rubro, rs.descripcion as descripcion,  count(*) as nrofacturas, sum(r.valorunitario * r.cantidad) as sumaTotal from emisionindividual ei join lecturas l on ei.idlecturanueva = l.idlectura join rubroxfac r on l.idfactura = r.idfactura_facturas and (r.estado <> 0 or r.estado is null) join rubros rs on r.idrubro_rubros = rs.idrubro where ei.idemision = ?1 and not r.idrubro_rubros = 5 group by r.idrubro_rubros, rs.descripcion ", nativeQuery = true)
+        @Query(value = "select r.idrubro_rubros as rubro, rs.descripcion as descripcion,  count(*) as nrofacturas, sum(ROUND(CAST(r.valorunitario * r.cantidad AS numeric), 2)) as sumaTotal from emisionindividual ei join lecturas l on ei.idlecturanueva = l.idlectura join rubroxfac r on l.idfactura = r.idfactura_facturas and (r.estado <> 0 or r.estado is null) join rubros rs on r.idrubro_rubros = rs.idrubro where ei.idemision = ?1 and not r.idrubro_rubros = 5 group by r.idrubro_rubros, rs.descripcion ", nativeQuery = true)
         public List<IemiIndividual> findLecturasNuevas(Long idemision);
 
         /* REPORTE DE LECTURAS ANTERIORES */
-        @Query(value = "select r.idrubro_rubros as rubro, rs.descripcion as descripcion,  count(*) as nrofacturas, sum(r.valorunitario * r.cantidad)as sumaTotal from emisionindividual ei join lecturas l on ei.idlecturaanterior = l.idlectura join rubroxfac r on l.idfactura = r.idfactura_facturas and (r.estado <> 0 or r.estado is null) join rubros rs on r.idrubro_rubros = rs.idrubro where ei.idemision = ?1 and not r.idrubro_rubros = 5 group by r.idrubro_rubros, rs.descripcion ", nativeQuery = true)
+        @Query(value = "select r.idrubro_rubros as rubro, rs.descripcion as descripcion,  count(*) as nrofacturas, sum(ROUND(CAST(r.valorunitario * r.cantidad AS numeric), 2))as sumaTotal from emisionindividual ei join lecturas l on ei.idlecturaanterior = l.idlectura join rubroxfac r on l.idfactura = r.idfactura_facturas and (r.estado <> 0 or r.estado is null) join rubros rs on r.idrubro_rubros = rs.idrubro where ei.idemision = ?1 and not r.idrubro_rubros = 5 group by r.idrubro_rubros, rs.descripcion ", nativeQuery = true)
         public List<IemiIndividual> findLecturasAnteriores(Long idemision);
 
         @Query(value = "select la.idfactura as facturaa, ea.emision as emisiona, ln.idfactura as facturan, en.emision as emisionn, fa.idabonado as cuenta, sum(rfa.valorunitario) as tanterior , sum(rfn.valorunitario) as tnuevo "
@@ -49,12 +49,12 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         + "join facturas fn on ln.idfactura = fn.idfactura "
                         + "join rubroxfac rfn on rfn.idfactura_facturas = ln.idfactura and (rfn.estado <> 0 or rfn.estado is null) "
                         + "join emisiones en on en.idemision = ln.idemision "
-                        + "where ei.idemision = ?1 and fn.fechaeliminacion is null "
+                        + "where ei.idemision = ?1 "
                         + "group by rfa.idfactura_facturas, fa.idabonado, la.idfactura, ea.emision, ln.idfactura, en.emision, rfn.idfactura_facturas "
                         + "order by fa.idabonado asc", nativeQuery = true)
         public List<EmisionIndividualRI> getLecReport(Integer idemision);
 
-        @Query(value = "select fa.idabonado as cuenta, la.idfactura as facturaa, ea.emision as emisiona, sum(rfa.cantidad * rfa.valorunitario) as tanterior "
+        @Query(value = "select fa.idabonado as cuenta, la.idfactura as facturaa, ea.emision as emisiona, sum(ROUND(CAST(rfa.cantidad * rfa.valorunitario AS numeric), 2)) as tanterior "
                         + "from emisionindividual ei "
                         + "join lecturas la on ei.idlecturaanterior = la.idlectura "
                         + "join facturas fa on la.idfactura = fa.idfactura "
@@ -65,61 +65,74 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         + "order by fa.idabonado asc;", nativeQuery = true)
         public List<EmisionIndividualRia> _emisionIndividualAnterior(Integer idemision);
 
-        @Query(value = "select fa.idabonado as cuenta, l.idfactura as facturaa, ea.emision as emisiona, sum(rfa.cantidad * rfa.valorunitario) as tanterior "
+        @Query(value = "select fa.idabonado as cuenta, c.nombre as nombrecliente, to_char(fa.fechaeliminacion, 'DD/MM/YYYY') as fechaeliminacion, l.idfactura as facturaa, ea.emision as emisiona, sum(ROUND(CAST(rfa.cantidad * rfa.valorunitario AS numeric), 2)) as tanterior "
                         + "from lecturas l "
                         + "join facturas fa on l.idfactura = fa.idfactura "
+                        + "join abonados a on fa.idabonado = a.idabonado "
+                        + "join clientes c on a.idcliente_clientes = c.idcliente "
                         + "join rubroxfac rfa on rfa.idfactura_facturas = l.idfactura and (rfa.estado <> 0 or rfa.estado is null) "
                         + "join emisiones ea on ea.idemision = l.idemision "
-                        + "where l.idemision = ?1 and not rfa.idrubro_rubros = 5 and not l.observaciones is null "
-                        + "group by rfa.idfactura_facturas, fa.idabonado, l.idfactura, ea.emision  "
+                        + "where l.idemision = ?1 and rfa.idrubro_rubros <> 5 and fa.fechaeliminacion is not null "
+                        + "group by rfa.idfactura_facturas, fa.idabonado, c.nombre, fa.fechaeliminacion, l.idfactura, ea.emision  "
                         + "order by fa.idabonado asc;", nativeQuery = true)
         public List<EmisionIndividualRia> emisionIndividualAnterior(Integer idemision);
 
-        @Query(value = "select fn.idabonado  as cuenta, ln.idfactura as facturan, en.emision as emisionn, sum(rfn.cantidad * rfn.valorunitario) as tnuevo "
+        @Query(value = "select fn.idabonado as cuenta, c.nombre as nombrecliente, ln.idfactura as facturan, en.emision as emisionn, sum(ROUND(CAST(rfn.cantidad * rfn.valorunitario AS numeric), 2)) as tnuevo "
                         + "from emisionindividual ei "
                         + "join lecturas ln on ei.idlecturanueva = ln.idlectura "
                         + "join facturas fn on ln.idfactura = fn.idfactura "
+                        + "join abonados a on fn.idabonado = a.idabonado "
+                        + "join clientes c on a.idcliente_clientes = c.idcliente "
                         + "join rubroxfac rfn on rfn.idfactura_facturas = ln.idfactura and (rfn.estado <> 0 or rfn.estado is null) "
                         + "join emisiones en on en.idemision = ln.idemision "
-                        + "where ei.idemision = ?1 and fn.fechaeliminacion is null and not rfn.idrubro_rubros = 5 "
-                        + "group by fn.idabonado, ln.idfactura, en.emision ,rfn.idfactura_facturas "
+                        + "where ei.idemision = ?1 and not rfn.idrubro_rubros = 5 "
+                        + "group by fn.idabonado, c.nombre, ln.idfactura, en.emision ,rfn.idfactura_facturas "
                         + "order by fn.idabonado asc;", nativeQuery = true)
         public List<EmisionIndividualRin> emisionIndividualNueva(Integer idemision);
 
         /* REPORTE REFACTURACION X EMISION */@Query(value = """
-                            SELECT
+                        WITH facturas_objetivo AS (
+                            SELECT ln.idfactura
+                            FROM emisionindividual e
+                            JOIN lecturas ln ON e.idlecturanueva = ln.idlectura
+                            WHERE e.idemision = :idEmision
+                            UNION
+                            SELECT la.idfactura
+                            FROM emisionindividual e
+                            JOIN lecturas la ON e.idlecturaanterior = la.idlectura
+                            WHERE e.idemision = :idEmision
+                        ), rubros_redondeados AS (
+                            SELECT rf.idfactura_facturas,
+                                SUM(ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2)) AS total
+                            FROM rubroxfac rf
+                            JOIN facturas_objetivo fo ON fo.idfactura = rf.idfactura_facturas
+                            WHERE (rf.estado <> 0 OR rf.estado IS NULL)
+                                AND rf.idrubro_rubros <> 5
+                            GROUP BY rf.idfactura_facturas
+                        )
+                        SELECT
                             ln.idabonado_abonados AS cuenta,
                             c.nombre,
                             fa.fechaeliminacion AS fecelimina,
                             ln.idfactura AS nuevaplanilla,
-                            (SELECT SUM(rfn.valorunitario * rfn.cantidad)
-                            FROM rubroxfac rfn
-                            WHERE (rfn.estado <> 0 or rfn.estado is null) and rfn.idfactura_facturas = ln.idfactura and not rfn.idrubro_rubros = 5) AS valornuevo,
+                            COALESCE(rn.total, 0) AS valornuevo,
                             la.idfactura AS anteriorplanilla,
-                            (SELECT SUM(rfa.valorunitario * rfa.cantidad)
-                            FROM rubroxfac rfa
-                            WHERE (rfa.estado <> 0 or rfa.estado is null) and rfa.idfactura_facturas = la.idfactura and not rfa.idrubro_rubros = 5) AS valoranterior,
+                            COALESCE(ra.total, 0) AS valoranterior,
                             la.observaciones
                         FROM emisionindividual e
-                        INNER JOIN lecturas ln ON e.idlecturanueva = ln.idlectura
-                        INNER JOIN abonados a ON ln.idabonado_abonados = a.idabonado
-                        INNER JOIN clientes c ON a.idresponsable = c.idcliente
-                        INNER JOIN facturas fn ON ln.idfactura = fn.idfactura
-                        INNER JOIN lecturas la ON e.idlecturaanterior = la.idlectura
-                        INNER JOIN facturas fa ON la.idfactura = fa.idfactura
+                        JOIN lecturas ln ON e.idlecturanueva = ln.idlectura
+                        JOIN abonados a ON ln.idabonado_abonados = a.idabonado
+                        JOIN clientes c ON a.idresponsable = c.idcliente
+                        JOIN lecturas la ON e.idlecturaanterior = la.idlectura
+                        JOIN facturas fa ON la.idfactura = fa.idfactura
+                        LEFT JOIN rubros_redondeados rn ON rn.idfactura_facturas = ln.idfactura
+                        LEFT JOIN rubros_redondeados ra ON ra.idfactura_facturas = la.idfactura
                         WHERE e.idemision = :idEmision
-                        GROUP BY
-                            ln.idabonado_abonados,
-                            c.nombre,
-                            fa.fechaeliminacion,
-                            ln.idfactura,
-                            la.idfactura,
-                            la.observaciones
                         ORDER BY ln.idabonado_abonados ASC
                         """, nativeQuery = true)
         List<R_refacturacion_int> getRefacturacionxEmision(@Param("idEmision") Long idEmision);
 
-        @Query(value = "select ra.idrubro as idrubro_rubros, ra.descripcion, sum(rfa.cantidad * rfa.valorunitario) "
+        @Query(value = "select ra.idrubro as idrubro_rubros, ra.descripcion, sum(ROUND(CAST(rfa.cantidad * rfa.valorunitario AS numeric), 2)) "
                         + " from emisionindividual e "
                         + " join lecturas ln on e.idlecturaanterior = ln.idlectura "
                         + "join rubroxfac rfa on rfa.idfactura_facturas = ln.idfactura and (rfa.estado <> 0 or rfa.estado is null) "
@@ -128,7 +141,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         + "group by ra.idrubro, ra.descripcion;", nativeQuery = true)
         public List<RubroxfacI> getRefacturacionxEmisionRubrosAnteriores(Long idemision);
 
-        @Query(value = "select rn.idrubro  as idrubro_rubros, rn.descripcion, sum(rfn.cantidad * rfn.valorunitario) "
+        @Query(value = "select rn.idrubro  as idrubro_rubros, rn.descripcion, sum(ROUND(CAST(rfn.cantidad * rfn.valorunitario AS numeric), 2)) "
                         + "from emisionindividual e "
                         + "join lecturas ln on e.idlecturanueva = ln.idlectura "
                         + "join rubroxfac rfn on rfn.idfactura_facturas = ln.idfactura and (rfn.estado <> 0 or rfn.estado is null) "
@@ -145,11 +158,11 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                             ln.idfactura AS nuevaplanilla,
                             ea.emision as emisionanterior,
                             en.emision as emisionnueva,
-                            (SELECT SUM(rfn.valorunitario * rfn.cantidad)
+                            (SELECT SUM(ROUND(CAST(rfn.valorunitario * rfn.cantidad AS numeric), 2))
                             FROM rubroxfac rfn
                             WHERE (rfn.estado <> 0 or rfn.estado is null) and rfn.idfactura_facturas = ln.idfactura and not rfn.idrubro_rubros = 5) AS valornuevo,
                             la.idfactura AS anteriorplanilla,
-                            (SELECT SUM(rfa.valorunitario * rfa.cantidad)
+                            (SELECT SUM(ROUND(CAST(rfa.valorunitario * rfa.cantidad AS numeric), 2))
                             FROM rubroxfac rfa
                             WHERE (rfa.estado <> 0 or rfa.estado is null) and rfa.idfactura_facturas = la.idfactura and not rfa.idrubro_rubros = 5) AS valoranterior,
                             la.observaciones
@@ -183,7 +196,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                                     select
                         	ra.idrubro as idrubro_rubros,
                         	ra.descripcion,
-                        	sum(rfa.cantidad * rfa.valorunitario)
+                        sum(ROUND(CAST(rfa.cantidad * rfa.valorunitario AS numeric), 2))
                         from
                         	emisionindividual e
                         join lecturas la on
@@ -208,7 +221,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                             select
                         	ra.idrubro as idrubro_rubros,
                         	ra.descripcion,
-                        	sum(rfa.cantidad * rfa.valorunitario)
+                        sum(ROUND(CAST(rfa.cantidad * rfa.valorunitario AS numeric), 2))
                         from
                         	emisionindividual e
                         join lecturas la on
@@ -235,7 +248,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         select
                         	l.idfactura,
                         	l.idabonado_abonados as cuenta,
-                        	sum(rf.cantidad * rf.valorunitario) as total,
+                        sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as total,
                         	c.nombre,
                         	f.fechaeliminacion,
                         	f.razoneliminacion,
@@ -266,7 +279,7 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                         select
                                 l.idfactura,
                                 l.idabonado_abonados as cuenta,
-                                sum(rf.cantidad * rf.valorunitario) as total,
+                                sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as total,
                                 c.nombre,
                                 f.fechaeliminacion,
                                 f.razoneliminacion,

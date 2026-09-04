@@ -10,5 +10,7 @@ public interface EmisionIndividualRin {
 
     Long getCuenta();
 
+    String getNombrecliente();
+
     BigDecimal getTnuevo();
 }
