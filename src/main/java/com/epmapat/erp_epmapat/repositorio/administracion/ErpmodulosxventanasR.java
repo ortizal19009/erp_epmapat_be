@@ -26,4 +26,12 @@ public interface ErpmodulosxventanasR extends JpaRepository<Erpmodulosxventanas,
          ORDER BY mv.nombreventana
          """)
    List<Erpmodulosxventanas> findAllWithModule();
+
+   @Query("""
+         SELECT DISTINCT mv.nombreventana
+         FROM Erpmodulosxventanas mv
+         WHERE mv.nombreventana IS NOT NULL AND TRIM(mv.nombreventana) <> ''
+         ORDER BY mv.nombreventana
+         """)
+   List<String> findDistinctNombresVentana();
 }

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.DTO.CrearVentanaCatalogoRequest;
 import com.epmapat.erp_epmapat.modelo.administracion.Ventanas;
 import com.epmapat.erp_epmapat.servicio.administracion.VentanaServicio;
 import com.epmapat.erp_epmapat.seguridad.WebAccessGuard;
@@ -87,6 +88,16 @@ public class VentanasApi {
       webAccessGuard.requireAdmin(request);
       venServicio.saveCatalogoModulosVentanas(catalogo);
       return ResponseEntity.noContent().build();
+   }
+
+   @PostMapping("/catalogo-modulos/ventana")
+   public ResponseEntity<Map<String, Object>> crearVentanaCatalogo(
+         @RequestBody CrearVentanaCatalogoRequest request,
+         HttpServletRequest httpRequest) {
+      webAccessGuard.requireAdmin(httpRequest);
+      return ResponseEntity.status(HttpStatus.CREATED).body(venServicio.crearVentanaCatalogo(
+            request != null ? request.nombre() : null,
+            request != null ? request.iderpmodulo() : null));
    }
 
    @GetMapping("/usuario/{idusuario}")

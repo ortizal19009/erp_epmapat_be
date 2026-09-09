@@ -105,12 +105,49 @@ public class VentanaServicio {
    public List<String> findCatalogoVentanas() {
       Map<String, String> catalogo = new LinkedHashMap<>();
       VENTANAS_BASE.forEach(nombre -> catalogo.put(nombre.toLowerCase(), nombre));
+      modulosVentanasDao.findDistinctNombresVentana().forEach(nombre -> {
+         if (nombre != null && !nombre.isBlank()) {
+            catalogo.putIfAbsent(nombre.trim().toLowerCase(), nombre.trim());
+         }
+      });
       dao.findDistinctNombres().forEach(nombre -> {
          if (nombre != null && !nombre.isBlank()) {
             catalogo.putIfAbsent(nombre.trim().toLowerCase(), nombre.trim());
          }
       });
       return new ArrayList<>(catalogo.values());
+   }
+
+   @Transactional
+   public Map<String, Object> crearVentanaCatalogo(String nombre, Long idModulo) {
+      String nombreVentana = nombre == null ? "" : nombre.trim().toLowerCase();
+      if (!nombreVentana.matches("[a-z0-9][a-z0-9/_-]{0,99}")) {
+         throw new IllegalArgumentException(
+               "El identificador debe usar solo letras minúsculas, números, guiones, guion bajo o '/'.");
+      }
+      if (idModulo == null) {
+         throw new IllegalArgumentException("Debe seleccionar el módulo WEB responsable.");
+      }
+
+      Erpmodulos modulo = erpmodulosDao.findById(idModulo)
+            .orElseThrow(() -> new IllegalArgumentException("El módulo indicado no existe."));
+      if (!esModuloWeb(modulo)) {
+         throw new IllegalArgumentException("Las ventanas WEB solo pueden asignarse a módulos WEB o BOTH.");
+      }
+
+      Erpmodulosxventanas asignacion = modulosVentanasDao.findAllWithModule().stream()
+            .filter(item -> nombreVentana.equalsIgnoreCase(item.getNombreventana()))
+            .findFirst()
+            .orElseGet(Erpmodulosxventanas::new);
+      asignacion.setNombreventana(nombreVentana);
+      asignacion.setIderpmodulo(modulo);
+      modulosVentanasDao.save(asignacion);
+
+      Map<String, Object> respuesta = new LinkedHashMap<>();
+      respuesta.put("nombre", nombreVentana);
+      respuesta.put("iderpmodulo", modulo.getIderpmodulo());
+      respuesta.put("modulo", modulo.getDescripcion());
+      return respuesta;
    }
 
    public List<String> findCatalogoVentanasUsuario(Long idusuario) {
