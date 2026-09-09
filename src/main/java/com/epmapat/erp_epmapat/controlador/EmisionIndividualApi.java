@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRI;
+import com.epmapat.erp_epmapat.interfaces.EmisionIndividualListado;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRia;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRin;
 import com.epmapat.erp_epmapat.interfaces.FacEliminadas;
@@ -38,6 +40,16 @@ public class EmisionIndividualApi {
     @GetMapping("/idemision")
     public ResponseEntity<List<EmisionIndividual>> getByIdEmision(@RequestParam("idemision") Long idemision) {
         return ResponseEntity.ok(sei.findByIdEmision(idemision));
+    }
+
+    @GetMapping("/idemision/listado")
+    public ResponseEntity<List<EmisionIndividualListado>> getListadoByIdEmision(@RequestParam("idemision") Long idemision) {
+        return ResponseEntity.ok(sei.findListadoByIdEmision(idemision));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EmisionIndividual> getDetalle(@PathVariable Long id) {
+        return ResponseEntity.ok(sei.findDetalleById(id));
     }
 
     @GetMapping("/nuevas")

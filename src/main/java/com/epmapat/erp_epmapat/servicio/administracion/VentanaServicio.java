@@ -77,6 +77,53 @@ public class VentanaServicio {
          "tpreclamos",
          "ubicacionm");
 
+   // Subventanas que tienen un identificador de permiso propio en el frontend.
+   // Se registran desde el inicio para que el administrador pueda asignarlas antes de usarlas.
+   private static final List<String> VENTANAS_SUBMODULOS = List.of(
+         "re-facturacion",
+         "control-emisiones",
+         "add-ntacredito",
+         "add-pagoscobros",
+         "asientos",
+         "bancos",
+         "beneficiarios",
+         "benextran",
+         "certipresu",
+         "clasificador",
+         "comprobacion",
+         "cuentas",
+         "cv-abonados",
+         "cv-clientes",
+         "cv-facturas",
+         "cv-rubros",
+         "egresos",
+         "ejecupresup",
+         "estados-convenios",
+         "estresultados",
+         "estrfunc",
+         "estsituacion",
+         "flujoefectivo",
+         "ifinan",
+         "info-convenios",
+         "info-estrfunc",
+         "liquiacfp",
+         "mora-abonados",
+         "niifcuentas",
+         "partixcerti",
+         "personal",
+         "pregastos",
+         "preingresos",
+         "regrecauda",
+         "reformas",
+         "reintegradas",
+         "repoxopcion",
+         "retenciones",
+         "simulacion",
+         "sinafip",
+         "trandetrami",
+         "transaci",
+         "unicostos");
+
    @Autowired
    VentanasR dao;
    @Autowired
@@ -105,6 +152,7 @@ public class VentanaServicio {
    public List<String> findCatalogoVentanas() {
       Map<String, String> catalogo = new LinkedHashMap<>();
       VENTANAS_BASE.forEach(nombre -> catalogo.put(nombre.toLowerCase(), nombre));
+      VENTANAS_SUBMODULOS.forEach(nombre -> catalogo.putIfAbsent(nombre.toLowerCase(), nombre));
       modulosVentanasDao.findDistinctNombresVentana().forEach(nombre -> {
          if (nombre != null && !nombre.isBlank()) {
             catalogo.putIfAbsent(nombre.trim().toLowerCase(), nombre.trim());

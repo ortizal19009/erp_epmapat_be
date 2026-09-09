@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRI;
+import com.epmapat.erp_epmapat.interfaces.EmisionIndividualListado;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRia;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRin;
 import com.epmapat.erp_epmapat.interfaces.FacEliminadas;
@@ -28,6 +29,15 @@ public class EmisionIndividualServicio {
 
     public List<EmisionIndividual> findByIdEmision(Long idemision) {
         return dao.findByIdEmision(idemision);
+    }
+
+    public List<EmisionIndividualListado> findListadoByIdEmision(Long idemision) {
+        return dao.findListadoByIdEmision(idemision);
+    }
+
+    public EmisionIndividual findDetalleById(Long id) {
+        return dao.findDetalleById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No existe la emisión individual solicitada."));
     }
 
     public List<IemiIndividual> findLecturasNuevas(Long idemision) {

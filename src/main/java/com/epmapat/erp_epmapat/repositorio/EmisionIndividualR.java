@@ -14,6 +14,7 @@ import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRia;
 import com.epmapat.erp_epmapat.interfaces.EmisionIndividualRin;
 import com.epmapat.erp_epmapat.interfaces.FacEliminadas;
 import com.epmapat.erp_epmapat.interfaces.IemiIndividual;
+import com.epmapat.erp_epmapat.interfaces.EmisionIndividualListado;
 import com.epmapat.erp_epmapat.interfaces.R_refacturacion_int;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
 import com.epmapat.erp_epmapat.modelo.EmisionIndividual;
@@ -30,6 +31,40 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
         })
         @Query("select ei from EmisionIndividual ei where ei.idemision.idemision = :idemision")
         List<EmisionIndividual> findByIdEmision(@Param("idemision") Long idemision);
+
+        @Query(value = """
+                SELECT ei.idemisionindividual AS idemisionindividual,
+                       e.idemision AS idemision,
+                       e.emision AS emision,
+                       a.idabonado AS cuenta,
+                       c.nombre AS nombre,
+                       c.cedula AS cedula,
+                       la.idlectura AS idlecturaanterior,
+                       ln.idlectura AS idlecturanueva,
+                       la.idfactura AS idfacturaanterior,
+                       ln.idfactura AS idfacturanueva
+                FROM emisionindividual ei
+                JOIN emisiones e ON e.idemision = ei.idemision
+                JOIN lecturas ln ON ln.idlectura = ei.idlecturanueva
+                LEFT JOIN lecturas la ON la.idlectura = ei.idlecturaanterior
+                LEFT JOIN abonados a ON a.idabonado = ln.idabonado_abonados
+                LEFT JOIN clientes c ON c.idcliente = a.idresponsable
+                WHERE ei.idemision = :idemision
+                ORDER BY ei.idemisionindividual DESC
+                """, nativeQuery = true)
+        List<EmisionIndividualListado> findListadoByIdEmision(@Param("idemision") Long idemision);
+
+        @EntityGraph(attributePaths = {
+                        "idemision",
+                        "idlecturanueva",
+                        "idlecturanueva.idabonado_abonados",
+                        "idlecturanueva.idabonado_abonados.idresponsable",
+                        "idlecturaanterior",
+                        "idlecturaanterior.idabonado_abonados",
+                        "idlecturaanterior.idabonado_abonados.idresponsable"
+        })
+        @Query("select ei from EmisionIndividual ei where ei.idemisionindividual = :id")
+        java.util.Optional<EmisionIndividual> findDetalleById(@Param("id") Long id);
 
         /* REPORTE DE LECTURAS NUEVAS */
         @Query(value = "select r.idrubro_rubros as rubro, rs.descripcion as descripcion,  count(*) as nrofacturas, sum(ROUND(CAST(r.valorunitario * r.cantidad AS numeric), 2)) as sumaTotal from emisionindividual ei join lecturas l on ei.idlecturanueva = l.idlectura join rubroxfac r on l.idfactura = r.idfactura_facturas and (r.estado <> 0 or r.estado is null) join rubros rs on r.idrubro_rubros = rs.idrubro where ei.idemision = ?1 and not r.idrubro_rubros = 5 group by r.idrubro_rubros, rs.descripcion ", nativeQuery = true)
