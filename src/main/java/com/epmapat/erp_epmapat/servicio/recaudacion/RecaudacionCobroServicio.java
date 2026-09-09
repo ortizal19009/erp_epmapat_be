@@ -597,7 +597,7 @@ public class RecaudacionCobroServicio {
                     // Se redondea cada rubro antes de sumar para que cobro y comprobante coincidan.
                     BigDecimal subtotal = factura != null
                             ? sumarSubtotalFactura(factura.getIdfactura())
-                            : redondearMoneda(dto.getSubtotal() != null ? BigDecimal.valueOf(dto.getSubtotal()) : BigDecimal.ZERO);
+                            : subtotalMonetario(dto.getSubtotal());
                     BigDecimal interes = redondearMoneda(dto.getInteres());
                     BigDecimal iva = redondearMoneda(dto.getIva());
                     dto.setSubtotal(subtotal.floatValue());
@@ -842,10 +842,10 @@ public class RecaudacionCobroServicio {
         if (dto == null) {
             return;
         }
-        BigDecimal subtotal = dto.getSubtotal() != null ? BigDecimal.valueOf(dto.getSubtotal()) : BigDecimal.ZERO;
-        BigDecimal interes = dto.getInteres() != null ? dto.getInteres() : BigDecimal.ZERO;
-        BigDecimal iva = dto.getIva() != null ? dto.getIva() : BigDecimal.ZERO;
-        dto.setTotal(subtotal.add(interes).add(iva));
+        BigDecimal subtotal = subtotalMonetario(dto.getSubtotal());
+        BigDecimal interes = redondearMoneda(dto.getInteres());
+        BigDecimal iva = redondearMoneda(dto.getIva());
+        dto.setTotal(redondearMoneda(subtotal.add(interes).add(iva)));
     }
 
     private void aplicarExoneracionesPendientes(List<ValorFactDTO> facturas) {
@@ -1039,12 +1039,10 @@ public class RecaudacionCobroServicio {
     }
 
     private BigDecimal calcularTotalFacturaParaCobro(ValorFactDTO pendiente, BigDecimal interes, BigDecimal iva) {
-        BigDecimal subtotal = pendiente != null && pendiente.getSubtotal() != null
-                ? BigDecimal.valueOf(pendiente.getSubtotal())
-                : BigDecimal.ZERO;
-        return subtotal
-                .add(interes != null ? interes : BigDecimal.ZERO)
-                .add(iva != null ? iva : BigDecimal.ZERO);
+        BigDecimal subtotal = pendiente != null ? subtotalMonetario(pendiente.getSubtotal()) : BigDecimal.ZERO;
+        BigDecimal interesRedondeado = redondearMoneda(interes != null ? interes : BigDecimal.ZERO);
+        BigDecimal ivaRedondeado = redondearMoneda(iva != null ? iva : BigDecimal.ZERO);
+        return redondearMoneda(subtotal.add(interesRedondeado).add(ivaRedondeado));
     }
 
     private BigDecimal calcularValorNotaCreditoAplicado(BigDecimal totalFactura, BigDecimal saldoNotaCreditoPendiente) {
@@ -1066,6 +1064,14 @@ public class RecaudacionCobroServicio {
 
     private BigDecimal redondearMoneda(BigDecimal valor) {
         return valor == null ? BigDecimal.ZERO.setScale(2, RoundingMode.UP) : valor.setScale(2, RoundingMode.UP);
+    }
+
+    private BigDecimal subtotalMonetario(Float subtotal) {
+        if (subtotal == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.UP);
+        }
+        // Float puede representar 10.79 como 10.789999...; su texto conserva el importe recibido.
+        return new BigDecimal(subtotal.toString()).setScale(2, RoundingMode.UP);
     }
 
     private void registrarAplicacionNotaCredito(Facturas factura, BigDecimal valorAplicado) {

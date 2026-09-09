@@ -92,7 +92,7 @@
 			<![CDATA[SELECT r.descripcion,
 	rf.cantidad,
 	rf.valorunitario,
-	CASE WHEN rf.cantidad * rf.valorunitario < 0 THEN FLOOR(rf.cantidad * rf.valorunitario * 100) / 100 ELSE CEIL(rf.cantidad * rf.valorunitario * 100) / 100 END AS total
+	CASE WHEN (rf.cantidad * rf.valorunitario)::numeric < 0 THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) / 100 ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) / 100 END AS total
 FROM rubroxfac rf
 	join rubros r ON 
 	 rf.idrubro_rubros = r.idrubro 
@@ -141,11 +141,13 @@ WHERE
 		<queryString>
 			<![CDATA[SELECT 
     rf.idfactura_facturas,
-    SUM(CASE WHEN rf.cantidad * rf.valorunitario < 0 THEN FLOOR(rf.cantidad * rf.valorunitario * 100) / 100 ELSE CEIL(rf.cantidad * rf.valorunitario * 100) / 100 END) AS subtotal,
-    COALESCE(f.swiva, 0) AS iva,
-    COALESCE(f.interescobrado, 0) AS interes, 
-      COALESCE( f.valornotacredito, 0) as nc,
-    SUM(CASE WHEN rf.cantidad * rf.valorunitario < 0 THEN FLOOR(rf.cantidad * rf.valorunitario * 100) / 100 ELSE CEIL(rf.cantidad * rf.valorunitario * 100) / 100 END) + COALESCE(f.swiva, 0) + COALESCE(f.interescobrado, 0) AS total
+    SUM(CASE WHEN (rf.cantidad * rf.valorunitario)::numeric < 0 THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) / 100 ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) / 100 END) AS subtotal,
+    CASE WHEN COALESCE(f.swiva, 0)::numeric < 0 THEN FLOOR(COALESCE(f.swiva, 0)::numeric * 100) / 100 ELSE CEIL(COALESCE(f.swiva, 0)::numeric * 100) / 100 END AS iva,
+    CASE WHEN COALESCE(f.interescobrado, 0)::numeric < 0 THEN FLOOR(COALESCE(f.interescobrado, 0)::numeric * 100) / 100 ELSE CEIL(COALESCE(f.interescobrado, 0)::numeric * 100) / 100 END AS interes,
+    CASE WHEN COALESCE(f.valornotacredito, 0)::numeric < 0 THEN FLOOR(COALESCE(f.valornotacredito, 0)::numeric * 100) / 100 ELSE CEIL(COALESCE(f.valornotacredito, 0)::numeric * 100) / 100 END AS nc,
+    SUM(CASE WHEN (rf.cantidad * rf.valorunitario)::numeric < 0 THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) / 100 ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) / 100 END)
+      + CASE WHEN COALESCE(f.swiva, 0)::numeric < 0 THEN FLOOR(COALESCE(f.swiva, 0)::numeric * 100) / 100 ELSE CEIL(COALESCE(f.swiva, 0)::numeric * 100) / 100 END
+      + CASE WHEN COALESCE(f.interescobrado, 0)::numeric < 0 THEN FLOOR(COALESCE(f.interescobrado, 0)::numeric * 100) / 100 ELSE CEIL(COALESCE(f.interescobrado, 0)::numeric * 100) / 100 END AS total
 FROM facturas f
 JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas 
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros 
@@ -252,7 +254,7 @@ WHERE
 			<![CDATA[SELECT r.descripcion,
 	rf.cantidad,
 	rf.valorunitario,
-	CASE WHEN rf.cantidad * rf.valorunitario < 0 THEN FLOOR(rf.cantidad * rf.valorunitario * 100) / 100 ELSE CEIL(rf.cantidad * rf.valorunitario * 100) / 100 END AS total
+	CASE WHEN (rf.cantidad * rf.valorunitario)::numeric < 0 THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) / 100 ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) / 100 END AS total
 FROM rubroxfac rf
 	join rubros r ON 
 	 rf.idrubro_rubros = r.idrubro 
