@@ -290,7 +290,7 @@ public class BuildReportsApi {
 
                 String reportName;
                 if (it.getIdmodulo() != null || it.getIdAbonado() != null) {
-                    reportName = pickReportName(it.getIdAbonado(), it.getIdmodulo());
+                    reportName = pickReportName(it.getIdAbonado(), it.getIdmodulo(), null);
                 } else {
                     // Usa la consulta si no te mandan esos datos desde el front
                     reportName = pickReportNameFromDb(conn, it.getIdfactura());
@@ -386,25 +386,26 @@ public class BuildReportsApi {
         }
     }
 
-    private String pickReportName(Integer idAbonado, Integer idmodulo) {
-        if (idAbonado != null && idAbonado > 0
+    private String pickReportName(Integer idAbonado, Integer idmodulo, Long convenioPago) {
+        if (Integer.valueOf(27).equals(idmodulo) || (convenioPago != null && convenioPago > 0)) {
+            return "CompPagoConvenios";
+        } else if (idAbonado != null && idAbonado > 0
                 && (Integer.valueOf(3).equals(idmodulo) || Integer.valueOf(4).equals(idmodulo))) {
             return "CompPagoConsumoAgua";
-        } else if (Integer.valueOf(27).equals(idmodulo)) {
-            return "CompPagoConvenios";
         } else {
             return "CompPagoServicios";
         }
     }
 
     private String pickReportNameFromDb(Connection conn, Long idfactura) throws SQLException {
-        String sql = "SELECT a.idabonado AS idAbonado, f.idmodulo AS idmodulo " +
+        String sql = "SELECT a.idabonado AS idAbonado, f.idmodulo AS idmodulo, f.conveniopago AS convenioPago " +
                 "FROM facturas f JOIN abonados a ON f.idabonado = a.idabonado " +
                 "WHERE f.idfactura = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, idfactura);
             try (ResultSet rs = ps.executeQuery()) {
                 Integer idAbonado = null, idmodulo = null;
+                Long convenioPago = null;
                 if (rs.next()) {
                     idAbonado = rs.getInt("idAbonado");
                     if (rs.wasNull())
@@ -412,8 +413,11 @@ public class BuildReportsApi {
                     idmodulo = rs.getInt("idmodulo");
                     if (rs.wasNull())
                         idmodulo = null;
+                    convenioPago = rs.getLong("convenioPago");
+                    if (rs.wasNull())
+                        convenioPago = null;
                 }
-                return pickReportName(idAbonado, idmodulo);
+                return pickReportName(idAbonado, idmodulo, convenioPago);
             }
         }
     }
@@ -434,7 +438,7 @@ public class BuildReportsApi {
 
             for (MergeItem it : itemsValidos) {
                 ReportInfo info = resolveReportInfo(it, reportInfoByFactura.get(it.getIdfactura()));
-                String reportName = pickReportName(info.idAbonado(), info.idmodulo());
+                String reportName = pickReportName(info.idAbonado(), info.idmodulo(), info.convenioPago());
 
                 Map<String, Object> params = new HashMap<>();
                 params.put("idfactura", it.getIdfactura());
@@ -470,8 +474,10 @@ public class BuildReportsApi {
     }
 
     private Map<Long, ReportInfo> cargarReportInfoFaltante(Connection conn, List<MergeItem> items) throws SQLException {
+        // La clasificación se obtiene siempre de la factura persistida. Así el lote no
+        // depende de proyecciones parciales ni de valores manipulados desde el cliente.
         List<Long> ids = items.stream()
-                .filter(it -> it.getIdfactura() != null && it.getIdmodulo() == null && it.getIdAbonado() == null)
+                .filter(it -> it.getIdfactura() != null)
                 .map(MergeItem::getIdfactura)
                 .distinct()
                 .collect(Collectors.toList());
@@ -484,7 +490,7 @@ public class BuildReportsApi {
                 .map(id -> "?")
                 .collect(Collectors.joining(","));
 
-        String sql = "SELECT f.idfactura, a.idabonado AS idAbonado, f.idmodulo AS idmodulo "
+        String sql = "SELECT f.idfactura, a.idabonado AS idAbonado, f.idmodulo AS idmodulo, f.conveniopago AS convenioPago "
                 + "FROM facturas f LEFT JOIN abonados a ON f.idabonado = a.idabonado "
                 + "WHERE f.idfactura IN (" + placeholders + ")";
 
@@ -506,7 +512,12 @@ public class BuildReportsApi {
                         idmodulo = null;
                     }
 
-                    result.put(rs.getLong("idfactura"), new ReportInfo(idAbonado, idmodulo));
+                    Long convenioPago = rs.getLong("convenioPago");
+                    if (rs.wasNull()) {
+                        convenioPago = null;
+                    }
+
+                    result.put(rs.getLong("idfactura"), new ReportInfo(idAbonado, idmodulo, convenioPago));
                 }
             }
         }
@@ -515,11 +526,10 @@ public class BuildReportsApi {
     }
 
     private ReportInfo resolveReportInfo(MergeItem item, ReportInfo dbInfo) {
-        Integer idAbonado = item.getIdAbonado() != null ? item.getIdAbonado()
-                : dbInfo != null ? dbInfo.idAbonado() : null;
-        Integer idmodulo = item.getIdmodulo() != null ? item.getIdmodulo()
-                : dbInfo != null ? dbInfo.idmodulo() : null;
-        return new ReportInfo(idAbonado, idmodulo);
+        if (dbInfo != null) {
+            return dbInfo;
+        }
+        return new ReportInfo(item.getIdAbonado(), item.getIdmodulo(), null);
     }
 
     @PostMapping(value = "/__comprobantes/merge", produces = "application/pdf")
@@ -537,7 +547,7 @@ public class BuildReportsApi {
                     continue;
 
                 String reportName = (it.getIdmodulo() != null || it.getIdAbonado() != null)
-                        ? pickReportName(it.getIdAbonado(), it.getIdmodulo())
+                        ? pickReportName(it.getIdAbonado(), it.getIdmodulo(), null)
                         : pickReportNameFromDb(conn, it.getIdfactura());
 
                 Map<String, Object> params = new HashMap<>();
@@ -655,7 +665,7 @@ public class BuildReportsApi {
                 .body(pdf);
     }
 
-    private record ReportInfo(Integer idAbonado, Integer idmodulo) {
+    private record ReportInfo(Integer idAbonado, Integer idmodulo, Long convenioPago) {
     }
 
     public static class MergeJobResponse {

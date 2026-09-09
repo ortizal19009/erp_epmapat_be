@@ -29,6 +29,9 @@ import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaDTO;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaOperacionResponse;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroRequest;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroResponse;
+import com.epmapat.erp_epmapat.DTO.recaudacion.TransferenciaFacturasRequest;
+import com.epmapat.erp_epmapat.DTO.recaudacion.TransferenciaFacturaResultado;
+import com.epmapat.erp_epmapat.DTO.recaudacion.TransferenciaFacturasResponse;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Facxnc;
 import com.epmapat.erp_epmapat.interfaces.FacSinCobrar;
@@ -459,6 +462,71 @@ public class RecaudacionCobroServicio {
     }
 
     @Transactional
+    public TransferenciaFacturasResponse transferir(TransferenciaFacturasRequest request) {
+        if (request == null || request.getIdusuario() == null) {
+            throw new IllegalArgumentException("Debe indicar el usuario que realiza la transferencia.");
+        }
+
+        List<Long> idsFacturas = request.getFacturas() == null ? List.of() : request.getFacturas().stream()
+                .filter(Objects::nonNull)
+                .filter(id -> id > 0)
+                .distinct()
+                .collect(Collectors.toList());
+        if (idsFacturas.isEmpty()) {
+            throw new IllegalArgumentException("No existen facturas válidas para transferir.");
+        }
+
+        Cajas caja = cajaServicio.findCajaByIdUsuario(request.getIdusuario());
+        if (caja == null) {
+            throw new IllegalArgumentException("El usuario no tiene una caja asignada.");
+        }
+
+        Recaudaxcaja conexion = recaudaxcajaServicio.findLastConexion(caja.getIdcaja());
+        if (conexion == null || conexion.getIdrecaudaxcaja() == null) {
+            throw new IllegalArgumentException("La caja no tiene una conexión activa para generar secuenciales.");
+        }
+
+        // Bloquea la conexión de caja: el secuencial solo puede ser reservado por una transacción a la vez.
+        Recaudaxcaja recxcaja = recaudaxcajaServicio.findByIdForUpdate(conexion.getIdrecaudaxcaja());
+        if (recxcaja == null || !Integer.valueOf(1).equals(recxcaja.getEstado())) {
+            throw new IllegalArgumentException("La caja se encuentra cerrada. No es posible transferir.");
+        }
+
+        List<TransferenciaFacturaResultado> resultado = new ArrayList<>();
+        LocalDate hoy = LocalDate.now();
+        LocalTime ahora = LocalTime.now();
+
+        for (Long idfactura : idsFacturas) {
+            Facturas factura = facturaServicio.findById(idfactura)
+                    .orElseThrow(() -> new IllegalArgumentException("No existe la factura " + idfactura + "."));
+            if (factura.getNrofactura() != null && !factura.getNrofactura().isBlank()) {
+                throw new IllegalArgumentException("La factura " + idfactura + " ya tiene el número "
+                        + factura.getNrofactura() + ". Actualice la consulta antes de transferir.");
+            }
+
+            Long siguiente = siguienteSecuencial(recxcaja);
+            factura.setNrofactura(formatearNumeroFactura(caja, siguiente));
+            factura.setEstado(3L);
+            factura.setFechatransferencia(hoy);
+            factura.setUsuariotransferencia(request.getIdusuario());
+            factura.setPagado(1);
+            factura.setFechacobro(hoy);
+            factura.setHoracobro(ahora);
+            factura.setUsuariocobro(request.getIdusuario());
+            factura.setFormapago(4L);
+            facturaServicio.save(factura);
+
+            recxcaja.setFacfin(siguiente);
+            resultado.add(new TransferenciaFacturaResultado(factura.getIdfactura(), factura.getNrofactura()));
+        }
+        recaudaxcajaServicio.save(recxcaja);
+
+        RecaudacionCajaDTO cajaDto = getEstadoCaja(request.getIdusuario());
+        ejecutarDespuesDeCommit(() -> recaudacionCajaSseService.publishSecuencial(request.getIdusuario(), cajaDto));
+        return new TransferenciaFacturasResponse(resultado, cajaDto);
+    }
+
+    @Transactional
     public RecaudacionCobroResponse cobrar(RecaudacionCobroRequest request) {
         if (request == null || request.getFacturas() == null || request.getFacturas().isEmpty()) {
             throw new IllegalArgumentException("Debe seleccionar al menos una factura para cobrar.");
@@ -521,14 +589,23 @@ public class RecaudacionCobroServicio {
             facturasParaCobro.add(pendiente);
         }
 
+        Map<Long, Facturas> facturasPorId = facturas.stream()
+                .collect(Collectors.toMap(Facturas::getIdfactura, factura -> factura));
         BigDecimal totalCalculado = facturasParaCobro.stream()
                 .map(dto -> {
-                    BigDecimal subtotal = dto.getSubtotal() != null ? BigDecimal.valueOf(dto.getSubtotal()) : BigDecimal.ZERO;
-                    BigDecimal interes = dto.getInteres() != null ? dto.getInteres() : BigDecimal.ZERO;
-                    BigDecimal iva = dto.getIva() != null ? dto.getIva() : BigDecimal.ZERO;
-                    return subtotal.add(interes).add(iva);
+                    Facturas factura = facturasPorId.get(dto.getIdfactura());
+                    // Se redondea cada rubro antes de sumar para que cobro y comprobante coincidan.
+                    BigDecimal subtotal = factura != null
+                            ? sumarSubtotalFactura(factura.getIdfactura())
+                            : redondearMoneda(dto.getSubtotal() != null ? BigDecimal.valueOf(dto.getSubtotal()) : BigDecimal.ZERO);
+                    BigDecimal interes = redondearMoneda(dto.getInteres());
+                    BigDecimal iva = redondearMoneda(dto.getIva());
+                    dto.setSubtotal(subtotal.floatValue());
+                    dto.setTotal(redondearMoneda(subtotal.add(interes).add(iva)));
+                    return dto.getTotal();
                 })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.UP);
 
         Recaudacion recaudacion = request.getRecaudacion() != null ? request.getRecaudacion() : new Recaudacion();
         recaudacion.setRecaudador(idusuario);
@@ -885,7 +962,7 @@ public class RecaudacionCobroServicio {
                 .map(r -> {
                     BigDecimal valor = r.getValorunitario() != null ? r.getValorunitario() : BigDecimal.ZERO;
                     BigDecimal cantidad = r.getCantidad() != null ? BigDecimal.valueOf(r.getCantidad()) : BigDecimal.ONE;
-                    return valor.multiply(cantidad);
+                    return redondearMoneda(valor.multiply(cantidad));
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
@@ -898,7 +975,7 @@ public class RecaudacionCobroServicio {
                 .map(r -> {
                     BigDecimal valor = r.getValorunitario() != null ? r.getValorunitario() : BigDecimal.ZERO;
                     BigDecimal cantidad = r.getCantidad() != null ? BigDecimal.valueOf(r.getCantidad()) : BigDecimal.ONE;
-                    return valor.multiply(cantidad);
+                    return redondearMoneda(valor.multiply(cantidad));
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
@@ -985,6 +1062,10 @@ public class RecaudacionCobroServicio {
             return BigDecimal.ZERO;
         }
         return valor.setScale(2, RoundingMode.UP);
+    }
+
+    private BigDecimal redondearMoneda(BigDecimal valor) {
+        return valor == null ? BigDecimal.ZERO.setScale(2, RoundingMode.UP) : valor.setScale(2, RoundingMode.UP);
     }
 
     private void registrarAplicacionNotaCredito(Facturas factura, BigDecimal valorAplicado) {

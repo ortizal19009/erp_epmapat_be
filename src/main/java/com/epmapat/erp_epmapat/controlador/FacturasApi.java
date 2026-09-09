@@ -536,10 +536,11 @@ public class FacturasApi {
 				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe la Factura Id: " + idfactura)));
 		String fileName;
 		Long idmodulo = factura.getIdmodulo() != null ? factura.getIdmodulo().getIdmodulo() : null;
-		if (factura.getIdabonado() != null && factura.getIdabonado() > 0 && (Long.valueOf(3).equals(idmodulo) || Long.valueOf(4).equals(idmodulo))) {
-			fileName = "CompPagoConsumoAgua";
-		} else if (Long.valueOf(27).equals(idmodulo)) {
+		if (Long.valueOf(27).equals(idmodulo) || (factura.getConveniopago() != null && factura.getConveniopago() > 0)) {
 			fileName = "CompPagoConvenios";
+		} else if (factura.getIdabonado() != null && factura.getIdabonado() > 0
+				&& (Long.valueOf(3).equals(idmodulo) || Long.valueOf(4).equals(idmodulo))) {
+			fileName = "CompPagoConsumoAgua";
 		} else {
 			fileName = "CompPagoServicios";
 		}

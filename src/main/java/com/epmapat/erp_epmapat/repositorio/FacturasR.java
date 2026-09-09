@@ -253,7 +253,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			      CAST(SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS numeric(18,2)) AS total,
 			      f.idcliente,
 			      f.idabonado,
-			      f.feccrea,
+			      CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END AS feccrea,
 			      f.formapago,
 			      f.estado,
 			      f.pagado,
@@ -269,6 +269,8 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				LEFT JOIN modulos m ON f.idmodulo = m.idmodulo
 				LEFT JOIN clientes c ON f.idcliente = c.idcliente
 				LEFT JOIN abonados a ON f.idabonado = a.idabonado
+				LEFT JOIN lecturas l ON l.idfactura = f.idfactura
+				LEFT JOIN emisiones e ON e.idemision = l.idemision
 
 			    WHERE
 			      f.idcliente = ?1
@@ -280,12 +282,12 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			      AND f.fechaconvenio IS NULL
 
 			    GROUP BY
-			      f.idfactura, f.idmodulo, f.idcliente, f.idabonado, f.feccrea,
+			      f.idfactura, f.idmodulo, f.idcliente, f.idabonado, f.feccrea, e.feccrea,
 			      f.formapago, f.estado, f.pagado, f.swcondonar,
 			      m.descripcion, c.nombre, c.cedula, a.direccionubicacion
 			    HAVING SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) > 0
 			    ORDER BY
-			      f.idabonado ASC, f.feccrea ASC
+			      f.idabonado ASC, CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END ASC
 			""", nativeQuery = true)
 	List<FacSinCobrar> findFacSincobro(Long idcliente);
 
@@ -296,7 +298,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			  CAST(tf.total AS numeric(18,2)) AS total,
 			  f.idcliente,
 			  f.idabonado,
-			  f.feccrea,
+			  CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END AS feccrea,
 			  f.formapago,
 			  f.estado,
 			  f.pagado,
@@ -310,12 +312,14 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
 			  GROUP BY rf.idfactura_facturas
 			) tf ON tf.idfactura_facturas = f.idfactura
+			LEFT JOIN lecturas l ON l.idfactura = f.idfactura
+			LEFT JOIN emisiones e ON e.idemision = l.idemision
 			WHERE tf.total > 0
 			  AND f.idabonado = ?1
 			  AND (((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL) OR f.estado = 3)
 			  AND f.fechaeliminacion IS NULL
 			  AND f.fechaconvenio IS NULL
-			ORDER BY f.idabonado ASC, f.feccrea ASC
+			ORDER BY f.idabonado ASC, CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END ASC
 			""", nativeQuery = true)
 	public List<FacSinCobrar> findFacSincobroByCuetna(Long cuenta);
 
@@ -1100,14 +1104,16 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "select f.idfactura, f.totaltarifa as subtotal from facturas f where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and f.totaltarifa > 0 ORDER BY f.idfactura", nativeQuery = true)
 	public List<FacturasSinCobroInter> findFacturasSinCobro(Long cuenta);
 
-	@Query(value = "select f.idfactura, f.totaltarifa as subtotal, c.nombre, c.cedula, a.idabonado as cuenta, a.direccionubicacion, f.formapago, f.feccrea, f.fechatransferencia as fectransferencia "
+	@Query(value = "select f.idfactura, f.totaltarifa as subtotal, c.nombre, c.cedula, a.idabonado as cuenta, a.direccionubicacion, f.formapago, CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END AS feccrea, f.fechatransferencia as fectransferencia "
 			+
 			"from facturas f " +
 			"join clientes c on c.idcliente = f.idcliente " +
 			"join abonados a on a.idabonado = f.idabonado " +
+			"left join lecturas l on l.idfactura = f.idfactura " +
+			"left join emisiones e on e.idemision = l.idemision " +
 			"where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and f.totaltarifa > 0 "
 			+
-			"ORDER BY f.idfactura", nativeQuery = true)
+			"ORDER BY CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END, f.idfactura", nativeQuery = true)
 	public List<FacturasSinCobroInter> findSincobroDatos(Long cuenta);
 
 	/*

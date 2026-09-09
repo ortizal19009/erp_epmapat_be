@@ -20,6 +20,8 @@ import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaDTO;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCajaOperacionResponse;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroRequest;
 import com.epmapat.erp_epmapat.DTO.recaudacion.RecaudacionCobroResponse;
+import com.epmapat.erp_epmapat.DTO.recaudacion.TransferenciaFacturasRequest;
+import com.epmapat.erp_epmapat.DTO.recaudacion.TransferenciaFacturasResponse;
 import com.epmapat.erp_epmapat.servicio.recaudacion.RecaudacionCajaSseService;
 import com.epmapat.erp_epmapat.servicio.recaudacion.RecaudacionCobroServicio;
 
@@ -93,5 +95,11 @@ public class RecaudacionCobroApi {
     @PutMapping("/cobrar")
     public ResponseEntity<RecaudacionCobroResponse> cobrarPut(@RequestBody RecaudacionCobroRequest request) {
         return ResponseEntity.ok(recaudacionCobroServicio.cobrar(request));
+    }
+
+    @PostMapping("/transferencias")
+    public ResponseEntity<TransferenciaFacturasResponse> transferir(
+            @RequestBody TransferenciaFacturasRequest request) {
+        return ResponseEntity.ok(recaudacionCobroServicio.transferir(request));
     }
 }

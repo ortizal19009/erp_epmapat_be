@@ -40,8 +40,8 @@ SELECT
     1004 AS idrubro,
     'Conservación de fuentes' AS descripcion,
     1::numeric AS cantidad,
-    SUM(rf.valorunitario)::numeric AS valorunitario,
-    SUM(rf.valorunitario)::numeric AS total
+    SUM(CASE WHEN rf.valorunitario < 0 THEN FLOOR(rf.valorunitario * 100) / 100 ELSE CEIL(rf.valorunitario * 100) / 100 END)::numeric AS valorunitario,
+    SUM(CASE WHEN rf.valorunitario < 0 THEN FLOOR(rf.valorunitario * 100) / 100 ELSE CEIL(rf.valorunitario * 100) / 100 END)::numeric AS total
 FROM rubroxfac rf
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros
 WHERE rf.idfactura_facturas = $P{idfactura} AND (rf.estado IS NULL OR rf.estado <> 0)
@@ -56,8 +56,8 @@ SELECT
     r.idrubro AS idrubro,
     r.descripcion,
     COALESCE(SUM(rf.cantidad), 0)::numeric AS cantidad,
-    COALESCE(SUM(rf.valorunitario), 0)::numeric AS valorunitario,
-    COALESCE(SUM(rf.cantidad * rf.valorunitario), 0)::numeric AS total
+    COALESCE(SUM(CASE WHEN rf.valorunitario < 0 THEN FLOOR(rf.valorunitario * 100) / 100 ELSE CEIL(rf.valorunitario * 100) / 100 END), 0)::numeric AS valorunitario,
+    COALESCE(SUM(CASE WHEN rf.cantidad * rf.valorunitario < 0 THEN FLOOR(rf.cantidad * rf.valorunitario * 100) / 100 ELSE CEIL(rf.cantidad * rf.valorunitario * 100) / 100 END), 0)::numeric AS total
 FROM rubroxfac rf
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros
 WHERE rf.idfactura_facturas = $P{idfactura} AND (rf.estado IS NULL OR rf.estado <> 0)
@@ -110,11 +110,11 @@ ORDER BY idrubro;]]>
 		<queryString>
 			<![CDATA[SELECT 
     rf.idfactura_facturas,
-    SUM(rf.cantidad * rf.valorunitario)  AS subtotal,
+    SUM(CASE WHEN rf.cantidad * rf.valorunitario < 0 THEN FLOOR(rf.cantidad * rf.valorunitario * 100) / 100 ELSE CEIL(rf.cantidad * rf.valorunitario * 100) / 100 END) AS subtotal,
     COALESCE(f.swiva, 0) AS iva,
     COALESCE(f.interescobrado, 0) AS interes, 
       COALESCE( f.valornotacredito, 0) as nc,
-    SUM(rf.cantidad * rf.valorunitario) + COALESCE(f.swiva, 0) + COALESCE(f.interescobrado, 0)  AS total
+    SUM(CASE WHEN rf.cantidad * rf.valorunitario < 0 THEN FLOOR(rf.cantidad * rf.valorunitario * 100) / 100 ELSE CEIL(rf.cantidad * rf.valorunitario * 100) / 100 END) + COALESCE(f.swiva, 0) + COALESCE(f.interescobrado, 0) AS total
 FROM facturas f
 JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas 
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros 
@@ -184,7 +184,7 @@ LIMIT 8]]>
 			<![CDATA[SELECT r.descripcion,
 	rf.cantidad,
 	rf.valorunitario,
-	rf.cantidad * rf.valorunitario AS total
+	CASE WHEN rf.cantidad * rf.valorunitario < 0 THEN FLOOR(rf.cantidad * rf.valorunitario * 100) / 100 ELSE CEIL(rf.cantidad * rf.valorunitario * 100) / 100 END AS total
 FROM rubroxfac rf
 	join rubros r ON 
 	 rf.idrubro_rubros = r.idrubro 

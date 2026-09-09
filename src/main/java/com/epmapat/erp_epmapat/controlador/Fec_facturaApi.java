@@ -291,6 +291,15 @@ public class Fec_facturaApi {
       }
    }
 
+   @PostMapping("/{idfactura}/recuperar-xml-autorizado")
+   public ResponseEntity<Fec_factura> recuperarXmlAutorizado(@PathVariable Long idfactura) {
+      return fecfacServicio.recuperarXmlAutorizado(idfactura)
+            .map(ResponseEntity::ok)
+            .orElseGet(() -> fecfacServicio.findById(idfactura)
+                  .map(facturaPendiente -> ResponseEntity.status(HttpStatus.ACCEPTED).body(facturaPendiente))
+                  .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura)));
+   }
+
    @DeleteMapping("/{idfactura}")
    public ResponseEntity<Fec_factura> deleteFec_factura(@PathVariable Long idfactura) {
       Fec_factura factura = fecfacServicio.findById(idfactura)

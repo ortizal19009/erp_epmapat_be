@@ -82,6 +82,12 @@ public class VentanasApi {
       return ResponseEntity.ok(venServicio.getCatalogoModulosVentanas());
    }
 
+   @GetMapping("/catalogo-modulos/auditoria")
+   public ResponseEntity<Map<String, Object>> getAuditoriaCatalogoModulosVentanas(HttpServletRequest request) {
+      webAccessGuard.requireAdmin(request);
+      return ResponseEntity.ok(venServicio.getAuditoriaCatalogoModulosVentanas());
+   }
+
    @PostMapping("/catalogo-modulos")
    public ResponseEntity<Void> saveCatalogoModulosVentanas(@RequestBody List<Map<String, Object>> catalogo,
          HttpServletRequest request) {

@@ -268,6 +268,20 @@ public class VentanaServicio {
       return rows;
    }
 
+   public Map<String, Object> getAuditoriaCatalogoModulosVentanas() {
+      List<Map<String, Object>> ventanas = getCatalogoModulosVentanas();
+      List<Map<String, Object>> sinModulo = ventanas.stream()
+            .filter(item -> item.get("iderpmodulo") == null)
+            .collect(java.util.stream.Collectors.toList());
+
+      Map<String, Object> auditoria = new LinkedHashMap<>();
+      auditoria.put("totalVentanas", ventanas.size());
+      auditoria.put("ventanasAsignadas", ventanas.size() - sinModulo.size());
+      auditoria.put("ventanasSinModulo", sinModulo.size());
+      auditoria.put("detalleSinModulo", sinModulo);
+      return auditoria;
+   }
+
    @Transactional
    public void saveCatalogoModulosVentanas(List<Map<String, Object>> catalogo) {
       if (catalogo == null) {

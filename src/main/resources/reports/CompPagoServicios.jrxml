@@ -66,8 +66,8 @@
 	rf.idrubro_rubros AS idrubro,
 	COALESCE(r.descripcion, 'RUBRO SIN DESCRIPCION') AS descripcion,
 	COALESCE(SUM(rf.cantidad), 0)::numeric AS cantidad,
-	COALESCE(SUM(rf.valorunitario), 0)::numeric AS valorunitario,
-	COALESCE(SUM(rf.cantidad * rf.valorunitario), 0)::numeric AS total
+	COALESCE(SUM(CASE WHEN rf.valorunitario < 0 THEN FLOOR(rf.valorunitario * 100) / 100 ELSE CEIL(rf.valorunitario * 100) / 100 END), 0)::numeric AS valorunitario,
+	COALESCE(SUM(CASE WHEN rf.cantidad * rf.valorunitario < 0 THEN FLOOR(rf.cantidad * rf.valorunitario * 100) / 100 ELSE CEIL(rf.cantidad * rf.valorunitario * 100) / 100 END), 0)::numeric AS total
 FROM rubroxfac rf
 	LEFT JOIN rubros r ON rf.idrubro_rubros = r.idrubro
 WHERE 
@@ -125,7 +125,7 @@ FROM facturas f
 LEFT JOIN (
     SELECT 
         rf.idfactura_facturas,
-        SUM(rf.cantidad * rf.valorunitario) AS subtotal
+        SUM(CASE WHEN rf.cantidad * rf.valorunitario < 0 THEN FLOOR(rf.cantidad * rf.valorunitario * 100) / 100 ELSE CEIL(rf.cantidad * rf.valorunitario * 100) / 100 END) AS subtotal
     FROM rubroxfac rf
     WHERE (rf.estado IS NULL OR rf.estado <> 0)
       AND rf.idrubro_rubros NOT IN (165, 5)

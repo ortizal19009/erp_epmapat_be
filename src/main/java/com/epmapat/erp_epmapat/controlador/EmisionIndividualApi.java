@@ -20,6 +20,8 @@ import com.epmapat.erp_epmapat.interfaces.FacEliminadas;
 import com.epmapat.erp_epmapat.interfaces.IemiIndividual;
 import com.epmapat.erp_epmapat.interfaces.R_refacturacion_int;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
+import com.epmapat.erp_epmapat.DTO.RefacturacionIndividualRequest;
+import com.epmapat.erp_epmapat.DTO.RefacturacionIndividualResponse;
 import com.epmapat.erp_epmapat.modelo.EmisionIndividual;
 import com.epmapat.erp_epmapat.servicio.EmisionIndividualServicio;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +37,12 @@ public class EmisionIndividualApi {
     @PostMapping
     public ResponseEntity<EmisionIndividual> postMethodName(@RequestBody EmisionIndividual emiIndi) {
         return ResponseEntity.ok(sei.save(emiIndi));
+    }
+
+    @PostMapping("/refacturacion")
+    public ResponseEntity<RefacturacionIndividualResponse> crearRefacturacion(
+            @RequestBody RefacturacionIndividualRequest request) {
+        return ResponseEntity.ok(sei.crearRefacturacion(request));
     }
 
     @GetMapping("/idemision")

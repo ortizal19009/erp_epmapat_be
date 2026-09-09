@@ -94,7 +94,11 @@ public class EmailController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        // El historial puede contener cuerpos HTML grandes. El detalle se consulta por id;
+        // el listado solo entrega los campos necesarios para renderizar la tabla.
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        var pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
         var spec = EmailSpecs.filter(
                 status,
                 type,
@@ -104,7 +108,7 @@ public class EmailController {
                 parseDate(dateFrom),
                 parseDate(dateTo)
         );
-        return emailRepo.findAll(spec, pageable).map(this::toResponse);
+        return emailRepo.findAll(spec, pageable).map(this::toListResponse);
     }
 
     @GetMapping("/summary")
@@ -178,6 +182,30 @@ public class EmailController {
         r.bodyHtml = e.getBodyHtml();
         r.bodyText = e.getBodyText();
         r.attachments = attachmentRepo.findByEmailId(e.getId()).stream().map(this::toAttachmentResponse).toList();
+        return r;
+    }
+
+    private EmailResponse toListResponse(EmailMessage e) {
+        EmailResponse r = new EmailResponse();
+        r.id = e.getId();
+        r.type = e.getType();
+        r.status = e.getStatus();
+        r.subject = e.getSubject();
+        r.correlationId = e.getCorrelationId();
+        if (e.getAccount() != null) {
+            r.accountId = e.getAccount().getId();
+            r.accountCode = e.getAccount().getCode();
+            r.accountName = e.getAccount().getName();
+        }
+        r.fromAddress = e.getFromAddress();
+        r.attempts = e.getAttempts();
+        r.lastError = e.getLastError();
+        r.createdAt = e.getCreatedAt();
+        r.sentAt = e.getSentAt();
+        r.to = splitCsv(e.getToRecipients());
+        r.cc = splitCsv(e.getCcRecipients());
+        r.bcc = splitCsv(e.getBccRecipients());
+        r.attachments = List.of();
         return r;
     }
 
