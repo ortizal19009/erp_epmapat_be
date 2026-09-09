@@ -145,8 +145,8 @@ public class AsientoServicio {
 				totalCre = totalCre.add(t.getValor());
 			}
 		}
-		totalDeb = totalDeb.setScale(2, RoundingMode.HALF_UP);
-		totalCre = totalCre.setScale(2, RoundingMode.HALF_UP);
+		totalDeb = totalDeb.setScale(2, RoundingMode.UP);
+		totalCre = totalCre.setScale(2, RoundingMode.UP);
 		asiento.setTotdeb(totalDeb);
 		asiento.setTotcre(totalCre);
 		dao.save(asiento);

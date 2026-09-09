@@ -24,7 +24,7 @@ import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
 public class MultaBasuraRepairService {
 
     private static final Long RUBRO_MULTA_BASURA_ID = 1011L;
-    private static final RoundingMode RM = RoundingMode.HALF_UP;
+    private static final RoundingMode RM = RoundingMode.UP;
     private static final BigDecimal ZERO = BigDecimal.ZERO;
 
     private final LecturasR lecturasR;

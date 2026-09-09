@@ -699,25 +699,25 @@ public class Fec_facturaService {
 
    private BigDecimal obtenerTarifaDesdeCodigo(String codigoImpuesto, String codigoPorcentaje, BigDecimal porcentajeIva) {
       if (!CODIGO_IMPUESTO_IVA.equals(codigoImpuesto) || codigoPorcentaje == null || CODIGO_PORCENTAJE_IVA_0.equals(codigoPorcentaje)) {
-         return BigDecimal.ZERO.setScale(2);
+         return BigDecimal.ZERO.setScale(2, java.math.RoundingMode.UP);
       }
 
       if (Set.of(CODIGO_PORCENTAJE_IVA_12, CODIGO_PORCENTAJE_IVA_14, CODIGO_PORCENTAJE_IVA_15).contains(codigoPorcentaje)) {
-         return porcentajeIva == null ? BigDecimal.ZERO.setScale(2) : porcentajeIva.setScale(2);
+         return porcentajeIva == null ? BigDecimal.ZERO.setScale(2, java.math.RoundingMode.UP) : porcentajeIva.setScale(2, java.math.RoundingMode.UP);
       }
 
       if ("5".equals(codigoPorcentaje)) {
-         return BigDecimal.valueOf(5).setScale(2);
+         return BigDecimal.valueOf(5).setScale(2, java.math.RoundingMode.UP);
       }
 
-      return BigDecimal.ZERO.setScale(2);
+      return BigDecimal.ZERO.setScale(2, java.math.RoundingMode.UP);
    }
 
    private BigDecimal calcularValorPorTarifa(BigDecimal baseImponible, BigDecimal tarifa) {
       if (baseImponible == null || tarifa == null || tarifa.compareTo(BigDecimal.ZERO) <= 0) {
-         return BigDecimal.ZERO.setScale(2);
+         return BigDecimal.ZERO.setScale(2, java.math.RoundingMode.UP);
       }
-      return baseImponible.multiply(tarifa).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+      return baseImponible.multiply(tarifa).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.UP);
    }
 
    private String etiquetaCodigoPorcentaje(String codigoPorcentaje) {

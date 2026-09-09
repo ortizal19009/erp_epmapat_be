@@ -198,12 +198,6 @@
     <version>5.12</version>
 </dependency>
 
-<!-- También para multipart en Spring Boot -->
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-web</artifactId>
-</dependency>
-
 	</dependencies>
 	<build>
 		<plugins>

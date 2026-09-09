@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,7 @@ public class EmisionGeneracionServicio {
     private final RubroxfacR rubroxfacR;
     private final TransactionTemplate transactionTemplate;
     private final Clock clock;
+    private final Map<Long, AperturaProgreso> progresoAperturas = new ConcurrentHashMap<>();
 
     public EmisionGeneracionServicio(
             EmisionesR emisionesR,
@@ -79,11 +81,32 @@ public class EmisionGeneracionServicio {
     }
 
     public EmisionGeneracionResponseDTO generarPendientes(Long idemision, Long idusuario) {
-        return procesarApertura(idemision, idusuario, true);
+        try {
+            return procesarApertura(idemision, idusuario, true);
+        } catch (RuntimeException ex) {
+            AperturaProgreso progreso = progresoAperturas.get(idemision);
+            if (progreso != null) {
+                String detalle = ex instanceof ResponseStatusException response ? response.getReason() : ex.getMessage();
+                progreso.marcarError(detalle);
+            }
+            throw ex;
+        }
     }
 
     public EmisionGeneracionResponseDTO validarApertura(Long idemision) {
         return procesarApertura(idemision, 0L, false);
+    }
+
+    public Map<String, Object> getProgresoApertura(Long idemision) {
+        AperturaProgreso progreso = progresoAperturas.get(idemision);
+        if (progreso == null) {
+            Map<String, Object> sinProceso = new LinkedHashMap<>();
+            sinProceso.put("estado", "SIN_PROCESO");
+            sinProceso.put("progreso", 0);
+            sinProceso.put("mensaje", "La apertura aun no se ha iniciado.");
+            return sinProceso;
+        }
+        return progreso.toResponse();
     }
 
     public Map<String, Object> generarFacturasCabeceraUltimaEmisionAbierta(Long idusuario) {
@@ -155,6 +178,11 @@ public class EmisionGeneracionServicio {
         Date fechaCreacion = new Date();
 
         List<Rutas> rutasActivas = rutasR.findAllActive();
+        AperturaProgreso progreso = generarFaltantes ? new AperturaProgreso() : null;
+        if (progreso != null) {
+            progreso.iniciar(rutasActivas.size(), emision.getEmision());
+            progresoAperturas.put(idemision, progreso);
+        }
         List<EmisionGeneracionRutaDetalleDTO> detalleRutas = new ArrayList<>();
         List<RutaTiempo> tiemposRuta = new ArrayList<>();
 
@@ -166,7 +194,11 @@ public class EmisionGeneracionServicio {
         long lecturasCreadas = 0;
         String accion = generarFaltantes ? "Generacion" : "Validacion";
 
-        for (Rutas ruta : rutasActivas) {
+        for (int indiceRuta = 0; indiceRuta < rutasActivas.size(); indiceRuta++) {
+            Rutas ruta = rutasActivas.get(indiceRuta);
+            if (progreso != null) {
+                progreso.iniciarRuta(ruta, indiceRuta);
+            }
             long inicioRuta = System.currentTimeMillis();
             EmisionGeneracionRutaDetalleDTO detalleRuta = procesarRuta(
                     emision,
@@ -175,7 +207,9 @@ public class EmisionGeneracionServicio {
                     fechaEmisionLocal,
                     fechaEmision,
                     fechaCreacion,
-                    generarFaltantes);
+                    generarFaltantes,
+                    progreso,
+                    indiceRuta);
             long duracionRuta = System.currentTimeMillis() - inicioRuta;
 
             if (detalleRuta == null) {
@@ -229,11 +263,18 @@ public class EmisionGeneracionServicio {
             }
 
             detalleRutas.add(detalleRuta);
+            if (progreso != null) {
+                progreso.completarRuta(detalleRuta, indiceRuta + 1);
+            }
         }
 
         long rutasPendientes = detalleRutas.stream().filter(r -> r.getLecturasPendientes() > 0).count();
         long lecturasPendientes = Math.max(totalLecturasEsperadas - (lecturasExistentes + lecturasCreadas), 0);
         logResumenRutasLentas(accion, emision.getEmision(), tiemposRuta);
+
+        if (progreso != null) {
+            progreso.completar(totalLecturasEsperadas, lecturasCreadas);
+        }
 
         return EmisionGeneracionResponseDTO.builder()
                 .idemision(idemision)
@@ -290,7 +331,9 @@ public class EmisionGeneracionServicio {
             LocalDate fechaEmisionLocal,
             Date fechaEmision,
             Date fechaCreacion,
-            boolean generarFaltantes) {
+            boolean generarFaltantes,
+            AperturaProgreso progreso,
+            int indiceRuta) {
         Rutasxemision rutaXEmision = rutasxemisionR.findOptionalByEmisionRuta(emision.getIdemision(), ruta.getIdruta())
                 .orElse(null);
 
@@ -308,7 +351,8 @@ public class EmisionGeneracionServicio {
         long creadasRuta = 0;
 
         if (rutaXEmision != null) {
-            for (Abonados abonado : abonados) {
+            for (int indiceAbonado = 0; indiceAbonado < abonados.size(); indiceAbonado++) {
+                Abonados abonado = abonados.get(indiceAbonado);
                 Optional<Lecturas> lecturaExistente = lecturasR
                         .findFirstByIdemisionAndIdabonado(emision.getIdemision(), abonado.getIdabonado());
 
@@ -318,10 +362,12 @@ public class EmisionGeneracionServicio {
                             abonado,
                             fechaEmisionLocal,
                             idusuario);
+                    actualizarProgresoAbonado(progreso, indiceRuta, indiceAbonado + 1, esperadosRuta, false);
                     continue;
                 }
 
                 if (!generarFaltantes) {
+                    actualizarProgresoAbonado(progreso, indiceRuta, indiceAbonado + 1, esperadosRuta, false);
                     continue;
                 }
 
@@ -333,6 +379,7 @@ public class EmisionGeneracionServicio {
                         fechaEmision,
                         idusuario);
                 creadasRuta++;
+                actualizarProgresoAbonado(progreso, indiceRuta, indiceAbonado + 1, esperadosRuta, true);
             }
         }
 
@@ -350,6 +397,17 @@ public class EmisionGeneracionServicio {
                 .lecturasCreadas(creadasRuta)
                 .lecturasPendientes(pendientesRuta)
                 .build();
+    }
+
+    private void actualizarProgresoAbonado(
+            AperturaProgreso progreso,
+            int indiceRuta,
+            int abonadosRutaProcesados,
+            long totalAbonadosRuta,
+            boolean lecturaCreada) {
+        if (progreso != null) {
+            progreso.actualizarAbonado(indiceRuta, abonadosRutaProcesados, totalAbonadosRuta, lecturaCreada);
+        }
     }
 
     private Rutasxemision crearRutaXEmision(
@@ -575,5 +633,93 @@ public class EmisionGeneracionServicio {
             long abonadosEsperados,
             long lecturasCreadas,
             long lecturasPendientes) {
+    }
+
+    private static final class AperturaProgreso {
+        private int totalRutas;
+        private int rutasProcesadas;
+        private long abonadosProcesados;
+        private long lecturasCreadas;
+        private String rutaActual = "";
+        private String emision = "";
+        private String estado = "EN_PROCESO";
+        private String mensaje = "Preparando apertura de emision.";
+        private int porcentaje;
+
+        synchronized void iniciar(int totalRutas, String emision) {
+            this.totalRutas = totalRutas;
+            this.emision = emision;
+            this.porcentaje = totalRutas == 0 ? 100 : 1;
+            this.estado = "EN_PROCESO";
+            this.mensaje = "Preparando " + totalRutas + " rutas para la emision " + emision + ".";
+        }
+
+        synchronized void iniciarRuta(Rutas ruta, int indiceRuta) {
+            this.rutaActual = formatRuta(ruta);
+            this.porcentaje = calcularPorcentaje(indiceRuta, 0, 1);
+            this.mensaje = "Procesando ruta " + rutaActual + ".";
+        }
+
+        synchronized void actualizarAbonado(int indiceRuta, int abonadosRutaProcesados, long totalAbonadosRuta,
+                boolean lecturaCreada) {
+            abonadosProcesados++;
+            if (lecturaCreada) {
+                lecturasCreadas++;
+            }
+            this.porcentaje = calcularPorcentaje(indiceRuta, abonadosRutaProcesados, totalAbonadosRuta);
+            this.mensaje = "Procesando ruta " + rutaActual + ": " + abonadosRutaProcesados + "/"
+                    + totalAbonadosRuta + " abonados.";
+        }
+
+        synchronized void completarRuta(EmisionGeneracionRutaDetalleDTO ruta, int rutasProcesadas) {
+            this.rutasProcesadas = rutasProcesadas;
+            this.porcentaje = calcularPorcentaje(rutasProcesadas, 0, 1);
+            this.mensaje = "Ruta " + ruta.getCodigoRuta() + " completada. " + rutasProcesadas + "/" + totalRutas
+                    + " rutas procesadas.";
+        }
+
+        synchronized void completar(long totalLecturas, long lecturasCreadas) {
+            this.lecturasCreadas = lecturasCreadas;
+            this.porcentaje = 100;
+            this.estado = "COMPLETADO";
+            this.mensaje = "Apertura completada: " + totalLecturas + " lecturas verificadas.";
+        }
+
+        synchronized void marcarError(String error) {
+            this.estado = "ERROR";
+            this.mensaje = error == null || error.isBlank()
+                    ? "La apertura no se pudo completar."
+                    : "La apertura no se pudo completar: " + error;
+        }
+
+        synchronized Map<String, Object> toResponse() {
+            Map<String, Object> respuesta = new LinkedHashMap<>();
+            respuesta.put("estado", estado);
+            respuesta.put("progreso", porcentaje);
+            respuesta.put("emision", emision);
+            respuesta.put("totalRutas", totalRutas);
+            respuesta.put("rutasProcesadas", rutasProcesadas);
+            respuesta.put("rutaActual", rutaActual);
+            respuesta.put("abonadosProcesados", abonadosProcesados);
+            respuesta.put("lecturasCreadas", lecturasCreadas);
+            respuesta.put("mensaje", mensaje);
+            return respuesta;
+        }
+
+        private int calcularPorcentaje(int indiceRuta, int abonadosProcesadosRuta, long totalAbonadosRuta) {
+            if (totalRutas == 0) {
+                return 100;
+            }
+            double avanceRuta = totalAbonadosRuta <= 0 ? 0D
+                    : Math.min((double) abonadosProcesadosRuta / totalAbonadosRuta, 1D);
+            double avance = ((double) indiceRuta + avanceRuta) / totalRutas;
+            return Math.max(1, Math.min(99, 1 + (int) Math.round(avance * 98)));
+        }
+
+        private String formatRuta(Rutas ruta) {
+            String codigo = ruta.getCodigo() == null ? "" : ruta.getCodigo();
+            String nombre = ruta.getDescripcion() == null ? "" : ruta.getDescripcion();
+            return (codigo + " " + nombre).trim();
+        }
     }
 }

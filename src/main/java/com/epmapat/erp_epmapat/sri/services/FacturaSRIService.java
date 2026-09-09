@@ -116,12 +116,12 @@ public class FacturaSRIService {
         infoFactura.setRazonSocialComprador(factura.getRazonsocialcomprador());
         infoFactura.setIdentificacionComprador(factura.getIdentificacioncomprador());
         infoFactura.setDireccionComprador(factura.getDireccioncomprador());
-        infoFactura.setTotalSinImpuestos(totalSinImpuestos.setScale(2, RoundingMode.HALF_UP));
-        infoFactura.setTotalDescuento(totalDescuento.setScale(2, RoundingMode.HALF_UP));
+        infoFactura.setTotalSinImpuestos(totalSinImpuestos.setScale(2, RoundingMode.UP));
+        infoFactura.setTotalDescuento(totalDescuento.setScale(2, RoundingMode.UP));
         infoFactura.setTotalConImpuestos(totalConImpuestos);
         infoFactura.setPropina(BigDecimal.ZERO);
         infoFactura.setImporteTotal(totalSinImpuestos.add(totalImpuestos)
-                .setScale(2, RoundingMode.HALF_UP));
+                .setScale(2, RoundingMode.UP));
         infoFactura.setMoneda("DOLAR");
         return infoFactura;
     }
@@ -281,18 +281,18 @@ public class FacturaSRIService {
     private BigDecimal obtenerTarifaIva() {
         Definir definir = getDefinir();
         if (definir.getPorciva() == null) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            return BigDecimal.ZERO.setScale(2, RoundingMode.UP);
         }
         BigDecimal tarifa = definir.getPorciva();
         if (tarifa.compareTo(BigDecimal.ZERO) > 0 && tarifa.compareTo(BigDecimal.ONE) <= 0) {
             tarifa = tarifa.multiply(CIEN);
         }
-        return tarifa.setScale(2, RoundingMode.HALF_UP);
+        return tarifa.setScale(2, RoundingMode.UP);
     }
 
     private BigDecimal obtenerTarifaParaCodigo(String codigoImpuesto, String codigoPorcentaje, BigDecimal tarifaIva) {
         if (!"2".equals(codigoImpuesto) || codigoPorcentaje == null || "0".equals(codigoPorcentaje)) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            return BigDecimal.ZERO.setScale(2, RoundingMode.UP);
         }
         return tarifaIva;
     }
@@ -300,20 +300,20 @@ public class FacturaSRIService {
     private BigDecimal calcularValorImpuesto(String codigoImpuesto, String codigoPorcentaje, BigDecimal baseImponible,
             BigDecimal tarifaIva) {
         if (baseImponible == null) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            return BigDecimal.ZERO.setScale(2, RoundingMode.UP);
         }
         BigDecimal tarifa = obtenerTarifaParaCodigo(codigoImpuesto, codigoPorcentaje, tarifaIva);
         if (BigDecimal.ZERO.compareTo(tarifa) == 0) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            return BigDecimal.ZERO.setScale(2, RoundingMode.UP);
         }
-        return baseImponible.multiply(tarifa).divide(CIEN, 2, RoundingMode.HALF_UP);
+        return baseImponible.multiply(tarifa).divide(CIEN, 2, RoundingMode.UP);
     }
 
     private BigDecimal calcularPrecioTotalSinImpuesto(BigDecimal cantidad, BigDecimal precioUnitario, BigDecimal descuento) {
         BigDecimal qty = cantidad == null ? BigDecimal.ONE : cantidad;
         BigDecimal precio = precioUnitario == null ? BigDecimal.ZERO : precioUnitario;
         BigDecimal desc = descuento == null ? BigDecimal.ZERO : descuento;
-        return qty.multiply(precio).subtract(desc).setScale(2, RoundingMode.HALF_UP);
+        return qty.multiply(precio).subtract(desc).setScale(2, RoundingMode.UP);
     }
 
     private BigDecimal calcularTotalSinImpuestos(List<Detalle> detalles) {
@@ -324,7 +324,7 @@ public class FacturaSRIService {
                 .map(Detalle::getPrecioTotalSinImpuesto)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(2, RoundingMode.UP);
     }
 
     private BigDecimal calcularTotalDescuento(List<Detalle> detalles) {
@@ -335,7 +335,7 @@ public class FacturaSRIService {
                 .map(Detalle::getDescuento)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(2, RoundingMode.UP);
     }
 
     public void processAndSendInvoice(String toEmail, String subject, String body, MultipartFile xmlFile)

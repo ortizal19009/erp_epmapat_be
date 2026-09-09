@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.epmapat.erp_epmapat.DTO.LoginRequest;
 import com.epmapat.erp_epmapat.DTO.LoginResponse;
 import com.epmapat.erp_epmapat.config.AESUtil;
@@ -30,6 +32,7 @@ import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 import com.epmapat.erp_epmapat.modelo.rrhh.Personal;
 import com.epmapat.erp_epmapat.servicio.administracion.UsuarioServicio;
 import com.epmapat.erp_epmapat.servicio.rrhh.PersonalServicio;
+import com.epmapat.erp_epmapat.seguridad.JwtService;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -41,6 +44,8 @@ public class UsuariosApi {
    UsuarioServicio usuServicio;
    @Autowired
    PersonalServicio personalServicio;
+   @Autowired
+   JwtService jwtService;
 
    @GetMapping
    public List<Usuarios> getAll() {
@@ -288,8 +293,11 @@ public class UsuariosApi {
       List<String> modules = usuServicio.getEnabledModules(user.getIdusuario(), platform);
 
       // 5️⃣ Respuesta exitosa
+      String token = "WEB".equals(platform)
+            ? jwtService.createWebToken(user.getIdusuario(), user.getNomusu(), user.getCargo())
+            : "token-jwt-falso";
       LoginResponse response = new LoginResponse(
-            "token-jwt-falso", // luego JWT real
+            token,
             user.getNomusu(), // username
             user.getIdusuario(), // userId REAL
             user.getCargo(), // profile
@@ -328,6 +336,15 @@ public class UsuariosApi {
    @GetMapping("/ping")
    public ResponseEntity<String> ping() {
       return ResponseEntity.ok("OK");
+   }
+
+   @GetMapping("/session")
+   public ResponseEntity<?> session(HttpServletRequest request) {
+      Object userId = request.getAttribute("jwtUserId");
+      if (userId == null) {
+         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token WEB requerido");
+      }
+      return ResponseEntity.ok(Map.of("userId", userId, "platform", request.getAttribute("jwtPlatform")));
    }
 
    @GetMapping("/cargo")

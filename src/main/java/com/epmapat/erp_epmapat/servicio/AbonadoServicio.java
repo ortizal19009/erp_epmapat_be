@@ -300,6 +300,7 @@ public class AbonadoServicio {
 
 	public Page<Abonados> buscar(
 			Long idruta,
+			Long idcategoria,
 			String responsable,
 			Long estado,
 			String cedula,
@@ -308,6 +309,7 @@ public class AbonadoServicio {
 			Pageable pageable) {
 		return hydratePage(dao.buscarConFiltros(
 				idruta,
+				idcategoria,
 				responsable,
 				estado,
 				cedula,

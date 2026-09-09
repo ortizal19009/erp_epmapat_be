@@ -21,9 +21,18 @@ import org.slf4j.LoggerFactory;
 @Service
 public class BackupService {
 
-    @Scheduled(cron = "0 0 2 * * *") // 2:00 AM todos los días
-    public void generarBackupProgramado() throws IOException, InterruptedException {
-        generarBackup(); // Reutiliza tu método de backup
+    private static final int PG_DUMP_OUTPUT_LIMIT = 2_000;
+
+    @Scheduled(cron = "0 0 2 * * *")
+    public void generarBackupProgramado() {
+        try {
+            generarBackup();
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            logger.error("El respaldo programado fue interrumpido: {}", exception.getMessage());
+        } catch (IOException exception) {
+            logger.error("El respaldo programado fallo: {}", exception.getMessage());
+        }
     }
 
 
@@ -115,12 +124,14 @@ public class BackupService {
         // Redirigir salida y errores
         pb.redirectErrorStream(true);
         Process process = pb.start();
+        StringBuilder pgDumpOutput = new StringBuilder();
 
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 logger.info("pg_dump: {}", line);
+                appendPgDumpOutput(pgDumpOutput, line);
             }
         }
 
@@ -130,7 +141,27 @@ public class BackupService {
             return archivoBackup;
         } else {
             logger.error("❌ Error al generar backup. Código: {}", exitCode);
-            throw new IOException("Backup falló con código " + exitCode);
+            Files.deleteIfExists(Paths.get(archivoBackup));
+            String detail = pgDumpOutput.length() == 0
+                    ? "pg_dump no devolvio detalle"
+                    : pgDumpOutput.toString();
+            throw new IOException("Backup fallo con codigo " + exitCode + ". pg_dump: " + detail);
+        }
+    }
+
+    private void appendPgDumpOutput(StringBuilder output, String line) {
+        if (output.length() >= PG_DUMP_OUTPUT_LIMIT) {
+            return;
+        }
+
+        if (output.length() > 0) {
+            output.append(System.lineSeparator());
+        }
+        int available = PG_DUMP_OUTPUT_LIMIT - output.length();
+        if (line.length() > available) {
+            output.append(line, 0, available);
+        } else {
+            output.append(line);
         }
     }
 

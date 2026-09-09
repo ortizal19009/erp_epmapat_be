@@ -544,6 +544,7 @@ public class AbonadosApi {
 	@GetMapping("/buscar")
 	public Page<Abonados> buscar(
 			@RequestParam(required = false) Long idruta,
+			@RequestParam(required = false) Long idcategoria,
 			@RequestParam(required = false) String responsable,
 			@RequestParam(required = false) Long estado,
 			@RequestParam(required = false) String cedula,
@@ -551,7 +552,7 @@ public class AbonadosApi {
 			@RequestParam(required = false) String ruta,
 			@PageableDefault(size = 20) Pageable pageable) {
 
-		return aboServicio.buscar(idruta, responsable, estado, cedula, cuenta, ruta, pageable);
+		return aboServicio.buscar(idruta, idcategoria, responsable, estado, cedula, cuenta, ruta, pageable);
 	}
 
 	/*

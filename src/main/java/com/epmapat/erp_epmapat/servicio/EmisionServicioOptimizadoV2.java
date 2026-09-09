@@ -64,7 +64,7 @@ public class EmisionServicioOptimizadoV2 {
 
     // ----------------- Constantes y utilidades numéricas -----------------
 
-    private static final RoundingMode RM = RoundingMode.HALF_UP;
+    private static final RoundingMode RM = RoundingMode.UP;
     private static final BigDecimal HALF = new BigDecimal("0.5");
     private static final BigDecimal TEN_CENTS = new BigDecimal("0.10");
     private static final BigDecimal FIFTY_CENTS = new BigDecimal("0.50");

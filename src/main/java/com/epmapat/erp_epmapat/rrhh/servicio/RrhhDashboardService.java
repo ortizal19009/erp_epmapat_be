@@ -92,7 +92,7 @@ public class RrhhDashboardService {
                 : BigDecimal.valueOf(onboarding.stream()
                         .mapToLong(o -> ChronoUnit.DAYS.between(o.getCandidate().getVacancy().getOpenDate(), o.getStartDate()))
                         .average().orElse(0d))
-                        .setScale(2, java.math.RoundingMode.HALF_UP);
+                        .setScale(2, java.math.RoundingMode.UP);
 
         BigDecimal hiringCost = vacancies.stream()
                 .map(RrhhVacancy::getBudgetedSalary)
@@ -105,7 +105,7 @@ public class RrhhDashboardService {
                 .toList();
         BigDecimal avgReview = reviews.isEmpty() ? BigDecimal.ZERO
                 : BigDecimal.valueOf(reviews.stream().map(RrhhPerformanceReview::getScore).mapToDouble(BigDecimal::doubleValue).average().orElse(0d))
-                        .setScale(2, java.math.RoundingMode.HALF_UP);
+                        .setScale(2, java.math.RoundingMode.UP);
 
         List<RrhhTrainingPlan> trainings = trainingRepository.findAll().stream()
                 .filter(t -> area == null || area.isBlank() || area.equalsIgnoreCase(t.getArea()))

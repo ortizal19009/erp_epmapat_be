@@ -13,8 +13,8 @@ import java.util.stream.Stream;
 public final class InteresUtils {
     private InteresUtils() {}
 
-    public static final MathContext MC = new MathContext(16, RoundingMode.HALF_UP);
-    public static final int SCALE_MONEY = 6;        // ajusta a tu BD (p. ej., DECIMAL(18,6))
+    public static final MathContext MC = new MathContext(16, RoundingMode.UP);
+    public static final int SCALE_MONEY = 2;
     public static final int SCALE_PERCENT = 10;
 
     public static BigDecimal bd(Object v) {
@@ -37,7 +37,7 @@ public final class InteresUtils {
     /** Convierte porcentaje (p.ej. 1.2) a ratio (0.012000...) */
     public static BigDecimal pctToRatio(BigDecimal pct) {
         return pct == null ? BigDecimal.ZERO :
-                pct.divide(BigDecimal.valueOf(100), SCALE_PERCENT, RoundingMode.HALF_UP);
+                pct.divide(BigDecimal.valueOf(100), SCALE_PERCENT, RoundingMode.UP);
     }
 
     /** Capitalización mensual: factor = ∏ (1 + r_i). */
@@ -53,6 +53,6 @@ public final class InteresUtils {
         if (principal == null) principal = BigDecimal.ZERO;
         if (monthlyRatios == null || monthlyRatios.isEmpty()) return BigDecimal.ZERO;
         BigDecimal factor = compoundFactor(monthlyRatios);
-        return principal.multiply(factor.subtract(BigDecimal.ONE, MC), MC).setScale(SCALE_MONEY, RoundingMode.HALF_UP);
+        return principal.multiply(factor.subtract(BigDecimal.ONE, MC), MC).setScale(SCALE_MONEY, RoundingMode.UP);
     }
 }

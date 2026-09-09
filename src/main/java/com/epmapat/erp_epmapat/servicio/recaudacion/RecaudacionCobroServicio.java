@@ -52,6 +52,7 @@ import com.epmapat.erp_epmapat.servicio.FacturaServicio;
 import com.epmapat.erp_epmapat.servicio.Fec_facturaService;
 import com.epmapat.erp_epmapat.servicio.FacxncService;
 import com.epmapat.erp_epmapat.servicio.FacxrecaudaServicio;
+import com.epmapat.erp_epmapat.servicio.InteresBatchService;
 import com.epmapat.erp_epmapat.servicio.NtacreditoServicio;
 import com.epmapat.erp_epmapat.servicio.RecaudacionServicio;
 import com.epmapat.erp_epmapat.servicio.RecaudaxcajaServicio;
@@ -96,6 +97,8 @@ public class RecaudacionCobroServicio {
     @Autowired
     private TmpinteresxfacService tmpinteresxfacService;
     @Autowired
+    private InteresBatchService interesBatchService;
+    @Autowired
     private RecaudacionCajaSseService recaudacionCajaSseService;
     @Autowired
     private RubrosR rubrosR;
@@ -111,9 +114,16 @@ public class RecaudacionCobroServicio {
     @Transactional(readOnly = true)
     public List<ValorFactDTO> getSincobroByCuenta(Long cuenta) {
         Map<Long, ValorFactDTO> pendientesPorId = new java.util.LinkedHashMap<>();
+        java.util.Set<Long> clientesConsultados = new java.util.HashSet<>();
 
-        agregarPendientesDeCliente(pendientesPorId, resolverIdClienteTitularPorCuenta(cuenta));
-        agregarPendientesDeCliente(pendientesPorId, resolverIdClienteResponsablePorCuenta(cuenta));
+        agregarPendientesDeClienteSiNoConsultado(
+                pendientesPorId,
+                clientesConsultados,
+                resolverIdClienteTitularPorCuenta(cuenta));
+        agregarPendientesDeClienteSiNoConsultado(
+                pendientesPorId,
+                clientesConsultados,
+                resolverIdClienteResponsablePorCuenta(cuenta));
         agregarPendientesDeCuenta(pendientesPorId, cuenta);
 
         List<ValorFactDTO> pendientes = new ArrayList<>(pendientesPorId.values());
@@ -123,6 +133,15 @@ public class RecaudacionCobroServicio {
                 .thenComparing(ValorFactDTO::getIdfactura, Comparator.nullsLast(Long::compareTo)));
         completarMontosPendientes(pendientes);
         return pendientes;
+    }
+
+    private void agregarPendientesDeClienteSiNoConsultado(
+            Map<Long, ValorFactDTO> pendientesPorId,
+            java.util.Set<Long> clientesConsultados,
+            Long idcliente) {
+        if (idcliente != null && clientesConsultados.add(idcliente)) {
+            agregarPendientesDeCliente(pendientesPorId, idcliente);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -151,7 +170,6 @@ public class RecaudacionCobroServicio {
             dto.setTotal(item.getTotal() != null ? item.getTotal() : BigDecimal.ZERO);
             dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
             dto.setIva(BigDecimal.ZERO);
-            aplicarExoneracionesPendiente(dto);
             respuesta.add(dto);
         }
 
@@ -226,7 +244,6 @@ public class RecaudacionCobroServicio {
             dto.setTotal(item.getTotal() != null ? item.getTotal() : BigDecimal.ZERO);
             dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
             dto.setIva(BigDecimal.ZERO);
-            aplicarExoneracionesPendiente(dto);
             pendientesPorId.putIfAbsent(dto.getIdfactura(), dto);
         }
     }
@@ -236,7 +253,7 @@ public class RecaudacionCobroServicio {
             return;
         }
 
-        List<ValorFactDTO> pendientes = facturaServicio.findSincobroDatos(cuenta);
+        List<ValorFactDTO> pendientes = facturaServicio.findSincobroDatosSinInteres(cuenta);
         for (ValorFactDTO item : pendientes) {
             if (item == null || item.getIdfactura() == null) {
                 continue;
@@ -255,7 +272,6 @@ public class RecaudacionCobroServicio {
             dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
             dto.setModulo(null);
             dto.setIva(BigDecimal.ZERO);
-            aplicarExoneracionesPendiente(dto);
             pendientesPorId.putIfAbsent(dto.getIdfactura(), dto);
         }
     }
@@ -668,7 +684,7 @@ public class RecaudacionCobroServicio {
 
         cargarInteresesMasivos(facturas);
         cargarIvasMasivos(facturas);
-        facturas.forEach(this::aplicarExoneracionesPendiente);
+        aplicarExoneracionesPendientes(facturas);
     }
 
     private void completarMontosPendiente(ValorFactDTO dto) {
@@ -694,8 +710,18 @@ public class RecaudacionCobroServicio {
             return;
         }
 
-        Map<Long, BigDecimal> interesesPorFactura = tmpinteresxfacService.findByIdFacturas(ids);
-        facturas.forEach(dto -> dto.setInteres(interesesPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)));
+        Map<Long, BigDecimal> interesesExistentes = tmpinteresxfacService.findByIdFacturas(ids);
+        List<Long> idsSinInteresTemporal = ids.stream()
+                .filter(id -> !interesesExistentes.containsKey(id))
+                .collect(Collectors.toList());
+
+        Map<Long, BigDecimal> interesesPorFactura = new java.util.HashMap<>(interesesExistentes);
+        if (!idsSinInteresTemporal.isEmpty()) {
+            interesesPorFactura.putAll(
+                    interesBatchService.recalcularInteresesPorFacturas(idsSinInteresTemporal, LocalDate.now()));
+        }
+        Map<Long, BigDecimal> interesesCalculados = interesesPorFactura;
+        facturas.forEach(dto -> dto.setInteres(interesesCalculados.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)));
     }
 
     private void cargarIvasMasivos(List<ValorFactDTO> facturas) {
@@ -745,13 +771,23 @@ public class RecaudacionCobroServicio {
         dto.setTotal(subtotal.add(interes).add(iva));
     }
 
-    private void aplicarExoneracionesPendiente(ValorFactDTO dto) {
-        if (dto == null || dto.getIdfactura() == null) {
+    private void aplicarExoneracionesPendientes(List<ValorFactDTO> facturas) {
+        List<Long> ids = facturas.stream()
+                .map(ValorFactDTO::getIdfactura)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (ids.isEmpty()) {
             return;
         }
-        Facturas factura = facturaServicio.findById(dto.getIdfactura()).orElse(null);
-        aplicarExoneraciones(factura, dto);
-        recomputarTotal(dto);
+
+        Map<Long, Facturas> facturasPorId = facturaServicio.findAllById(ids).stream()
+                .collect(Collectors.toMap(Facturas::getIdfactura, factura -> factura));
+        facturas.forEach(dto -> {
+            aplicarExoneraciones(facturasPorId.get(dto.getIdfactura()), dto);
+            recomputarTotal(dto);
+        });
     }
 
     private void aplicarExoneraciones(Facturas factura, ValorFactDTO dto) {
@@ -877,7 +913,7 @@ public class RecaudacionCobroServicio {
                 : BigDecimal.valueOf(definir.getIva());
 
         if (tasa.compareTo(BigDecimal.ONE) > 0) {
-            tasa = tasa.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+            tasa = tasa.divide(BigDecimal.valueOf(100), 4, RoundingMode.UP);
         }
 
         return tasa;
@@ -941,14 +977,14 @@ public class RecaudacionCobroServicio {
         if (totalFactura.compareTo(BigDecimal.ZERO) <= 0 || saldoNotaCreditoPendiente.compareTo(BigDecimal.ZERO) <= 0) {
             return BigDecimal.ZERO;
         }
-        return totalFactura.min(saldoNotaCreditoPendiente).setScale(2, RoundingMode.HALF_UP);
+        return totalFactura.min(saldoNotaCreditoPendiente).setScale(2, RoundingMode.UP);
     }
 
     private BigDecimal normalizarMoneda(BigDecimal valor) {
         if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
             return BigDecimal.ZERO;
         }
-        return valor.setScale(2, RoundingMode.HALF_UP);
+        return valor.setScale(2, RoundingMode.UP);
     }
 
     private void registrarAplicacionNotaCredito(Facturas factura, BigDecimal valorAplicado) {
@@ -973,7 +1009,7 @@ public class RecaudacionCobroServicio {
                 continue;
             }
 
-            BigDecimal valorUso = saldoDisponible.min(pendientePorAplicar).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal valorUso = saldoDisponible.min(pendientePorAplicar).setScale(2, RoundingMode.UP);
             if (valorUso.compareTo(BigDecimal.ZERO) <= 0) {
                 continue;
             }
@@ -983,14 +1019,14 @@ public class RecaudacionCobroServicio {
                             "No se encontró la nota de crédito " + saldoNc.getIdntacredito()));
 
             BigDecimal devengadoActual = notaCredito.getDevengado() != null ? notaCredito.getDevengado() : BigDecimal.ZERO;
-            notaCredito.setDevengado(devengadoActual.add(valorUso).setScale(2, RoundingMode.HALF_UP));
+            notaCredito.setDevengado(devengadoActual.add(valorUso).setScale(2, RoundingMode.UP));
             ntacreditoServicio.save(notaCredito);
 
             Valoresnc valoresnc = new Valoresnc();
             valoresnc.setEstado(1L);
             valoresnc.setValor(valorUso);
             valoresnc.setFechaaplicado(LocalDate.now());
-            valoresnc.setSaldo(saldoDisponible.subtract(valorUso).setScale(2, RoundingMode.HALF_UP));
+            valoresnc.setSaldo(saldoDisponible.subtract(valorUso).setScale(2, RoundingMode.UP));
             valoresnc.setIdntacredito_ntacredito(notaCredito);
             Valoresnc valoresncGuardado = valoresncServicio.save(valoresnc);
 

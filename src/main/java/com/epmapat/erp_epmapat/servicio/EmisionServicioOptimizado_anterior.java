@@ -55,7 +55,7 @@ public class EmisionServicioOptimizado_anterior {
 
     // ----------------- Constantes y utilidades numéricas -----------------
 
-    private static final RoundingMode RM = RoundingMode.HALF_UP;
+    private static final RoundingMode RM = RoundingMode.UP;
     private static final BigDecimal HALF = new BigDecimal("0.5");
     private static final BigDecimal TEN_CENTS = new BigDecimal("0.10");
     private static final BigDecimal FIFTY_CENTS = new BigDecimal("0.50");
@@ -177,7 +177,7 @@ public class EmisionServicioOptimizado_anterior {
         respuesta.put("Conservacion Fuentes", cf);
         if (ex.compareTo(ZERO) > 0)
             respuesta.put("Excedente", ex);
-        respuesta.put("Total", total.setScale(2, RoundingMode.HALF_UP));
+        respuesta.put("Total", total.setScale(2, RoundingMode.UP));
 
         return respuesta;
 
@@ -369,7 +369,7 @@ public class EmisionServicioOptimizado_anterior {
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
-        return total.setScale(2, RoundingMode.HALF_UP);
+        return total.setScale(2, RoundingMode.UP);
     }
 
     // 🔹 Método baseAlcantarillado separado
@@ -395,7 +395,7 @@ public class EmisionServicioOptimizado_anterior {
             total = total.multiply(HALF);
 
         // + hidro al final
-        return total.add(hidrosuccionador(v, porc)).setScale(2, RoundingMode.HALF_UP);
+        return total.add(hidrosuccionador(v, porc)).setScale(2, RoundingMode.UP);
     }
 
     private BigDecimal baseSaneamiento(EmisionOfCuentaDTO v) {
@@ -412,7 +412,7 @@ public class EmisionServicioOptimizado_anterior {
         if (v.getCategoria() == 9)
             total = total.multiply(HALF);
 
-        return total.setScale(2, RoundingMode.HALF_UP);
+        return total.setScale(2, RoundingMode.UP);
     }
 
     /*
@@ -435,15 +435,15 @@ public class EmisionServicioOptimizado_anterior {
     private BigDecimal calcConservacionFuentesEpmapat(int categoria) {
 
         if (categoria == 1) {
-            return new BigDecimal("0.20").setScale(2, RoundingMode.HALF_UP);
+            return new BigDecimal("0.20").setScale(2, RoundingMode.UP);
         } else if (categoria == 2) {
-            return new BigDecimal("0.35").setScale(2, RoundingMode.HALF_UP);
+            return new BigDecimal("0.35").setScale(2, RoundingMode.UP);
         } else if (categoria == 3) {
-            return new BigDecimal("0.50").setScale(2, RoundingMode.HALF_UP);
+            return new BigDecimal("0.50").setScale(2, RoundingMode.UP);
         } else if (categoria == 4) {
-            return new BigDecimal("1.00").setScale(2, RoundingMode.HALF_UP);
+            return new BigDecimal("1.00").setScale(2, RoundingMode.UP);
         } else if (categoria == 9) {
-            return new BigDecimal("0.10").setScale(2, RoundingMode.HALF_UP); // por ejemplo subsidio
+            return new BigDecimal("0.10").setScale(2, RoundingMode.UP); // por ejemplo subsidio
         }
 
         return BigDecimal.ZERO;
@@ -476,7 +476,7 @@ public class EmisionServicioOptimizado_anterior {
                 .add(calcConservacionFuentes())
                 .add(calcConservacionFuentesEpmapat(base.getCategoria()));
 
-        return s1.subtract(s2).setScale(2, RoundingMode.HALF_UP);
+        return s1.subtract(s2).setScale(2, RoundingMode.UP);
     }
 
     // Copia “pura” para excedente (categoría 1, sw's iguales, pliego/categoría

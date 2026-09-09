@@ -126,6 +126,39 @@ public class FacturaServicio {
 		return dao.findById(idfactura);
 	}
 
+	public List<Facturas> findAllById(Iterable<Long> idsFacturas) {
+		return dao.findAllById(idsFacturas);
+	}
+
+	public List<ResumenPendientesCuenta> resumenPendientesPorCuentas(List<Long> cuentas) {
+		if (cuentas == null || cuentas.isEmpty()) {
+			return List.of();
+		}
+		return dao.resumenPendientesPorCuentas(cuentas.stream()
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toList()));
+	}
+
+	public List<ResumenPendientesCuenta> resumenPendientesCierrePorCuentas(
+			List<Long> cuentas,
+			List<Long> facturasExcluidas) {
+		if (cuentas == null || cuentas.isEmpty()) {
+			return List.of();
+		}
+		List<Long> cuentasValidas = cuentas.stream()
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toList());
+		List<Long> excluidasValidas = facturasExcluidas == null ? List.of() : facturasExcluidas.stream()
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toList());
+		return excluidasValidas.isEmpty()
+				? resumenPendientesPorCuentas(cuentasValidas)
+				: dao.resumenPendientesCierrePorCuentas(cuentasValidas, excluidasValidas);
+	}
+
 	// Planillas por Cliente
 	public List<Facturas> findByIdcliente(Long idcliente, Long limit) {
 		int max = limit != null && limit > 0 ? Math.toIntExact(limit) : 20;
@@ -903,6 +936,31 @@ public class FacturaServicio {
 		}).collect(Collectors.toList()); // Recopilar los DTOs en una lista
 	}
 
+	/**
+	 * Recupera los pendientes para recaudacion. El interes se completa despues en un
+	 * solo lote desde {@code tmpinteresxfac}, evitando recalcularlo por factura.
+	 */
+	public List<ValorFactDTO> findSincobroDatosSinInteres(Long cuenta) {
+		List<FacturasSinCobroInter> facturas = dao.findSincobroDatos(cuenta);
+
+		return facturas.stream().map(item -> {
+			ValorFactDTO dto = new ValorFactDTO();
+			dto.setIdfactura(item.getIdfactura());
+			dto.setSubtotal(item.getSubtotal());
+			dto.setNumfacturas(facturas.size());
+			dto.setCuenta(cuenta);
+			dto.setNombre(item.getNombre());
+			dto.setCedula(item.getCedula());
+			dto.setDireccionubicacion(item.getDireccionubicacion());
+			dto.setFeccrea(item.getFeccrea());
+			dto.setFectransferencia(item.getFectransferencia());
+			dto.setFormapago(item.getFormapago());
+			dto.setInteres(BigDecimal.ZERO);
+			dto.setTotal(BigDecimal.valueOf(item.getSubtotal()));
+			return dto;
+		}).collect(Collectors.toList());
+	}
+
 	public ValorFactDTO getTotalesByAbonadoDatos(Long cuenta) {
 		List<ValorFactDTO> facturas = findSincobroDatos(cuenta);
 
@@ -1193,7 +1251,7 @@ public class FacturaServicio {
 						cant = BigDecimal.valueOf(r.getCantidad());
 						// si cantidad fuese BigDecimal, entonces: cant = r.getCantidad();
 						// si fuese Double: cant = BigDecimal.valueOf(r.getCantidad()).setScale(2,
-						// RoundingMode.HALF_UP);
+						// RoundingMode.UP);
 					}
 
 					return vu.multiply(cant);

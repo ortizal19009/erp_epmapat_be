@@ -384,18 +384,18 @@ public class LecturaServicio {
 			Categorias _categoria = dao_categoria.getCategoriaById(valoresEmision.getCategoria());
 			valoresEmision.setCategorias(_categoria);
 			BigDecimal excedente = BigDecimal.ZERO;
-			saneamiento = saneamiento(valoresEmision).setScale(2, RoundingMode.HALF_UP);
-			alcantarillado = alcantarillado(valoresEmision).setScale(2, RoundingMode.HALF_UP);
+			saneamiento = saneamiento(valoresEmision).setScale(2, RoundingMode.UP);
+			alcantarillado = alcantarillado(valoresEmision).setScale(2, RoundingMode.UP);
 
-			aguapotable = aguaPotable(valoresEmision).setScale(2, RoundingMode.HALF_UP);
-			conservacionFuentes = conservacionFuentes(valoresEmision).setScale(2, RoundingMode.HALF_UP);
+			aguapotable = aguaPotable(valoresEmision).setScale(2, RoundingMode.UP);
+			conservacionFuentes = conservacionFuentes(valoresEmision).setScale(2, RoundingMode.UP);
 			if (categoria == 9 && swAdultoMayor == true && m3 > 34 && m3 <= 70) {
 				excedente = excedente(valoresEmision);
 				rubro.setIdrubro(1005L);
 				rubroxfac.setIdrubro_rubros(rubro);
 				rubroxfac.setCantidad(1F);
 				rubroxfac.setIdfactura_facturas(factura);
-				rubroxfac.setValorunitario(excedente.setScale(2, RoundingMode.HALF_UP));
+				rubroxfac.setValorunitario(excedente.setScale(2, RoundingMode.UP));
 				saveRxf(rubroxfac);
 			}
 			if (multa.compareTo(BigDecimal.ZERO) > 0) {
@@ -403,7 +403,7 @@ public class LecturaServicio {
 				rubroxfac.setIdrubro_rubros(rubro);
 				rubroxfac.setCantidad(1F);
 				rubroxfac.setIdfactura_facturas(factura);
-				rubroxfac.setValorunitario(multa.setScale(2, RoundingMode.HALF_UP));
+				rubroxfac.setValorunitario(multa.setScale(2, RoundingMode.UP));
 				saveRxf(rubroxfac);
 			}
 			total = aguapotable
@@ -416,7 +416,7 @@ public class LecturaServicio {
 			dao_facturas.save(factura);
 		}
 
-		return total.setScale(2, RoundingMode.HALF_UP);
+		return total.setScale(2, RoundingMode.UP);
 	}
 
 	/* AGUA POTABLE - versión optimizada */
@@ -461,7 +461,7 @@ public class LecturaServicio {
 		rubroxfac.setIdrubro_rubros(rubro);
 		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
 		rubroxfac.setCantidad(1F);
-		rubroxfac.setValorunitario(aguapotable.setScale(2, RoundingMode.HALF_UP));
+		rubroxfac.setValorunitario(aguapotable.setScale(2, RoundingMode.UP));
 		saveRxf(rubroxfac);
 		return aguapotable;
 	}
@@ -508,7 +508,7 @@ public class LecturaServicio {
 		rubroxfac.setIdrubro_rubros(rubro);
 		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
 		rubroxfac.setCantidad(1F);
-		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
+		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.UP));
 		saveRxf(rubroxfac);
 		return valor;
 	}
@@ -538,10 +538,10 @@ public class LecturaServicio {
 		rubroxfac.setIdrubro_rubros(rubro);
 		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
 		rubroxfac.setCantidad(1F);
-		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
+		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.UP));
 		saveRxf(rubroxfac);
 
-		return valor.setScale(2, RoundingMode.HALF_UP);
+		return valor.setScale(2, RoundingMode.UP);
 	}
 
 	/* AGUA POTABLE - versión optimizada */
@@ -641,7 +641,7 @@ public class LecturaServicio {
 			}
 		}
 
-		return valor.setScale(2, RoundingMode.HALF_UP);
+		return valor.setScale(2, RoundingMode.UP);
 	}
 
 	/* CONSERVACIÓN DE FUENTES */
@@ -654,7 +654,7 @@ public class LecturaServicio {
 		rubroxfac.setIdrubro_rubros(rubro);
 		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
 		rubroxfac.setCantidad(1F);
-		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
+		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.UP));
 		saveRxf(rubroxfac);
 
 		return valor;

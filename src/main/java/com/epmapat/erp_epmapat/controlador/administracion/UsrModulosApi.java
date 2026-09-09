@@ -11,9 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.epmapat.erp_epmapat.interfaces.ErpModulosI;
 import com.epmapat.erp_epmapat.modelo.administracion.Usrxmodulos;
 import com.epmapat.erp_epmapat.servicio.administracion.UsrxmodulosServicio;
+import com.epmapat.erp_epmapat.seguridad.WebAccessGuard;
 
 @RestController
 @RequestMapping("/usrxmodulos")
@@ -21,20 +24,25 @@ import com.epmapat.erp_epmapat.servicio.administracion.UsrxmodulosServicio;
 public class UsrModulosApi {
     @Autowired
     private UsrxmodulosServicio umServicio;
+    @Autowired
+    private WebAccessGuard webAccessGuard;
 
     @GetMapping("/access")
     public ResponseEntity<List<ErpModulosI>> getModulosEnabledByUser(@RequestParam Long idusuario,
-            @RequestParam String plataform) {
+            @RequestParam String plataform, HttpServletRequest request) {
+        webAccessGuard.requireSelfOrAdmin(request, idusuario);
         return ResponseEntity.ok(umServicio.findModulosEnabledByUser(idusuario, plataform));
     }
 
     @GetMapping
-    public ResponseEntity<List<ErpModulosI>> getAllByUser(@RequestParam Long idusuario) {
+    public ResponseEntity<List<ErpModulosI>> getAllByUser(@RequestParam Long idusuario, HttpServletRequest request) {
+        webAccessGuard.requireSelfOrAdmin(request, idusuario);
         return ResponseEntity.ok(umServicio.FindByUser(idusuario));
     }
 
     @PostMapping
-    public ResponseEntity<Usrxmodulos> save(@RequestBody Usrxmodulos usrxmodulos) {
+    public ResponseEntity<Usrxmodulos> save(@RequestBody Usrxmodulos usrxmodulos, HttpServletRequest request) {
+        webAccessGuard.requireAdmin(request);
         return ResponseEntity.ok(umServicio.save(usrxmodulos));
     }
 

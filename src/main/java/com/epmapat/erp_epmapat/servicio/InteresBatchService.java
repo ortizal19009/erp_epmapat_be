@@ -35,8 +35,8 @@ public class InteresBatchService {
     }
 
     // ====== Config numérica ======
-    private static final MathContext MC = new MathContext(16, RoundingMode.HALF_UP);
-    private static final int SCALE_MONEY = 6;
+    private static final MathContext MC = new MathContext(16, RoundingMode.UP);
+    private static final int SCALE_MONEY = 2;
     private static final int SCALE_PERCENT = 10;
 
     // ====== Config batch ======
@@ -66,9 +66,41 @@ public class InteresBatchService {
 
     @Transactional
     public Map<String, Object> recalcularIntereses(LocalDate fechaCorte, ReglaBatch regla) {
-
         List<FacLite> facturas = facturasR.getSinCobrarLite();
-        if (facturas == null || facturas.isEmpty()) {
+        return recalcularIntereses(facturas, fechaCorte, regla);
+    }
+
+    /**
+     * Completa los intereses que aun no existen para las facturas de una consulta.
+     * Se ejecuta en una transaccion independiente porque la busqueda de recaudacion es de solo lectura.
+     */
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public Map<Long, BigDecimal> recalcularInteresesPorFacturas(Collection<Long> ids, LocalDate fechaCorte) {
+        List<Long> idsUnicos = ids == null ? Collections.emptyList() : ids.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (idsUnicos.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<FacLite> facturas = facturasR.getSinCobrarLiteByIds(idsUnicos);
+        recalcularIntereses(facturas, fechaCorte, ReglaBatch.porDefecto());
+
+        return tmpRepo.findAllByIdfacturaIn(idsUnicos).stream()
+                .filter(Objects::nonNull)
+                .filter(item -> item.getIdfactura() != null)
+                .collect(Collectors.toMap(
+                        Tmpinteresxfac::getIdfactura,
+                        item -> item.getInteresapagar() == null ? BigDecimal.ZERO : item.getInteresapagar(),
+                        BigDecimal::add));
+    }
+
+    private Map<String, Object> recalcularIntereses(
+            List<FacLite> facturas,
+            LocalDate fechaCorte,
+            ReglaBatch regla) {
+		if (facturas == null || facturas.isEmpty()) {
             return Map.of("status", 200, "totalFacturas", 0, "message", "Sin facturas");
         }
 
@@ -156,7 +188,7 @@ public class InteresBatchService {
 
     private static BigDecimal pctToRatio(BigDecimal pct) {
         if (pct == null) return BigDecimal.ZERO;
-        return pct.divide(BigDecimal.valueOf(100), SCALE_PERCENT, RoundingMode.HALF_UP);
+        return pct.divide(BigDecimal.valueOf(100), SCALE_PERCENT, RoundingMode.UP);
     }
 
     private BigDecimal[] buildCumProducts(List<YearMonth> meses, Map<YearMonth, BigDecimal> pctMap) {
@@ -262,7 +294,7 @@ public class InteresBatchService {
 
             BigDecimal factor = factorDesdeInicio.getOrDefault(desdeYM, BigDecimal.ONE);
             BigDecimal interes = principal.multiply(factor.subtract(BigDecimal.ONE, MC), MC)
-                    .setScale(SCALE_MONEY, RoundingMode.HALF_UP);
+                    .setScale(SCALE_MONEY, RoundingMode.UP);
 
             Tmpinteresxfac e = existentes.get(idFactura);
             if (e == null) e = new Tmpinteresxfac();

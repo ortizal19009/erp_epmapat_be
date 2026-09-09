@@ -99,33 +99,21 @@ public class TmpinteresxfacService {
                 .orElseGet(() -> upsertInteresFactura(idfactura));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Map<Long, BigDecimal> findByIdFacturas(Collection<Long> idfacturas) {
         if (idfacturas == null || idfacturas.isEmpty()) {
             return Map.of();
         }
 
-        Map<Long, BigDecimal> intereses = tmpinteresxfacR.findAllByIdfacturaIn(idfacturas).stream()
+        // Consultar pendientes no debe crear intereses temporales ni modificar la base.
+        // La actualizacion se realiza mediante updateTmpInteresxfac o refreshByIdFacturas.
+        return tmpinteresxfacR.findAllByIdfacturaIn(idfacturas).stream()
                 .filter(Objects::nonNull)
                 .filter(item -> item.getIdfactura() != null)
                 .collect(Collectors.toMap(
                         Tmpinteresxfac::getIdfactura,
                         item -> item.getInteresapagar() != null ? item.getInteresapagar() : BigDecimal.ZERO,
                         BigDecimal::add));
-
-        idfacturas.stream()
-                .filter(Objects::nonNull)
-                .distinct()
-                .forEach(idfactura -> {
-                    var factura = facturasR.findById(idfactura).orElse(null);
-                    if (factura != null && Boolean.TRUE.equals(factura.getSwinteres())) {
-                        intereses.put(idfactura, BigDecimal.ZERO);
-                    } else {
-                        intereses.computeIfAbsent(idfactura, this::upsertInteresFactura);
-                    }
-                });
-
-        return intereses;
     }
 
     @Transactional

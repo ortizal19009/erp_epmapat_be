@@ -91,6 +91,11 @@ public class EmisionesApi {
 		return ResponseEntity.ok(emisionGeneracionServicio.generarPendientes(idemision, idusuario));
 	}
 
+	@GetMapping("/{idemision}/generar-pendientes/progreso")
+	public ResponseEntity<Map<String, Object>> getProgresoGenerarPendientes(@PathVariable Long idemision) {
+		return ResponseEntity.ok(emisionGeneracionServicio.getProgresoApertura(idemision));
+	}
+
 	@GetMapping("/{idemision}/validar-apertura")
 	public ResponseEntity<EmisionGeneracionResponseDTO> validarApertura(@PathVariable Long idemision) {
 		return ResponseEntity.ok(emisionGeneracionServicio.validarApertura(idemision));

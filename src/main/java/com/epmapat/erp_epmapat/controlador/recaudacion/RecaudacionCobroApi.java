@@ -3,6 +3,7 @@ package com.epmapat.erp_epmapat.controlador.recaudacion;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,13 +52,13 @@ public class RecaudacionCobroApi {
         return ResponseEntity.ok(recaudacionCobroServicio.getCajasAbiertas());
     }
 
-    @GetMapping("/caja/stream")
+    @GetMapping(value = "/caja/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamCajaEstado(@RequestParam Long idusuario) {
         RecaudacionCajaDTO estadoActual = recaudacionCobroServicio.getEstadoCaja(idusuario);
         return recaudacionCajaSseService.subscribe(idusuario, estadoActual);
     }
 
-    @GetMapping("/caja/stream/global")
+    @GetMapping(value = "/caja/stream/global", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamCajasEstadoGlobal() {
         return recaudacionCajaSseService.subscribeGlobal();
     }

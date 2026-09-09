@@ -23,6 +23,99 @@ import com.epmapat.erp_epmapat.modelo.Facturas;
 @Repository
 public interface FacturasR extends JpaRepository<Facturas, Long> {
 
+	@Query(value = """
+			SELECT
+			  f.idabonado AS cuenta,
+			  CAST(SUM(CASE WHEN f.idmodulo = 4
+			                    AND f.fechaconvenio IS NULL
+			                    AND COALESCE(f.estadoconvenio, 0) <> 1
+			                    AND COALESCE(f.conveniopago, 0) = 0 THEN 1 ELSE 0 END) AS bigint) AS facturasConsumo,
+			  COALESCE(SUM(CASE WHEN f.idmodulo = 4
+			                    AND f.fechaconvenio IS NULL
+			                    AND COALESCE(f.estadoconvenio, 0) <> 1
+			                    AND COALESCE(f.conveniopago, 0) = 0 THEN f.totaltarifa ELSE 0 END), 0) AS valorConsumo,
+			  CAST(SUM(CASE WHEN COALESCE(f.idmodulo, 0) <> 4
+			                    AND COALESCE(f.idmodulo, 0) <> 27
+			                    AND f.fechaconvenio IS NULL
+			                    AND COALESCE(f.estadoconvenio, 0) <> 1
+			                    AND COALESCE(f.conveniopago, 0) = 0 THEN 1 ELSE 0 END) AS bigint) AS facturasServicios,
+			  COALESCE(SUM(CASE WHEN COALESCE(f.idmodulo, 0) <> 4
+			                    AND COALESCE(f.idmodulo, 0) <> 27
+			                    AND f.fechaconvenio IS NULL
+			                    AND COALESCE(f.estadoconvenio, 0) <> 1
+			                    AND COALESCE(f.conveniopago, 0) = 0 THEN f.totaltarifa ELSE 0 END), 0) AS valorServicios,
+			  CAST(SUM(CASE WHEN f.idmodulo = 27 THEN 1 ELSE 0 END) AS bigint) AS facturasConvenios,
+			  COALESCE(SUM(CASE WHEN f.idmodulo = 27 THEN f.totaltarifa ELSE 0 END), 0) AS valorConvenios,
+			  CAST(COUNT(*) AS bigint) AS totalFacturasPendientes,
+			  COALESCE(SUM(f.totaltarifa), 0) AS totalPendiente
+			FROM facturas f
+			WHERE f.idabonado IN (:cuentas)
+			  AND f.totaltarifa > 0
+			  AND f.fechaeliminacion IS NULL
+			  AND f.fechaanulacion IS NULL
+			  AND f.fechacobro IS NULL
+			  AND COALESCE(f.pagado, 0) = 0
+			  AND f.estado IN (1, 2, 3)
+			  AND (f.idmodulo = 27 OR (
+			    f.fechaconvenio IS NULL
+			    AND COALESCE(f.estadoconvenio, 0) <> 1
+			    AND COALESCE(f.conveniopago, 0) = 0
+			  ))
+			GROUP BY f.idabonado
+			""", nativeQuery = true)
+	List<ResumenPendientesCuenta> resumenPendientesPorCuentas(@Param("cuentas") List<Long> cuentas);
+
+	@Query(value = """
+			WITH pendientes AS (
+			  SELECT
+			    f.idfactura,
+			    f.idabonado,
+			    f.idmodulo,
+			    COALESCE(SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)), 0) AS capital,
+			    COALESCE(MAX(t.interesapagar), 0) AS interes
+			  FROM facturas f
+			  JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
+			    AND (rf.estado <> 0 OR rf.estado IS NULL)
+			  LEFT JOIN tmpinteresxfac t ON t.idfactura = f.idfactura
+			  WHERE f.idabonado IN (:cuentas)
+			    AND f.idfactura NOT IN (:facturasExcluidas)
+			    AND f.totaltarifa > 0
+			    AND f.fechaeliminacion IS NULL
+			    AND f.fechaanulacion IS NULL
+			    AND f.fechacobro IS NULL
+			    AND COALESCE(f.pagado, 0) = 0
+			    AND f.estado IN (1, 2, 3)
+			    AND (f.idmodulo = 27 OR (
+			      f.fechaconvenio IS NULL
+			      AND COALESCE(f.estadoconvenio, 0) <> 1
+			      AND COALESCE(f.conveniopago, 0) = 0
+			    ))
+			  GROUP BY f.idfactura, f.idabonado, f.idmodulo
+			)
+			SELECT
+			  idabonado AS cuenta,
+			  CAST(SUM(CASE WHEN idmodulo = 4 THEN 1 ELSE 0 END) AS bigint) AS facturasConsumo,
+			  COALESCE(SUM(CASE WHEN idmodulo = 4 THEN capital ELSE 0 END), 0) AS capitalConsumo,
+			  COALESCE(SUM(CASE WHEN idmodulo = 4 THEN interes ELSE 0 END), 0) AS interesConsumo,
+			  COALESCE(SUM(CASE WHEN idmodulo = 4 THEN capital + interes ELSE 0 END), 0) AS valorConsumo,
+			  CAST(SUM(CASE WHEN COALESCE(idmodulo, 0) <> 4 AND COALESCE(idmodulo, 0) <> 27 THEN 1 ELSE 0 END) AS bigint) AS facturasServicios,
+			  COALESCE(SUM(CASE WHEN COALESCE(idmodulo, 0) <> 4 AND COALESCE(idmodulo, 0) <> 27 THEN capital ELSE 0 END), 0) AS capitalServicios,
+			  COALESCE(SUM(CASE WHEN COALESCE(idmodulo, 0) <> 4 AND COALESCE(idmodulo, 0) <> 27 THEN interes ELSE 0 END), 0) AS interesServicios,
+			  COALESCE(SUM(CASE WHEN COALESCE(idmodulo, 0) <> 4 AND COALESCE(idmodulo, 0) <> 27 THEN capital + interes ELSE 0 END), 0) AS valorServicios,
+			  CAST(SUM(CASE WHEN idmodulo = 27 THEN 1 ELSE 0 END) AS bigint) AS facturasConvenios,
+			  COALESCE(SUM(CASE WHEN idmodulo = 27 THEN capital ELSE 0 END), 0) AS capitalConvenios,
+			  COALESCE(SUM(CASE WHEN idmodulo = 27 THEN interes ELSE 0 END), 0) AS interesConvenios,
+			  COALESCE(SUM(CASE WHEN idmodulo = 27 THEN capital + interes ELSE 0 END), 0) AS valorConvenios,
+			  CAST(COUNT(*) AS bigint) AS totalFacturasPendientes,
+			  COALESCE(SUM(interes), 0) AS totalIntereses,
+			  COALESCE(SUM(capital + interes), 0) AS totalPendiente
+			FROM pendientes
+			GROUP BY idabonado
+			""", nativeQuery = true)
+	List<ResumenPendientesCuenta> resumenPendientesCierrePorCuentas(
+			@Param("cuentas") List<Long> cuentas,
+			@Param("facturasExcluidas") List<Long> facturasExcluidas);
+
 	@EntityGraph(attributePaths = { "idmodulo", "idcliente" })
 	@Override
 	java.util.Optional<Facturas> findById(Long id);
@@ -157,7 +250,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			    SELECT
 			      f.idfactura,
 			      f.idmodulo,
-			      CAST(tf.total AS numeric(18,2)) AS total,
+			      CAST(SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS numeric(18,2)) AS total,
 			      f.idcliente,
 			      f.idabonado,
 			      f.feccrea,
@@ -171,21 +264,14 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				  a.direccionubicacion as direccionubicacion
 
 			    FROM facturas f
-				JOIN (
-				  SELECT
-				    rf.idfactura_facturas,
-				    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total
-				  FROM rubroxfac rf
-				  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
-				  GROUP BY rf.idfactura_facturas
-				) tf ON tf.idfactura_facturas = f.idfactura
+			    JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
+			      AND (rf.estado <> 0 OR rf.estado IS NULL)
 				LEFT JOIN modulos m ON f.idmodulo = m.idmodulo
 				LEFT JOIN clientes c ON f.idcliente = c.idcliente
 				LEFT JOIN abonados a ON f.idabonado = a.idabonado
 
 			    WHERE
-			      tf.total > 0
-			      AND f.idcliente = ?1
+			      f.idcliente = ?1
 			      AND (
 			        ((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL)
 			        OR f.estado = 3
@@ -193,6 +279,11 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			      AND f.fechaeliminacion IS NULL
 			      AND f.fechaconvenio IS NULL
 
+			    GROUP BY
+			      f.idfactura, f.idmodulo, f.idcliente, f.idabonado, f.feccrea,
+			      f.formapago, f.estado, f.pagado, f.swcondonar,
+			      m.descripcion, c.nombre, c.cedula, a.direccionubicacion
+			    HAVING SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) > 0
 			    ORDER BY
 			      f.idabonado ASC, f.feccrea ASC
 			""", nativeQuery = true)
@@ -1109,6 +1200,30 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			      f.idfactura, f.formapago, e.feccrea, f.fechatransferencia
 			""", nativeQuery = true)
 	List<FacLite> getSinCobrarLite();
+
+	@Query(value = """
+			SELECT
+			  f.idfactura AS id,
+			  SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS suma,
+			  f.formapago AS formaPago,
+			  CASE
+			    WHEN f.formapago = 4 THEN f.fechatransferencia
+			    ELSE COALESCE(e.feccrea, f.feccrea)
+			  END AS fecCrea,
+			  f.fechatransferencia AS fecTransfer
+			FROM facturas f
+			JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
+			  AND (rf.estado <> 0 OR rf.estado IS NULL)
+			LEFT JOIN lecturas l ON l.idfactura = f.idfactura
+			LEFT JOIN emisiones e ON e.idemision = l.idemision
+			WHERE f.idfactura IN (:ids)
+			  AND f.totaltarifa > 0
+			  AND ((f.estado IN (1, 2) AND f.fechacobro IS NULL) OR f.estado = 3)
+			  AND f.fechaconvenio IS NULL
+			  AND f.fechaeliminacion IS NULL
+			GROUP BY f.idfactura, f.formapago, e.feccrea, f.feccrea, f.fechatransferencia
+			""", nativeQuery = true)
+	List<FacLite> getSinCobrarLiteByIds(@Param("ids") List<Long> ids);
 
 	@Query(value = """
 			WITH abonados_ruta AS (

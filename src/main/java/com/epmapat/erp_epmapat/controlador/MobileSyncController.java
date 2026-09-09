@@ -30,12 +30,16 @@ public class MobileSyncController {
                 request.getModulos()
         );
 
-        log.info("Smart Sync completado para usuario {}: {} lecturas, {} abonados, {} clientes, {} rutas",
+        log.info("Smart Sync completado para usuario {}: {} lecturas, {} pliegos",
                 request.getIdusuario(),
                 response.getLecturas().size(),
-                response.getAbonados().size(),
-                response.getClientes().size(),
-                response.getRutas().size());
+                response.getPliegos().size());
+
+        if (!response.getPliegos().isEmpty()) {
+            log.info("Muestra Pliego[0]: idpliego={}, idcategoria={}", 
+                response.getPliegos().get(0).getIdpliego(), 
+                response.getPliegos().get(0).getIdcategoria());
+        }
 
         return ResponseEntity.ok(response);
     }

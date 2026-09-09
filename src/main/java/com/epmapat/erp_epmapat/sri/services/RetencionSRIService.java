@@ -479,16 +479,16 @@ public class RetencionSRIService {
       }
       if (codigoRetencion != null) {
          if (codigoRetencion.equals(retencion.getCodretair()) && retencion.getPorcentajeair() != null) {
-            return retencion.getPorcentajeair().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getPorcentajeair().setScale(2, RoundingMode.UP);
          }
          if (codigoRetencion.equals(retencion.getCodretbienes()) && retencion.getPorretbienes() != null) {
-            return BigDecimal.valueOf(retencion.getPorretbienes()).setScale(2, RoundingMode.HALF_UP);
+            return BigDecimal.valueOf(retencion.getPorretbienes()).setScale(2, RoundingMode.UP);
          }
          if (codigoRetencion.equals(retencion.getCodretservicios()) && retencion.getPorretservicios() != null) {
-            return retencion.getPorretservicios().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getPorretservicios().setScale(2, RoundingMode.UP);
          }
          if (codigoRetencion.equals(retencion.getCodretserv100()) && retencion.getPorretserv100() != null) {
-            return retencion.getPorretserv100().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getPorretserv100().setScale(2, RoundingMode.UP);
          }
       }
 
@@ -496,17 +496,17 @@ public class RetencionSRIService {
       if (esIva(codigoRetencion, retencion)
             && baseImponible != null
             && baseImponible.compareTo(BigDecimal.ZERO) > 0
-            && valorRet.compareTo(baseImponible.setScale(2, RoundingMode.HALF_UP)) == 0) {
-         return BigDecimal.valueOf(100).setScale(2, RoundingMode.HALF_UP);
+            && valorRet.compareTo(baseImponible.setScale(2, RoundingMode.UP)) == 0) {
+         return BigDecimal.valueOf(100).setScale(2, RoundingMode.UP);
       }
 
       if (retencion.getIdtabla17() != null && retencion.getIdtabla17().getPorciva() != null) {
-         return BigDecimal.valueOf(retencion.getIdtabla17().getPorciva()).setScale(2, RoundingMode.HALF_UP);
+         return BigDecimal.valueOf(retencion.getIdtabla17().getPorciva()).setScale(2, RoundingMode.UP);
       }
 
       if (baseImponible != null && baseImponible.compareTo(BigDecimal.ZERO) > 0) {
          if (valorRet.compareTo(BigDecimal.ZERO) > 0) {
-            return valorRet.multiply(BigDecimal.valueOf(100)).divide(baseImponible, 2, RoundingMode.HALF_UP);
+            return valorRet.multiply(BigDecimal.valueOf(100)).divide(baseImponible, 2, RoundingMode.UP);
          }
       }
       return BigDecimal.ZERO;
@@ -520,16 +520,16 @@ public class RetencionSRIService {
       }
       if (codigoRetencion != null) {
          if (codigoRetencion.equals(retencion.getCodretair()) && retencion.getValretair() != null) {
-            return retencion.getValretair().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getValretair().setScale(2, RoundingMode.UP);
          }
          if (codigoRetencion.equals(retencion.getCodretbienes()) && retencion.getValorretbienes() != null) {
-            return retencion.getValorretbienes().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getValorretbienes().setScale(2, RoundingMode.UP);
          }
          if (codigoRetencion.equals(retencion.getCodretservicios()) && retencion.getValorretservicios() != null) {
-            return retencion.getValorretservicios().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getValorretservicios().setScale(2, RoundingMode.UP);
          }
          if (codigoRetencion.equals(retencion.getCodretserv100()) && retencion.getValretserv100() != null) {
-            return retencion.getValretserv100().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getValretserv100().setScale(2, RoundingMode.UP);
          }
       }
 
@@ -544,9 +544,9 @@ public class RetencionSRIService {
       }
       BigDecimal tasa = porcentajeRetener;
       if (tasa.compareTo(BigDecimal.ONE) > 0) {
-         tasa = tasa.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
+         tasa = tasa.divide(BigDecimal.valueOf(100), 6, RoundingMode.UP);
       }
-      return baseImponible.multiply(tasa).setScale(2, RoundingMode.HALF_UP);
+      return baseImponible.multiply(tasa).setScale(2, RoundingMode.UP);
    }
 
    private boolean debeIncluirLinea(ImpuestoRetencionXml linea) {
@@ -579,7 +579,7 @@ public class RetencionSRIService {
       }
 
       if (esRetencionIvaTotal(linea, retencion)) {
-         linea.porcentajeRetener = BigDecimal.valueOf(100).setScale(2, RoundingMode.HALF_UP);
+         linea.porcentajeRetener = BigDecimal.valueOf(100).setScale(2, RoundingMode.UP);
          linea.valorRetenido = linea.baseImponible;
          linea.codigoRetencion = firstNonBlank(retencion != null ? retencion.getCodretserv100() : null,
                linea.codigoRetencion, "3");
@@ -638,9 +638,9 @@ public class RetencionSRIService {
       }
       BigDecimal tasa = porcentajeRetener;
       if (tasa.compareTo(BigDecimal.ONE) > 0) {
-         tasa = tasa.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
+         tasa = tasa.divide(BigDecimal.valueOf(100), 6, RoundingMode.UP);
       }
-      return baseImponible.multiply(tasa).setScale(2, RoundingMode.HALF_UP);
+      return baseImponible.multiply(tasa).setScale(2, RoundingMode.UP);
    }
 
    private String formatearFecha(Date date) {
@@ -897,12 +897,12 @@ public class RetencionSRIService {
    }
 
    private String formatDecimal(BigDecimal value) {
-      BigDecimal normalized = value == null ? BigDecimal.ZERO : value.setScale(2, RoundingMode.HALF_UP);
+      BigDecimal normalized = value == null ? BigDecimal.ZERO : value.setScale(2, RoundingMode.UP);
       return normalized.toPlainString();
    }
 
    private BigDecimal escalar(BigDecimal value) {
-      return value == null ? BigDecimal.ZERO : value.setScale(2, RoundingMode.HALF_UP);
+      return value == null ? BigDecimal.ZERO : value.setScale(2, RoundingMode.UP);
    }
 
    private boolean montoEquivalente(BigDecimal left, BigDecimal right) {

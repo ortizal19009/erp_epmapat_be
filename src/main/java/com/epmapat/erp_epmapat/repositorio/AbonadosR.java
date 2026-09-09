@@ -239,6 +239,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 			    FROM Abonados a
 			    WHERE
 			        (:idruta IS NULL OR a.idruta_rutas.idruta = :idruta)
+			    AND (:idcategoria IS NULL OR a.idcategoria_categorias.idcategoria = :idcategoria)
 			    AND (:estado IS NULL OR a.estado = :estado)
 			    AND (
 			        :responsable IS NULL OR
@@ -259,6 +260,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 			""")
 	Page<Abonados> buscarConFiltros(
 			@Param("idruta") Long idruta,
+			@Param("idcategoria") Long idcategoria,
 			@Param("responsable") String responsable,
 			@Param("estado") Long estado,
 			@Param("cedula") String cedula,

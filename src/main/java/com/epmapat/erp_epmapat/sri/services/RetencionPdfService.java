@@ -252,23 +252,23 @@ public class RetencionPdfService {
          return BigDecimal.ZERO;
       }
       if (codigoRetencion.equals(valueOf(retencion.getCodretair())) && retencion.getPorcentajeair() != null) {
-         return retencion.getPorcentajeair().setScale(2, RoundingMode.HALF_UP);
+         return retencion.getPorcentajeair().setScale(2, RoundingMode.UP);
       }
       if (codigoRetencion.equals(valueOf(retencion.getCodretbienes())) && retencion.getPorretbienes() != null) {
-         return BigDecimal.valueOf(retencion.getPorretbienes()).setScale(2, RoundingMode.HALF_UP);
+         return BigDecimal.valueOf(retencion.getPorretbienes()).setScale(2, RoundingMode.UP);
       }
       if (codigoRetencion.equals(valueOf(retencion.getCodretservicios())) && retencion.getPorretservicios() != null) {
-         return retencion.getPorretservicios().setScale(2, RoundingMode.HALF_UP);
+         return retencion.getPorretservicios().setScale(2, RoundingMode.UP);
       }
       if (codigoRetencion.equals(valueOf(retencion.getCodretserv100())) && retencion.getPorretserv100() != null) {
-         return retencion.getPorretserv100().setScale(2, RoundingMode.HALF_UP);
+         return retencion.getPorretserv100().setScale(2, RoundingMode.UP);
       }
       BigDecimal valorRetenido = resolverValorRetenido(retencion, codigoRetencion, baseImponible, BigDecimal.ZERO);
       if (esIva(codigoRetencion, retencion)
             && baseImponible != null
             && baseImponible.compareTo(BigDecimal.ZERO) > 0
-            && valorRetenido.compareTo(baseImponible.setScale(2, RoundingMode.HALF_UP)) == 0) {
-         return BigDecimal.valueOf(100).setScale(2, RoundingMode.HALF_UP);
+            && valorRetenido.compareTo(baseImponible.setScale(2, RoundingMode.UP)) == 0) {
+         return BigDecimal.valueOf(100).setScale(2, RoundingMode.UP);
       }
       if (baseImponible != null && baseImponible.compareTo(BigDecimal.ZERO) > 0) {
          return BigDecimal.ZERO;
@@ -296,16 +296,16 @@ public class RetencionPdfService {
          BigDecimal porcentajeRetener) {
       if (retencion != null && codigoRetencion != null) {
          if (codigoRetencion.equals(valueOf(retencion.getCodretair())) && retencion.getValretair() != null) {
-            return retencion.getValretair().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getValretair().setScale(2, RoundingMode.UP);
          }
          if (codigoRetencion.equals(valueOf(retencion.getCodretbienes())) && retencion.getValorretbienes() != null) {
-            return retencion.getValorretbienes().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getValorretbienes().setScale(2, RoundingMode.UP);
          }
          if (codigoRetencion.equals(valueOf(retencion.getCodretservicios())) && retencion.getValorretservicios() != null) {
-            return retencion.getValorretservicios().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getValorretservicios().setScale(2, RoundingMode.UP);
          }
          if (codigoRetencion.equals(valueOf(retencion.getCodretserv100())) && retencion.getValretserv100() != null) {
-            return retencion.getValretserv100().setScale(2, RoundingMode.HALF_UP);
+            return retencion.getValretserv100().setScale(2, RoundingMode.UP);
          }
       }
       if (baseImponible == null || porcentajeRetener == null || baseImponible.compareTo(BigDecimal.ZERO) <= 0
@@ -314,9 +314,9 @@ public class RetencionPdfService {
       }
       BigDecimal tasa = porcentajeRetener;
       if (tasa.compareTo(BigDecimal.ONE) > 0) {
-         tasa = tasa.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
+         tasa = tasa.divide(BigDecimal.valueOf(100), 6, RoundingMode.UP);
       }
-      return baseImponible.multiply(tasa).setScale(2, RoundingMode.HALF_UP);
+      return baseImponible.multiply(tasa).setScale(2, RoundingMode.UP);
    }
 
    private String obtenerEstablecimiento(Retenciones retencion) {
@@ -368,7 +368,7 @@ public class RetencionPdfService {
    }
 
    private BigDecimal valueOf(BigDecimal value) {
-      return value == null ? BigDecimal.ZERO : value.setScale(2, RoundingMode.HALF_UP);
+      return value == null ? BigDecimal.ZERO : value.setScale(2, RoundingMode.UP);
    }
 
    private String valueOf(Object value) {

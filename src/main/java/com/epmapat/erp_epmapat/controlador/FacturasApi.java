@@ -16,6 +16,7 @@ import java.util.Map;
 
 import com.epmapat.erp_epmapat.DTO.FacturaAnulacionBajaRequestDto;
 import com.epmapat.erp_epmapat.DTO.FacturaReasignacionRequestDto;
+import com.epmapat.erp_epmapat.DTO.ResumenPendientesCierreRequest;
 import com.epmapat.erp_epmapat.interfaces.*;
 import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -231,6 +232,19 @@ public class FacturasApi {
 	@GetMapping("/pendientesabonado")
 	public ResponseEntity<Long> getCantidadFacturasPendientes(@Param(value = "idabonado") Long idabonado) {
 		return ResponseEntity.ok(facServicio.getCantidadFacturasByAbonadoAndPendientes(idabonado));
+	}
+
+	@PostMapping("/resumen-pendientes")
+	public ResponseEntity<List<ResumenPendientesCuenta>> getResumenPendientes(@RequestBody List<Long> cuentas) {
+		return ResponseEntity.ok(facServicio.resumenPendientesPorCuentas(cuentas));
+	}
+
+	@PostMapping("/resumen-pendientes/cierre")
+	public ResponseEntity<List<ResumenPendientesCuenta>> getResumenPendientesCierre(
+			@RequestBody ResumenPendientesCierreRequest request) {
+		return ResponseEntity.ok(facServicio.resumenPendientesCierrePorCuentas(
+				request != null ? request.cuentas() : List.of(),
+				request != null ? request.facturasExcluidas() : List.of()));
 	}
 
 	@GetMapping("/f_abonado/{idabonado}")

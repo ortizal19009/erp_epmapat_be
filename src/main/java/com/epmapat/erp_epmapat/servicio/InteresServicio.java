@@ -236,7 +236,7 @@ public class InteresServicio {
     public BigDecimal calcularInteresFactura(Long idfactura, LocalDate hoy, ReglaInteres regla) {
         var facturaCabecera = s_factura.findById(idfactura).orElse(null);
         if (facturaCabecera != null && Boolean.TRUE.equals(facturaCabecera.getSwinteres())) {
-            return BigDecimal.ZERO.setScale(InteresUtils.SCALE_MONEY, RoundingMode.HALF_UP);
+            return BigDecimal.ZERO.setScale(InteresUtils.SCALE_MONEY, RoundingMode.UP);
         }
 
         List<FacIntereses> factura = s_lectura.getForIntereses(idfactura);
@@ -282,19 +282,19 @@ public class InteresServicio {
             YearMonth cur = desdeYM;
             while (!cur.isAfter(endYM)) {
                 BigDecimal pct = pctMap.getOrDefault(cur, BigDecimal.ZERO); // % mensual (ej. 1.25)
-                BigDecimal ratio = pct.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP);
+                BigDecimal ratio = pct.divide(BigDecimal.valueOf(100), 10, RoundingMode.UP);
                 factor = factor.multiply(BigDecimal.ONE.add(ratio, InteresUtils.MC), InteresUtils.MC);
                 cur = cur.plusMonths(1);
             }
 
             // 5) Interés = principal * (factor - 1)
             BigDecimal interes = principal.multiply(factor.subtract(BigDecimal.ONE, InteresUtils.MC), InteresUtils.MC)
-                    .setScale(InteresUtils.SCALE_MONEY, RoundingMode.HALF_UP);
+                    .setScale(InteresUtils.SCALE_MONEY, RoundingMode.UP);
 
             total = total.add(interes, InteresUtils.MC);
         }
 
-        return total.setScale(InteresUtils.SCALE_MONEY, RoundingMode.HALF_UP);
+        return total.setScale(InteresUtils.SCALE_MONEY, RoundingMode.UP);
     }
 
 

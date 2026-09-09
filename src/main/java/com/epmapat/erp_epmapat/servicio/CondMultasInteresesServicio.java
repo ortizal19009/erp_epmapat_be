@@ -252,14 +252,14 @@ public class CondMultasInteresesServicio {
 
     private BigDecimal obtenerMultaFactura(Facturas factura) {
         if (Boolean.TRUE.equals(factura.getSwmulta())) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            return BigDecimal.ZERO.setScale(2, RoundingMode.UP);
         }
         return rubroxfacServicio.getByIdfactura(factura.getIdfactura()).stream()
                 .filter(Objects::nonNull)
                 .filter(this::esRubroMulta)
                 .map(this::calcularTotalRubro)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(2, RoundingMode.UP);
     }
 
     private boolean esRubroMulta(Rubroxfac rubro) {
@@ -275,16 +275,16 @@ public class CondMultasInteresesServicio {
 
     private BigDecimal validarNoNegativo(BigDecimal valor) {
         if (valor == null) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            return BigDecimal.ZERO.setScale(2, RoundingMode.UP);
         }
         if (valor.signum() < 0) {
             throw new IllegalArgumentException("Los valores de interes y multa no pueden ser negativos.");
         }
-        return valor.setScale(2, RoundingMode.HALF_UP);
+        return valor.setScale(2, RoundingMode.UP);
     }
 
     private BigDecimal normalizar(BigDecimal valor) {
-        return valor == null ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP) : valor.setScale(2, RoundingMode.HALF_UP);
+        return valor == null ? BigDecimal.ZERO.setScale(2, RoundingMode.UP) : valor.setScale(2, RoundingMode.UP);
     }
 
     private String limpiarObservacion(String valor) {
