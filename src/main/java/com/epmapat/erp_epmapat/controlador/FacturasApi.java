@@ -325,13 +325,6 @@ public class FacturasApi {
 		LocalTime hora;
 		Facturas y = facServicio.findById(idfactura)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe esa factura con ese id" + idfactura));
-		BigDecimal interes = rxfServicio.getTotalInteres(idfactura);
-		BigDecimal interescobradoRecibido = x.getInterescobrado() == null ? BigDecimal.ZERO : x.getInterescobrado();
-		if (interes == null) {
-			y.setInterescobrado(interescobradoRecibido);
-		} else {
-			y.setInterescobrado(interes.add(interescobradoRecibido));
-		}
 		if (x.getHoracobro() != null) {
 			hora = LocalTime.parse(x.getHoracobro().toString());
 		} else {
@@ -340,6 +333,12 @@ public class FacturasApi {
 
 		y.setHoracobro(hora);
 		FacturaServicio.mergeFactura(y, x);
+		// El rubro 5 y el campo interescobrado representan el mismo interés.
+		// Nunca deben sumarse entre sí durante una actualización de factura.
+		BigDecimal interesRubro = rxfServicio.getTotalInteres(idfactura);
+		if (interesRubro != null) {
+			y.setInterescobrado(interesRubro);
+		}
 		Facturas updateFacturas = facServicio.save(y);
 		return ResponseEntity.ok(updateFacturas);
 	}

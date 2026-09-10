@@ -279,6 +279,21 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 
 	@Query(value = "SELECT sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as interes FROM rubroxfac rf where rf.idfactura_facturas = ?1 and (rf.estado <> 0 or rf.estado is null) and rf.idrubro_rubros = 5", nativeQuery = true)
 	BigDecimal getTotalInteres(Long idfactura);
+
+	@Query(value = """
+			SELECT rf.idfactura_facturas,
+			       COALESCE(SUM(CASE
+			           WHEN (rf.cantidad * rf.valorunitario)::numeric < 0
+			             THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) / 100
+			           ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) / 100
+			       END), 0)
+			FROM rubroxfac rf
+			WHERE rf.idfactura_facturas IN (:ids)
+			  AND rf.idrubro_rubros = 5
+			  AND (rf.estado <> 0 OR rf.estado IS NULL)
+			GROUP BY rf.idfactura_facturas
+			""", nativeQuery = true)
+	List<Object[]> getTotalInteresByFacturas(@Param("ids") List<Long> ids);
 	/* CONSULTA PARA REMISIONES */
 
 	@Query(value = "select \r\n" + //

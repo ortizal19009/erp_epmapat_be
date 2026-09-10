@@ -1116,6 +1116,37 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			"ORDER BY CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END, f.idfactura", nativeQuery = true)
 	public List<FacturasSinCobroInter> findSincobroDatos(Long cuenta);
 
+	@Query(value = """
+			WITH factura_actual AS (
+			  SELECT COALESCE(e.feccrea, f.feccrea) AS fecha_emision
+			  FROM facturas f
+			  LEFT JOIN lecturas l ON l.idfactura = f.idfactura
+			  LEFT JOIN emisiones e ON e.idemision = l.idemision
+			  WHERE f.idfactura = :idfactura
+			  LIMIT 1
+			)
+			SELECT DISTINCT f.idfactura
+			FROM facturas f
+			LEFT JOIN lecturas l ON l.idfactura = f.idfactura
+			LEFT JOIN emisiones e ON e.idemision = l.idemision
+			CROSS JOIN factura_actual actual
+			WHERE f.idabonado = :idabonado
+			  AND f.idmodulo IN (3, 4)
+			  AND f.idfactura <> :idfactura
+			  AND f.totaltarifa > 0
+			  AND f.fechaeliminacion IS NULL
+			  AND f.fechaanulacion IS NULL
+			  AND f.fechaconvenio IS NULL
+			  AND COALESCE(f.pagado, 0) = 0
+			  AND ((f.estado IN (1, 2) AND f.fechacobro IS NULL) OR f.estado = 3)
+			  AND DATE_TRUNC('month', COALESCE(e.feccrea, f.feccrea))
+			      < DATE_TRUNC('month', actual.fecha_emision)
+			ORDER BY f.idfactura
+			""", nativeQuery = true)
+	List<Long> findFacturasConsumoPendientesDePeriodosAnteriores(
+			@Param("idabonado") Long idabonado,
+			@Param("idfactura") Long idfactura);
+
 	/*
 	 * obtener todas las facturas que estan sin cobrar para calcularles el interes
 	 * mensualmente y guardarlas en tmpintresxfac

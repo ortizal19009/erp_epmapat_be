@@ -124,6 +124,10 @@ public class RubroxfacServicio {
 		return dao.getTotalInteres(idfactura);
 	}
 
+	public List<Object[]> getTotalInteresByFacturas(List<Long> ids) {
+		return dao.getTotalInteresByFacturas(ids);
+	}
+
 	public List<Rubroxfac> getByFacturaAndRubro(Long idfactura, Long idrubro) {
 		return dao.findByFacturaAndRubro(idfactura, idrubro);
 	}

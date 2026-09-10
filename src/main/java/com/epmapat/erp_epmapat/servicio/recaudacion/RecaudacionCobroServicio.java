@@ -52,6 +52,7 @@ import com.epmapat.erp_epmapat.modelo.Valoresnc;
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 import com.epmapat.erp_epmapat.repositorio.RubrosR;
+import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.servicio.AbonadoServicio;
 import com.epmapat.erp_epmapat.servicio.CajaServicio;
 import com.epmapat.erp_epmapat.servicio.FacturaServicio;
@@ -109,6 +110,8 @@ public class RecaudacionCobroServicio {
     private RecaudacionCajaSseService recaudacionCajaSseService;
     @Autowired
     private RubrosR rubrosR;
+    @Autowired
+    private FacturasR facturasR;
 
     private final TransactionTemplate requiresNewTx;
 
@@ -544,6 +547,8 @@ public class RecaudacionCobroServicio {
             facturas.add(factura);
         }
 
+        validarPeriodosAnterioresDeConsumo(facturas);
+
         // El cobro ya recibe las planillas seleccionadas. Consultar todas las pendientes del
         // cliente vuelve costosa la operación cuando el responsable tiene muchas cuentas.
         List<ValorFactDTO> pendientes = facturas.stream()
@@ -585,7 +590,7 @@ public class RecaudacionCobroServicio {
         BigDecimal totalCalculado = facturasParaCobro.stream()
                 .map(dto -> {
                     Facturas factura = facturasPorId.get(dto.getIdfactura());
-                    // Se redondea cada rubro antes de sumar para que cobro y comprobante coincidan.
+                    // El comprobante presenta capital, interes e IVA por separado.
                     BigDecimal subtotal = factura != null
                             ? sumarSubtotalFactura(factura.getIdfactura())
                             : subtotalMonetario(dto.getSubtotal());
@@ -646,11 +651,9 @@ public class RecaudacionCobroServicio {
                 numeroFacturaSiguiente = factura.getNrofactura();
             }
 
-            BigDecimal interesCalculado = pendiente.getInteres() != null ? pendiente.getInteres() : BigDecimal.ZERO;
-            BigDecimal interesExistente = obtenerInteresExistenteRubro(factura.getIdfactura());
-            BigDecimal interesTotalCobrado = normalizarMoneda(interesExistente.add(interesCalculado));
+            BigDecimal interesTotalCobrado = normalizarMoneda(pendiente.getInteres());
             BigDecimal iva = pendiente.getIva() != null ? pendiente.getIva() : calcularIva(factura.getIdfactura(), tasaIva);
-            BigDecimal totalFactura = calcularTotalFacturaParaCobro(pendiente, interesCalculado, iva);
+            BigDecimal totalFactura = calcularTotalFacturaParaCobro(pendiente, interesTotalCobrado, iva);
             BigDecimal valorNotaCreditoAplicado = calcularValorNotaCreditoAplicado(totalFactura, saldoNotaCreditoPendiente);
 
             factura.setFechacobro(LocalDate.now());
@@ -683,6 +686,41 @@ public class RecaudacionCobroServicio {
             generarFecEnSegundoPlano(facturasParaGenerarFec);
         });
         return new RecaudacionCobroResponse(recaudacionGuardada, cajaDto, facturasParaCobro, totalCalculado, numeroFacturaSiguiente);
+    }
+
+    private void validarPeriodosAnterioresDeConsumo(List<Facturas> facturas) {
+        java.util.Set<Long> seleccionadas = facturas.stream()
+                .map(Facturas::getIdfactura)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        for (Facturas factura : facturas) {
+            if (!esFacturaConsumo(factura)) {
+                continue;
+            }
+
+            List<Long> anterioresPendientes = facturasR
+                    .findFacturasConsumoPendientesDePeriodosAnteriores(
+                            factura.getIdabonado(), factura.getIdfactura());
+            List<Long> faltantes = anterioresPendientes.stream()
+                    .filter(id -> !seleccionadas.contains(id))
+                    .collect(Collectors.toList());
+            if (!faltantes.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Debe cobrar primero las " + faltantes.size()
+                                + " factura(s) de consumo pendiente(s) de meses anteriores de la cuenta "
+                                + factura.getIdabonado() + ".");
+            }
+        }
+    }
+
+    private boolean esFacturaConsumo(Facturas factura) {
+        if (factura == null || factura.getIdabonado() == null || factura.getIdabonado() <= 0
+                || factura.getIdmodulo() == null || factura.getIdmodulo().getIdmodulo() == null) {
+            return false;
+        }
+        Long idmodulo = factura.getIdmodulo().getIdmodulo();
+        return idmodulo == 3L || idmodulo == 4L;
     }
 
     private void asegurarFecFacturaEnNuevaTransaccion(Long idfactura) {
@@ -749,7 +787,9 @@ public class RecaudacionCobroServicio {
         dto.setPagado(factura.getPagado());
         dto.setModulo(factura.getIdmodulo() != null ? factura.getIdmodulo().getDescripcion() : null);
         BigDecimal subtotal = sumarSubtotalFactura(factura.getIdfactura());
-        BigDecimal interes = tmpinteresxfacService.findByIdFactura(factura.getIdfactura());
+        BigDecimal interesTemporal = tmpinteresxfacService.findByIdFactura(factura.getIdfactura());
+        BigDecimal interes = obtenerInteresExistenteRubro(factura.getIdfactura())
+                .add(interesTemporal != null ? interesTemporal : BigDecimal.ZERO);
         dto.setSubtotal(subtotal != null ? subtotal.floatValue() : 0f);
         dto.setTotal(subtotal != null ? subtotal : BigDecimal.ZERO);
         dto.setInteres(interes != null ? interes : BigDecimal.ZERO);
@@ -802,8 +842,21 @@ public class RecaudacionCobroServicio {
             interesesPorFactura.putAll(
                     interesBatchService.recalcularInteresesPorFacturas(idsSinInteresTemporal, LocalDate.now()));
         }
-        Map<Long, BigDecimal> interesesCalculados = interesesPorFactura;
-        facturas.forEach(dto -> dto.setInteres(interesesCalculados.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)));
+        Map<Long, BigDecimal> interesesPersistidos = cargarInteresesPersistidosMasivos(ids);
+        facturas.forEach(dto -> dto.setInteres(normalizarMoneda(
+                interesesPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)
+                        .add(interesesPersistidos.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)))));
+    }
+
+    private Map<Long, BigDecimal> cargarInteresesPersistidosMasivos(List<Long> ids) {
+        Map<Long, BigDecimal> intereses = new java.util.HashMap<>();
+        for (Object[] row : rubroxfacServicio.getTotalInteresByFacturas(ids)) {
+            if (row == null || row.length < 2 || row[0] == null) {
+                continue;
+            }
+            intereses.put(Long.valueOf(String.valueOf(row[0])), normalizarMoneda(toBigDecimal(row[1])));
+        }
+        return intereses;
     }
 
     private void cargarIvasMasivos(List<ValorFactDTO> facturas) {
@@ -964,6 +1017,8 @@ public class RecaudacionCobroServicio {
         }
         return rubroxfacServicio.getByIdfactura1(idfactura).stream()
                 .filter(Objects::nonNull)
+                .filter(r -> r.getIdrubro_rubros() != null
+                        && r.getIdrubro_rubros().getIdrubro() != RUBRO_INTERES_ID)
                 .map(r -> {
                     BigDecimal valor = r.getValorunitario() != null ? r.getValorunitario() : BigDecimal.ZERO;
                     BigDecimal cantidad = r.getCantidad() != null ? BigDecimal.valueOf(r.getCantidad()) : BigDecimal.ONE;
@@ -976,7 +1031,9 @@ public class RecaudacionCobroServicio {
         List<Long> excluir = java.util.Arrays.asList(rubrosExcluir);
         return rubroxfacServicio.getByIdfactura1(idfactura).stream()
                 .filter(Objects::nonNull)
-                .filter(r -> r.getIdrubro_rubros() != null && !excluir.contains(r.getIdrubro_rubros().getIdrubro()))
+                .filter(r -> r.getIdrubro_rubros() != null
+                        && r.getIdrubro_rubros().getIdrubro() != RUBRO_INTERES_ID
+                        && !excluir.contains(r.getIdrubro_rubros().getIdrubro()))
                 .map(r -> {
                     BigDecimal valor = r.getValorunitario() != null ? r.getValorunitario() : BigDecimal.ZERO;
                     BigDecimal cantidad = r.getCantidad() != null ? BigDecimal.valueOf(r.getCantidad()) : BigDecimal.ONE;
