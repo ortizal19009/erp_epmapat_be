@@ -20,18 +20,6 @@ import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
 import com.epmapat.erp_epmapat.modelo.EmisionIndividual;
 
 public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Long> {
-        @EntityGraph(attributePaths = {
-                        "idemision",
-                        "idlecturanueva",
-                        "idlecturanueva.idabonado_abonados",
-                        "idlecturanueva.idabonado_abonados.idresponsable",
-                        "idlecturaanterior",
-                        "idlecturaanterior.idabonado_abonados",
-                        "idlecturaanterior.idabonado_abonados.idresponsable"
-        })
-        @Query("select ei from EmisionIndividual ei where ei.idemision.idemision = :idemision")
-        List<EmisionIndividual> findByIdEmision(@Param("idemision") Long idemision);
-
         @Query(value = """
                 SELECT ei.idemisionindividual AS idemisionindividual,
                        e.idemision AS idemision,

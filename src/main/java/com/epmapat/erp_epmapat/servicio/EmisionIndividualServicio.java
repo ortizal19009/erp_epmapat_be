@@ -150,10 +150,6 @@ public class EmisionIndividualServicio {
         }
     }
 
-    public List<EmisionIndividual> findByIdEmision(Long idemision) {
-        return dao.findByIdEmision(idemision);
-    }
-
     public List<EmisionIndividualListado> findListadoByIdEmision(Long idemision) {
         return dao.findListadoByIdEmision(idemision);
     }
