@@ -274,6 +274,18 @@ public class LecturasApi {
 		lectura.setTotal31(item.getTotal31());
 		lectura.setTotal32(item.getTotal32());
 		lectura.setFotoPath(resolveIncomingFotoPath(item, original));
+		
+		// Tracking
+		lectura.setTrackingSessionId(item.getTrackingSessionId());
+		lectura.setReadingLatitude(item.getReadingLatitude());
+		lectura.setReadingLongitude(item.getReadingLongitude());
+		lectura.setReadingAccuracy(item.getReadingAccuracy());
+		lectura.setReadingCapturedAt(item.getReadingCapturedAt());
+
+		// Phase 15
+		lectura.setDistanceFromMeterMeters(item.getDistanceFromMeterMeters());
+		lectura.setDistanceStatus(item.getDistanceStatus());
+
 		lectura.setIdabonado_abonados(item.getIdabonado_abonados() == null
 				? (original == null ? null : original.getIdabonado_abonados())
 				: abonadosR.findById(item.getIdabonado_abonados()).orElse(null));

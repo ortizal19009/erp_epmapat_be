@@ -155,7 +155,7 @@ public class UsuariosApi {
          y.setToolbarsheet(x.getToolbarsheet());
       }
       if (StringUtils.hasText(x.getPlataform_access())) {
-         y.setPlataform_access(x.getPlataform_access());
+         y.setPlataform_access(normalizePlatformAccess(x.getPlataform_access()));
       }
 
       // ✅ ACTUALIZAR RELACIÓN PERSONAL
@@ -225,6 +225,7 @@ public class UsuariosApi {
    @PostMapping
    public ResponseEntity<Object> saveUsuario(@RequestBody Usuarios user) {
       Map<String, Object> response = new HashMap<>();
+      user.setPlataform_access(normalizePlatformAccess(user.getPlataform_access()));
       Usuarios _user = usuServicio.save(user);
       if (_user != null) {
          response.put("status", ResponseEntity.ok());
@@ -257,6 +258,12 @@ public class UsuariosApi {
                .body("Credenciales incorrectas");
       }
 
+      if (!Boolean.TRUE.equals(user.getEstado())) {
+         return ResponseEntity
+               .status(HttpStatus.FORBIDDEN)
+               .body("Usuario inactivo");
+      }
+
       // 2️⃣ Validar contraseña
       String passEncrypt = myFun(password);
       boolean credencialesOk = user.getCodusu() != null
@@ -270,16 +277,12 @@ public class UsuariosApi {
 
       // 3️⃣ Validar plataforma (MOBILE / WEB / BOTH)
       String platform = request.getPlatform();
-      String access = user.getPlataform_access();
+      String access = normalizePlatformAccess(user.getPlataform_access());
 
       // Normalizar valores
       platform = (platform == null || platform.isBlank())
             ? "MOBILE"
             : platform.trim().toUpperCase();
-
-      access = (access == null || access.isBlank())
-            ? "BOTH"
-            : access.trim().toUpperCase();
 
       boolean allowedPlatform = "BOTH".equals(access) || platform.equals(access);
 
@@ -305,6 +308,25 @@ public class UsuariosApi {
       );
 
       return ResponseEntity.ok(response);
+   }
+
+   /** Conserva compatibilidad con registros antiguos donde el acceso era booleano. */
+   private String normalizePlatformAccess(String access) {
+      if (!StringUtils.hasText(access)) {
+         return "BOTH";
+      }
+
+      String normalized = access.trim().toUpperCase();
+      if ("T".equals(normalized) || "TRUE".equals(normalized) || "1".equals(normalized)) {
+         return "BOTH";
+      }
+      if ("F".equals(normalized) || "FALSE".equals(normalized) || "0".equals(normalized)) {
+         return "NONE";
+      }
+      if ("WEB".equals(normalized) || "MOBILE".equals(normalized) || "BOTH".equals(normalized)) {
+         return normalized;
+      }
+      return "NONE";
    }
 
    public static String myFun(String x) {

@@ -71,6 +71,24 @@ public class Lecturas implements Serializable {
    @Column(name = "foto_path")
    private String fotoPath;
 
+   // Módulo de Trazabilidad GPS
+   @Column(name = "tracking_session_id")
+   private String trackingSessionId;
+   @Column(name = "reading_latitude")
+   private Double readingLatitude;
+   @Column(name = "reading_longitude")
+   private Double readingLongitude;
+   @Column(name = "reading_accuracy")
+   private Double readingAccuracy;
+   @Column(name = "reading_captured_at")
+   private Date readingCapturedAt;
+
+   // Phase 15: Meter Coordinate Comparison
+   @Column(name = "distance_from_meter_meters")
+   private Double distanceFromMeterMeters;
+   @Column(name = "distance_status")
+   private String distanceStatus;
+
 }
 
 

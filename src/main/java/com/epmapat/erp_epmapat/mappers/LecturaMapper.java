@@ -30,6 +30,17 @@ public class LecturaMapper {
         dto.setTotal32(lectura.getTotal32());
         dto.setFotoPath(lectura.getFotoPath());
 
+        // Tracking
+        dto.setTrackingSessionId(lectura.getTrackingSessionId());
+        dto.setReadingLatitude(lectura.getReadingLatitude());
+        dto.setReadingLongitude(lectura.getReadingLongitude());
+        dto.setReadingAccuracy(lectura.getReadingAccuracy());
+        dto.setReadingCapturedAt(lectura.getReadingCapturedAt());
+
+        // Phase 15
+        dto.setDistanceFromMeterMeters(lectura.getDistanceFromMeterMeters());
+        dto.setDistanceStatus(lectura.getDistanceStatus());
+
         if (lectura.getIdrutaxemision_rutasxemision() != null)
             dto.setIdrutaxemision(lectura.getIdrutaxemision_rutasxemision().getIdrutaxemision());
 
@@ -66,6 +77,18 @@ public class LecturaMapper {
         lectura.setTotal31(dto.getTotal31());
         lectura.setTotal32(dto.getTotal32());
         lectura.setFotoPath(dto.getFotoPath());
+
+        // Tracking
+        lectura.setTrackingSessionId(dto.getTrackingSessionId());
+        lectura.setReadingLatitude(dto.getReadingLatitude());
+        lectura.setReadingLongitude(dto.getReadingLongitude());
+        lectura.setReadingAccuracy(dto.getReadingAccuracy());
+        lectura.setReadingCapturedAt(dto.getReadingCapturedAt());
+
+        // Phase 15
+        lectura.setDistanceFromMeterMeters(dto.getDistanceFromMeterMeters());
+        lectura.setDistanceStatus(dto.getDistanceStatus());
+
         // Las relaciones ManyToOne deben setearse desde el Service
         return lectura;
     }

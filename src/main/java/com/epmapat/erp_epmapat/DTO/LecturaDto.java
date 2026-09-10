@@ -37,4 +37,16 @@ public class LecturaDto {
     private BigDecimal total31;
     private BigDecimal total32;
     private String fotoPath;
+
+    // Tracking
+    private String trackingSessionId;
+    private Double readingLatitude;
+    private Double readingLongitude;
+    private Double readingAccuracy;
+    @JsonDeserialize(using = FlexibleDateDeserializer.class)
+    private Date readingCapturedAt;
+
+    // Phase 15: Meter Coordinate Comparison
+    private Double distanceFromMeterMeters;
+    private String distanceStatus;
 }

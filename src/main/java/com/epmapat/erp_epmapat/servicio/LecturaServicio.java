@@ -167,6 +167,13 @@ public class LecturaServicio {
 		lecturaOriginal.setTotal32(lecturaM.getTotal32());
 		lecturaOriginal.setFotoPath(lecturaM.getFotoPath());
 
+		// Tracking
+		lecturaOriginal.setTrackingSessionId(lecturaM.getTrackingSessionId());
+		lecturaOriginal.setReadingLatitude(lecturaM.getReadingLatitude());
+		lecturaOriginal.setReadingLongitude(lecturaM.getReadingLongitude());
+		lecturaOriginal.setReadingAccuracy(lecturaM.getReadingAccuracy());
+		lecturaOriginal.setReadingCapturedAt(lecturaM.getReadingCapturedAt());
+
 		Lecturas saved = dao.save(lecturaOriginal);
 		notificarLecturaActualizada(saved);
 		return saved;

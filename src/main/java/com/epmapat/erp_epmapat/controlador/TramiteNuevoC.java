@@ -61,6 +61,7 @@ public class TramiteNuevoC {
       tramitenuevoM.setDireccion(tramitenuevom.getDireccion());
       tramitenuevoM.setNrocasa(tramitenuevom.getNrocasa());
       tramitenuevoM.setNrodepar(tramitenuevom.getNrodepar());
+      tramitenuevoM.setReferencia(tramitenuevom.getReferencia());
       tramitenuevoM.setBarrio(tramitenuevom.getBarrio());
       tramitenuevoM.setTipopredio(tramitenuevom.getTipopredio());
       tramitenuevoM.setPresentacedula(tramitenuevom.getPresentacedula());
@@ -88,6 +89,7 @@ public class TramiteNuevoC {
       tramitenuevoM.setFechafinalizacion(tramitenuevom.getFechafinalizacion());
       tramitenuevoM.setMedidordiametro(tramitenuevom.getMedidordiametro());
       tramitenuevoM.setIdcategoria_categorias(tramitenuevom.getIdcategoria_categorias());
+      tramitenuevoM.setIdaguatramite_aguatramite(tramitenuevom.getIdaguatramite_aguatramite());
       tramitenuevoM.setUsucrea(tramitenuevom.getUsucrea());
       tramitenuevoM.setFeccrea(tramitenuevom.getFeccrea());
       tramitenuevoM.setUsumodi(tramitenuevom.getUsumodi());
