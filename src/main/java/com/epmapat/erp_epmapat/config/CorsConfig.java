@@ -1,6 +1,8 @@
 // src/main/java/com/epmapat/erp_epmapat/config/CorsConfig.java
 package com.epmapat.erp_epmapat.config;
 
+import javax.servlet.DispatcherType;
+
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +41,8 @@ public class CorsConfig {
 
         FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
         bean.setOrder(Integer.MIN_VALUE);
+        // Mantiene las cabeceras CORS cuando Spring reenvia una excepcion a /error.
+        bean.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ERROR);
         return bean;
     }
 }

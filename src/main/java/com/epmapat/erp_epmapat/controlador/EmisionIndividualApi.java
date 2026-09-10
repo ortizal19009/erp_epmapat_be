@@ -46,8 +46,9 @@ public class EmisionIndividualApi {
     }
 
     @GetMapping("/idemision")
-    public ResponseEntity<List<EmisionIndividual>> getByIdEmision(@RequestParam("idemision") Long idemision) {
-        return ResponseEntity.ok(sei.findByIdEmision(idemision));
+    public ResponseEntity<List<EmisionIndividualListado>> getByIdEmision(@RequestParam("idemision") Long idemision) {
+        // No serializa el grafo JPA completo, que puede provocar ciclos o cargas masivas.
+        return ResponseEntity.ok(sei.findListadoByIdEmision(idemision));
     }
 
     @GetMapping("/idemision/listado")

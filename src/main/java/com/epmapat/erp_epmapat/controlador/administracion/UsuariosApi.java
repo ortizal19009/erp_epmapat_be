@@ -258,7 +258,9 @@ public class UsuariosApi {
                .body("Credenciales incorrectas");
       }
 
-      if (!Boolean.TRUE.equals(user.getEstado())) {
+      // Native projections can expose an inconsistent boolean value; verify the persisted account state.
+      Usuarios persistedUser = usuServicio.findById(user.getIdusuario()).orElse(null);
+      if (persistedUser == null || !Boolean.TRUE.equals(persistedUser.getEstado())) {
          return ResponseEntity
                .status(HttpStatus.FORBIDDEN)
                .body("Usuario inactivo");

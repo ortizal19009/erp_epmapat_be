@@ -39,10 +39,15 @@ public interface EmisionIndividualR extends JpaRepository<EmisionIndividual, Lon
                        a.idabonado AS cuenta,
                        c.nombre AS nombre,
                        c.cedula AS cedula,
+                       e.feccrea AS fechaemision,
                        la.idlectura AS idlecturaanterior,
                        ln.idlectura AS idlecturanueva,
                        la.idfactura AS idfacturaanterior,
-                       ln.idfactura AS idfacturanueva
+                       ln.idfactura AS idfacturanueva,
+                       la.lecturaanterior AS lecturaanterioranterior,
+                       la.lecturaactual AS lecturaactualanterior,
+                       ln.lecturaanterior AS lecturaanteriornueva,
+                       ln.lecturaactual AS lecturaactualnueva
                 FROM emisionindividual ei
                 JOIN emisiones e ON e.idemision = ei.idemision
                 JOIN lecturas ln ON ln.idlectura = ei.idlecturanueva
