@@ -1,6 +1,11 @@
 -- Trazabilidad GPS de lectores. Ejecutar antes de desplegar el backend,
 -- porque spring.jpa.hibernate.ddl-auto está configurado en none.
 
+-- Campos de comparacion entre la lectura capturada y la ubicacion del medidor.
+-- IF NOT EXISTS permite ejecutar el script en bases actualizadas sin efectos secundarios.
+ALTER TABLE lecturas ADD COLUMN IF NOT EXISTS distance_from_meter_meters DOUBLE PRECISION;
+ALTER TABLE lecturas ADD COLUMN IF NOT EXISTS distance_status VARCHAR(30);
+
 CREATE TABLE IF NOT EXISTS tracking_sessions (
     id VARCHAR(50) PRIMARY KEY,
     reader_id BIGINT NOT NULL,

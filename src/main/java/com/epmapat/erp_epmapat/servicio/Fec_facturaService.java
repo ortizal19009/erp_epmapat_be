@@ -36,7 +36,7 @@ import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.modelo.Fec_factura_detalles;
 import com.epmapat.erp_epmapat.modelo.Fec_factura_detalles_impuestos;
 import com.epmapat.erp_epmapat.modelo.Fec_factura_pagos;
-import com.epmapat.erp_epmapat.modelo.Lecturas;
+import com.epmapat.erp_epmapat.interfaces.LecturaFacturaFec;
 import com.epmapat.erp_epmapat.modelo.Rubroxfac;
 import com.epmapat.erp_epmapat.repositorio.FacturasR;
 import com.epmapat.erp_epmapat.repositorio.Fec_facturaR;
@@ -160,15 +160,16 @@ public class Fec_facturaService {
       String puntoEmision = partes[1]; // 013
       String secuencial = partes[2]; // 000022233
 
-      Lecturas lectura = lecturasR.findOnefactura(idfactura);
+      LecturaFacturaFec lectura = lecturasR.findDatosFecByFactura(idfactura);
       float m3 = 0;
       if (lectura != null) {
          SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy", new Locale("es", "ES"));
-         Date fecemision = lecturasR.findDateByIdfactura(idfactura);
-         String fechaFormateada = sdf.format(fecemision);
-         m3 = lectura.getLecturaactual() - lectura.getLecturaanterior();
+         Date fecemision = lectura.getFechaemision();
+         String fechaFormateada = fecemision != null ? sdf.format(fecemision) : "sin fecha";
+         m3 = (lectura.getLecturaactual() != null ? lectura.getLecturaactual() : 0F)
+               - (lectura.getLecturaanterior() != null ? lectura.getLecturaanterior() : 0F);
          concepto = "M3: " + m3 + " Emision: " + fechaFormateada + " Nro medidor: "
-               + lectura.getIdabonado_abonados().getNromedidor();
+               + (lectura.getNromedidor() != null ? lectura.getNromedidor() : "sin medidor");
 
       }
       fecFactura.setConcepto(concepto);

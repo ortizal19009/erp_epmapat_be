@@ -26,6 +26,7 @@ import com.epmapat.erp_epmapat.interfaces.EmisionesInterface;
 import com.epmapat.erp_epmapat.interfaces.FacIntereses;
 import com.epmapat.erp_epmapat.interfaces.FacturaCuentaView;
 import com.epmapat.erp_epmapat.interfaces.FecEmision;
+import com.epmapat.erp_epmapat.interfaces.LecturaFacturaFec;
 import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
 import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
 import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
@@ -59,6 +60,19 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	})
 	@Query("SELECT l FROM Lecturas l WHERE l.idfactura = ?1")
 	public Lecturas findOnefactura(Long idfactura);
+
+	@Query(value = """
+			SELECT l.lecturaanterior AS lecturaanterior,
+			       l.lecturaactual AS lecturaactual,
+			       a.nromedidor AS nromedidor,
+			       e.feccrea AS fechaemision
+			FROM lecturas l
+			LEFT JOIN abonados a ON a.idabonado = l.idabonado_abonados
+			LEFT JOIN emisiones e ON e.idemision = l.idemision
+			WHERE l.idfactura = :idfactura
+			LIMIT 1
+			""", nativeQuery = true)
+	LecturaFacturaFec findDatosFecByFactura(@Param("idfactura") Long idfactura);
 
 	// Lecturas por rutasxemision
 	@EntityGraph(attributePaths = {
@@ -778,4 +792,3 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 			""", nativeQuery = true)
 	List<com.epmapat.erp_epmapat.interfaces.ConsumoHistorialI> findHistorialConsumo(@Param("idabonado") Long idabonado);
 }
-
