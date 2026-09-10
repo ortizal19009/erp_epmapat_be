@@ -13,8 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -67,6 +70,7 @@ import com.epmapat.erp_epmapat.servicio.administracion.UsuarioServicio;
 
 @Service
 public class RecaudacionCobroServicio {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecaudacionCobroServicio.class);
     private static final long RUBRO_INTERES_ID = 5L;
     private static final long RUBRO_MULTA_ID = 6L;
     private static final long RUBRO_MULTA_BASURA_ID = 1011L;
@@ -540,25 +544,12 @@ public class RecaudacionCobroServicio {
             facturas.add(factura);
         }
 
-        Facturas primera = facturas.get(0);
-        Long idcliente = primera.getIdcliente() != null ? primera.getIdcliente().getIdcliente() : null;
-        List<ValorFactDTO> pendientes;
-        if (idcliente != null) {
-            pendientes = getSincobroByCliente(idcliente).stream()
-                    .filter(dto -> request.getFacturas().contains(dto.getIdfactura()))
-                    .collect(Collectors.toList());
-        } else {
-            Long cuenta = primera.getIdabonado();
-            if (cuenta == null) {
-                throw new IllegalArgumentException("La factura seleccionada no tiene una cuenta asociada.");
-            }
-
-            pendientes = facturaServicio.findSincobroDatos(cuenta)
-                    .stream()
-                    .filter(dto -> request.getFacturas().contains(dto.getIdfactura()))
-                    .peek(this::completarMontosPendiente)
-                    .collect(Collectors.toList());
-        }
+        // El cobro ya recibe las planillas seleccionadas. Consultar todas las pendientes del
+        // cliente vuelve costosa la operación cuando el responsable tiene muchas cuentas.
+        List<ValorFactDTO> pendientes = facturas.stream()
+                .map(this::construirPendienteDesdeFactura)
+                .collect(Collectors.toList());
+        completarMontosPendientes(pendientes);
 
         Cajas caja = cajaServicio.findCajaByIdUsuario(idusuario);
         if (caja == null) {
@@ -688,8 +679,8 @@ public class RecaudacionCobroServicio {
 
         RecaudacionCajaDTO cajaDto = getEstadoCaja(idusuario);
         ejecutarDespuesDeCommit(() -> {
-            facturasParaGenerarFec.forEach(this::asegurarFecFacturaEnNuevaTransaccion);
             recaudacionCajaSseService.publishSecuencial(idusuario, cajaDto);
+            generarFecEnSegundoPlano(facturasParaGenerarFec);
         });
         return new RecaudacionCobroResponse(recaudacionGuardada, cajaDto, facturasParaCobro, totalCalculado, numeroFacturaSiguiente);
     }
@@ -700,6 +691,20 @@ public class RecaudacionCobroServicio {
         }
 
         requiresNewTx.executeWithoutResult(status -> fecFacturaService.asegurarFecFactura(idfactura));
+    }
+
+    private void generarFecEnSegundoPlano(List<Long> facturas) {
+        List<Long> ids = facturas == null ? List.of() : new ArrayList<>(facturas);
+        CompletableFuture.runAsync(() -> {
+            for (Long idfactura : ids) {
+                try {
+                    asegurarFecFacturaEnNuevaTransaccion(idfactura);
+                } catch (Exception e) {
+                    // El cobro ya fue confirmado; el proceso FEC puede recuperarse sin bloquear caja.
+                    LOGGER.error("No se pudo crear la estructura FEC de la factura {}", idfactura, e);
+                }
+            }
+        });
     }
 
     private void ejecutarDespuesDeCommit(Runnable tarea) {
