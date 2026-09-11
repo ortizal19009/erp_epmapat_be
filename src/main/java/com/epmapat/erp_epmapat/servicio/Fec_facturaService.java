@@ -25,6 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.epmapat.erp_epmapat.DTO.FecFacturaGestionFiltroDto;
 import com.epmapat.erp_epmapat.interfaces.DefinirProjection;
@@ -50,6 +54,7 @@ import com.epmapat.erp_epmapat.sri.interfaces.fecFacturaDatos;
 
 @Service
 public class Fec_facturaService {
+   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
    // Tipo de comprobante: Factura = "01"
    private static final String TIPO_COMPROBANTE_FACTURA = "01";
    private static final String CODIGO_IMPUESTO_IVA = "2";
@@ -285,9 +290,19 @@ public class Fec_facturaService {
    }
 
    public Optional<Fec_factura> recuperarXmlAutorizado(Fec_factura factura) {
+      if (factura == null || factura.getClaveacceso() == null || factura.getClaveacceso().isBlank()) {
+         if (factura != null) {
+            marcarPendienteAutorizacion(factura, "La factura no tiene clave de acceso para consultar el SRI");
+         }
+         return Optional.empty();
+      }
+
       try {
-         String url = sriMicroserviceBaseUrl + "/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
-         String xml = restTemplate.getForObject(url, String.class);
+         String url = UriComponentsBuilder.fromHttpUrl(sriMicroserviceBaseUrl)
+               .pathSegment("api", "v1", "autorizacion", factura.getClaveacceso().trim(), "xml")
+               .toUriString();
+         String respuestaSri = restTemplate.getForObject(url, String.class);
+         String xml = extraerXmlAutorizadoRespuestaSri(respuestaSri);
          if (xml == null || xml.isBlank()) {
             marcarPendienteAutorizacion(factura, "SRI sin XML autorizado disponible todavia");
             return Optional.empty();
@@ -296,6 +311,25 @@ public class Fec_facturaService {
       } catch (Exception e) {
          incrementarIntentoAutorizacion(factura, "No fue posible recuperar XML autorizado: " + e.getMessage());
          return Optional.empty();
+      }
+   }
+
+   private String extraerXmlAutorizadoRespuestaSri(String respuestaSri) {
+      if (respuestaSri == null || respuestaSri.isBlank()) {
+         return "";
+      }
+
+      String respuesta = respuestaSri.trim();
+      if (!respuesta.startsWith("{")) {
+         return respuesta;
+      }
+
+      try {
+         JsonNode payload = OBJECT_MAPPER.readTree(respuesta);
+         JsonNode xmlAutorizado = payload.path("xmlAutorizado");
+         return xmlAutorizado.isTextual() ? xmlAutorizado.asText().trim() : "";
+      } catch (Exception ignored) {
+         return "";
       }
    }
 
