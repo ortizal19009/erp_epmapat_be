@@ -283,9 +283,9 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	@Query(value = """
 			SELECT rf.idfactura_facturas,
 			       COALESCE(SUM(CASE
-			           WHEN (rf.cantidad * rf.valorunitario)::numeric < 0
-			             THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) / 100
-			           ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) / 100
+			           WHEN CAST(rf.cantidad * rf.valorunitario AS numeric) < 0
+			             THEN FLOOR(CAST(rf.cantidad * rf.valorunitario AS numeric) * 100) / 100
+			           ELSE CEIL(CAST(rf.cantidad * rf.valorunitario AS numeric) * 100) / 100
 			       END), 0)
 			FROM rubroxfac rf
 			WHERE rf.idfactura_facturas IN (:ids)
