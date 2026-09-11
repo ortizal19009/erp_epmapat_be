@@ -1,6 +1,8 @@
 package com.epmapat.erp_epmapat.controlador;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,12 +33,15 @@ public class TrackingController {
     }
 
     @PostMapping("/points/batch")
-    public ResponseEntity<String> addPointsBatch(@RequestBody BatchPointsRequestDto dto) {
+    public ResponseEntity<Map<String, Object>> addPointsBatch(@RequestBody BatchPointsRequestDto dto) {
         log.info("Recibido lote de {} puntos para sesión: {}", 
             dto.getPoints() != null ? dto.getPoints().size() : 0, 
             dto.getTrackingSessionId());
         trackingServicio.addPointsBatch(dto);
-        return ResponseEntity.ok("Points added successfully");
+        return ResponseEntity.ok(Map.of(
+                "status", "OK",
+                "message", "Points added successfully",
+                "points", dto.getPoints() == null ? 0 : dto.getPoints().size()));
     }
 
     @PostMapping("/finish")

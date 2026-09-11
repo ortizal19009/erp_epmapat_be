@@ -24,4 +24,5 @@ public class SmartSyncResponseDto {
     private List<NovedadesMobile> novedades;
     private List<Nacionalidad> nacionalidades;
     private List<Pliego24Dto> pliegos;
+    private SmartSyncSummaryDto resumen;
 }

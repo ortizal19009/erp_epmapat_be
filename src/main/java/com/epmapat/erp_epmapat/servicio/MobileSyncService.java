@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
 import com.epmapat.erp_epmapat.DTO.SmartSyncResponseDto;
+import com.epmapat.erp_epmapat.DTO.SmartSyncSummaryDto;
 import com.epmapat.erp_epmapat.mappers.LecturaMapper;
 import com.epmapat.erp_epmapat.modelo.Abonados;
 import com.epmapat.erp_epmapat.modelo.Clientes;
@@ -112,6 +113,12 @@ public class MobileSyncService {
                 .novedades(novedadR.getNovedadesToMobile())
                 .nacionalidades(nacionalidadR.findAll())
                 .pliegos(pliegosDto)
+                .resumen(SmartSyncSummaryDto.builder()
+                        .clientes(clientes.size())
+                        .abonados(abonados.size())
+                        .rutas(rutas.size())
+                        .lecturas(lecturasDto.size())
+                        .build())
                 .build();
     }
 }

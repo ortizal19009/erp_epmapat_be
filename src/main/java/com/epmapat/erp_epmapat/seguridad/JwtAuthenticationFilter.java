@@ -22,11 +22,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String authorization = request.getHeader("Authorization");
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
+        if (!requiresWebJwt(request.getRequestURI())) {
+            // Mobile still uses a legacy session token; only WEB routes consume JWTs.
+            filterChain.doFilter(request, response);
+            return;
+        }
+        String authorization = request.getHeader("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             if (requiresWebJwt(request.getRequestURI())) {
                 unauthorized(response, "Token WEB requerido");
