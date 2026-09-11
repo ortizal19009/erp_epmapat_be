@@ -16,6 +16,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.transaction.Transactional;
 import javax.persistence.EntityManager;
@@ -67,6 +69,8 @@ public class Fec_facturaService {
    private static final long DETALLE_RUBRO_FACTOR = 1_000_000L;
    private static final long IMPUESTO_RUBRO_FACTOR = 10_000_000_000_000L;
    private static final long RUBRO_INTERES_ID = 5L;
+   private static final Pattern XML_AUTORIZADO_ENVELOPE = Pattern.compile(
+         "(?is)<xmlAutorizado>(.*?)</xmlAutorizado>");
    @Autowired
    private Fec_facturaR dao;
    @Autowired
@@ -320,17 +324,51 @@ public class Fec_facturaService {
       }
 
       String respuesta = respuestaSri.trim();
-      if (!respuesta.startsWith("{")) {
-         return respuesta;
+      if (respuesta.startsWith("{")) {
+         try {
+            JsonNode payload = OBJECT_MAPPER.readTree(respuesta);
+            JsonNode xmlAutorizado = payload.path("xmlAutorizado");
+            if (xmlAutorizado.isTextual()) {
+               return normalizarXmlAutorizado(xmlAutorizado.asText());
+            }
+         } catch (Exception ignored) {
+            // Algunas versiones del servicio SRI serializan el Map como etiquetas XML.
+         }
       }
 
-      try {
-         JsonNode payload = OBJECT_MAPPER.readTree(respuesta);
-         JsonNode xmlAutorizado = payload.path("xmlAutorizado");
-         return xmlAutorizado.isTextual() ? xmlAutorizado.asText().trim() : "";
-      } catch (Exception ignored) {
+      Matcher matcher = XML_AUTORIZADO_ENVELOPE.matcher(respuesta);
+      if (matcher.find()) {
+         return normalizarXmlAutorizado(matcher.group(1));
+      }
+
+      return normalizarXmlAutorizado(respuesta);
+   }
+
+   private String normalizarXmlAutorizado(String valor) {
+      if (valor == null || valor.isBlank()) {
          return "";
       }
+
+      String xml = valor.trim()
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", "\"")
+            .replace("&#34;", "\"")
+            .replace("&apos;", "'")
+            .replace("&amp;", "&")
+            .replace("\\n", "\n")
+            .replace("\\r", "\r")
+            .replace("\\t", "\t")
+            .replace("\\\"", "\"");
+
+      int inicio = xml.indexOf("<?xml");
+      if (inicio < 0) {
+         inicio = xml.indexOf("<factura");
+      }
+      if (inicio < 0) {
+         inicio = xml.indexOf("<autorizacion");
+      }
+      return inicio >= 0 ? xml.substring(inicio).trim() : "";
    }
 
    private void limpiarEstructuraFacturaElectronica(Long idfactura) {
