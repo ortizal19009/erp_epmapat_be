@@ -55,6 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return uri.startsWith("/usrxmodulos")
                 || uri.startsWith("/ventanas")
                 || uri.startsWith("/access/")
+                || uri.startsWith("/usuarios/session")
                 || uri.startsWith("/api/backup");
     }
 
