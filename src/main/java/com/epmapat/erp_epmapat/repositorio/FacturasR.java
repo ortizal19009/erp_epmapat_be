@@ -1104,7 +1104,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "select f.idfactura, f.totaltarifa as subtotal from facturas f where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and f.totaltarifa > 0 ORDER BY f.idfactura", nativeQuery = true)
 	public List<FacturasSinCobroInter> findFacturasSinCobro(Long cuenta);
 
-	@Query(value = "select f.idfactura, f.totaltarifa as subtotal, c.nombre, c.cedula, a.idabonado as cuenta, a.direccionubicacion, f.formapago, CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END AS feccrea, f.fechatransferencia as fectransferencia "
+	@Query(value = "select f.idfactura, f.totaltarifa as subtotal, c.nombre, c.cedula, a.idabonado as cuenta, a.direccionubicacion, f.formapago, f.idmodulo, CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END AS feccrea, f.fechatransferencia as fectransferencia "
 			+
 			"from facturas f " +
 			"join clientes c on c.idcliente = f.idcliente " +

@@ -20,6 +20,8 @@ public interface FacturasSinCobroInter {
 
     Long getFormapago();
 
+    Long getIdmodulo();
+
     LocalDate getFeccrea();
 
     BigDecimal getIntereses();

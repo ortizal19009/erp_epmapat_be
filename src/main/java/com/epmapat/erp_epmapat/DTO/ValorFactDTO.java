@@ -26,6 +26,7 @@ public class ValorFactDTO {
     private String cedula;
     private String direccionubicacion;
     private String modulo;
+    private Long idmodulo;
     private Long estado;
     private Integer pagado;
     private String nrofactura;

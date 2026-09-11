@@ -277,12 +277,25 @@ public class RecaudacionCobroServicio {
             dto.setDireccionubicacion(item.getDireccionubicacion());
             dto.setFeccrea(item.getFeccrea());
             dto.setFormapago(item.getFormapago());
+            dto.setIdmodulo(item.getIdmodulo());
             dto.setSubtotal(item.getSubtotal() != null ? item.getSubtotal() : 0f);
             dto.setTotal(item.getTotal() != null ? item.getTotal() : BigDecimal.ZERO);
             dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
-            dto.setModulo(null);
+            dto.setModulo(item.getModulo());
             dto.setIva(BigDecimal.ZERO);
-            pendientesPorId.putIfAbsent(dto.getIdfactura(), dto);
+            pendientesPorId.merge(dto.getIdfactura(), dto, (existente, desdeCuenta) -> {
+                // La consulta por cuenta aporta la fecha de emision y el modulo
+                // necesarios para validar la secuencia de cobro de consumos.
+                existente.setCuenta(desdeCuenta.getCuenta());
+                existente.setFeccrea(desdeCuenta.getFeccrea());
+                existente.setFormapago(desdeCuenta.getFormapago());
+                existente.setIdmodulo(desdeCuenta.getIdmodulo());
+                existente.setModulo(desdeCuenta.getModulo());
+                existente.setSubtotal(desdeCuenta.getSubtotal());
+                existente.setTotal(desdeCuenta.getTotal());
+                existente.setInteres(desdeCuenta.getInteres());
+                return existente;
+            });
         }
     }
 
@@ -787,9 +800,14 @@ public class RecaudacionCobroServicio {
         dto.setPagado(factura.getPagado());
         dto.setModulo(factura.getIdmodulo() != null ? factura.getIdmodulo().getDescripcion() : null);
         BigDecimal subtotal = sumarSubtotalFactura(factura.getIdfactura());
-        BigDecimal interesTemporal = tmpinteresxfacService.findByIdFactura(factura.getIdfactura());
-        BigDecimal interes = obtenerInteresExistenteRubro(factura.getIdfactura())
-                .add(interesTemporal != null ? interesTemporal : BigDecimal.ZERO);
+        BigDecimal interesPersistido = obtenerInteresExistenteRubro(factura.getIdfactura());
+        // A convention installment already contains the interest consolidated when the
+        // agreement was generated. Adding the temporary portfolio interest repeats it.
+        BigDecimal interesTemporal = esFacturaConvenio(factura)
+                ? BigDecimal.ZERO
+                : tmpinteresxfacService.findByIdFactura(factura.getIdfactura());
+        BigDecimal interes = interesPersistido.add(
+                interesTemporal != null ? interesTemporal : BigDecimal.ZERO);
         dto.setSubtotal(subtotal != null ? subtotal.floatValue() : 0f);
         dto.setTotal(subtotal != null ? subtotal : BigDecimal.ZERO);
         dto.setInteres(interes != null ? interes : BigDecimal.ZERO);
@@ -807,6 +825,7 @@ public class RecaudacionCobroServicio {
         cargarInteresesMasivos(facturas);
         cargarIvasMasivos(facturas);
         aplicarExoneracionesPendientes(facturas);
+        facturas.forEach(this::recomputarTotal);
     }
 
     private void completarMontosPendiente(ValorFactDTO dto) {
@@ -843,9 +862,32 @@ public class RecaudacionCobroServicio {
                     interesBatchService.recalcularInteresesPorFacturas(idsSinInteresTemporal, LocalDate.now()));
         }
         Map<Long, BigDecimal> interesesPersistidos = cargarInteresesPersistidosMasivos(ids);
-        facturas.forEach(dto -> dto.setInteres(normalizarMoneda(
-                interesesPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)
-                        .add(interesesPersistidos.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)))));
+        Map<Long, Boolean> conveniosPorFactura = facturasR.findAllById(ids).stream()
+                .collect(Collectors.toMap(Facturas::getIdfactura, this::esFacturaConvenio));
+        facturas.forEach(dto -> {
+            BigDecimal interesPersistido = interesesPersistidos.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO);
+            BigDecimal interes = Boolean.TRUE.equals(conveniosPorFactura.get(dto.getIdfactura()))
+                    ? interesPersistido
+                    : interesPersistido.add(interesesPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO));
+
+            // The pending-query subtotal includes every active rubro, including rubro 5.
+            // Expose capital separately so the UI does not add that same interest twice.
+            BigDecimal subtotalSinInteres = subtotalMonetario(dto.getSubtotal())
+                    .subtract(interesPersistido)
+                    .max(BigDecimal.ZERO);
+            dto.setSubtotal(redondearMoneda(subtotalSinInteres).floatValue());
+            dto.setInteres(normalizarMoneda(interes));
+        });
+    }
+
+    private boolean esFacturaConvenio(Facturas factura) {
+        if (factura == null) {
+            return false;
+        }
+        Long idModulo = factura.getIdmodulo() == null ? null : factura.getIdmodulo().getIdmodulo();
+        return Long.valueOf(27L).equals(idModulo)
+                || (factura.getConveniopago() != null && factura.getConveniopago() > 0L)
+                || factura.getFechaconvenio() != null;
     }
 
     private Map<Long, BigDecimal> cargarInteresesPersistidosMasivos(List<Long> ids) {
