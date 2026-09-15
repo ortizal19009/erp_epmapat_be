@@ -22,6 +22,8 @@ public interface FacturasSinCobroInter {
 
     Long getIdmodulo();
 
+    String getModulo();
+
     LocalDate getFeccrea();
 
     BigDecimal getIntereses();

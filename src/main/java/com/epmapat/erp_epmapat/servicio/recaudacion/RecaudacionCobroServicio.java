@@ -176,6 +176,7 @@ public class RecaudacionCobroServicio {
             dto.setEstado(item.getEstado());
             dto.setPagado(item.getPagado() != null ? item.getPagado().intValue() : null);
             dto.setModulo(item.getModulo());
+            dto.setIdmodulo(item.getIdmodulo());
             dto.setSubtotal(item.getTotal() != null ? item.getTotal().floatValue() : 0f);
             dto.setTotal(item.getTotal() != null ? item.getTotal() : BigDecimal.ZERO);
             dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
@@ -250,6 +251,7 @@ public class RecaudacionCobroServicio {
             dto.setEstado(item.getEstado());
             dto.setPagado(item.getPagado() != null ? item.getPagado().intValue() : null);
             dto.setModulo(item.getModulo());
+            dto.setIdmodulo(item.getIdmodulo());
             dto.setSubtotal(item.getTotal() != null ? item.getTotal().floatValue() : 0f);
             dto.setTotal(item.getTotal() != null ? item.getTotal() : BigDecimal.ZERO);
             dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
@@ -282,6 +284,7 @@ public class RecaudacionCobroServicio {
             dto.setTotal(item.getTotal() != null ? item.getTotal() : BigDecimal.ZERO);
             dto.setInteres(item.getInteres() != null ? item.getInteres() : BigDecimal.ZERO);
             dto.setModulo(item.getModulo());
+            dto.setIdmodulo(item.getIdmodulo());
             dto.setIva(BigDecimal.ZERO);
             pendientesPorId.merge(dto.getIdfactura(), dto, (existente, desdeCuenta) -> {
                 // La consulta por cuenta aporta la fecha de emision y el modulo
@@ -290,7 +293,9 @@ public class RecaudacionCobroServicio {
                 existente.setFeccrea(desdeCuenta.getFeccrea());
                 existente.setFormapago(desdeCuenta.getFormapago());
                 existente.setIdmodulo(desdeCuenta.getIdmodulo());
-                existente.setModulo(desdeCuenta.getModulo());
+                if (desdeCuenta.getModulo() != null && !desdeCuenta.getModulo().isBlank()) {
+                    existente.setModulo(desdeCuenta.getModulo());
+                }
                 existente.setSubtotal(desdeCuenta.getSubtotal());
                 existente.setTotal(desdeCuenta.getTotal());
                 existente.setInteres(desdeCuenta.getInteres());
@@ -598,21 +603,8 @@ public class RecaudacionCobroServicio {
             facturasParaCobro.add(pendiente);
         }
 
-        Map<Long, Facturas> facturasPorId = facturas.stream()
-                .collect(Collectors.toMap(Facturas::getIdfactura, factura -> factura));
         BigDecimal totalCalculado = facturasParaCobro.stream()
-                .map(dto -> {
-                    Facturas factura = facturasPorId.get(dto.getIdfactura());
-                    // El comprobante presenta capital, interes e IVA por separado.
-                    BigDecimal subtotal = factura != null
-                            ? sumarSubtotalFactura(factura.getIdfactura())
-                            : subtotalMonetario(dto.getSubtotal());
-                    BigDecimal interes = redondearMoneda(dto.getInteres());
-                    BigDecimal iva = redondearMoneda(dto.getIva());
-                    dto.setSubtotal(subtotal.floatValue());
-                    dto.setTotal(redondearMoneda(subtotal.add(interes).add(iva)));
-                    return dto.getTotal();
-                })
+                .map(ValorFactDTO::getTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.UP);
 
@@ -851,8 +843,14 @@ public class RecaudacionCobroServicio {
             return;
         }
 
-        Map<Long, BigDecimal> interesesExistentes = tmpinteresxfacService.findByIdFacturas(ids);
-        List<Long> idsSinInteresTemporal = ids.stream()
+        Map<Long, Facturas> entidades = facturasR.findAllById(ids).stream()
+                .collect(Collectors.toMap(Facturas::getIdfactura, factura -> factura));
+        List<Long> idsOrdinarios = ids.stream()
+                .filter(id -> !esFacturaConvenio(entidades.get(id)))
+                .collect(Collectors.toList());
+        Map<Long, BigDecimal> interesesExistentes = idsOrdinarios.isEmpty()
+                ? java.util.Collections.emptyMap() : tmpinteresxfacService.findByIdFacturas(idsOrdinarios);
+        List<Long> idsSinInteresTemporal = idsOrdinarios.stream()
                 .filter(id -> !interesesExistentes.containsKey(id))
                 .collect(Collectors.toList());
 
@@ -862,20 +860,23 @@ public class RecaudacionCobroServicio {
                     interesBatchService.recalcularInteresesPorFacturas(idsSinInteresTemporal, LocalDate.now()));
         }
         Map<Long, BigDecimal> interesesPersistidos = cargarInteresesPersistidosMasivos(ids);
-        Map<Long, Boolean> conveniosPorFactura = facturasR.findAllById(ids).stream()
-                .collect(Collectors.toMap(Facturas::getIdfactura, this::esFacturaConvenio));
+        Map<Long, BigDecimal> capitales = new java.util.HashMap<>();
+        for (Object[] row : rubroxfacServicio.getSubtotalSinInteresByFacturas(ids)) {
+            capitales.put(Long.valueOf(String.valueOf(row[0])), toBigDecimal(row[1]));
+        }
         facturas.forEach(dto -> {
             BigDecimal interesPersistido = interesesPersistidos.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO);
-            BigDecimal interes = Boolean.TRUE.equals(conveniosPorFactura.get(dto.getIdfactura()))
+            BigDecimal interes = esFacturaConvenio(entidades.get(dto.getIdfactura()))
                     ? interesPersistido
                     : interesPersistido.add(interesesPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO));
 
-            // The pending-query subtotal includes every active rubro, including rubro 5.
-            // Expose capital separately so the UI does not add that same interest twice.
-            BigDecimal subtotalSinInteres = subtotalMonetario(dto.getSubtotal())
-                    .subtract(interesPersistido)
-                    .max(BigDecimal.ZERO);
-            dto.setSubtotal(redondearMoneda(subtotalSinInteres).floatValue());
+            // Derive capital from active details, independently of previous normalization.
+            dto.setSubtotal(redondearMoneda(capitales.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)).floatValue());
+            Facturas entidad = entidades.get(dto.getIdfactura());
+            if (entidad != null && entidad.getIdmodulo() != null) {
+                dto.setIdmodulo(entidad.getIdmodulo().getIdmodulo());
+                dto.setModulo(entidad.getIdmodulo().getDescripcion());
+            }
             dto.setInteres(normalizarMoneda(interes));
         });
     }
@@ -1063,7 +1064,7 @@ public class RecaudacionCobroServicio {
                         && r.getIdrubro_rubros().getIdrubro() != RUBRO_INTERES_ID)
                 .map(r -> {
                     BigDecimal valor = r.getValorunitario() != null ? r.getValorunitario() : BigDecimal.ZERO;
-                    BigDecimal cantidad = r.getCantidad() != null ? BigDecimal.valueOf(r.getCantidad()) : BigDecimal.ONE;
+                    BigDecimal cantidad = r.getCantidad() != null ? new BigDecimal(r.getCantidad().toString()) : BigDecimal.ONE;
                     return redondearMoneda(valor.multiply(cantidad));
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -1078,7 +1079,7 @@ public class RecaudacionCobroServicio {
                         && !excluir.contains(r.getIdrubro_rubros().getIdrubro()))
                 .map(r -> {
                     BigDecimal valor = r.getValorunitario() != null ? r.getValorunitario() : BigDecimal.ZERO;
-                    BigDecimal cantidad = r.getCantidad() != null ? BigDecimal.valueOf(r.getCantidad()) : BigDecimal.ONE;
+                    BigDecimal cantidad = r.getCantidad() != null ? new BigDecimal(r.getCantidad().toString()) : BigDecimal.ONE;
                     return redondearMoneda(valor.multiply(cantidad));
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

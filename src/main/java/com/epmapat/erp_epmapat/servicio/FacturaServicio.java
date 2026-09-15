@@ -956,6 +956,7 @@ public class FacturaServicio {
 			dto.setFectransferencia(item.getFectransferencia());
 			dto.setFormapago(item.getFormapago());
 			dto.setIdmodulo(item.getIdmodulo());
+			dto.setModulo(item.getModulo());
 			dto.setInteres(BigDecimal.ZERO);
 			dto.setTotal(BigDecimal.valueOf(item.getSubtotal()));
 			return dto;

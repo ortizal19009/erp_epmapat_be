@@ -124,6 +124,10 @@ public class RubroxfacServicio {
 		return dao.getTotalInteres(idfactura);
 	}
 
+	public List<Object[]> getSubtotalSinInteresByFacturas(List<Long> ids) {
+		return dao.getSubtotalSinInteresByFacturas(ids);
+	}
+
 	public List<Object[]> getTotalInteresByFacturas(List<Long> ids) {
 		return dao.getTotalInteresByFacturas(ids);
 	}

@@ -261,7 +261,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				  m.descripcion as modulo,
 				  c.nombre as nombre,
 				  c.cedula as cedula,
-				  a.direccionubicacion as direccionubicacion
+				  COALESCE(NULLIF(TRIM(a.direccionubicacion), ''), c.direccion) as direccionubicacion
 
 			    FROM facturas f
 			    JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
@@ -284,7 +284,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			    GROUP BY
 			      f.idfactura, f.idmodulo, f.idcliente, f.idabonado, f.feccrea, e.feccrea,
 			      f.formapago, f.estado, f.pagado, f.swcondonar,
-			      m.descripcion, c.nombre, c.cedula, a.direccionubicacion
+			      m.descripcion, c.nombre, c.cedula, a.direccionubicacion, c.direccion
 			    HAVING SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) > 0
 			    ORDER BY
 			      f.idabonado ASC, CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END ASC
@@ -1104,10 +1104,11 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "select f.idfactura, f.totaltarifa as subtotal from facturas f where f.idabonado = ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaconvenio is null and f.fechaeliminacion is null and f.totaltarifa > 0 ORDER BY f.idfactura", nativeQuery = true)
 	public List<FacturasSinCobroInter> findFacturasSinCobro(Long cuenta);
 
-	@Query(value = "select f.idfactura, f.totaltarifa as subtotal, c.nombre, c.cedula, a.idabonado as cuenta, a.direccionubicacion, f.formapago, f.idmodulo, CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END AS feccrea, f.fechatransferencia as fectransferencia "
+	@Query(value = "select f.idfactura, f.totaltarifa as subtotal, c.nombre, c.cedula, a.idabonado as cuenta, a.direccionubicacion, f.formapago, f.idmodulo, m.descripcion AS modulo, CASE WHEN f.idmodulo = 4 THEN e.feccrea ELSE f.feccrea END AS feccrea, f.fechatransferencia as fectransferencia "
 			+
 			"from facturas f " +
 			"join clientes c on c.idcliente = f.idcliente " +
+			"left join modulos m on m.idmodulo = f.idmodulo " +
 			"join abonados a on a.idabonado = f.idabonado " +
 			"left join lecturas l on l.idfactura = f.idfactura " +
 			"left join emisiones e on e.idemision = l.idemision " +
