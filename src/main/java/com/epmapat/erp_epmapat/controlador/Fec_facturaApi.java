@@ -300,6 +300,15 @@ public class Fec_facturaApi {
                   .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura)));
    }
 
+   @PostMapping("/{idfactura}/sincronizar-pago")
+   public ResponseEntity<?> sincronizarPago(@PathVariable Long idfactura) {
+      try {
+         return ResponseEntity.ok(fecfacServicio.sincronizarPagoPendiente(idfactura));
+      } catch (IllegalArgumentException ex) {
+         return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
+      }
+   }
+
    @DeleteMapping("/{idfactura}")
    public ResponseEntity<Fec_factura> deleteFec_factura(@PathVariable Long idfactura) {
       Fec_factura factura = fecfacServicio.findById(idfactura)

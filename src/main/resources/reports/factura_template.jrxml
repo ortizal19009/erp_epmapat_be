@@ -3,6 +3,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="factura_template" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="e4750dba-b622-4daa-8c15-9d08c5befabc">
 	<parameter name="RazonSocial" class="java.lang.String"/>
 	<parameter name="Ruc" class="java.lang.String"/>
+	<parameter name="ClaveAcceso" class="java.lang.String"/>
 	<parameter name="NumeroAutorizacion" class="java.lang.String"/>
 	<parameter name="FechaAutorizacion" class="java.lang.String"/>
 	<parameter name="FechaEmision" class="java.lang.String"/>
@@ -11,6 +12,7 @@
 	<parameter name="DireccionEstablecimiento" class="java.lang.String"/>
 	<parameter name="NroFactura" class="java.lang.String"/>
 	<parameter name="Ambiente" class="java.lang.String"/>
+	<parameter name="TipoEmision" class="java.lang.String"/>
 	<parameter name="AgenteRetencion" class="java.lang.String"/>
 	<parameter name="ObligadoContabilidad" class="java.lang.String"/>
 	<parameter name="RazonSocialComprador" class="java.lang.String"/>
@@ -115,7 +117,7 @@
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression>
-					<![CDATA[$P{Ambiente}]]>
+					<![CDATA["EMISION: " + $P{TipoEmision}]]>
 				</textFieldExpression>
 			</textField>
 			<textField>
@@ -163,14 +165,19 @@
 			<rectangle radius="10">
 				<reportElement mode="Transparent" x="320" y="0" width="235" height="318" uuid="322378f4-20ac-4e78-b7a5-f1b7033b7122"/>
 			</rectangle>
-			<componentElement>
-				<reportElement x="334" y="250" width="211" height="60" uuid="9bd3a110-f245-45fe-99cd-d14ea95b7aa9"/>
-				<jr:Codabar xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom" quietZone="1.0" verticalQuietZone="1.0" wideFactor="2.000001">
-					<jr:codeExpression>
-						<![CDATA[$P{NumeroAutorizacion}]]>
-					</jr:codeExpression>
-				</jr:Codabar>
-			</componentElement>
+            <componentElement>
+                <reportElement x="334" y="250" width="211" height="40">
+                    <printWhenExpression><![CDATA[$P{ClaveAcceso} != null && !$P{ClaveAcceso}.isEmpty()]]></printWhenExpression>
+                </reportElement>
+                <jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="none">
+                    <jr:codeExpression><![CDATA[$P{ClaveAcceso}]]></jr:codeExpression>
+                </jr:Code128>
+            </componentElement>
+            <textField isBlankWhenNull="true">
+                <reportElement x="330" y="293" width="220" height="14"/>
+                <textElement textAlignment="Center"><font size="7"/></textElement>
+                <textFieldExpression><![CDATA[$P{ClaveAcceso}]]></textFieldExpression>
+            </textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -226,10 +233,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text>
-					<![CDATA[Código
-                ]]>
-				</text>
+				<text><![CDATA[Código]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="50" y="0" width="250" height="20" uuid="e513a1e6-9198-489f-a0e3-628c8c9e7101"/>
@@ -242,10 +246,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text>
-					<![CDATA[Descripción
-                ]]>
-				</text>
+				<text><![CDATA[Descripción]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="300" y="0" width="50" height="20" uuid="11eded04-01c9-49ed-9f41-ff6f120baa41"/>
@@ -258,10 +259,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text>
-					<![CDATA[Cant.
-                ]]>
-				</text>
+				<text><![CDATA[Cant.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="350" y="0" width="100" height="20" uuid="273d88f8-136c-4167-b529-62ce5e951317"/>
@@ -274,10 +272,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text>
-					<![CDATA[Precio Unitario
-                ]]>
-				</text>
+				<text><![CDATA[Precio Unitario]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="450" y="0" width="105" height="20" uuid="8f998bb4-5585-4e84-87ca-54c4c5a1352d"/>
@@ -290,10 +285,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<text>
-					<![CDATA[Total Sin Impuesto
-                ]]>
-				</text>
+				<text><![CDATA[Total Sin Impuesto]]></text>
 			</staticText>
 		</band>
 	</columnHeader>

@@ -120,7 +120,7 @@ public class XmlToPdfService {
             String propina = getNodeText(document, "propina");
             // String referencia = getNodeText(document, "referencia");
             // Procesar items
-            NodeList items = document.getElementsByTagName("detalle");
+            NodeList items = document.getElementsByTagNameNS("*", "detalle");
             List<Map<String, String>> itemsList = new ArrayList<>();
             for (int i = 0; i < items.getLength(); i++) {
                 Element itemElement = (Element) items.item(i);
@@ -134,7 +134,7 @@ public class XmlToPdfService {
             }
 
             // Procesar impuestos
-            NodeList impuestos = document.getElementsByTagName("totalImpuesto");
+            NodeList impuestos = document.getElementsByTagNameNS("*", "totalImpuesto");
             BigDecimal subtotalIVA15 = BigDecimal.ZERO;
             BigDecimal subtotalIVA12 = BigDecimal.ZERO;
             BigDecimal subtotalIVA0 = BigDecimal.ZERO;
@@ -174,7 +174,7 @@ public class XmlToPdfService {
             }
 
             // Información adicional
-            NodeList infoAdicional = document.getElementsByTagName("campoAdicional");
+            NodeList infoAdicional = document.getElementsByTagNameNS("*", "campoAdicional");
             Map<String, Object> parameters = new HashMap<>();
             for (int i = 0; i < infoAdicional.getLength(); i++) {
                 Element campo = (Element) infoAdicional.item(i);
@@ -211,7 +211,7 @@ public class XmlToPdfService {
 
             parameters.put("RazonSocial", razonSocial);
             parameters.put("Ruc", ruc);
-            parameters.put("NumeroAutorizacion", safeValue(numeroAutorizacion, "0000000000"));
+            parameters.put("NumeroAutorizacion", safeValue(numeroAutorizacion, "NO DISPONIBLE"));
             parameters.put("FechaAutorizacion", fechaAutorizacion);
             parameters.put("ClaveAcceso", claveAcceso);
             parameters.put("FechaEmision", fechaEmision);
@@ -223,8 +223,10 @@ public class XmlToPdfService {
             parameters.put("ObligadoContabilidad", obligadoContabilidad);
             parameters.put("ContribuyenteEspecial", contribuyenteEspecial);
             parameters.put("NroFactura", nroFactura);
-            parameters.put("Ambiente", ambiente);
-            parameters.put("AgenteRetencion", "00000001");
+            parameters.put("Ambiente", "2".equals(ambiente) ? "PRODUCCION" : "1".equals(ambiente) ? "PRUEBAS" : ambiente);
+            String tipoEmision = getNodeText(document, "tipoEmision");
+            parameters.put("TipoEmision", "1".equals(tipoEmision) ? "NORMAL" : tipoEmision);
+            parameters.put("AgenteRetencion", getNodeText(document, "agenteRetencion"));
             parameters.put("RazonSocialComprador", razonSocialComprador);
             parameters.put("IdentificacionComprador", identificacionComprador);
             parameters.put("DireccionComprador", direccionComprador);
@@ -254,6 +256,10 @@ public class XmlToPdfService {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
 
+            parameters.putIfAbsent("Email", "");
+            parameters.putIfAbsent("Concepto", "");
+            parameters.putIfAbsent("Recaudador", "");
+            parameters.putIfAbsent("Referencia", "");
             JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
             JRDataSource itemsDataSource = new JRBeanCollectionDataSource(itemsList);
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, itemsDataSource);
@@ -343,7 +349,7 @@ public class XmlToPdfService {
             String propina = getNodeText(document, "propina");
 
             // Procesar items
-            NodeList items = document.getElementsByTagName("detalle");
+            NodeList items = document.getElementsByTagNameNS("*", "detalle");
             List<Map<String, String>> itemsList = new ArrayList<>();
             for (int i = 0; i < items.getLength(); i++) {
                 Element itemElement = (Element) items.item(i);
@@ -357,7 +363,7 @@ public class XmlToPdfService {
             }
 
             // Procesar impuestos
-            NodeList impuestos = document.getElementsByTagName("totalImpuesto");
+            NodeList impuestos = document.getElementsByTagNameNS("*", "totalImpuesto");
             BigDecimal subtotalIVA15 = BigDecimal.ZERO;
             BigDecimal subtotalIVA12 = BigDecimal.ZERO;
             BigDecimal subtotalIVA0 = BigDecimal.ZERO;
@@ -397,7 +403,7 @@ public class XmlToPdfService {
             }
 
             // Información adicional
-            NodeList infoAdicional = document.getElementsByTagName("campoAdicional");
+            NodeList infoAdicional = document.getElementsByTagNameNS("*", "campoAdicional");
             Map<String, Object> parameters = new HashMap<>();
             for (int i = 0; i < infoAdicional.getLength(); i++) {
                 Element campo = (Element) infoAdicional.item(i);
@@ -434,7 +440,7 @@ public class XmlToPdfService {
 
             parameters.put("RazonSocial", razonSocial);
             parameters.put("Ruc", ruc);
-            parameters.put("NumeroAutorizacion", safeValue(numeroAutorizacion, "0000000000"));
+            parameters.put("NumeroAutorizacion", safeValue(numeroAutorizacion, "NO DISPONIBLE"));
             parameters.put("FechaAutorizacion", fechaAutorizacion);
             parameters.put("ClaveAcceso", claveAcceso);
             parameters.put("FechaEmision", fechaEmision);
@@ -446,8 +452,10 @@ public class XmlToPdfService {
             parameters.put("ObligadoContabilidad", obligadoContabilidad);
             parameters.put("ContribuyenteEspecial", contribuyenteEspecial);
             parameters.put("NroFactura", nroFactura);
-            parameters.put("Ambiente", ambiente);
-            parameters.put("AgenteRetencion", "00000001"); // Fijo o configurable
+            parameters.put("Ambiente", "2".equals(ambiente) ? "PRODUCCION" : "1".equals(ambiente) ? "PRUEBAS" : ambiente);
+            String tipoEmision = getNodeText(document, "tipoEmision");
+            parameters.put("TipoEmision", "1".equals(tipoEmision) ? "NORMAL" : tipoEmision);
+            parameters.put("AgenteRetencion", getNodeText(document, "agenteRetencion")); // Fijo o configurable
             parameters.put("RazonSocialComprador", razonSocialComprador);
             parameters.put("IdentificacionComprador", identificacionComprador);
             parameters.put("DireccionComprador", direccionComprador);
@@ -478,6 +486,10 @@ public class XmlToPdfService {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
 
+            parameters.putIfAbsent("Email", "");
+            parameters.putIfAbsent("Concepto", "");
+            parameters.putIfAbsent("Recaudador", "");
+            parameters.putIfAbsent("Referencia", "");
             JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
             JRDataSource itemsDataSource = new JRBeanCollectionDataSource(itemsList);
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, itemsDataSource);
@@ -495,12 +507,12 @@ public class XmlToPdfService {
 
     // Helper methods for XML parsing
     private String getNodeText(Document doc, String tagName) {
-        NodeList nodes = doc.getElementsByTagName(tagName);
+        NodeList nodes = doc.getElementsByTagNameNS("*", tagName);
         return nodes.getLength() > 0 ? nodes.item(0).getTextContent() : "";
     }
 
     private String getChildText(Element element, String tagName) {
-        NodeList nodes = element.getElementsByTagName(tagName);
+        NodeList nodes = element.getElementsByTagNameNS("*", tagName);
         return nodes.getLength() > 0 ? nodes.item(0).getTextContent() : "";
     }
 
@@ -509,46 +521,12 @@ public class XmlToPdfService {
     }
 
     private ParsedAuthorizedXml parseAuthorizedXmlData(String xmlAutorizado) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
-        String xmlLimpio = normalizarXmlInterno(xmlAutorizado);
-        Document document;
-        try {
-            document = parseXml(builder, xmlLimpio);
-        } catch (Exception ex) {
-            String extraido = extraerPrimerXml(xmlLimpio);
-            if (extraido == null || extraido.isBlank()) {
-                System.err.println("XML no parseable. Inicio recibido: " + resumirInicio(xmlLimpio));
-                throw ex;
-            }
-            document = parseXml(builder, extraido);
-        }
-
+        FacturaPdfXml source = FacturaPdfXml.parse(xmlAutorizado);
         ParsedAuthorizedXml parsed = new ParsedAuthorizedXml();
-        parsed.numeroAutorizacion = safeValue(getNodeText(document, "numeroAutorizacion"), "");
-        parsed.fechaAutorizacion = safeValue(getNodeText(document, "fechaAutorizacion"), "");
-        parsed.claveAcceso = safeValue(getNodeText(document, "claveAcceso"), "");
-
-        NodeList comprobanteNodes = document.getElementsByTagName("comprobante");
-        if (comprobanteNodes.getLength() == 0) {
-            parsed.documentoComprobante = document;
-            return parsed;
-        }
-
-        String comprobanteContenido = normalizarXmlInterno(comprobanteNodes.item(0).getTextContent());
-        if (comprobanteContenido.isBlank()) {
-            parsed.documentoComprobante = document;
-            return parsed;
-        }
-
-        String xmlInterno = normalizarXmlInterno(comprobanteContenido);
-        Document documentoComprobante = parseXml(builder, xmlInterno);
-        parsed.documentoComprobante = documentoComprobante;
-        if (parsed.claveAcceso == null || parsed.claveAcceso.isBlank()) {
-            parsed.claveAcceso = safeValue(getNodeText(documentoComprobante, "claveAcceso"), "");
-        }
+        parsed.documentoComprobante = source.factura;
+        parsed.numeroAutorizacion = source.numeroAutorizacion;
+        parsed.fechaAutorizacion = source.fechaAutorizacion;
+        parsed.claveAcceso = FacturaPdfXml.text(source.factura, "claveAcceso");
         return parsed;
     }
 

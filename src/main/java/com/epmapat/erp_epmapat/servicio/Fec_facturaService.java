@@ -765,6 +765,27 @@ public class Fec_facturaService {
          acumulado.put("valor", ((BigDecimal) acumulado.get("valor")).add(valor));
       }
 
+      BigDecimal subtotal = detalles.stream().map(d -> {
+         if (d.getCantidad() == null || d.getPreciounitario() == null) {
+            throw new IllegalArgumentException("Detalle electronico incompleto: " + d.getIdfacturadetalle());
+         }
+         return d.getCantidad().multiply(d.getPreciounitario())
+               .subtract(d.getDescuento() == null ? BigDecimal.ZERO : d.getDescuento())
+               .setScale(2, java.math.RoundingMode.HALF_UP);
+      }).reduce(BigDecimal.ZERO, BigDecimal::add);
+      BigDecimal totalImpuestos = detalleValidacion.stream()
+            .map(item -> (BigDecimal) item.get("valor"))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+      BigDecimal importeTotal = subtotal.add(totalImpuestos).setScale(2, java.math.RoundingMode.HALF_UP);
+      BigDecimal totalPagos = fecFacturaPagosR.getByIdfactura(idfactura).stream()
+            .map(Fec_factura_pagos::getTotal).filter(Objects::nonNull)
+            .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, java.math.RoundingMode.HALF_UP);
+      response.put("subtotal", subtotal);
+      response.put("totalImpuestos", totalImpuestos);
+      response.put("importeTotal", importeTotal);
+      response.put("totalPagos", totalPagos);
+      response.put("diferenciaPagos", importeTotal.subtract(totalPagos));
+      response.put("pagosCoinciden", importeTotal.compareTo(totalPagos) == 0);
       response.put("detalle", detalleValidacion);
       response.put("resumen", new ArrayList<>(resumen.values()));
       return response;
@@ -775,22 +796,20 @@ public class Fec_facturaService {
          return BigDecimal.ZERO.setScale(2, java.math.RoundingMode.UP);
       }
 
-      if (Set.of(CODIGO_PORCENTAJE_IVA_12, CODIGO_PORCENTAJE_IVA_14, CODIGO_PORCENTAJE_IVA_15).contains(codigoPorcentaje)) {
-         return porcentajeIva == null ? BigDecimal.ZERO.setScale(2, java.math.RoundingMode.UP) : porcentajeIva.setScale(2, java.math.RoundingMode.UP);
-      }
-
-      if ("5".equals(codigoPorcentaje)) {
-         return BigDecimal.valueOf(5).setScale(2, java.math.RoundingMode.UP);
-      }
-
-      return BigDecimal.ZERO.setScale(2, java.math.RoundingMode.UP);
+      return switch (codigoPorcentaje) {
+         case "2" -> BigDecimal.valueOf(12);
+         case "3" -> BigDecimal.valueOf(14);
+         case "4" -> BigDecimal.valueOf(15);
+         case "5" -> BigDecimal.valueOf(5);
+         default -> BigDecimal.ZERO;
+      };
    }
 
    private BigDecimal calcularValorPorTarifa(BigDecimal baseImponible, BigDecimal tarifa) {
       if (baseImponible == null || tarifa == null || tarifa.compareTo(BigDecimal.ZERO) <= 0) {
          return BigDecimal.ZERO.setScale(2, java.math.RoundingMode.UP);
       }
-      return baseImponible.multiply(tarifa).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.UP);
+      return baseImponible.multiply(tarifa).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
    }
 
    private String etiquetaCodigoPorcentaje(String codigoPorcentaje) {
@@ -842,29 +861,58 @@ public class Fec_facturaService {
       fecFacturaDetallesImpuestosR.save(imp);
    }
 
-   public void generarFecFacturaPagos(Long idfactura, Long m3) {
-      List<FacIntereses> intereses = facturasR.getForIntereses(idfactura);
-      for (FacIntereses item : intereses) {
-         Fec_factura_pagos fecFacturaPagos = new Fec_factura_pagos();
-         fecFacturaPagos.setTotal(BigDecimal.valueOf(item.getSuma()));
-         Long formapago = item.getFormapago();
-         if (formapago == 1 || formapago == 3 || formapago == 6) {
-            fecFacturaPagos.setFormapago("01"); // Efectivo
-         } else if (formapago == 4 || formapago == 7) {
-            fecFacturaPagos.setFormapago("20"); // Tarjeta
-         } else if (formapago == 5) {
-            fecFacturaPagos.setFormapago("19"); // Otro medio
-         } else {
-            fecFacturaPagos.setFormapago("99"); // Desconocido
-         }
-         String idfacturapagos = String.valueOf(idfactura + "" + m3);
-         fecFacturaPagos.setIdfacturapagos(Long.valueOf(idfacturapagos));
-         fecFacturaPagos.setUnidadtiempo("dias");
-         fecFacturaPagos.setPlazo(0);
-         fecFacturaPagos.setIdfactura(idfactura);
-         fecFacturaPagosR.save(fecFacturaPagos);
-
+   @Transactional
+   public Map<String, Object> sincronizarPagoPendiente(Long idfactura) {
+      Fec_factura factura = dao.findById(idfactura)
+            .orElseThrow(() -> new IllegalArgumentException("No existe la factura electronica"));
+      entityManager.refresh(factura, javax.persistence.LockModeType.PESSIMISTIC_WRITE);
+      if (!"I".equals(factura.getEstado()) || factura.getFechaAutorizacion() != null
+            || (factura.getXmlautorizado() != null && !factura.getXmlautorizado().isBlank())
+            || (factura.getIntentosAutorizacion() != null && factura.getIntentosAutorizacion() > 0)) {
+         throw new IllegalArgumentException("Solo se puede sincronizar una factura inicial sin intentos de autorizacion ni XML autorizado");
       }
+      List<Fec_factura_pagos> pagos = fecFacturaPagosR.getByIdfactura(idfactura);
+      if (pagos.size() != 1) {
+         throw new IllegalArgumentException("La factura debe tener un solo pago; revise manualmente los pagos multiples o ausentes");
+      }
+      Map<String, Object> resumen = construirValidacionSri(idfactura);
+      BigDecimal total = (BigDecimal) resumen.get("importeTotal");
+      if (total.signum() <= 0) throw new IllegalArgumentException("El total de la factura debe ser positivo");
+      Fec_factura_pagos pago = pagos.get(0);
+      BigDecimal anterior = pago.getTotal();
+      pago.setTotal(total);
+      fecFacturaPagosR.save(pago);
+      resumen.put("pagoAnterior", anterior);
+      resumen.put("totalPagos", total);
+      resumen.put("diferenciaPagos", BigDecimal.ZERO.setScale(2));
+      resumen.put("pagosCoinciden", true);
+      return resumen;
+   }
+
+   public void generarFecFacturaPagos(Long idfactura, Long m3) {
+      Facturas factura = facturasR.findById(idfactura)
+            .orElseThrow(() -> new IllegalArgumentException("No existe la factura " + idfactura));
+      BigDecimal total = (BigDecimal) construirValidacionSri(idfactura).get("importeTotal");
+      if (total == null || total.signum() <= 0) {
+         throw new IllegalArgumentException("La factura electronica no tiene detalles con importe positivo");
+      }
+      Fec_factura_pagos pago = new Fec_factura_pagos();
+      pago.setTotal(total);
+      Long forma = factura.getFormapago();
+      if (forma != null && Set.of(1L, 3L, 6L).contains(forma)) {
+         pago.setFormapago("01");
+      } else if (forma != null && Set.of(4L, 7L).contains(forma)) {
+         pago.setFormapago("20");
+      } else if (Long.valueOf(5L).equals(forma)) {
+         pago.setFormapago("19");
+      } else {
+         throw new IllegalArgumentException("Forma de pago no configurada para la factura " + idfactura);
+      }
+      pago.setIdfacturapagos(Long.valueOf(idfactura + "" + m3));
+      pago.setUnidadtiempo("dias");
+      pago.setPlazo(0);
+      pago.setIdfactura(idfactura);
+      fecFacturaPagosR.save(pago);
    }
 
    // COMPLEMENTOS PARA GENERAR LA FECFACTURA
