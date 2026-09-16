@@ -33,9 +33,13 @@ public class ClienteServicio {
 	}
 
 	// Buscar Clientes por Nombre o Identificacion
-	public List<Clientes> findByNombreIdentifi(String nombreIdentifi) {
-		return dao.findByNombreIdentifi(nombreIdentifi);
-	}
+    @org.springframework.transaction.annotation.Transactional(readOnly = true, timeout = 5)
+    public List<Clientes> findByNombreIdentifi(String nombreIdentifi) {
+        String termino = nombreIdentifi == null ? "" : nombreIdentifi.trim().toLowerCase(java.util.Locale.ROOT);
+        if (termino.length() < 3 || termino.length() > 100) return List.of();
+        String patron = "%" + termino.replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%";
+        return dao.findByNombreIdentifi(patron, PageRequest.of(0, 50));
+    }
 
 	// Buscar Clientes por Identificacion
 	public List<Clientes> findByIdentificacion(String identificacion) {

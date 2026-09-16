@@ -30,9 +30,13 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 	})
 	Optional<Clientes> findDetalleByIdcliente(Long idcliente);
 
-	// Clientes por Nombre o Identificacion
-	@Query(value = "select * from clientes WHERE LOWER(nombre) LIKE %?1% OR cedula LIKE %?1% ORDER BY nombre", nativeQuery = true)
-	List<Clientes> findByNombreIdentifi(String nombreIdentifi);
+	// Bounded search; fetch only the three single-valued relations used by callers.
+    @EntityGraph(attributePaths = {"idtpidentifica_tpidentifica", "idnacionalidad_nacionalidad", "idpjuridica_personeriajuridica"})
+    @org.springframework.data.jpa.repository.QueryHints(
+        @javax.persistence.QueryHint(name = "javax.persistence.query.timeout", value = "3000"))
+    @Query("select c from Clientes c where lower(c.nombre) like :patron escape '!' "
+         + "or c.cedula like :patron escape '!' order by c.nombre, c.idcliente")
+    List<Clientes> findByNombreIdentifi(@Param("patron") String patron, Pageable pageable);
 
 	// Valida Identificación del Cliente
 	@Query("SELECT COUNT(c) > 0 FROM Clientes c WHERE c.cedula = :cedula")
