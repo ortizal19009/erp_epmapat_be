@@ -41,12 +41,13 @@ class RecaudacionMontosTest {
         when(rubros.getSubtotalSinInteresByFacturas(List.of(1L))).thenReturn(Collections.singletonList(new Object[]{1L,new BigDecimal("100.00")}));
     }
     void completar() { ReflectionTestUtils.invokeMethod(servicio,"completarMontosPendientes",List.of(dto)); }
-    @Test void convenioConservaCapitalYNoGeneraInteresTemporal() {
+    @Test void convenioConservaCapitalCuandoNoTieneMora() {
         completar(); completar();
         assertEquals(100F,dto.getSubtotal());
         assertEquals(new BigDecimal("110.00"),dto.getTotal());
         assertEquals(27L,dto.getIdmodulo()); assertEquals("Convenios",dto.getModulo());
-        verifyNoInteractions(temporales,batch);
+        verifyNoInteractions(temporales);
+        verify(batch, times(2)).recalcularInteresesPorFacturas(eq(List.of(1L)), any());
     }
     @Test void facturaOrdinariaSumaInteresPersistidoYTemporalUnaVez() {
         factura.getIdmodulo().setIdmodulo(4L);
@@ -61,4 +62,13 @@ class RecaudacionMontosTest {
         assertEquals(new BigDecimal("100.00"),dto.getTotal());
         assertEquals(0,dto.getInteres().compareTo(BigDecimal.ZERO));
     }
+    @Test void cuotaSumaMoraActualYConsolidadoSinDuplicarCapital() {
+        when(batch.recalcularInteresesPorFacturas(eq(List.of(1L)),any()))
+                .thenReturn(Map.of(1L,new BigDecimal("38.41")));
+        completar(); completar();
+        assertEquals(new BigDecimal("48.41"),dto.getInteres());
+        assertEquals(new BigDecimal("148.41"),dto.getTotal());
+        assertEquals(100F,dto.getSubtotal());
+    }
+
 }

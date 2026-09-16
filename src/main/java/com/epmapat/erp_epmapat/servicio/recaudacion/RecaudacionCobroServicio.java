@@ -793,8 +793,8 @@ public class RecaudacionCobroServicio {
         dto.setModulo(factura.getIdmodulo() != null ? factura.getIdmodulo().getDescripcion() : null);
         BigDecimal subtotal = sumarSubtotalFactura(factura.getIdfactura());
         BigDecimal interesPersistido = obtenerInteresExistenteRubro(factura.getIdfactura());
-        // A convention installment already contains the interest consolidated when the
-        // agreement was generated. Adding the temporary portfolio interest repeats it.
+        // Agreement late interest is refreshed in completarMontosPendientes;
+        // do not reuse an old cached amount while building the initial DTO.
         BigDecimal interesTemporal = esFacturaConvenio(factura)
                 ? BigDecimal.ZERO
                 : tmpinteresxfacService.findByIdFactura(factura.getIdfactura());
@@ -859,6 +859,13 @@ public class RecaudacionCobroServicio {
             interesesPorFactura.putAll(
                     interesBatchService.recalcularInteresesPorFacturas(idsSinInteresTemporal, LocalDate.now()));
         }
+        // Agreement installments can accrue late interest independently of their consolidated interest.
+        List<Long> idsConvenio = ids.stream()
+                .filter(id -> esFacturaConvenio(entidades.get(id)))
+                .collect(Collectors.toList());
+        if (!idsConvenio.isEmpty()) {
+            interesesPorFactura.putAll(interesBatchService.recalcularInteresesPorFacturas(idsConvenio, LocalDate.now()));
+        }
         Map<Long, BigDecimal> interesesPersistidos = cargarInteresesPersistidosMasivos(ids);
         Map<Long, BigDecimal> capitales = new java.util.HashMap<>();
         for (Object[] row : rubroxfacServicio.getSubtotalSinInteresByFacturas(ids)) {
@@ -866,9 +873,8 @@ public class RecaudacionCobroServicio {
         }
         facturas.forEach(dto -> {
             BigDecimal interesPersistido = interesesPersistidos.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO);
-            BigDecimal interes = esFacturaConvenio(entidades.get(dto.getIdfactura()))
-                    ? interesPersistido
-                    : interesPersistido.add(interesesPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO));
+            BigDecimal interes = interesPersistido.add(
+                    interesesPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO));
 
             // Derive capital from active details, independently of previous normalization.
             dto.setSubtotal(redondearMoneda(capitales.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)).floatValue());

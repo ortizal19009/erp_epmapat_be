@@ -87,13 +87,21 @@ public class InteresBatchService {
         List<FacLite> facturas = facturasR.getSinCobrarLiteByIds(idsUnicos);
         recalcularIntereses(facturas, fechaCorte, ReglaBatch.porDefecto());
 
-        return tmpRepo.findAllByIdfacturaIn(idsUnicos).stream()
+        Map<Long, BigDecimal> resultado = tmpRepo.findAllByIdfacturaIn(idsUnicos).stream()
                 .filter(Objects::nonNull)
                 .filter(item -> item.getIdfactura() != null)
                 .collect(Collectors.toMap(
                         Tmpinteresxfac::getIdfactura,
                         item -> item.getInteresapagar() == null ? BigDecimal.ZERO : item.getInteresapagar(),
                         BigDecimal::add));
+        // A future installment must not reuse a historical cached interest after an early return.
+        for (FacLite factura : facturas) {
+            YearMonth inicio = inicioEfectivo(factura, ReglaBatch.porDefecto());
+            if (inicio == null || inicio.isAfter(YearMonth.from(fechaCorte))) {
+                resultado.put(factura.getId(), BigDecimal.ZERO);
+            }
+        }
+        return resultado;
     }
 
     private Map<String, Object> recalcularIntereses(

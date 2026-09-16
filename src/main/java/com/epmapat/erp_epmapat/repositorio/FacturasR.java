@@ -1242,14 +1242,16 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = """
 			SELECT
 			  f.idfactura AS id,
-			  SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS suma,
-			  f.formapago AS formaPago,
+			  SUM(CASE WHEN f.idmodulo = 27 AND rf.idrubro_rubros = 5 THEN 0 ELSE ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2) END) AS suma,
+			  CASE WHEN f.idmodulo = 27 THEN 1 ELSE f.formapago END AS formaPago,
 			  CASE
+			    WHEN f.idmodulo = 27 THEN COALESCE(cuota.fecha, f.feccrea)
 			    WHEN f.formapago = 4 THEN f.fechatransferencia
 			    ELSE COALESCE(e.feccrea, f.feccrea)
 			  END AS fecCrea,
 			  f.fechatransferencia AS fecTransfer
 			FROM facturas f
+			LEFT JOIN (SELECT idfactura, MIN(feccrea) AS fecha FROM cuotas GROUP BY idfactura) cuota ON cuota.idfactura = f.idfactura
 			JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
 			  AND (rf.estado <> 0 OR rf.estado IS NULL)
 			LEFT JOIN lecturas l ON l.idfactura = f.idfactura
@@ -1259,7 +1261,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			  AND ((f.estado IN (1, 2) AND f.fechacobro IS NULL) OR f.estado = 3)
 			  AND f.fechaconvenio IS NULL
 			  AND f.fechaeliminacion IS NULL
-			GROUP BY f.idfactura, f.formapago, e.feccrea, f.feccrea, f.fechatransferencia
+			GROUP BY f.idfactura, f.formapago, e.feccrea, f.feccrea, f.fechatransferencia, cuota.fecha
 			""", nativeQuery = true)
 	List<FacLite> getSinCobrarLiteByIds(@Param("ids") List<Long> ids);
 
