@@ -58,17 +58,36 @@ class RecaudacionMontosTest {
         verifyNoInteractions(batch);
     }
     @Test void respetaExoneracionDeIntereses() {
+        factura.getIdmodulo().setIdmodulo(4L);
         factura.setSwinteres(true); completar();
         assertEquals(new BigDecimal("100.00"),dto.getTotal());
         assertEquals(0,dto.getInteres().compareTo(BigDecimal.ZERO));
+    }
+    @Test void exoneraSoloMoraDelConvenioYConservaConsolidado() {
+        factura.setSwinteres(true);
+        when(batch.recalcularInteresesPorFacturas(eq(List.of(1L)),any()))
+                .thenReturn(Map.of(1L,new BigDecimal("38.41")));
+        completar(); completar();
+        assertEquals(new BigDecimal("10.00"),dto.getInteresConsolidado());
+        assertEquals(0,dto.getInteresMora().signum());
+        assertEquals(new BigDecimal("10.00"),dto.getInteres());
+        assertEquals(new BigDecimal("110.00"),dto.getTotal());
+        verify(rubros,never()).save(any());
     }
     @Test void cuotaSumaMoraActualYConsolidadoSinDuplicarCapital() {
         when(batch.recalcularInteresesPorFacturas(eq(List.of(1L)),any()))
                 .thenReturn(Map.of(1L,new BigDecimal("38.41")));
         completar(); completar();
         assertEquals(new BigDecimal("48.41"),dto.getInteres());
+        assertEquals(new BigDecimal("10.00"),dto.getInteresConsolidado());
+        assertEquals(new BigDecimal("38.41"),dto.getInteresMora());
         assertEquals(new BigDecimal("148.41"),dto.getTotal());
         assertEquals(100F,dto.getSubtotal());
+    }
+
+    @Test void cobroConvenioNoSobrescribeRubroConsolidadoConMora() {
+        ReflectionTestUtils.invokeMethod(servicio,"actualizarRubroInteres",factura,new BigDecimal("48.41"));
+        verifyNoInteractions(rubros);
     }
 
 }

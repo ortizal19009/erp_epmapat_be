@@ -873,8 +873,10 @@ public class RecaudacionCobroServicio {
         }
         facturas.forEach(dto -> {
             BigDecimal interesPersistido = interesesPersistidos.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO);
-            BigDecimal interes = interesPersistido.add(
-                    interesesPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO));
+            BigDecimal mora = normalizarMoneda(interesesPorFactura.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO));
+            dto.setInteresConsolidado(normalizarMoneda(interesPersistido));
+            dto.setInteresMora(mora);
+            BigDecimal interes = dto.getInteresConsolidado().add(mora);
 
             // Derive capital from active details, independently of previous normalization.
             dto.setSubtotal(redondearMoneda(capitales.getOrDefault(dto.getIdfactura(), BigDecimal.ZERO)).floatValue());
@@ -979,7 +981,12 @@ public class RecaudacionCobroServicio {
             return;
         }
         if (Boolean.TRUE.equals(factura.getSwinteres())) {
-            dto.setInteres(BigDecimal.ZERO);
+            // La exoneracion del convenio afecta solo la mora de la cuota.
+            BigDecimal consolidado = esFacturaConvenio(factura)
+                    ? normalizarMoneda(dto.getInteresConsolidado()) : BigDecimal.ZERO;
+            dto.setInteresConsolidado(consolidado);
+            dto.setInteresMora(BigDecimal.ZERO);
+            dto.setInteres(consolidado);
         }
         if (Boolean.TRUE.equals(factura.getSwmulta())) {
             BigDecimal subtotalSinMulta = sumarSubtotalFacturaSinRubros(
@@ -1015,6 +1022,9 @@ public class RecaudacionCobroServicio {
     }
 
     private void actualizarRubroInteres(Facturas factura, BigDecimal interesTotalCobrado) {
+        // Rubro 5 on an agreement is historical consolidated debt, not this installment's late interest.
+        // interescobrado retains the total collected interest for existing accounting/electronic consumers.
+        if (esFacturaConvenio(factura)) return;
         if (factura == null || factura.getIdfactura() == null) {
             return;
         }

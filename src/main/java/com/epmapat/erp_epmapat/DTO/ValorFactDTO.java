@@ -17,6 +17,8 @@ public class ValorFactDTO {
     private Float subtotal;
     private BigDecimal total;
     private BigDecimal interes;
+    private BigDecimal interesConsolidado;
+    private BigDecimal interesMora;
     private BigDecimal interescobrado;
     private BigDecimal iva;
     private Integer numfacturas;

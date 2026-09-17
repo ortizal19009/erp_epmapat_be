@@ -144,11 +144,11 @@ WHERE
     rf.idfactura_facturas,
     ROUND(SUM((rf.cantidad * rf.valorunitario)::numeric), 2) AS subtotal,
     ROUND(COALESCE(f.swiva, 0)::numeric, 2) AS iva,
-    ROUND(COALESCE(NULLIF(ri.interes, 0), f.interescobrado, 0)::numeric, 2) AS interes,
+    ROUND((CASE WHEN f.fechacobro IS NOT NULL THEN COALESCE(f.interescobrado, 0) ELSE COALESCE(ri.interes, 0) END)::numeric, 2) AS interes,
     ROUND(COALESCE(f.valornotacredito, 0)::numeric, 2) AS nc,
     ROUND(SUM((rf.cantidad * rf.valorunitario)::numeric)
       + COALESCE(f.swiva, 0)::numeric
-      + COALESCE(NULLIF(ri.interes, 0), f.interescobrado, 0)::numeric, 2) AS total
+      + (CASE WHEN f.fechacobro IS NOT NULL THEN COALESCE(f.interescobrado, 0) ELSE COALESCE(ri.interes, 0) END)::numeric, 2) AS total
 FROM facturas f
 JOIN rubroxfac rf ON f.idfactura = rf.idfactura_facturas 
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros 
@@ -162,7 +162,7 @@ LEFT JOIN (
 ) ri ON ri.idfactura_facturas = f.idfactura
 WHERE (rf.estado IS NULL OR rf.estado <> 0) AND rf.idrubro_rubros NOT IN (165, 5)
   AND f.idfactura = $P{idfactura}
-GROUP BY rf.idfactura_facturas, f.swiva, f.interescobrado, f.valornotacredito, ri.interes]]>
+GROUP BY rf.idfactura_facturas, f.swiva, f.interescobrado, f.valornotacredito, ri.interes, f.fechacobro]]>
 		</queryString>
 		<field name="idfactura_facturas" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.name" value="idfactura_facturas"/>
