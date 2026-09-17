@@ -143,7 +143,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<Object[]> findRubroTotalByRubroxfacAndFechacobro(@Param("fechacobro") LocalDate fechacobro);
 
 	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
-	@Query(value = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva FROM Rubroxfac rf "
+	@Query(value = RubrosCobroSql.RANGO + "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva FROM rubros_cobro rf "
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
@@ -153,9 +153,9 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<Object[]> totalRubrosAnteriorRangos(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
 
 	// Recaudcion diaria - Total por Rubro AÃ±o actual (Desde Facturas)
-	@Query(value = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva "
+	@Query(value = RubrosCobroSql.RANGO + "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva "
 			+
-			"FROM Rubroxfac rf " +
+			"FROM rubros_cobro rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
 			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.fechaeliminacion IS NULL AND (rf.estado <> 0 or rf.estado is null)  "
@@ -165,7 +165,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<Object[]> totalRubrosActualRangos(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta);
 
 	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
-	@Query(value = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva FROM Rubroxfac rf "
+	@Query(value = RubrosCobroSql.RANGO + "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva FROM rubros_cobro rf "
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
@@ -175,9 +175,9 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<Object[]> totalRubrosAnteriorByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
 
 	// Recaudcion diaria - Total por Rubro AÃ±o actual (Desde Facturas)
-	@Query(value = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva "
+	@Query(value = RubrosCobroSql.RANGO + "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva "
 			+
-			"FROM Rubroxfac rf " +
+			"FROM rubros_cobro rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
 			"WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2 ) AND f.feccrea > ?3 AND NOT f.estado = 3 AND f.usuariocobro = ?4 AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) AND (rf.estado <> 0 or rf.estado is null) "
@@ -187,7 +187,7 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<Object[]> totalRubrosActualByRecaudador(LocalDate d_fecha, LocalDate h_fecha, LocalDate hasta, Long idrec);
 
 	// Recaudcion diaria - Total por Rubros A.A. (Desde Facturas)
-	@Query(value = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva  FROM Rubroxfac rf "
+	@Query(value = RubrosCobroSql.DIARIO + "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva  FROM rubros_cobro rf "
 			+
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
@@ -197,9 +197,9 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 	List<Object[]> totalRubrosAnterior(LocalDate fecha, LocalDate hasta);
 
 	// Recaudcion diaria - Total por Rubro AÃ±o actual (Desde Facturas)
-	@Query(value = "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva "
+	@Query(value = RubrosCobroSql.DIARIO + "SELECT r.idrubro, r.descripcion AS nombre_rubro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , r.swiva AS iva "
 			+
-			"FROM Rubroxfac rf " +
+			"FROM rubros_cobro rf " +
 			"JOIN Facturas f ON f.idfactura = rf.idfactura_facturas " +
 			"JOIN Rubros r ON r.idrubro = rf.idrubro_rubros " +
 			"WHERE date(f.fechacobro) = ?1 AND f.feccrea > ?2 AND (f.estado=1 OR f.estado=2) AND f.fechaeliminacion IS NULL AND (f.fechaanulacion <=?1 or f.fechaanulacion IS NULL) AND (rf.estado <> 0 or rf.estado is null) "

@@ -82,7 +82,24 @@ WHERE
 		<parameter name="hasta" class="java.util.Date"/>
 		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
-			<![CDATA[WITH facturas_validas AS (
+			<![CDATA[WITH facturas_cobro AS (SELECT * FROM facturas WHERE fechacobro BETWEEN CAST($P{desde} AS date) AND CAST($P{hasta} AS date)),
+rubros_cobro AS (
+    SELECT rf.idfactura_facturas, rf.idrubro_rubros, 1::numeric AS cantidad,
+           CASE WHEN f.swmulta IS TRUE AND rf.idrubro_rubros IN (6, 1011) THEN 0
+                WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 THEN 0
+                WHEN (rf.cantidad * rf.valorunitario)::numeric < 0
+                  THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) / 100
+                ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) / 100 END AS valorunitario,
+           1 AS estado
+    FROM rubroxfac rf JOIN facturas_cobro f ON f.idfactura = rf.idfactura_facturas
+    WHERE f.fechacobro IS NOT NULL AND rf.idrubro_rubros NOT IN (5, 165)
+      AND (rf.estado IS NULL OR rf.estado <> 0)
+    UNION ALL
+    SELECT f.idfactura, 5, 1::numeric, COALESCE(f.interescobrado, 0)::numeric, 1
+    FROM facturas_cobro f WHERE f.fechacobro IS NOT NULL
+      AND COALESCE(f.interescobrado, 0) <> 0
+),
+facturas_validas AS (
     SELECT DISTINCT f.idfactura, f.swiva
     FROM facturas f
     WHERE       f.usuariocobro = $P{usuariocobro}
@@ -107,7 +124,7 @@ SELECT
 
     (SELECT SUM(ROUND(swiva::numeric, 2)) FROM facturas_validas) AS sumaIva
 
-FROM rubroxfac rf
+FROM rubros_cobro rf
 JOIN facturas f ON f.idfactura = rf.idfactura_facturas
 JOIN rubros r ON r.idrubro = rf.idrubro_rubros
 
@@ -141,7 +158,24 @@ WHERE
 	<parameter name="idusuario" class="java.lang.Integer"/>
 	<parameter name="usuariocobro" class="java.lang.Integer"/>
 	<queryString language="SQL">
-		<![CDATA[SELECT
+		<![CDATA[WITH facturas_cobro AS (SELECT * FROM facturas WHERE fechacobro BETWEEN CAST($P{desde} AS date) AND CAST($P{hasta} AS date)),
+rubros_cobro AS (
+    SELECT rf.idfactura_facturas, rf.idrubro_rubros, 1::numeric AS cantidad,
+           CASE WHEN f.swmulta IS TRUE AND rf.idrubro_rubros IN (6, 1011) THEN 0
+                WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 THEN 0
+                WHEN (rf.cantidad * rf.valorunitario)::numeric < 0
+                  THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) / 100
+                ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) / 100 END AS valorunitario,
+           1 AS estado
+    FROM rubroxfac rf JOIN facturas_cobro f ON f.idfactura = rf.idfactura_facturas
+    WHERE f.fechacobro IS NOT NULL AND rf.idrubro_rubros NOT IN (5, 165)
+      AND (rf.estado IS NULL OR rf.estado <> 0)
+    UNION ALL
+    SELECT f.idfactura, 5, 1::numeric, COALESCE(f.interescobrado, 0)::numeric, 1
+    FROM facturas_cobro f WHERE f.fechacobro IS NOT NULL
+      AND COALESCE(f.interescobrado, 0) <> 0
+)
+SELECT
   f.idfactura,
   f.nrofactura,
   f.fechacobro,
@@ -155,7 +189,7 @@ WHERE
   m.descripcion AS modulo,
   fc.descripcion AS formacobro
 FROM facturas f
-JOIN rubroxfac  rf ON f.idfactura = rf.idfactura_facturas
+JOIN rubros_cobro  rf ON f.idfactura = rf.idfactura_facturas
 JOIN clientes   c  ON f.idcliente    = c.idcliente 
 JOIN formacobro fc ON f.formapago    = fc.idformacobro
 JOIN usuarios   u  ON f.usuariocobro = u.idusuario

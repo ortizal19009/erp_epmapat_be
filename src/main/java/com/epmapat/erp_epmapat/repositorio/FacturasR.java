@@ -489,9 +489,9 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * List<Object[]> _findByFechacobroTot(LocalDate fecha);
 	 */
 
-	@Query(value = "SELECT f.idfactura AS idfactura, "
+	@Query(value = RubrosCobroSql.DIARIO + "SELECT f.idfactura AS idfactura, "
 			+ "SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , f.swiva as iva "
-			+ "FROM rubroxfac rf " + "JOIN facturas f ON rf.idfactura_facturas = f.idfactura "
+			+ "FROM rubros_cobro rf " + "JOIN facturas f ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "WHERE date(f.fechacobro) = ?1 " + "AND (f.estado = 1 OR f.estado = 2) "
 			+ "AND f.fechaeliminacion IS NULL " + "AND rf.idrubro_rubros != 165 AND (rf.estado <> 0 OR rf.estado IS NULL) "
@@ -515,7 +515,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 */
 
 	// Total diario por Forma de cobro
-	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total FROM Rubroxfac rf "
+	@Query(value = RubrosCobroSql.DIARIO + "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total FROM rubros_cobro rf "
 			+ "JOIN Facturas f ON rf.idfactura_facturas = f.idfactura "
 			+ "JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
@@ -536,16 +536,16 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * POR RANGOS
 	 */
 	// Total diario por Forma de cobro
-	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total FROM Facturas f "
-			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 OR rf.estado IS NULL) "
+	@Query(value = RubrosCobroSql.RANGO + "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total FROM Facturas f "
+			+ "JOIN rubros_cobro rf ON rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 OR rf.estado IS NULL) "
 			+ "JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
 			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3  AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 AND (rf.estado <> 0 OR rf.estado IS NULL)  GROUP BY fc.descripcion ORDER BY fc.descripcion", nativeQuery = true)
 	List<Object[]> totalFechaFormacobroRangos(@Param("d_fecha") LocalDate d_fecha, @Param("d_fecha") LocalDate h_fecha);
 
-	@Query(value = "SELECT f.idfactura AS idfactura, "
+	@Query(value = RubrosCobroSql.RANGO + "SELECT f.idfactura AS idfactura, "
 			+ "SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total , f.swiva as iva "
-			+ "FROM rubroxfac rf JOIN facturas f ON rf.idfactura_facturas = f.idfactura JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
+			+ "FROM rubros_cobro rf JOIN facturas f ON rf.idfactura_facturas = f.idfactura JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND (f.estado = 1 OR f.estado = 2) "
 			+ "AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros != 165 AND (rf.estado <> 0 OR rf.estado IS NULL) "
 			+ "GROUP BY f.idfactura ORDER BY f.nrofactura", nativeQuery = true)
@@ -554,15 +554,15 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	/*
 	 * POR RECAUDADOR CON RANGO
 	 */
-	@Query(value = "SELECT  f.idfactura AS idfactura, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total ,f.swiva as iva FROM Facturas f "
-			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 OR rf.estado IS NULL) "
+	@Query(value = RubrosCobroSql.RANGO + "SELECT  f.idfactura AS idfactura, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total ,f.swiva as iva FROM Facturas f "
+			+ "JOIN rubros_cobro rf ON rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 OR rf.estado IS NULL) "
 			+ "JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "WHERE (date(f.fechacobro) BETWEEN ?1 AND ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 AND (rf.estado <> 0 OR rf.estado IS NULL) "
 			+ "GROUP BY f.idfactura ORDER BY f.nrofactura", nativeQuery = true)
 	List<RepFacGlobal> findByFechacobroTotByRecaudador(LocalDate d_fecha, LocalDate h_fecha, Long idrecaudador);
 
-	@Query(value = "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total FROM Facturas f "
-			+ "JOIN Rubroxfac rf ON rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 OR rf.estado IS NULL) "
+	@Query(value = RubrosCobroSql.RANGO + "SELECT fc.descripcion AS formaCobro, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE ROUND(CAST(rf.valorunitario * rf.cantidad AS numeric), 2) END) AS total FROM Facturas f "
+			+ "JOIN rubros_cobro rf ON rf.idfactura_facturas = f.idfactura and (rf.estado <> 0 OR rf.estado IS NULL) "
 			+ "JOIN rubros r ON r.idrubro = rf.idrubro_rubros "
 			+ "JOIN Formacobro fc ON fc.idformacobro = f.formapago "
 			+ "WHERE (f.fechacobro BETWEEN ?1 and ?2) AND NOT f.estado = 3 AND f.usuariocobro = ?3 AND f.fechaeliminacion IS NULL AND not rf.idrubro_rubros = 165 AND (rf.estado <> 0 OR rf.estado IS NULL)  GROUP BY fc.descripcion  ORDER BY fc.descripcion", nativeQuery = true)
