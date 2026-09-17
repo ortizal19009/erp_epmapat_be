@@ -68,7 +68,8 @@ public class JasperReportManager {
 	public JasperReport getCompiledReport(String fileName) throws JRException, IOException {
 		try {
 			ClassPathResource jrxmlResource = new ClassPathResource(REPORT_FOLDER + File.separator + fileName + ".jrxml");
-			long signature = resolveSignature(jrxmlResource);
+			long signature = resolveSignature(jrxmlResource.exists() ? jrxmlResource
+                    : new ClassPathResource(REPORT_FOLDER + "/" + fileName + JASPER));
 			CacheEntry cached = compiledReports.get(fileName);
 			if (cached != null && cached.signature == signature) {
 				return cached.report;
@@ -91,25 +92,24 @@ public class JasperReportManager {
 
 	private JasperReport compileReport(String fileName) {
 		try {
-			ClassPathResource jasperResource = new ClassPathResource(REPORT_FOLDER + File.separator + fileName + JASPER);
-			if (jasperResource.exists()) {
-				try (InputStream inputStream = jasperResource.getInputStream()) {
-					return (JasperReport) JRLoader.loadObject(inputStream);
-				}
-			}
-
-			ClassPathResource jrxmlResource = new ClassPathResource(REPORT_FOLDER + File.separator + fileName + ".jrxml");
-			try (InputStream inputStream = jrxmlResource.getInputStream()) {
-				return JasperCompileManager.compileReport(inputStream);
-			}
+            // La fuente vigente tiene prioridad sobre compilados que pueden estar desactualizados.
+            ClassPathResource jrxmlResource = new ClassPathResource(REPORT_FOLDER + "/" + fileName + ".jrxml");
+            if (jrxmlResource.exists()) {
+                try (InputStream inputStream = jrxmlResource.getInputStream()) {
+                    return JasperCompileManager.compileReport(inputStream);
+                }
+            }
+            ClassPathResource jasperResource = new ClassPathResource(REPORT_FOLDER + "/" + fileName + JASPER);
+            try (InputStream inputStream = jasperResource.getInputStream()) {
+                return (JasperReport) JRLoader.loadObject(inputStream);
+            }
 		} catch (IOException | JRException e) {
 			throw new ReportCompilationRuntimeException(e);
 		}
 	}
 
 	private long resolveSignature(ClassPathResource resource) throws IOException {
-		File file = resource.getFile();
-		return file.lastModified();
+		return resource.lastModified();
 	}
 
 	private static final class CacheEntry {

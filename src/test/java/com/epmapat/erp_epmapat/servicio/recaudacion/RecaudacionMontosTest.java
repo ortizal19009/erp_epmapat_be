@@ -85,6 +85,24 @@ class RecaudacionMontosTest {
         assertEquals(100F,dto.getSubtotal());
     }
 
+    @Test void planilla2924333ConservaTotalConRubrosRedondeados() {
+        when(rubros.getSubtotalSinInteresByFacturas(List.of(1L)))
+                .thenReturn(Collections.singletonList(new Object[]{1L,new BigDecimal("14.87")}));
+        when(rubros.getTotalInteresByFacturas(List.of(1L)))
+                .thenReturn(Collections.singletonList(new Object[]{1L,new BigDecimal("0.2106116107751159")}));
+        when(batch.recalcularInteresesPorFacturas(eq(List.of(1L)),any()))
+                .thenReturn(Map.of(1L,new BigDecimal("0.36")));
+        completar();
+        assertEquals(new BigDecimal("0.58"),dto.getInteres());
+        assertEquals(new BigDecimal("15.45"),dto.getTotal());
+    }
+
+    @Test void plantillaConvenioCompila() throws Exception {
+        try (java.io.InputStream template = getClass().getResourceAsStream("/reports/CompPagoConvenios.jrxml")) {
+            assertNotNull(net.sf.jasperreports.engine.JasperCompileManager.compileReport(template));
+        }
+    }
+
     @Test void cobroConvenioNoSobrescribeRubroConsolidadoConMora() {
         ReflectionTestUtils.invokeMethod(servicio,"actualizarRubroInteres",factura,new BigDecimal("48.41"));
         verifyNoInteractions(rubros);

@@ -91,9 +91,9 @@
 		<queryString language="SQL">
 			<![CDATA[SELECT r.descripcion,
 	rf.cantidad,
-	CASE WHEN rf.cantidad = 1 THEN ROUND((rf.cantidad * rf.valorunitario)::numeric, 2)
+	CASE WHEN rf.cantidad = 1 THEN (CASE WHEN (rf.cantidad * rf.valorunitario)::numeric < 0 THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) END / 100)
 	ELSE rf.valorunitario END AS valorunitario,
-	ROUND((rf.cantidad * rf.valorunitario)::numeric, 2) AS total
+	(CASE WHEN (rf.cantidad * rf.valorunitario)::numeric < 0 THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) END / 100) AS total
 FROM rubroxfac rf
 	join rubros r ON 
 	 rf.idrubro_rubros = r.idrubro 
@@ -142,11 +142,11 @@ WHERE
 		<queryString>
 			<![CDATA[SELECT 
     rf.idfactura_facturas,
-    ROUND(SUM((rf.cantidad * rf.valorunitario)::numeric), 2) AS subtotal,
+    ROUND(SUM((CASE WHEN (rf.cantidad * rf.valorunitario)::numeric < 0 THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) END / 100)), 2) AS subtotal,
     ROUND(COALESCE(f.swiva, 0)::numeric, 2) AS iva,
     ROUND((CASE WHEN f.fechacobro IS NOT NULL THEN COALESCE(f.interescobrado, 0) ELSE COALESCE(ri.interes, 0) END)::numeric, 2) AS interes,
     ROUND(COALESCE(f.valornotacredito, 0)::numeric, 2) AS nc,
-    ROUND(SUM((rf.cantidad * rf.valorunitario)::numeric)
+    ROUND(SUM((CASE WHEN (rf.cantidad * rf.valorunitario)::numeric < 0 THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) END / 100))
       + COALESCE(f.swiva, 0)::numeric
       + (CASE WHEN f.fechacobro IS NOT NULL THEN COALESCE(f.interescobrado, 0) ELSE COALESCE(ri.interes, 0) END)::numeric, 2) AS total
 FROM facturas f
@@ -262,9 +262,9 @@ WHERE
 		<queryString language="SQL">
 			<![CDATA[SELECT r.descripcion,
 	rf.cantidad,
-	CASE WHEN rf.cantidad = 1 THEN ROUND((rf.cantidad * rf.valorunitario)::numeric, 2)
+	CASE WHEN rf.cantidad = 1 THEN (CASE WHEN (rf.cantidad * rf.valorunitario)::numeric < 0 THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) END / 100)
 	ELSE rf.valorunitario END AS valorunitario,
-	ROUND((rf.cantidad * rf.valorunitario)::numeric, 2) AS total
+	(CASE WHEN (rf.cantidad * rf.valorunitario)::numeric < 0 THEN FLOOR((rf.cantidad * rf.valorunitario)::numeric * 100) ELSE CEIL((rf.cantidad * rf.valorunitario)::numeric * 100) END / 100) AS total
 FROM rubroxfac rf
 	join rubros r ON 
 	 rf.idrubro_rubros = r.idrubro 

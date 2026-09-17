@@ -31,7 +31,7 @@ public class ReportCache {
     }
 
     private long resolveSignature(String reportName) throws Exception {
-        return new ClassPathResource("reports/" + reportName + ".jrxml").getFile().lastModified();
+        return new ClassPathResource("reports/" + reportName + ".jrxml").lastModified();
     }
 
     private static final class CacheEntry {

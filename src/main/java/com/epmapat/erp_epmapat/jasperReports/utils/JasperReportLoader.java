@@ -22,16 +22,15 @@ public class JasperReportLoader {
           return existing;
         }
 
-        ClassPathResource jasperResource = new ClassPathResource("reports/" + rn + ".jasper");
-        if (jasperResource.exists()) {
-          try (InputStream is = jasperResource.getInputStream()) {
-            return new CacheEntry(signature, (JasperReport) JRLoader.loadObject(is));
+        ClassPathResource jrxmlResource = new ClassPathResource("reports/" + rn + ".jrxml");
+        if (jrxmlResource.exists()) {
+          try (InputStream is = jrxmlResource.getInputStream()) {
+            return new CacheEntry(signature, JasperCompileManager.compileReport(is));
           }
         }
-
-        ClassPathResource jrxmlResource = new ClassPathResource("reports/" + rn + ".jrxml");
-        try (InputStream is = jrxmlResource.getInputStream()) {
-          return new CacheEntry(signature, JasperCompileManager.compileReport(is));
+        ClassPathResource jasperResource = new ClassPathResource("reports/" + rn + ".jasper");
+        try (InputStream is = jasperResource.getInputStream()) {
+          return new CacheEntry(signature, (JasperReport) JRLoader.loadObject(is));
         }
       } catch (Exception e) {
         throw new RuntimeException("No se pudo cargar " + reportName + " desde resources/reports/ (.jasper o .jrxml)", e);
@@ -40,7 +39,8 @@ public class JasperReportLoader {
   }
 
   private long resolveSignature(String reportName) throws Exception {
-    return new ClassPathResource("reports/" + reportName + ".jrxml").getFile().lastModified();
+    ClassPathResource source = new ClassPathResource("reports/" + reportName + ".jrxml");
+    return (source.exists() ? source : new ClassPathResource("reports/" + reportName + ".jasper")).lastModified();
   }
 
   private static final class CacheEntry {
