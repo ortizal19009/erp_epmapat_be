@@ -19,8 +19,8 @@ public class GpsGapEvent {
     @JoinColumn(name = "tracking_session_id", nullable = false)
     private TrackingSession session;
 
-    private Long startTime;
-    private Long endTime;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private Long durationSeconds;
     private Double lastLatitude;
     private Double lastLongitude;

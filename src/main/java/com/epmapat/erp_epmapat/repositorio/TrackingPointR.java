@@ -10,5 +10,9 @@ import com.epmapat.erp_epmapat.modelo.TrackingPoint;
 @Repository
 public interface TrackingPointR extends JpaRepository<TrackingPoint, Long> {
     List<TrackingPoint> findBySessionId(String sessionId);
+    
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM TrackingPoint p WHERE p.session.id = :sessionId ORDER BY p.capturedAt ASC")
+    List<TrackingPoint> findBySessionIdOrderByCapturedAtAsc(String sessionId);
+
     boolean existsByClientPointId(String clientPointId);
 }

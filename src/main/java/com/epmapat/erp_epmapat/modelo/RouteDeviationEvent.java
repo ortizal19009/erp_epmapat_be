@@ -20,8 +20,8 @@ public class RouteDeviationEvent {
     private TrackingSession session;
 
     private Long readerId;
-    private Long exitTime;
-    private Long returnTime;
+    private LocalDateTime exitTime;
+    private LocalDateTime returnTime;
     private Double exitLatitude;
     private Double exitLongitude;
     private Double maximumDistanceMeters;

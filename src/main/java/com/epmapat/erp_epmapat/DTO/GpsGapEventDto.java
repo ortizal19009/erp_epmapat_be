@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class GpsGapEventDto {
-    private Long trackingSessionId;
+    private String trackingSessionId;
     private Long startTime;
     private Long endTime;
     private Long durationSeconds;

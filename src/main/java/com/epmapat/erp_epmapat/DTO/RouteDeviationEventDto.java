@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class RouteDeviationEventDto {
-    private Long trackingSessionId;
+    private String trackingSessionId;
     private Long readerId;
     private Long exitTime;
     private Long returnTime;

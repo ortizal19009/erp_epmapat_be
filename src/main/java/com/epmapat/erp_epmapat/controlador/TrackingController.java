@@ -15,10 +15,17 @@ import com.epmapat.erp_epmapat.DTO.TrackingSessionDto;
 import com.epmapat.erp_epmapat.modelo.TrackingSession;
 import com.epmapat.erp_epmapat.servicio.TrackingServicio;
 
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@RequestMapping("/api/tracking")
+@RequestMapping("/tracking")
 @CrossOrigin(origins = "*")
 @Slf4j
 public class TrackingController {
@@ -48,5 +55,17 @@ public class TrackingController {
     public ResponseEntity<TrackingSession> finishSession(@RequestBody TrackingSessionDto dto) {
         log.info("Finalizando sesión de tracking: {}", dto.getId());
         return ResponseEntity.ok(trackingServicio.finishSession(dto));
+    }
+
+    @GetMapping("/sessions")
+    public ResponseEntity<List<Map<String, Object>>> getSessions(
+            @RequestParam(required = false) Long readerId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(trackingServicio.getSessions(readerId, date));
+    }
+
+    @GetMapping("/sessions/{id}/full-trace")
+    public ResponseEntity<Map<String, Object>> getSessionFullTrace(@PathVariable String id) {
+        return ResponseEntity.ok(trackingServicio.getSessionFullTrace(id));
     }
 }
