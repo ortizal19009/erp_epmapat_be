@@ -181,7 +181,12 @@ public class TrackingServicio {
         TrackingSession session = trackingSessionR.findById(dto.getId())
                 .orElseThrow(() -> new RuntimeException("Session not found: " + dto.getId()));
 
-        session.setEndTime(dto.getEndTime());
+        if (dto.getEndTime() != null) {
+            session.setEndTime(dto.getEndTime());
+        } else {
+            session.setEndTime(LocalDateTime.now());
+        }
+        
         session.setEndBatteryLevel(dto.getEndBatteryLevel());
         session.setStatus("FINISHED");
         if (dto.getTotalDistanceMeters() != null) {
