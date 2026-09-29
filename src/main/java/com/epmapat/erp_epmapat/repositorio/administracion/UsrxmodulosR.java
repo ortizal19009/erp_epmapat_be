@@ -1,5 +1,7 @@
 package com.epmapat.erp_epmapat.repositorio.administracion;
 
+import com.epmapat.erp_epmapat.interfaces.TrackingReader;
+
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +12,24 @@ import com.epmapat.erp_epmapat.interfaces.ErpModulosI;
 import com.epmapat.erp_epmapat.modelo.administracion.Usrxmodulos;
 
 public interface UsrxmodulosR extends JpaRepository<Usrxmodulos, Long> {
+        @Query(value = """
+                        SELECT u.idusuario AS idusuario, u.nomusu AS nomusu, u.alias AS alias
+                        FROM usuarios u
+                        WHERE u.estado = true
+                          AND (
+                            UPPER(TRIM(COALESCE(u.plataform_access, ''))) IN ('MOBILE', 'BOTH', 'T', 'TRUE', '1')
+                            OR EXISTS (
+                              SELECT 1 FROM usrxmodulos um
+                              JOIN erpmodulos em ON em.iderpmodulo = um.iderpmodulo_erpmodulos
+                              WHERE um.idusuario_usuarios = u.idusuario
+                                AND um.enabled = true
+                                AND UPPER(TRIM(COALESCE(um.platform, em.platform, 'WEB'))) IN ('MOBILE', 'BOTH')
+                            )
+                          )
+                        ORDER BY u.nomusu, u.idusuario
+                        """, nativeQuery = true)
+        List<TrackingReader> findTrackingReaders();
+
         @Query(value = """
                         SELECT em.descripcion
                         FROM usrxmodulos um

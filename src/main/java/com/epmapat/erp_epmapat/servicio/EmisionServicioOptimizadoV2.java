@@ -122,11 +122,27 @@ public class EmisionServicioOptimizadoV2 {
             boolean swbasura,
             boolean swRefacturacion) {
 
+        return calcularValoresInterno(idemision, cuenta, idfactura, m3, categoria, swMunicipio,
+                swAdultoMayor, swAguapotable, swbasura, swRefacturacion, true);
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal previsualizarValores(Long idemision, Long cuenta, Long idfactura, int m3,
+            int categoria, boolean swMunicipio, boolean swAdultoMayor, boolean swAguapotable,
+            boolean swbasura) {
+        return calcularValoresInterno(idemision, cuenta, idfactura, m3, categoria, swMunicipio,
+                swAdultoMayor, swAguapotable, swbasura, false, false);
+    }
+
+    private BigDecimal calcularValoresInterno(Long idemision, Long cuenta, Long idfactura, int m3,
+            int categoria, boolean swMunicipio, boolean swAdultoMayor, boolean swAguapotable,
+            boolean swbasura, boolean swRefacturacion, boolean guardar) {
+
         // ---------------------------
         // 1) Cargar factura y contexto
         // ---------------------------
         // // Asegurar no negativos
-        Facturas factura = dao_facturas.findById(idfactura).orElseThrow();
+        Facturas factura = guardar ? dao_facturas.findById(idfactura).orElseThrow() : new Facturas();
 
         EmisionOfCuentaDTO ctx = buildContext(
                 cuenta, idfactura, m3, categoria, swMunicipio, swAdultoMayor, swAguapotable, swbasura, factura);
@@ -255,12 +271,13 @@ public class EmisionServicioOptimizadoV2 {
         // ---------------------------
         // 5) Guardar rubros y factura
         // ---------------------------
-        upsertRubros(rubros);
-
-        factura.setTotaltarifa(scale2(total));
-        factura.setValorbase(scale2(total));
-        factura.setFeccrea(LocalDate.now().withDayOfMonth(1));
-        dao_facturas.save(factura);
+        if (guardar) {
+            upsertRubros(rubros);
+            factura.setTotaltarifa(scale2(total));
+            factura.setValorbase(scale2(total));
+            factura.setFeccrea(LocalDate.now().withDayOfMonth(1));
+            dao_facturas.save(factura);
+        }
 
         return scale2(total);
     }

@@ -1,5 +1,7 @@
 package com.epmapat.erp_epmapat.controlador;
 
+import com.epmapat.erp_epmapat.interfaces.TrackingReader;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Map;
 
@@ -55,6 +57,11 @@ public class TrackingController {
     public ResponseEntity<TrackingSession> finishSession(@RequestBody TrackingSessionDto dto) {
         log.info("Finalizando sesión de tracking: {}", dto.getId());
         return ResponseEntity.ok(trackingServicio.finishSession(dto));
+    }
+
+    @GetMapping("/readers")
+    public ResponseEntity<List<TrackingReader>> getReaders() {
+        return ResponseEntity.ok(trackingServicio.getReaders());
     }
 
     @GetMapping("/sessions")

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.util.StringUtils;
 
 import com.epmapat.erp_epmapat.DTO.EmisionOfCuentaDTO;
+import com.epmapat.erp_epmapat.DTO.PreemisionReporteDTO;
 import com.epmapat.erp_epmapat.DTO.CierreRutaReporteDTO;
 import com.epmapat.erp_epmapat.DTO.LecturaDto;
 import com.epmapat.erp_epmapat.DTO.LecturaUploadItemDto;
@@ -49,6 +50,7 @@ import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizadoV2;
 import com.epmapat.erp_epmapat.servicio.EmisionServicioOptimizado_anterior;
 import com.epmapat.erp_epmapat.servicio.LecturaFotoStorageService;
 import com.epmapat.erp_epmapat.servicio.LecturaServicio;
+import com.epmapat.erp_epmapat.servicio.PreemisionServicio;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +66,7 @@ public class LecturasApi {
 	private static final String NEXTCLOUD_LECTURAS_FOLDER = "LECTURAS";
 
 	private final LecturaServicio lecServicio;
+	private final PreemisionServicio preemisionServicio;
 	private final EmisionServicioOptimizado emisionServicioOptimizado;
 	private final EmisionServicioOptimizadoV2 emisionServicioOptimizadoV2;
 	private final EmisionServicioOptimizado_anterior emisionServicioOptimizado_anterior;
@@ -71,6 +74,11 @@ public class LecturasApi {
 	private final NovedadR novedadR;
 	private final RutasxemisionR rutasxemisionR;
 	private final LecturaFotoStorageService lecturaFotoStorageService;
+
+	@GetMapping("/reportes/preemision")
+	public PreemisionReporteDTO preemision(@RequestParam Long idemision) {
+		return preemisionServicio.reporte(idemision);
+	}
 
 	private String resolveIncomingFotoPath(LecturaUploadItemDto item, Lecturas original) {
 		String incomingFotoPath = item.getFotoPath();

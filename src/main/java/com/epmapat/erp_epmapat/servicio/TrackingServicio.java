@@ -1,5 +1,8 @@
 package com.epmapat.erp_epmapat.servicio;
 
+import com.epmapat.erp_epmapat.interfaces.TrackingReader;
+import com.epmapat.erp_epmapat.repositorio.administracion.UsrxmodulosR;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,6 +58,14 @@ public class TrackingServicio {
 
     @Autowired
     private UsuariosR usuariosR;
+
+    @Autowired
+    private UsrxmodulosR usrxmodulosR;
+
+    @Transactional(readOnly = true)
+    public List<TrackingReader> getReaders() {
+        return usrxmodulosR.findTrackingReaders();
+    }
 
     @Transactional
     public TrackingSession startSession(TrackingSessionDto dto) {

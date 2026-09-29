@@ -95,6 +95,7 @@ public class AbonadosApi {
 		MediaType contentType = MediaTypeFactory.getMediaType(filename)
 				.orElse(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
 		return ResponseEntity.ok()
+				.cacheControl(org.springframework.http.CacheControl.noStore())
 				.contentType(contentType)
 				.header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
 				.body(resource);

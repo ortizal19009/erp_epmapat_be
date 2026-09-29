@@ -373,8 +373,13 @@ public class AbonadoServicio {
 		abonadoOriginal.setPromedio(abonadosM.getPromedio());
 		abonadoOriginal.setGeolocalizacion(abonadosM.getGeolocalizacion());
 		abonadoOriginal.setSwbasura(abonadosM.getSwbasura());
-		abonadoOriginal.setFotocasaPath(abonadosM.getFotocasaPath());
-		abonadoOriginal.setFotomedidorPath(abonadosM.getFotomedidorPath());
+		// An ordinary edit that omits photos must not unlink previously uploaded files.
+		if (abonadosM.getFotocasaPath() != null && !abonadosM.getFotocasaPath().isBlank()) {
+			abonadoOriginal.setFotocasaPath(abonadosM.getFotocasaPath());
+		}
+		if (abonadosM.getFotomedidorPath() != null && !abonadosM.getFotomedidorPath().isBlank()) {
+			abonadoOriginal.setFotomedidorPath(abonadosM.getFotomedidorPath());
+		}
 
 		Abonados abonadoActualizado = dao.save(abonadoOriginal);
 
