@@ -6,4 +6,5 @@ import lombok.Data;
 public class CredencialesRequest {
  private String username;
     private String password;
+    private Boolean activo;
 }

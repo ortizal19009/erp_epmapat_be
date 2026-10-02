@@ -104,11 +104,12 @@ public class ClienteServicio {
 		}
 	}
 
-	public void actualizarCredenciales(Long idcliente, String username, String password) throws Exception {
+	public void actualizarCredenciales(Long idcliente, String username, String password, Boolean activo) throws Exception {
 		Clientes c = dao.findById(idcliente)
 				.orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
 		c.setUsername(username);
+		if (activo != null) c.setActivo(activo);
 		c.setPassword(AESUtil.cifrar(password)); // usando tu AESUtil
 
 		dao.save(c);

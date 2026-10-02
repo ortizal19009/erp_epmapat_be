@@ -214,7 +214,7 @@ public class ClientesApi {
 			@PathVariable("id") Long id,
 			@RequestBody CredencialesRequest req) throws Exception {
 
-		cliServicio.actualizarCredenciales(id, req.getUsername(), req.getPassword());
+		cliServicio.actualizarCredenciales(id, req.getUsername(), req.getPassword(), req.getActivo());
 		return ResponseEntity.noContent().build();
 	}
 
