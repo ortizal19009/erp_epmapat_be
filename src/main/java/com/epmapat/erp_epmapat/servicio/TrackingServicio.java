@@ -24,7 +24,6 @@ import com.epmapat.erp_epmapat.repositorio.RouteDeviationEventR;
 import com.epmapat.erp_epmapat.repositorio.TrackingPointR;
 import com.epmapat.erp_epmapat.repositorio.TrackingSessionR;
 import com.epmapat.erp_epmapat.repositorio.administracion.UsuariosR;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -40,9 +39,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class TrackingServicio {
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private TrackingSessionR trackingSessionR;
@@ -95,12 +91,6 @@ public class TrackingServicio {
 
     @Transactional
     public void addPointsBatch(BatchPointsRequestDto dto) {
-        try {
-            log.info("DTO recibido: {}", objectMapper.writeValueAsString(dto));
-        } catch (Exception e) {
-            log.warn("No se pudo loguear el DTO: {}", e.getMessage());
-        }
-
         log.info("Procesando lote de puntos para sesión: {}. Puntos recibidos: {}", 
             dto.getTrackingSessionId(), 
             dto.getPoints() != null ? dto.getPoints().size() : 0);

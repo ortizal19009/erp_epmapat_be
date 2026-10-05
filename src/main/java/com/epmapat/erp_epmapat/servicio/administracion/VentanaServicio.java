@@ -49,6 +49,7 @@ public class VentanaServicio {
          "rutas",
          "pliego",
          "pliego24",
+         "trazabilidad",
          "facturacion",
          "facturas",
          "fecfactura",
