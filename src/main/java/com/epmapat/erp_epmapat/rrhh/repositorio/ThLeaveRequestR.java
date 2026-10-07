@@ -9,7 +9,17 @@ import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.rrhh.modelo.ThLeaveRequest;
 
-public interface ThLeaveRequestR extends JpaRepository<ThLeaveRequest, Long> {
+public interface ThLeaveRequestR extends JpaRepository<ThLeaveRequest, Long>,
+        org.springframework.data.jpa.repository.JpaSpecificationExecutor<ThLeaveRequest> {
+    @Override
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = "idpersonal_personal")
+    org.springframework.data.domain.Page<ThLeaveRequest> findAll(
+            org.springframework.data.jpa.domain.Specification<ThLeaveRequest> specification,
+            org.springframework.data.domain.Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Lock(javax.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM ThLeaveRequest r WHERE r.idrequest = :id")
+    java.util.Optional<ThLeaveRequest> findByIdForUpdate(@Param("id") Long id);
 
     @Query("""
             SELECT r
@@ -31,7 +41,7 @@ public interface ThLeaveRequestR extends JpaRepository<ThLeaveRequest, Long> {
             SELECT (count(r) > 0)
             FROM ThLeaveRequest r
             WHERE r.idpersonal_personal.idpersonal = :idpersonal
-              AND r.estado IN ('SOLICITADA', 'APROBADA')
+              AND UPPER(r.estado) IN ('SOLICITADA', 'APROBADA')
               AND :inicio <= r.fechafin
               AND :fin >= r.fechainicio
             """)

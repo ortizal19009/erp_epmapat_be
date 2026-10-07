@@ -27,6 +27,7 @@ public class ThAuditLog {
     private String entidad;
     private Long idregistro;
     private String accion;
+    @javax.persistence.Column(columnDefinition = "text")
     private String detalle;
     private Long usuario;
     private LocalDateTime fecha;

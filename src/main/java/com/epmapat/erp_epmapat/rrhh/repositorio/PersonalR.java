@@ -12,6 +12,10 @@ import com.epmapat.erp_epmapat.rrhh.modelo.Personal;
 
 @org.springframework.stereotype.Repository("rrhhLegacyPersonalR")
 public interface PersonalR extends JpaRepository<Personal, Long> {
+    @org.springframework.data.jpa.repository.Lock(javax.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM RrhhLegacyPersonal p WHERE p.idpersonal = :id")
+    Optional<Personal> findByIdForUpdate(@Param("id") Long id);
+
     boolean existsByIdentificacion(String identificacion);
 
     boolean existsByIdentificacionAndIdpersonalNot(String identificacion, Long idpersonal);
@@ -19,7 +23,7 @@ public interface PersonalR extends JpaRepository<Personal, Long> {
     Optional<Personal> findByIdpersonal(Long idpersonal);
 
     @Query("""
-            SELECT p FROM Personal p
+            SELECT p FROM RrhhLegacyPersonal p
             WHERE (:q IS NULL OR :q = ''
                OR LOWER(p.nombres) LIKE LOWER(CONCAT('%', :q, '%'))
                OR LOWER(p.apellidos) LIKE LOWER(CONCAT('%', :q, '%'))

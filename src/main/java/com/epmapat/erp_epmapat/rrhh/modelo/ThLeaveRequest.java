@@ -2,6 +2,7 @@ package com.epmapat.erp_epmapat.rrhh.modelo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -57,4 +58,8 @@ public class ThLeaveRequest {
     private LocalDate fecmodi;
     private Long usumodi;
     private Boolean activo;
+    private Long resuelto_por;
+    private LocalDateTime fecha_resolucion;
+    @javax.persistence.Column(columnDefinition = "text")
+    private String motivo_resolucion;
 }

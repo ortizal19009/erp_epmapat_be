@@ -26,14 +26,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        if (!requiresWebJwt(request.getRequestURI())) {
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        if (!requiresWebJwt(path)) {
             // Mobile still uses a legacy session token; only WEB routes consume JWTs.
             filterChain.doFilter(request, response);
             return;
         }
         String authorization = request.getHeader("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            if (requiresWebJwt(request.getRequestURI())) {
+            if (requiresWebJwt(path)) {
                 unauthorized(response, "Token WEB requerido");
                 return;
             }
@@ -56,7 +57,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || uri.startsWith("/ventanas")
                 || uri.startsWith("/access/")
                 || uri.startsWith("/usuarios/session")
-                || uri.startsWith("/api/backup");
+                || uri.startsWith("/api/backup")
+                || uri.equals("/api/th-leave") || uri.startsWith("/api/th-leave/");
     }
 
     private void unauthorized(HttpServletResponse response, String message) throws IOException {

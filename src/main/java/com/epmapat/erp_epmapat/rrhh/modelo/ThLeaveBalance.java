@@ -52,4 +52,7 @@ public class ThLeaveBalance {
     private LocalDate fecmodi;
     private Long usumodi;
     private Boolean estado;
+    @javax.persistence.Version
+    @javax.persistence.Column(nullable = false)
+    private Long version;
 }

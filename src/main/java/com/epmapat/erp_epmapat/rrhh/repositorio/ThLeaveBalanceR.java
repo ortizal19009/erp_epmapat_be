@@ -10,6 +10,15 @@ import org.springframework.data.repository.query.Param;
 import com.epmapat.erp_epmapat.rrhh.modelo.ThLeaveBalance;
 
 public interface ThLeaveBalanceR extends JpaRepository<ThLeaveBalance, Long> {
+    @org.springframework.data.jpa.repository.Lock(javax.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT b FROM ThLeaveBalance b WHERE b.idbalance = :id")
+    Optional<ThLeaveBalance> findByIdForUpdate(@Param("id") Long id);
+
+    @org.springframework.data.jpa.repository.Lock(javax.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT b FROM ThLeaveBalance b WHERE b.idpersonal_personal.idpersonal = :idpersonal AND b.anio = :anio")
+    Optional<ThLeaveBalance> findByPersonalAndAnioForUpdate(@Param("idpersonal") Long idpersonal,
+            @Param("anio") Integer anio);
+
 
     @Query("""
             SELECT b
