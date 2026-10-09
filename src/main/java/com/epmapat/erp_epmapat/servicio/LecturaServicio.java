@@ -173,6 +173,8 @@ public class LecturaServicio {
 		lecturaOriginal.setReadingLongitude(lecturaM.getReadingLongitude());
 		lecturaOriginal.setReadingAccuracy(lecturaM.getReadingAccuracy());
 		lecturaOriginal.setReadingCapturedAt(lecturaM.getReadingCapturedAt());
+		lecturaOriginal.setDistanceFromMeterMeters(lecturaM.getDistanceFromMeterMeters());
+		lecturaOriginal.setDistanceStatus(lecturaM.getDistanceStatus());
 
 		Lecturas saved = dao.save(lecturaOriginal);
 		notificarLecturaActualizada(saved);
@@ -223,7 +225,14 @@ public class LecturaServicio {
 				lectura.getTotal1(),
 				lectura.getTotal31(),
 				lectura.getTotal32(),
-				lectura.getFotoPath());
+				lectura.getFotoPath(),
+				lectura.getTrackingSessionId(),
+				lectura.getReadingLatitude(),
+				lectura.getReadingLongitude(),
+				lectura.getReadingAccuracy(),
+				lectura.getReadingCapturedAt(),
+				lectura.getDistanceFromMeterMeters(),
+				lectura.getDistanceStatus());
 	}
 
 	// Ultima lectura de un Abonado

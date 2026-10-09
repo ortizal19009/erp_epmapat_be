@@ -74,6 +74,7 @@ public class LecturasApi {
 	private final NovedadR novedadR;
 	private final RutasxemisionR rutasxemisionR;
 	private final LecturaFotoStorageService lecturaFotoStorageService;
+	private final com.epmapat.erp_epmapat.servicio.MobileReadingTraceValidator mobileReadingTraceValidator;
 
 	@GetMapping("/reportes/preemision")
 	public PreemisionReporteDTO preemision(@RequestParam Long idemision) {
@@ -306,18 +307,26 @@ public class LecturasApi {
 		return lectura;
 	}
 
-	@PutMapping("/{idlectura}/mobile")
-	public ResponseEntity<Lecturas> updateMobile(@PathVariable Long idlectura, @RequestBody LecturaUploadItemDto item,
+	@PutMapping(value = "/{idlectura}/mobile", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<LecturaDto> updateMobile(@PathVariable Long idlectura, @RequestBody LecturaUploadItemDto item,
 			@RequestParam(required = false, defaultValue = "0") Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
 			@RequestParam(required = false, defaultValue = "Actualización de lectura desde mobile") String observacion) {
+		mobileReadingTraceValidator.validate(item, usumodi);
 		Lecturas actualizar = lecServicio.actualizarLecturaConAuditoria(
 				idlectura,
 				buildLecturaFromMobileItem(idlectura, item),
 				usumodi,
 				observacion,
 				tipo);
-		return ResponseEntity.ok(actualizar);
+		return ResponseEntity.ok(LecturaMapper.toDto(actualizar));
+	}
+
+	@GetMapping(value = "/{idlectura}/mobile", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<LecturaDto> getMobile(@PathVariable Long idlectura) {
+		Lecturas lectura = lecServicio.findById(idlectura)
+				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe la Lectura con Id: " + idlectura));
+		return ResponseEntity.ok(LecturaMapper.toDto(lectura));
 	}
 
 	/* obtener la suma de una emision */
@@ -518,6 +527,7 @@ public class LecturasApi {
 					continue;
 				}
 
+				mobileReadingTraceValidator.validate(item, usumodi);
 				Lecturas y = buildLecturaFromMobileItem(item.getIdlectura(), item);
 
 				if (usumodi != null) {

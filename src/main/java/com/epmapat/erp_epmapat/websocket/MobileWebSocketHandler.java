@@ -77,13 +77,7 @@ public class MobileWebSocketHandler extends TextWebSocketHandler {
         String message = idemision == null
                 ? "Tienes nuevas asignaciones"
                 : "Tienes nuevas asignaciones para la emision " + idemision;
-        userSessions.values().forEach(session -> {
-            try {
-                sendJson(session, "assignment_update", message);
-            } catch (IOException e) {
-                log.warn("No se pudo notificar assignment_update a {}: {}", session.getId(), e.getMessage());
-            }
-        });
+        userSessions.values().forEach(session -> sendJson(session, "assignment_update", message));
     }
 
     public void notifyLecturaUpdated(Long idemision, Long idrutaxemision) {
@@ -92,13 +86,7 @@ public class MobileWebSocketHandler extends TextWebSocketHandler {
                 + ",\"idemision\":" + (idemision == null ? "null" : idemision)
                 + ",\"idrutaxemision\":" + (idrutaxemision == null ? "null" : idrutaxemision)
                 + "}";
-        sessions.values().forEach(session -> {
-            try {
-                sendRawJson(session, payload);
-            } catch (IOException e) {
-                log.warn("No se pudo notificar lectura_update a {}: {}", session.getId(), e.getMessage());
-            }
-        });
+        sessions.values().forEach(session -> sendRawJson(session, payload));
     }
 
     public int activeConnections() {
@@ -142,16 +130,28 @@ public class MobileWebSocketHandler extends TextWebSocketHandler {
         return null;
     }
 
-    private void sendJson(WebSocketSession session, String type, String message) throws IOException {
+    private void sendJson(WebSocketSession session, String type, String message) {
         sendRawJson(session,
                 "{\"type\":\"" + type + "\",\"message\":\"" + message + "\",\"ts\":" + System.currentTimeMillis() + "}");
     }
 
-    private void sendRawJson(WebSocketSession session, String payload) throws IOException {
-        if (!session.isOpen()) {
-            return;
+    private void sendRawJson(WebSocketSession session, String payload) {
+        try {
+            if (!session.isOpen()) {
+                removeSession(session);
+                return;
+            }
+            session.sendMessage(new TextMessage(payload));
+        } catch (IOException | RuntimeException e) {
+            // Una notificacion fallida no debe convertir una lectura guardada en un error de API.
+            removeSession(session);
+            log.warn("No se pudo enviar notificacion Mobile WebSocket a {}: {}", session.getId(), e.getMessage());
+            try {
+                session.close(CloseStatus.SESSION_NOT_RELIABLE);
+            } catch (IOException | RuntimeException closeError) {
+                log.debug("No se pudo cerrar Mobile WebSocket {}: {}", session.getId(), closeError.getMessage());
+            }
         }
-        session.sendMessage(new TextMessage(payload));
     }
 
     private boolean isExpectedDisconnect(Throwable exception) {

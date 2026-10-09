@@ -2,6 +2,11 @@
 package com.epmapat.erp_epmapat.config;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -39,7 +44,20 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
 
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+        CorsFilter filter = new CorsFilter(source) {
+            @Override
+            protected boolean shouldNotFilterErrorDispatch() {
+                return false;
+            }
+
+            @Override
+            protected void doFilterNestedErrorDispatch(HttpServletRequest request, HttpServletResponse response,
+                    FilterChain chain) throws ServletException, IOException {
+                // A container can reset the response before a nested error dispatch.
+                doFilterInternal(request, response, chain);
+            }
+        };
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(filter);
         bean.setOrder(Integer.MIN_VALUE);
         // Mantiene las cabeceras CORS cuando Spring reenvia una excepcion a /error.
         bean.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ERROR);

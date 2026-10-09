@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ResumenFacturacion" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenNoDataType="AllSectionsNoDetail" isSummaryWithPageHeaderAndFooter="true">
+<parameter name="estado" class="java.lang.String"/>
+<parameter name="numeroAutorizacion" class="java.lang.String"/>
+<parameter name="fechaAutorizacion" class="java.lang.String"/>
+<parameter name="ambienteAutorizacion" class="java.lang.String"/>
+<parameter name="razonSocial" class="java.lang.String"/>
+<parameter name="nombreComercial" class="java.lang.String"/>
+<parameter name="ruc" class="java.lang.String"/>
+<parameter name="claveAcceso" class="java.lang.String"/>
+<parameter name="estab" class="java.lang.String"/>
+<parameter name="ptoEmi" class="java.lang.String"/>
+<parameter name="secuencial" class="java.lang.String"/>
+<parameter name="dirMatriz" class="java.lang.String"/>
+<parameter name="fechaEmision" class="java.lang.String"/>
+<parameter name="obligadoContabilidad" class="java.lang.String"/>
+<parameter name="tipoIdentificacionSujetoRetenido" class="java.lang.String"/>
+<parameter name="razonSocialSujetoRetenido" class="java.lang.String"/>
+<parameter name="identificacionSujetoRetenido" class="java.lang.String"/>
+<parameter name="periodoFiscal" class="java.lang.String"/>
+<parameter name="direccionSujetoRetenido" class="java.lang.String"/>
+<parameter name="telefonoSujetoRetenido" class="java.lang.String"/>
+<parameter name="emailSujetoRetenido" class="java.lang.String"/>
+<parameter name="fechaInicio" class="java.lang.String"/>
+<parameter name="fechaFin" class="java.lang.String"/>
+<queryString language="SQL"><![CDATA[WITH limites AS (
+ SELECT CAST($P{fechaInicio} AS date) AS inicio, CAST($P{fechaFin} AS date) AS fin
+), alcance AS (
+ SELECT f.*, t.descripcion, t.idformacobro AS forma_valida,
+   f.feccrea BETWEEN l.inicio AND l.fin AS emitida_periodo,
+   f.fechacobro BETWEEN l.inicio AND l.fin AS cobro_periodo,
+   f.fechaanulacion BETWEEN l.inicio AND l.fin AS anulada_periodo,
+   f.fechaeliminacion BETWEEN l.inicio AND l.fin AS eliminada_periodo,
+   l.inicio, l.fin
+ FROM facturas f CROSS JOIN limites l
+ LEFT JOIN formacobro t ON t.idformacobro = f.formapago
+ WHERE f.feccrea BETWEEN l.inicio AND l.fin
+    OR f.fechacobro BETWEEN l.inicio AND l.fin
+    OR f.fechaanulacion BETWEEN l.inicio AND l.fin
+    OR f.fechaeliminacion BETWEEN l.inicio AND l.fin
+), clasificada AS (
+ SELECT a.*,
+ CASE
+   WHEN formapago = 1 AND estado IN (1,2) THEN 'EFECTIVO'
+   WHEN formapago = 4 AND estado = 1 THEN 'TRANSFERENCIA'
+   WHEN formapago = 4 AND estado = 3 THEN 'TRANSFERENCIA NO COBRADA'
+   WHEN formapago = 6 THEN 'RECAUDACIÓN EXTERNA'
+   WHEN formapago = 3 THEN 'NOTAS CRÉDITO'
+   ELSE COALESCE(NULLIF(BTRIM(descripcion),''),'FORMA NO IDENTIFICADA')
+ END AS categoria,
+ (estado IN (1,2) AND formapago IN (1,5,6,7) OR estado = 1 AND formapago = 4)
+   AND fechacobro IS NOT NULL AND fechaeliminacion IS NULL AND forma_valida IS NOT NULL AS cobrada,
+ (estado = 3 OR estado IN (1,2) AND COALESCE(pagado,0) = 0 AND fechacobro IS NULL)
+   AND fechaeliminacion IS NULL AS pendiente,
+ estado = 3 AND formapago = 4 AND fechaeliminacion IS NULL AS spi_pendiente
+ FROM alcance a
+), conteos AS (
+ SELECT COUNT(*) FILTER (WHERE emitida_periodo) AS emitidas,
+ COUNT(*) FILTER (WHERE cobro_periodo AND cobrada) AS cobradas,
+ COUNT(*) FILTER (WHERE emitida_periodo AND cobrada) AS emitidas_cobradas,
+ COUNT(*) FILTER (WHERE emitida_periodo AND pendiente) AS pendientes,
+ COUNT(*) FILTER (WHERE emitida_periodo AND spi_pendiente) AS pendientes_spi,
+ COUNT(*) FILTER (WHERE emitida_periodo AND formapago = 3 AND estado IN (1,2) AND fechacobro IS NOT NULL AND fechaeliminacion IS NULL) AS emitidas_notas,
+ COUNT(*) FILTER (WHERE anulada_periodo) AS anulaciones,
+ COUNT(*) FILTER (WHERE emitida_periodo AND anulada_periodo) AS emitidas_anuladas,
+ COUNT(*) FILTER (WHERE cobro_periodo AND spi_pendiente) AS transferencias,
+ COUNT(*) FILTER (WHERE cobro_periodo AND formapago = 3 AND estado IN (1,2) AND fechaeliminacion IS NULL) AS notas,
+ COUNT(*) FILTER (WHERE eliminada_periodo) AS eliminadas
+ FROM clasificada
+), diarios AS (
+ SELECT d::date AS dia,
+ (SELECT COUNT(*) FROM clasificada c WHERE c.feccrea = d::date) AS emitidas,
+ (SELECT COUNT(*) FROM clasificada c WHERE c.fechacobro = d::date AND c.cobrada) AS cobradas
+ FROM limites l CROSS JOIN LATERAL generate_series(l.inicio::timestamp,l.fin::timestamp,interval '1 day') d
+), filas AS (
+ SELECT 1 AS bloque, 1 AS orden, 'RESUMEN EJECUTIVO'::text AS seccion,
+ 'FACTURAS EMITIDAS (fecha de creación)'::text AS concepto, emitidas AS cantidad, ''::text AS indicador FROM conteos
+ UNION ALL SELECT 1,2,'RESUMEN EJECUTIVO','TOTAL COBRADO (por fecha de cobro)',cobradas,'' FROM conteos
+ UNION ALL SELECT 1,3,'RESUMEN EJECUTIVO','PENDIENTES DE LAS EMITIDAS (estado actual)',pendientes,'' FROM conteos
+ UNION ALL SELECT 1,4,'RESUMEN EJECUTIVO','TRANSFERENCIAS PENDIENTES DEL PERÍODO',transferencias,'' FROM conteos
+ UNION ALL SELECT 1,5,'RESUMEN EJECUTIVO','NOTAS CRÉDITO APLICADAS (no efectivo)',notas,'' FROM conteos
+ UNION ALL SELECT 1,6,'RESUMEN EJECUTIVO','COBRADAS DE LAS EMITIDAS',emitidas_cobradas,
+ COALESCE(ROUND(100.0 * emitidas_cobradas / NULLIF(emitidas,0),2)::text || ' %','N/A') FROM conteos
+ UNION ALL SELECT 1,7,'RESUMEN EJECUTIVO','ANULACIONES DE LAS EMITIDAS',emitidas_anuladas,
+ COALESCE(ROUND(100.0 * emitidas_anuladas / NULLIF(emitidas,0),2)::text || ' %','N/A') FROM conteos
+ UNION ALL SELECT 1,8,'RESUMEN EJECUTIVO','NOTAS CRÉDITO DE LAS EMITIDAS',emitidas_notas,
+ COALESCE(ROUND(100.0 * emitidas_notas / NULLIF(emitidas,0),2)::text || ' %','N/A') FROM conteos
+ UNION ALL SELECT 2,1,'RECAUDACIÓN POR FORMA DE COBRO',categoria,COUNT(*),
+ CASE WHEN BOOL_AND(cobrada) THEN 'COBRADO' WHEN BOOL_AND(spi_pendiente) THEN 'PENDIENTE'
+ WHEN formapago = 3 THEN 'NO ES EFECTIVO' ELSE 'REVISAR ESTADO' END
+ FROM clasificada WHERE cobro_periodo AND fechaeliminacion IS NULL
+ GROUP BY categoria,formapago,
+ CASE WHEN cobrada THEN 1 WHEN spi_pendiente THEN 2 WHEN formapago = 3 THEN 3 ELSE 4 END
+ UNION ALL SELECT 2,90,'RECAUDACIÓN POR FORMA DE COBRO','TOTAL COBRADO',cobradas,'EXCLUYE SPI 3 Y NC' FROM conteos
+ UNION ALL SELECT 2,91,'RECAUDACIÓN POR FORMA DE COBRO','TOTAL TRANSFERENCIAS PENDIENTES',transferencias,'NO SUMA AL COBRADO' FROM conteos
+ UNION ALL SELECT 3,1,'CONTROL DE ESTADOS (emitidas)',
+ 'Estado ' || COALESCE(estado::text,'NULL'),COUNT(*),
+ CASE WHEN estado = 0 THEN 'ELIMINACIÓN LÓGICA' WHEN estado = 3 THEN 'PENDIENTE'
+ WHEN estado IN (1,2) THEN 'VER COBRO / PAGADO' ELSE 'NO RECONOCIDO' END
+ FROM clasificada WHERE emitida_periodo GROUP BY estado
+ UNION ALL SELECT 4,1,'EVOLUCIÓN DIARIA (cantidades)',to_char(dia,'YYYY-MM-DD'),emitidas,'Cobradas: ' || cobradas FROM diarios
+ UNION ALL SELECT 4,90,'EVOLUCIÓN DIARIA (cantidades)','Promedio diario de emitidas',NULL,
+ COALESCE(ROUND(AVG(emitidas),2)::text,'N/A') FROM diarios
+ UNION ALL SELECT 4,91,'EVOLUCIÓN DIARIA (cantidades)','Mínimo / máximo diario de emitidas',NULL,
+ COALESCE(MIN(emitidas)::text || ' / ' || MAX(emitidas)::text,'N/A') FROM diarios
+ UNION ALL SELECT 5,1,'CONTROL DE PENDIENTES (emitidas)','Transferencias pendientes',pendientes_spi,'ESTADO ACTUAL' FROM conteos
+ UNION ALL SELECT 5,2,'CONTROL DE PENDIENTES (emitidas)','Otras pendientes',pendientes-pendientes_spi,'ESTADO ACTUAL' FROM conteos
+ UNION ALL SELECT 5,3,'CONTROL DE PENDIENTES (emitidas)','TOTAL PENDIENTE',pendientes,'ESTADO ACTUAL' FROM conteos
+ UNION ALL SELECT 5,
+ CASE WHEN fin-feccrea <= 7 THEN 10 WHEN fin-feccrea <= 15 THEN 20 WHEN fin-feccrea <= 30 THEN 30 WHEN fin-feccrea <= 60 THEN 40 ELSE 50 END,
+ 'ANTIGÜEDAD (pendientes de las emitidas)',
+ CASE WHEN fin-feccrea <= 7 THEN '0 - 7 días' WHEN fin-feccrea <= 15 THEN '8 - 15 días'
+ WHEN fin-feccrea <= 30 THEN '16 - 30 días' WHEN fin-feccrea <= 60 THEN '31 - 60 días' ELSE 'Más de 60 días' END,
+ COUNT(*),'ESTADO ACTUAL'
+ FROM clasificada WHERE emitida_periodo AND pendiente GROUP BY 2,4
+ UNION ALL SELECT 6,1,'ANULACIONES Y ELIMINACIONES','Anulaciones registradas en el período',anulaciones,'' FROM conteos
+ UNION ALL SELECT 6,2,'ANULACIONES Y ELIMINACIONES','Eliminaciones registradas en el período',eliminadas,'' FROM conteos
+ UNION ALL SELECT 6,3,'ANULACIONES Y ELIMINACIONES',
+ 'Usuario ' || COALESCE(usuarioanulacion::text,'sin registrar') || ' / ' || LEFT(COALESCE(NULLIF(razonanulacion,''),'Sin motivo'),60),COUNT(*),'ANULACIÓN'
+ FROM clasificada WHERE anulada_periodo GROUP BY usuarioanulacion,LEFT(COALESCE(NULLIF(razonanulacion,''),'Sin motivo'),60)
+ UNION ALL SELECT 7,1,'CONTROL POR CAJERO Y FORMA',
+ 'Usuario ' || COALESCE(usuariocobro::text,'sin registrar') || ' / ' || categoria,COUNT(*),'COBRADO'
+ FROM clasificada WHERE cobro_periodo AND cobrada GROUP BY usuariocobro,categoria
+ UNION ALL SELECT 8,1,'CONTROL DE INCONSISTENCIAS','Sin forma de pago',COUNT(*) FILTER (WHERE formapago IS NULL),'REVISAR SI > 0' FROM clasificada
+ UNION ALL SELECT 8,2,'CONTROL DE INCONSISTENCIAS','Forma inexistente o deshabilitada (NO USAR)',COUNT(*) FILTER (WHERE formapago IS NOT NULL AND (forma_valida IS NULL OR UPPER(BTRIM(descripcion)) = 'NO USAR')),'REVISAR SI > 0' FROM clasificada
+ UNION ALL SELECT 8,3,'CONTROL DE INCONSISTENCIAS','Pagadas sin fecha (excluye SPI pendiente)',COUNT(*) FILTER (WHERE pagado = 1 AND fechacobro IS NULL AND estado IN (1,2)),'REVISAR SI > 0' FROM clasificada
+ UNION ALL SELECT 8,4,'CONTROL DE INCONSISTENCIAS','Tarifa nula o <= 0 (no es valor final)',COUNT(*) FILTER (WHERE totaltarifa IS NULL OR totaltarifa <= 0),'REVISAR SI > 0' FROM clasificada
+ UNION ALL SELECT 8,5,'CONTROL DE INCONSISTENCIAS','Estados no reconocidos',COUNT(*) FILTER (WHERE estado IS NULL OR estado NOT IN (0,1,2,3)),'REVISAR SI > 0' FROM clasificada
+ UNION ALL SELECT 8,6,'CONTROL DE INCONSISTENCIAS','Emitidas con cobro fuera del período',COUNT(*) FILTER (WHERE emitida_periodo AND fechacobro IS NOT NULL AND NOT cobro_periodo),'INFORMATIVO' FROM clasificada
+ UNION ALL SELECT 8,7,'CONTROL DE INCONSISTENCIAS','Números repetidos dentro del alcance',COUNT(*),'REVISAR SI > 0'
+ FROM (SELECT nrofactura FROM clasificada WHERE NULLIF(BTRIM(nrofactura),'') IS NOT NULL GROUP BY nrofactura HAVING COUNT(*) > 1) duplicadas
+ UNION ALL SELECT 8,8,'CONTROL DE INCONSISTENCIAS','Cobros con estados incompatibles',COUNT(*) FILTER (WHERE cobro_periodo AND NOT COALESCE(cobrada,FALSE) AND NOT COALESCE(spi_pendiente,FALSE) AND formapago IS DISTINCT FROM 3 AND fechaeliminacion IS NULL),'REVISAR SI > 0' FROM clasificada
+)
+SELECT bloque, orden, seccion, concepto, cantidad,
+ CASE WHEN bloque = 8 AND indicador = 'REVISAR SI > 0'
+ THEN CASE WHEN cantidad = 0 THEN 'SIN NOVEDAD' ELSE 'REVISAR' END
+ ELSE indicador END AS indicador
+ FROM filas ORDER BY bloque,orden,concepto
+]]></queryString>
+<field name="bloque" class="java.lang.Integer"/>
+<field name="orden" class="java.lang.Integer"/>
+<field name="seccion" class="java.lang.String"/>
+<field name="concepto" class="java.lang.String"/>
+<field name="cantidad" class="java.lang.Long"/>
+<field name="indicador" class="java.lang.String"/>
+<group name="Seccion" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="70"><groupExpression><![CDATA[$F{seccion}]]></groupExpression>
+<groupHeader><band height="48">
+<rectangle><reportElement mode="Opaque" x="0" y="2" width="555" height="22" backcolor="#E8EDF2"/><graphicElement><pen lineWidth="0.0"/></graphicElement></rectangle>
+<textField isBlankWhenNull="true"><reportElement x="5" y="2" width="545" height="22"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{seccion}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="5" y="25" width="345" height="20"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="true"/></textElement><textFieldExpression><![CDATA["CONCEPTO / FORMA DE COBRO"]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="355" y="25" width="65" height="20"/><textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="true"/></textElement><textFieldExpression><![CDATA["CANTIDAD"]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="425" y="25" width="125" height="20"/><textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="true"/></textElement><textFieldExpression><![CDATA["CONTROL"]]></textFieldExpression></textField>
+</band></groupHeader></group>
+<title><band height="222">
+<image onErrorType="Blank"><reportElement x="10" y="10" width="300" height="120"/><imageExpression><![CDATA[getClass().getResourceAsStream("/reports/LOGO-H.png")]]></imageExpression></image>
+<textField isBlankWhenNull="true"><reportElement x="334" y="10" width="209" height="31"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="16" isBold="false"/></textElement><textFieldExpression><![CDATA["R.U.C.: " + ($P{ruc} == null ? "" : $P{ruc})]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="334" y="45" width="209" height="42"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$P{razonSocial}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="334" y="90" width="209" height="40"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement><textFieldExpression><![CDATA[$P{dirMatriz}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="0" y="135" width="555" height="30"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="14" isBold="true"/></textElement><textFieldExpression><![CDATA["RESUMEN DE FACTURACIÓN Y RECAUDACIÓN"]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="0" y="166" width="555" height="22"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="10" isBold="false"/></textElement><textFieldExpression><![CDATA["Período: " + $P{fechaInicio} + " al " + $P{fechaFin}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="0" y="191" width="555" height="18"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement><textFieldExpression><![CDATA["Control por cantidades. Estado actual; no reconstruye saldos históricos."]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="0" y="208" width="555" height="14"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement><textFieldExpression><![CDATA["Importes omitidos: tarifa base no equivale al total final recaudado."]]></textFieldExpression></textField>
+</band></title>
+<detail><band height="23" splitType="Prevent">
+<textField isBlankWhenNull="true"><reportElement x="5" y="0" width="345" height="23"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement><textFieldExpression><![CDATA[$F{concepto}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="355" y="0" width="65" height="23"/><textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="9" isBold="false"/></textElement><textFieldExpression><![CDATA[$F{cantidad} == null ? "" : new java.text.DecimalFormat("#,##0").format($F{cantidad})]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="425" y="0" width="125" height="23"/><textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement><textFieldExpression><![CDATA[$F{indicador}]]></textFieldExpression></textField>
+<line><reportElement x="0" y="22" width="555" height="1"/><graphicElement><pen lineWidth="0.2" lineColor="#DDDDDD"/></graphicElement></line>
+</band></detail>
+<pageFooter><band height="25">
+<textField isBlankWhenNull="true"><reportElement x="0" y="0" width="440" height="25"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement><textFieldExpression><![CDATA["ERP EPMAPA-T · Control de facturación"]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="440" y="0" width="115" height="25"/><textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement><textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression></textField>
+</band></pageFooter>
+<summary><band height="56">
+<textField isBlankWhenNull="true"><reportElement x="0" y="0" width="555" height="18"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement><textFieldExpression><![CDATA["TOTAL COBRADO: efectivo, SPI estado 1, externa, tarjeta y cheque válidos."]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="0" y="18" width="555" height="18"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement><textFieldExpression><![CDATA["NC y SPI estado 3 quedan separados. Porcentajes calculados por cantidad."]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="0" y="36" width="555" height="18"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement><textFieldExpression><![CDATA["Pendientes y antigüedad: solo facturas creadas en el período, estado actual."]]></textFieldExpression></textField>
+</band></summary>
+</jasperReport>
