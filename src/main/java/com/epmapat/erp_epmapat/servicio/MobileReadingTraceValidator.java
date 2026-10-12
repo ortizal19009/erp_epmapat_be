@@ -34,8 +34,13 @@ public class MobileReadingTraceValidator {
                 new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sincroniza la sesion GPS antes de enviar sus lecturas"));
         if (userId == null || !userId.equals(session.getReaderId())
                 || !userId.equals(item.getUsuariolectura())) reject("La lectura y la sesion GPS deben pertenecer al mismo usuario");
-        if (!item.getReadingCapturedAt().toInstant().atZone(ZoneId.of("America/Guayaquil"))
-                .toLocalDate().equals(session.getWorkDate())) reject("La captura GPS no corresponde a la fecha de la jornada");
+        java.time.LocalDate captureDate = item.getReadingCapturedAt().toInstant()
+                .atZone(ZoneId.of("America/Guayaquil")).toLocalDate();
+        if (!captureDate.equals(session.getWorkDate())) {
+            reject("La captura GPS no corresponde a la fecha de la jornada: captura=" + captureDate
+                    + ", jornada=" + session.getWorkDate() + ", sesion=" + id
+                    + ". Conserva la lectura y revisa su sesion original");
+        }
     }
 
     private boolean validCoordinate(Double value, double min, double max) {
