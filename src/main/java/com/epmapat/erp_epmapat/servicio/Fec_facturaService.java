@@ -26,6 +26,10 @@ import javax.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -305,7 +309,10 @@ public class Fec_facturaService {
          String url = UriComponentsBuilder.fromHttpUrl(sriMicroserviceBaseUrl)
                .pathSegment("api", "v1", "autorizacion", factura.getClaveacceso().trim(), "xml")
                .toUriString();
-         String respuestaSri = restTemplate.getForObject(url, String.class);
+         HttpHeaders headers = new HttpHeaders();
+         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+         String respuestaSri = restTemplate.exchange(url, HttpMethod.GET,
+               new HttpEntity<Void>(headers), String.class).getBody();
          String xml = extraerXmlAutorizadoRespuestaSri(respuestaSri);
          if (xml == null || xml.isBlank()) {
             marcarPendienteAutorizacion(factura, "SRI sin XML autorizado disponible todavia");
@@ -349,17 +356,20 @@ public class Fec_facturaService {
          return "";
       }
 
-      String xml = valor.trim()
+      String xml = valor.trim();
+      if (xml.startsWith("<![CDATA[") && xml.endsWith("]]>")) {
+         xml = xml.substring(9, xml.length() - 3).trim();
+      }
+      // Solo decodificar el envoltorio escapado. El XML firmado debe conservar sus entidades.
+      if (xml.startsWith("&lt;")) {
+         xml = xml
             .replace("&lt;", "<")
             .replace("&gt;", ">")
             .replace("&quot;", "\"")
             .replace("&#34;", "\"")
             .replace("&apos;", "'")
-            .replace("&amp;", "&")
-            .replace("\\n", "\n")
-            .replace("\\r", "\r")
-            .replace("\\t", "\t")
-            .replace("\\\"", "\"");
+            .replace("&amp;", "&");
+      }
 
       int inicio = xml.indexOf("<?xml");
       if (inicio < 0) {

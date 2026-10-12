@@ -17,7 +17,51 @@ import com.epmapat.erp_epmapat.servicio.LecturaServicio;
 @ExtendWith(MockitoExtension.class)
 class LecturasMobileContractTest {
     @Mock LecturaServicio service;
+    @Mock com.epmapat.erp_epmapat.servicio.MobileReadingTraceValidator validator;
     @InjectMocks LecturasApi controller;
+
+    @Test void uploadConfirmsOnlySavedItemsAndKeepsRejectedItemsPending() throws Exception {
+        doAnswer(invocation -> {
+            com.epmapat.erp_epmapat.DTO.LecturaUploadItemDto item = invocation.getArgument(0);
+            if (Long.valueOf(124).equals(item.getIdlectura())) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "La sesion GPS debe usar su UUID remoto");
+            }
+            return null;
+        }).when(validator).validate(any(), eq(7L));
+        when(service.findById(123L)).thenReturn(Optional.of(new Lecturas()));
+        MockMvcBuilders.standaloneSetup(controller).build()
+            .perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/lecturas/mobile/upload")
+                .param("usumodi", "7").accept(org.springframework.http.MediaType.APPLICATION_JSON).contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("[{\"idlectura\":123},{\"idlectura\":124},null,{}]"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.ok").value(1))
+            .andExpect(jsonPath("$.error").value(3))
+            .andExpect(jsonPath("$.confirmedIds[0]").value(123))
+            .andExpect(jsonPath("$.pendingIds[0]").value(124))
+            .andExpect(jsonPath("$.allConfirmed").value(false))
+            .andExpect(jsonPath("$.results[0].status").value("CONFIRMED"))
+            .andExpect(jsonPath("$.results[1].status").value("PENDING"))
+            .andExpect(jsonPath("$.results[1].httpStatus").value(400))
+            .andExpect(jsonPath("$.results[2].index").value(2));
+        verify(service, times(1)).actualizarLecturaConAuditoria(eq(123L), any(), eq(7L), anyString(), anyString());
+        verify(service, never()).saveLectura(any());
+    }
+
+    @Test void persistenceFailureMustNotConfirmReading() throws Exception {
+        when(service.findById(123L)).thenReturn(Optional.of(new Lecturas()));
+        when(service.actualizarLecturaConAuditoria(eq(123L), any(), eq(7L), anyString(), anyString()))
+            .thenThrow(new RuntimeException("database unavailable"));
+        MockMvcBuilders.standaloneSetup(controller).build()
+            .perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/lecturas/mobile/upload")
+                .param("usumodi", "7").accept(org.springframework.http.MediaType.APPLICATION_JSON).contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("[{\"idlectura\":123}]"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.ok").value(0))
+            .andExpect(jsonPath("$.confirmedIds").isEmpty())
+            .andExpect(jsonPath("$.pendingIds[0]").value(123))
+            .andExpect(jsonPath("$.results[0].httpStatus").value(500));
+    }
 
     @Test void mobileReadbackUsesFlatIdsAndIncludesTrace() throws Exception {
         Lecturas reading = new Lecturas();

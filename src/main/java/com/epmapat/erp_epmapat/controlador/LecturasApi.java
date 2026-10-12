@@ -518,13 +518,20 @@ public class LecturasApi {
 		int ok = 0;
 		int err = 0;
 		java.util.List<String> details = new java.util.ArrayList<>();
+		java.util.List<Long> confirmedIds = new java.util.ArrayList<>();
+		java.util.List<Long> pendingIds = new java.util.ArrayList<>();
+		java.util.List<java.util.Map<String, Object>> results = new java.util.ArrayList<>();
 
-		for (LecturaUploadItemDto item : items) {
+		for (int index = 0; index < items.size(); index++) {
+			LecturaUploadItemDto item = items.get(index);
+			Long id = item == null ? null : item.getIdlectura();
+			java.util.Map<String, Object> result = new LinkedHashMap<>();
+			result.put("index", index);
+			result.put("idlectura", id);
 			try {
-				if (item.getIdlectura() == null) {
-					err++;
-					details.add("Lectura sin idlectura");
-					continue;
+				if (id == null) {
+					throw new org.springframework.web.server.ResponseStatusException(
+							org.springframework.http.HttpStatus.BAD_REQUEST, "Lectura sin idlectura");
 				}
 
 				mobileReadingTraceValidator.validate(item, usumodi);
@@ -536,12 +543,23 @@ public class LecturasApi {
 					lecServicio.saveLectura(y);
 				}
 				ok++;
+				confirmedIds.add(id);
+				result.put("status", "CONFIRMED");
+				result.put("httpStatus", 200);
 			} catch (Exception ex) {
 				err++;
-				String detail = "Lectura " + item.getIdlectura() + ": " + ex.getMessage();
+				pendingIds.add(id);
+				String detail = "Lectura " + id + ": " + ex.getMessage();
 				details.add(detail);
-				log.warn("Error actualizando lectura mobile {}: {}", item.getIdlectura(), ex.getMessage(), ex);
+				result.put("status", "PENDING");
+				result.put("httpStatus", ex instanceof org.springframework.web.server.ResponseStatusException
+						? ((org.springframework.web.server.ResponseStatusException) ex).getStatus().value() : 500);
+				result.put("message", ex instanceof org.springframework.web.server.ResponseStatusException
+						? ((org.springframework.web.server.ResponseStatusException) ex).getReason()
+						: "No se pudo confirmar el guardado; conserva la lectura y reintenta");
+				log.warn("Error actualizando lectura mobile {}: {}", id, ex.getMessage(), ex);
 			}
+			results.add(result);
 		}
 
 		java.util.Map<String, Object> out = new LinkedHashMap<>();
@@ -549,6 +567,10 @@ public class LecturasApi {
 		out.put("error", err);
 		out.put("total", items.size());
 		out.put("details", details);
+		out.put("confirmedIds", confirmedIds);
+		out.put("pendingIds", pendingIds);
+		out.put("results", results);
+		out.put("allConfirmed", err == 0);
 		return ResponseEntity.ok(out);
 	}
 
