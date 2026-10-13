@@ -295,6 +295,7 @@ public class LecturasApi {
 		
 		// Tracking
 		lectura.setReadingSource(item.getReadingSource());
+        lectura.setReadingTraceStatus(mobileReadingTraceValidator.allowsPendingGps(item) ? "GPS_PENDING" : "GPS_VALID");
         lectura.setReadingCaptureAgeMillis(item.getReadingCaptureAgeMillis());
         lectura.setTrackingSessionId(item.getTrackingSessionId());
 		lectura.setReadingLatitude(item.getReadingLatitude());
@@ -563,6 +564,7 @@ public class LecturasApi {
 				ok++;
 				confirmedIds.add(id);
 				result.put("status", "CONFIRMED");
+                result.put("readingTraceStatus", y.getReadingTraceStatus());
 				result.put("httpStatus", 200);
 			} catch (Exception ex) {
 				err++;

@@ -66,6 +66,9 @@ class MobileSyncPostgresTest {
             var history=new org.springframework.core.io.FileSystemResource("src/main/resources/sql/2026-10-13_historical_tracking_days.sql");
             org.springframework.jdbc.datasource.init.ScriptUtils.executeSqlScript(connection,history);
             org.springframework.jdbc.datasource.init.ScriptUtils.executeSqlScript(connection,history);
+            var pendingGps=new org.springframework.core.io.FileSystemResource("src/main/resources/sql/2026-10-13_reading_gps_pending.sql");
+            org.springframework.jdbc.datasource.init.ScriptUtils.executeSqlScript(connection,pendingGps);
+            org.springframework.jdbc.datasource.init.ScriptUtils.executeSqlScript(connection,pendingGps);
         }
     }
     @AfterAll static void close() { if(factory!=null) factory.close(); }

@@ -177,8 +177,19 @@ public class LecturaServicio {
 		lecturaOriginal.setFotoPath(lecturaM.getFotoPath());
 
 		// Tracking
-        if (lecturaM.getTrackingSessionId() != null || lecturaM.getReadingLatitude() != null
+        if ("GPS_PENDING".equals(lecturaM.getReadingTraceStatus())) {
+            lecturaOriginal.setReadingTraceStatus("GPS_PENDING");
+        } else if (lecturaM.getTrackingSessionId() != null || lecturaM.getReadingLatitude() != null
                 || lecturaM.getReadingLongitude() != null || lecturaM.getReadingCapturedAt() != null) {
+            boolean complete = lecturaM.getTrackingSessionId() != null && lecturaM.getReadingCapturedAt() != null
+                && lecturaM.getReadingLatitude() != null && Double.isFinite(lecturaM.getReadingLatitude())
+                && lecturaM.getReadingLatitude() >= -90 && lecturaM.getReadingLatitude() <= 90
+                && lecturaM.getReadingLongitude() != null && Double.isFinite(lecturaM.getReadingLongitude())
+                && lecturaM.getReadingLongitude() >= -180 && lecturaM.getReadingLongitude() <= 180
+                && lecturaM.getReadingAccuracy() != null && Double.isFinite(lecturaM.getReadingAccuracy())
+                && lecturaM.getReadingAccuracy() >= 0;
+            lecturaOriginal.setReadingTraceStatus(atomic && complete && "GPS_VALID".equals(lecturaM.getReadingTraceStatus()) ? "GPS_VALID" : "GPS_UNKNOWN");
+            if (complete) {
 		lecturaOriginal.setReadingSource(lecturaM.getReadingSource());
         lecturaOriginal.setReadingCaptureAgeMillis(lecturaM.getReadingCaptureAgeMillis());
         lecturaOriginal.setTrackingSessionId(lecturaM.getTrackingSessionId());
@@ -188,7 +199,7 @@ public class LecturaServicio {
 		lecturaOriginal.setReadingCapturedAt(lecturaM.getReadingCapturedAt());
 		lecturaOriginal.setDistanceFromMeterMeters(lecturaM.getDistanceFromMeterMeters());
 		lecturaOriginal.setDistanceStatus(lecturaM.getDistanceStatus());
-
+            }
         }
 
 		Lecturas saved = dao.save(lecturaOriginal);

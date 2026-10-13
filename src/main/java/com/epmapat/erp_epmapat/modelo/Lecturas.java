@@ -74,6 +74,8 @@ public class Lecturas implements Serializable {
    // Módulo de Trazabilidad GPS
    @Column(name = "reading_source", length=32)
    private String readingSource;
+    @javax.persistence.Column(name="reading_trace_status", length=32)
+    private String readingTraceStatus;
    @Column(name = "reading_capture_age_millis")
    private Long readingCaptureAgeMillis;
    @Column(name = "tracking_session_id")

@@ -14,6 +14,20 @@ import com.epmapat.erp_epmapat.modelo.TrackingSession;
 import com.epmapat.erp_epmapat.repositorio.TrackingSessionR;
 
 class MobileReadingTraceValidatorTest {
+    @Test void missingGpsFlagDoesNotBypassValidationWhenCoordinatesAreValid() {
+        item.setAllowMissingGps(true); item.setOperationId(java.util.UUID.randomUUID().toString());
+        item.setTrackingSessionId("42");
+        assertThrows(ResponseStatusException.class,()->validator.validate(item,7L));
+    }
+    @Test void explicitMissingGpsAllowsDataOnlyButStillRequiresOwnerAndOperation() {
+        item.setReadingLatitude(null); item.setTrackingSessionId(null); item.setReadingCapturedAt(null);
+        item.setAllowMissingGps(true); item.setOperationId(java.util.UUID.randomUUID().toString());
+        assertDoesNotThrow(() -> validator.validate(item,7L));
+        verify(sessions,never()).findById(anyString());
+        assertThrows(ResponseStatusException.class,()->validator.validate(item,99L));
+        item.setOperationId(null);
+        assertThrows(ResponseStatusException.class,()->validator.validate(item,7L));
+    }
     private final TrackingSessionR sessions = mock(TrackingSessionR.class);
     private final MobileReadingTraceValidator validator = new MobileReadingTraceValidator(sessions);
     private LecturaUploadItemDto item;

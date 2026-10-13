@@ -45,7 +45,8 @@ public class MobileReadingCommitService {
             }
         }
         lock("mobile-reading:" + item.getIdlectura());
-        readings.actualizarLecturaConAuditoriaAtomica(item.getIdlectura(), reading, userId, note, type);
+        readings.actualizarLecturaConAuditoriaAtomica(item.getIdlectura(), reading, userId,
+            "GPS_PENDING".equals(reading.getReadingTraceStatus()) ? note + " [GPS_PENDING: lectura confirmada sin modificar GPS existente]" : note, type);
         if (operation != null) {
             MobileReadingReceipt receipt = new MobileReadingReceipt();
             receipt.setOperationId(operation); receipt.setReaderId(userId);

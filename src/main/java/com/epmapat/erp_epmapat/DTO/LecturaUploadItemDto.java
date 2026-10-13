@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 public class LecturaUploadItemDto {
     private String operationId;
+    private Boolean allowMissingGps;
     private Long idlectura;
     private Integer estado;
     @JsonDeserialize(using = FlexibleDateDeserializer.class)

@@ -18,6 +18,11 @@ public class MobileReadingTraceValidator {
     }
 
     public void validate(LecturaUploadItemDto item, Long userId) {
+        if (allowsPendingGps(item)) {
+            if (userId == null || !userId.equals(item.getUsuariolectura())) reject("La lectura debe pertenecer al mismo usuario");
+            if (item.getOperationId() == null) reject("Falta operationId para confirmar la lectura sin GPS");
+            return;
+        }
         if (item == null || item.getTrackingSessionId() == null) reject("Falta la sesion GPS de la lectura");
         if (item.getReadingSource() != null && !"CAPTURED".equals(item.getReadingSource()))
             throw new com.epmapat.erp_epmapat.excepciones.MobileSyncValidationException("GPS_SOURCE_REQUIRES_REVIEW", "La fuente GPS requiere revision; conserva la captura");
@@ -45,6 +50,11 @@ public class MobileReadingTraceValidator {
                     + ", jornada=" + session.getWorkDate() + ", sesion=" + id
                     + ". Conserva la lectura y revisa su sesion original");
         }
+    }
+
+    public boolean allowsPendingGps(LecturaUploadItemDto item) {
+        return item != null && Boolean.TRUE.equals(item.getAllowMissingGps())
+            && (!validCoordinate(item.getReadingLatitude(), -90, 90) || !validCoordinate(item.getReadingLongitude(), -180, 180));
     }
 
     private boolean validCoordinate(Double value, double min, double max) {

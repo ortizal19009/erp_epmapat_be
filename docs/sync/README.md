@@ -10,3 +10,7 @@ Implementaci?n de 2026-10-13 para conservar capturas y reintentar de forma contr
 Los archivos de c?digo permanecen disponibles para revisi?n; no se despleg? a producci?n. Los contratos finales sustituyen descripciones hist?ricas de reintento infinito o borrado al cambiar de usuario.
 
 - [Capturas historicas: version vigente 1.1.6, SQL y despliegue](CAPTURAS_HISTORICAS.md)
+
+- [Version vigente 1.1.7: lecturas sin GPS, pruebas y despliegue](LECTURAS_SIN_GPS.md)
+
+- [Revision vigente 1.1.8](REVISION_1_1_8.md)

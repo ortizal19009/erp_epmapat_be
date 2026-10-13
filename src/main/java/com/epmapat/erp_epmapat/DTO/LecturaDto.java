@@ -40,6 +40,7 @@ public class LecturaDto {
 
     // Tracking
     private String readingSource;
+    private String readingTraceStatus;
     private Long readingCaptureAgeMillis;
     private String trackingSessionId;
     private Double readingLatitude;
