@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.epmapat.erp_epmapat.modelo.GpsGapEvent;
 
 public interface GpsGapEventR extends JpaRepository<GpsGapEvent, Long> {
+    boolean existsByClientEventId(String clientEventId);
     List<GpsGapEvent> findBySessionId(String sessionId);
 }

@@ -57,6 +57,8 @@ public class TrackingServicio {
 
     @Autowired
     private UsrxmodulosR usrxmodulosR;
+    @javax.persistence.PersistenceContext
+    private javax.persistence.EntityManager entityManager;
 
     @Transactional(readOnly = true)
     public List<TrackingReader> getReaders() {
@@ -65,8 +67,16 @@ public class TrackingServicio {
 
     @Transactional
     public TrackingSession startSession(TrackingSessionDto dto) {
+        if (dto.getId() == null || dto.getReaderId() == null || dto.getWorkDate() == null)
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "MISSING_SESSION_IDENTITY");
+        entityManager.createNativeQuery("SELECT 1 FROM pg_advisory_xact_lock(hashtextextended(:key, 0))")
+            .setParameter("key", "tracking-session:" + dto.getId()).getSingleResult();
         TrackingSession existente = trackingSessionR.findById(dto.getId()).orElse(null);
         if (existente != null) {
+            if (Boolean.TRUE.equals(dto.getConfirmIdentity()) && (!java.util.Objects.equals(existente.getWorkDate(), dto.getWorkDate())
+                    || !java.util.Objects.equals(existente.getDeviceId(), dto.getDeviceId())
+                    || !java.util.Objects.equals(existente.getRouteId(), dto.getRouteId())))
+                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "SESSION_IDENTITY_CONFLICT");
             if (!existente.getReaderId().equals(dto.getReaderId())) {
                 throw new IllegalArgumentException("La sesión pertenece a otro lector");
             }
@@ -91,6 +101,8 @@ public class TrackingServicio {
 
     @Transactional
     public void addPointsBatch(BatchPointsRequestDto dto) {
+        entityManager.createNativeQuery("SELECT 1 FROM pg_advisory_xact_lock(hashtextextended(:key, 0))")
+            .setParameter("key", "tracking-session:" + dto.getTrackingSessionId()).getSingleResult();
         log.info("Procesando lote de puntos para sesión: {}. Puntos recibidos: {}", 
             dto.getTrackingSessionId(), 
             dto.getPoints() != null ? dto.getPoints().size() : 0);
@@ -141,8 +153,9 @@ public class TrackingServicio {
         // Eventos (Desviaciones y Huecos)
         if (dto.getDeviationEvents() != null && !dto.getDeviationEvents().isEmpty()) {
             log.info("Guardando {} eventos de desviación", dto.getDeviationEvents().size());
-            List<RouteDeviationEvent> deviations = dto.getDeviationEvents().stream().map(dDto ->
+            List<RouteDeviationEvent> deviations = dto.getDeviationEvents().stream().filter(d -> d.getClientEventId() == null || !routeDeviationEventR.existsByClientEventId(d.getClientEventId())).map(dDto ->
                 RouteDeviationEvent.builder()
+                    .clientEventId(dDto.getClientEventId())
                     .session(session)
                     .readerId(dDto.getReaderId())
                     .exitTime(toLocalDateTime(dDto.getExitTime()))
@@ -158,8 +171,9 @@ public class TrackingServicio {
 
         if (dto.getGapEvents() != null && !dto.getGapEvents().isEmpty()) {
             log.info("Guardando {} eventos de huecos GPS", dto.getGapEvents().size());
-            List<GpsGapEvent> gaps = dto.getGapEvents().stream().map(gDto ->
+            List<GpsGapEvent> gaps = dto.getGapEvents().stream().filter(g -> g.getClientEventId() == null || !gpsGapEventR.existsByClientEventId(g.getClientEventId())).map(gDto ->
                 GpsGapEvent.builder()
+                    .clientEventId(gDto.getClientEventId())
                     .session(session)
                     .startTime(toLocalDateTime(gDto.getStartTime()))
                     .endTime(toLocalDateTime(gDto.getEndTime()))
@@ -174,14 +188,19 @@ public class TrackingServicio {
 
     private LocalDateTime toLocalDateTime(Long timestamp) {
         if (timestamp == null || timestamp == 0) return null;
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of("America/Guayaquil"));
     }
 
     @Transactional
     public TrackingSession finishSession(TrackingSessionDto dto) {
+        entityManager.createNativeQuery("SELECT 1 FROM pg_advisory_xact_lock(hashtextextended(:key, 0))")
+            .setParameter("key", "tracking-session:" + dto.getId()).getSingleResult();
         TrackingSession session = trackingSessionR.findById(dto.getId())
                 .orElseThrow(() -> new RuntimeException("Session not found: " + dto.getId()));
 
+        if (Boolean.TRUE.equals(dto.getConfirmIdentity()) && !java.util.Objects.equals(session.getReaderId(), dto.getReaderId()))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "SESSION_OWNER_CONFLICT");
+        if (Boolean.TRUE.equals(dto.getConfirmIdentity()) && "FINISHED".equals(session.getStatus())) return session;
         if (dto.getEndTime() != null) {
             session.setEndTime(dto.getEndTime());
         } else {

@@ -138,11 +138,20 @@ public class LecturaServicio {
 	}
 
 	public Lecturas actualizarLecturaConAuditoria(Long idlectura, Lecturas lecturaM, Long usumodi, String observacion, String tipo) {
+        return actualizarLectura(idlectura, lecturaM, usumodi, observacion, tipo, false);
+    }
+
+    public Lecturas actualizarLecturaConAuditoriaAtomica(Long idlectura, Lecturas lecturaM, Long usumodi, String observacion, String tipo) {
+        return actualizarLectura(idlectura, lecturaM, usumodi, observacion, tipo, true);
+    }
+
+    private Lecturas actualizarLectura(Long idlectura, Lecturas lecturaM, Long usumodi, String observacion, String tipo, boolean atomic) {
 		Lecturas lecturaOriginal = dao.findById(idlectura)
 				.orElseThrow(() -> new RuntimeException("Lectura no encontrada: " + idlectura));
 
 		LecturasAuditDTO auditDTO = buildAuditDTO(lecturaOriginal);
-		auditoriaService.saveAudit("lecturas", lecturaOriginal.getIdlectura(), auditDTO, usumodi, observacion, tipo);
+        if (atomic) auditoriaService.saveAuditAtomic("lecturas", lecturaOriginal.getIdlectura(), auditDTO, usumodi, observacion, tipo);
+        else auditoriaService.saveAudit("lecturas", lecturaOriginal.getIdlectura(), auditDTO, usumodi, observacion, tipo);
 
 		lecturaOriginal.setEstado(lecturaM.getEstado());
 		lecturaOriginal.setFechaemision(lecturaM.getFechaemision());
@@ -168,7 +177,11 @@ public class LecturaServicio {
 		lecturaOriginal.setFotoPath(lecturaM.getFotoPath());
 
 		// Tracking
-		lecturaOriginal.setTrackingSessionId(lecturaM.getTrackingSessionId());
+        if (lecturaM.getTrackingSessionId() != null || lecturaM.getReadingLatitude() != null
+                || lecturaM.getReadingLongitude() != null || lecturaM.getReadingCapturedAt() != null) {
+		lecturaOriginal.setReadingSource(lecturaM.getReadingSource());
+        lecturaOriginal.setReadingCaptureAgeMillis(lecturaM.getReadingCaptureAgeMillis());
+        lecturaOriginal.setTrackingSessionId(lecturaM.getTrackingSessionId());
 		lecturaOriginal.setReadingLatitude(lecturaM.getReadingLatitude());
 		lecturaOriginal.setReadingLongitude(lecturaM.getReadingLongitude());
 		lecturaOriginal.setReadingAccuracy(lecturaM.getReadingAccuracy());
@@ -176,17 +189,26 @@ public class LecturaServicio {
 		lecturaOriginal.setDistanceFromMeterMeters(lecturaM.getDistanceFromMeterMeters());
 		lecturaOriginal.setDistanceStatus(lecturaM.getDistanceStatus());
 
+        }
+
 		Lecturas saved = dao.save(lecturaOriginal);
 		notificarLecturaActualizada(saved);
 		return saved;
 	}
 
-	public Lecturas actualizarFotoConAuditoria(Long idlectura, String fotoPath, Long usumodi, String observacion, String tipo) {
+    public Lecturas actualizarFotoConAuditoria(Long idlectura, String fotoPath, Long usumodi, String observacion, String tipo) {
+        return actualizarFoto(idlectura, fotoPath, usumodi, observacion, tipo, false);
+    }
+    public Lecturas actualizarFotoConAuditoriaAtomica(Long idlectura, String fotoPath, Long usumodi, String observacion, String tipo) {
+        return actualizarFoto(idlectura, fotoPath, usumodi, observacion, tipo, true);
+    }
+    private Lecturas actualizarFoto(Long idlectura, String fotoPath, Long usumodi, String observacion, String tipo, boolean atomic) {
 		Lecturas lecturaOriginal = dao.findById(idlectura)
 				.orElseThrow(() -> new RuntimeException("Lectura no encontrada: " + idlectura));
 
 		LecturasAuditDTO auditDTO = buildAuditDTO(lecturaOriginal);
-		auditoriaService.saveAudit("lecturas", lecturaOriginal.getIdlectura(), auditDTO, usumodi, observacion, tipo);
+        if (atomic) auditoriaService.saveAuditAtomic("lecturas", lecturaOriginal.getIdlectura(), auditDTO, usumodi, observacion, tipo);
+        else auditoriaService.saveAudit("lecturas", lecturaOriginal.getIdlectura(), auditDTO, usumodi, observacion, tipo);
 
 		lecturaOriginal.setFotoPath(fotoPath);
 		return dao.save(lecturaOriginal);
@@ -198,7 +220,16 @@ public class LecturaServicio {
 		Long idrutaxemision = lectura.getIdrutaxemision_rutasxemision() == null
 				? null
 				: lectura.getIdrutaxemision_rutasxemision().getIdrutaxemision();
-		mobileWebSocketHandler.notifyLecturaUpdated(idemision, idrutaxemision);
+        Runnable notify = () -> {
+            try { mobileWebSocketHandler.notifyLecturaUpdated(idemision, idrutaxemision); }
+            catch (Exception ex) { org.slf4j.LoggerFactory.getLogger(LecturaServicio.class).warn("Notificacion mobile no entregada lectura={}", lectura.getIdlectura()); }
+        };
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override public void afterCommit() { notify.run(); }
+                });
+        } else notify.run();
 	}
 
 	private LecturasAuditDTO buildAuditDTO(Lecturas lectura) {
@@ -226,7 +257,9 @@ public class LecturaServicio {
 				lectura.getTotal31(),
 				lectura.getTotal32(),
 				lectura.getFotoPath(),
-				lectura.getTrackingSessionId(),
+				lectura.getReadingSource(),
+                lectura.getReadingCaptureAgeMillis(),
+                lectura.getTrackingSessionId(),
 				lectura.getReadingLatitude(),
 				lectura.getReadingLongitude(),
 				lectura.getReadingAccuracy(),

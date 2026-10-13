@@ -28,6 +28,11 @@ public class LecturaFotoStorageService {
         }
     }
 
+    public String saveIdempotent(Long readingId, MultipartFile file, String folder, String key) throws IOException {
+        try { return storageService.storeIdempotent(file, folder, key); }
+        catch (Exception ex) { throw new IOException("PHOTO_STORAGE_UNAVAILABLE", ex); }
+    }
+
     public Resource loadAsResource(String storedPath) throws IOException {
         try {
             return storageService.load(storedPath);

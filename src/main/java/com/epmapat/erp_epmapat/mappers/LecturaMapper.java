@@ -31,6 +31,8 @@ public class LecturaMapper {
         dto.setFotoPath(lectura.getFotoPath());
 
         // Tracking
+        dto.setReadingSource(lectura.getReadingSource());
+        dto.setReadingCaptureAgeMillis(lectura.getReadingCaptureAgeMillis());
         dto.setTrackingSessionId(lectura.getTrackingSessionId());
         dto.setReadingLatitude(lectura.getReadingLatitude());
         dto.setReadingLongitude(lectura.getReadingLongitude());
@@ -79,6 +81,8 @@ public class LecturaMapper {
         lectura.setFotoPath(dto.getFotoPath());
 
         // Tracking
+        lectura.setReadingSource(dto.getReadingSource());
+        lectura.setReadingCaptureAgeMillis(dto.getReadingCaptureAgeMillis());
         lectura.setTrackingSessionId(dto.getTrackingSessionId());
         lectura.setReadingLatitude(dto.getReadingLatitude());
         lectura.setReadingLongitude(dto.getReadingLongitude());

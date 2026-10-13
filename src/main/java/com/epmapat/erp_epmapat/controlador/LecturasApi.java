@@ -75,6 +75,8 @@ public class LecturasApi {
 	private final RutasxemisionR rutasxemisionR;
 	private final LecturaFotoStorageService lecturaFotoStorageService;
 	private final com.epmapat.erp_epmapat.servicio.MobileReadingTraceValidator mobileReadingTraceValidator;
+    @org.springframework.beans.factory.annotation.Autowired private com.epmapat.erp_epmapat.servicio.MobileReadingCommitService mobileReadingCommitService;
+    @org.springframework.beans.factory.annotation.Autowired(required=false) private io.micrometer.core.instrument.MeterRegistry syncMetrics;
 
 	@GetMapping("/reportes/preemision")
 	public PreemisionReporteDTO preemision(@RequestParam Long idemision) {
@@ -216,13 +218,20 @@ public class LecturasApi {
 			@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
 			@RequestParam(required = false, defaultValue = "0") Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
-			@RequestParam(required = false, defaultValue = "Upload foto de lectura") String observacion) throws IOException {
+			@RequestParam(required = false, defaultValue = "Upload foto de lectura") String observacion,
+            @RequestParam(required=false) String operationId) throws IOException {
 		Lecturas lectura = lecServicio.findById(idlectura)
 				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
 					"No existe la Lectura con Id: " + idlectura));
 
-		try {
-			String fotoPath = lecturaFotoStorageService.saveImageFile(idlectura, file, resolveLecturaFolder(lectura));
+        if (operationId != null) {
+            String path = mobileReadingCommitService.commitPhoto(operationId, idlectura, file, resolveLecturaFolder(lectura), usumodi, observacion, tipo);
+            com.epmapat.erp_epmapat.DTO.LecturaDto dto = LecturaMapper.toDto(lectura);
+            dto.setFotoPath(path);
+            return ResponseEntity.ok(dto);
+        }
+        try {
+            String fotoPath = lecturaFotoStorageService.saveImageFile(idlectura, file, resolveLecturaFolder(lectura));
 			lectura = lecServicio.actualizarFotoConAuditoria(idlectura, fotoPath, usumodi, observacion, tipo);
 		} catch (IOException ex) {
 			return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
@@ -285,7 +294,9 @@ public class LecturasApi {
 		lectura.setFotoPath(resolveIncomingFotoPath(item, original));
 		
 		// Tracking
-		lectura.setTrackingSessionId(item.getTrackingSessionId());
+		lectura.setReadingSource(item.getReadingSource());
+        lectura.setReadingCaptureAgeMillis(item.getReadingCaptureAgeMillis());
+        lectura.setTrackingSessionId(item.getTrackingSessionId());
 		lectura.setReadingLatitude(item.getReadingLatitude());
 		lectura.setReadingLongitude(item.getReadingLongitude());
 		lectura.setReadingAccuracy(item.getReadingAccuracy());
@@ -313,6 +324,13 @@ public class LecturasApi {
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
 			@RequestParam(required = false, defaultValue = "Actualización de lectura desde mobile") String observacion) {
 		mobileReadingTraceValidator.validate(item, usumodi);
+		if (item.getOperationId() != null) {
+            if (item.getIdlectura() != null && !idlectura.equals(item.getIdlectura()))
+                throw new org.springframework.web.server.ResponseStatusException(HttpStatus.CONFLICT, "READING_ID_CONFLICT");
+            item.setIdlectura(idlectura);
+            mobileReadingCommitService.commit(item, buildLecturaFromMobileItem(idlectura, item), usumodi, observacion, tipo);
+            return ResponseEntity.ok(LecturaMapper.toDto(lecServicio.findById(idlectura).orElseThrow()));
+        }
 		Lecturas actualizar = lecServicio.actualizarLecturaConAuditoria(
 				idlectura,
 				buildLecturaFromMobileItem(idlectura, item),
@@ -515,8 +533,9 @@ public class LecturasApi {
 			@RequestParam(required = false) Long usumodi,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
 			@RequestParam(required = false, defaultValue = "Upload lecturas mobile") String observacion) {
-		int ok = 0;
-		int err = 0;
+        long syncStarted = System.nanoTime();
+        int ok = 0;
+        int err = 0;
 		java.util.List<String> details = new java.util.ArrayList<>();
 		java.util.List<Long> confirmedIds = new java.util.ArrayList<>();
 		java.util.List<Long> pendingIds = new java.util.ArrayList<>();
@@ -537,11 +556,10 @@ public class LecturasApi {
 				mobileReadingTraceValidator.validate(item, usumodi);
 				Lecturas y = buildLecturaFromMobileItem(item.getIdlectura(), item);
 
-				if (usumodi != null) {
-					lecServicio.actualizarLecturaConAuditoria(item.getIdlectura(), y, usumodi, observacion, tipo);
-				} else {
-					lecServicio.saveLectura(y);
-				}
+                if (item.getOperationId() != null) mobileReadingCommitService.commit(item, y, usumodi, observacion, tipo);
+                else if (usumodi != null) lecServicio.actualizarLecturaConAuditoria(item.getIdlectura(), y, usumodi, observacion, tipo);
+                else lecServicio.saveLectura(y);
+                result.put("operationId", item.getOperationId());
 				ok++;
 				confirmedIds.add(id);
 				result.put("status", "CONFIRMED");
@@ -549,7 +567,7 @@ public class LecturasApi {
 			} catch (Exception ex) {
 				err++;
 				pendingIds.add(id);
-				String detail = "Lectura " + id + ": " + ex.getMessage();
+				String detail = "Lectura " + id + ": " + (ex instanceof org.springframework.web.server.ResponseStatusException ? ((org.springframework.web.server.ResponseStatusException) ex).getReason() : "Error de persistencia; conserva la lectura");
 				details.add(detail);
 				result.put("status", "PENDING");
 				result.put("httpStatus", ex instanceof org.springframework.web.server.ResponseStatusException
@@ -557,7 +575,11 @@ public class LecturasApi {
 				result.put("message", ex instanceof org.springframework.web.server.ResponseStatusException
 						? ((org.springframework.web.server.ResponseStatusException) ex).getReason()
 						: "No se pudo confirmar el guardado; conserva la lectura y reintenta");
-				log.warn("Error actualizando lectura mobile {}: {}", id, ex.getMessage(), ex);
+				result.put("operationId", item == null ? null : item.getOperationId());
+                result.put("errorCode", ex instanceof com.epmapat.erp_epmapat.excepciones.MobileSyncValidationException
+                    ? ((com.epmapat.erp_epmapat.excepciones.MobileSyncValidationException) ex).getCode()
+                    : ex instanceof org.springframework.web.server.ResponseStatusException ? "VALIDATION_OR_CONFLICT" : "PERSISTENCE_UNAVAILABLE");
+                log.warn("Upload mobile rechazado lectura={} tipo={}", id, ex.getClass().getSimpleName());
 			}
 			results.add(result);
 		}
@@ -570,7 +592,14 @@ public class LecturasApi {
 		out.put("confirmedIds", confirmedIds);
 		out.put("pendingIds", pendingIds);
 		out.put("results", results);
-		out.put("allConfirmed", err == 0);
+        out.put("allConfirmed", err == 0);
+        if (syncMetrics != null) {
+            syncMetrics.counter("mobile.sync.readings", "outcome", "confirmed").increment(ok);
+            syncMetrics.counter("mobile.sync.readings", "outcome", "rejected").increment(err);
+            io.micrometer.core.instrument.Timer.builder("mobile.sync.upload.duration").publishPercentiles(0.5, 0.95)
+                .register(syncMetrics).record(System.nanoTime()-syncStarted, java.util.concurrent.TimeUnit.NANOSECONDS);
+            syncMetrics.summary("mobile.sync.upload.batch.size").record(items.size());
+        }
 		return ResponseEntity.ok(out);
 	}
 

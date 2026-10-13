@@ -46,6 +46,12 @@ public class AuditoriaGenericaService {
         this.requiresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
+    public void saveAuditAtomic(String entidad, Long id, Object original, Long user, String note, String type) {
+        try {
+            auditoriaGenericaR.saveAndFlush(buildAudit(entidad, id, user, note, type, objectMapper.writeValueAsString(original)));
+        } catch (Exception ex) { throw new IllegalStateException("No se pudo guardar auditoria de la operacion", ex); }
+    }
+
     public void saveAudit(String entidad,
                           Long entidadId,
                           Object estadoInicial,

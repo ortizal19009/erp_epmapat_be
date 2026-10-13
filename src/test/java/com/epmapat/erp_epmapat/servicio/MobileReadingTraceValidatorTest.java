@@ -44,6 +44,15 @@ class MobileReadingTraceValidatorTest {
         item.setReadingAccuracy(Double.NaN);
         assertThrows(ResponseStatusException.class, () -> validator.validate(item, 7L));
     }
+    @Test void meterReferenceMustNotMasqueradeAsCapturedGps() {
+        item.setReadingSource("METER_LOCATION");
+        assertThrows(ResponseStatusException.class, () -> validator.validate(item, 7L));
+        item.setReadingSource("CAPTURED");
+        item.setReadingCaptureAgeMillis(30001L);
+        assertThrows(ResponseStatusException.class, () -> validator.validate(item, 7L));
+        item.setReadingCaptureAgeMillis(1000L);
+        assertDoesNotThrow(() -> validator.validate(item, 7L));
+    }
     @Test void rejectsUnknownSession() {
         when(sessions.findById(item.getTrackingSessionId())).thenReturn(Optional.empty());
         assertThrows(ResponseStatusException.class, () -> validator.validate(item, 7L));

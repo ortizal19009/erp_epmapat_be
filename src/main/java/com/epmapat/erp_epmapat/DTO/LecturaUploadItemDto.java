@@ -10,6 +10,7 @@ import lombok.Data;
 
 @Data
 public class LecturaUploadItemDto {
+    private String operationId;
     private Long idlectura;
     private Integer estado;
     @JsonDeserialize(using = FlexibleDateDeserializer.class)
@@ -37,6 +38,8 @@ public class LecturaUploadItemDto {
     private String fotoPath;
 
     // Tracking
+    private String readingSource;
+    private Long readingCaptureAgeMillis;
     private String trackingSessionId;
     private Double readingLatitude;
     private Double readingLongitude;

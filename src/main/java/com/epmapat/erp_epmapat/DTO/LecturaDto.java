@@ -39,6 +39,8 @@ public class LecturaDto {
     private String fotoPath;
 
     // Tracking
+    private String readingSource;
+    private Long readingCaptureAgeMillis;
     private String trackingSessionId;
     private Double readingLatitude;
     private Double readingLongitude;

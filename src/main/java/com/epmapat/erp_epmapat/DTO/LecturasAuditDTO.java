@@ -34,6 +34,8 @@ public class LecturasAuditDTO {
     private BigDecimal total31;
     private BigDecimal total32;
     private String fotoPath;
+    private String readingSource;
+    private Long readingCaptureAgeMillis;
     private String trackingSessionId;
     private Double readingLatitude;
     private Double readingLongitude;

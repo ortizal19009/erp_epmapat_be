@@ -72,6 +72,10 @@ public class Lecturas implements Serializable {
    private String fotoPath;
 
    // Módulo de Trazabilidad GPS
+   @Column(name = "reading_source", length=32)
+   private String readingSource;
+   @Column(name = "reading_capture_age_millis")
+   private Long readingCaptureAgeMillis;
    @Column(name = "tracking_session_id")
    private String trackingSessionId;
    @Column(name = "reading_latitude")

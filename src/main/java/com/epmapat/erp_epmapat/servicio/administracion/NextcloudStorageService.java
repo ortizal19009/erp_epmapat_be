@@ -112,12 +112,23 @@ public class NextcloudStorageService implements StorageService {
 
     @Override
     public String store(MultipartFile file, String folder) throws Exception {
+        if (file == null || file.isEmpty()) return null;
+        return storeNamed(file, folder, buildFileName(file.getOriginalFilename()));
+    }
+
+    @Override
+    public String storeIdempotent(MultipartFile file, String folder, String key) throws Exception {
+        if (!key.matches("[a-zA-Z0-9_-]{1,120}")) throw new IllegalArgumentException("Invalid storage key");
+        String extension = "image/png".equals(file.getContentType()) ? ".png" : ".jpg";
+        return storeNamed(file, folder, key + extension);
+    }
+
+    private String storeNamed(MultipartFile file, String folder, String filename) throws Exception {
         if (file == null || file.isEmpty()) {
             return null;
         }
 
         String normalizedFolder = normalizeFolder(folder);
-        String filename = buildFileName(file.getOriginalFilename());
         String relativePath = normalizeRelativePath(baseFolder + "/" + normalizedFolder + "/" + filename);
 
         Sardine sardine = sardine();

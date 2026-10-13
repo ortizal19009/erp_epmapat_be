@@ -15,6 +15,9 @@ public class GpsGapEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @javax.persistence.Column(name="client_event_id", length=120, unique=true)
+    private String clientEventId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tracking_session_id", nullable = false)
     private TrackingSession session;

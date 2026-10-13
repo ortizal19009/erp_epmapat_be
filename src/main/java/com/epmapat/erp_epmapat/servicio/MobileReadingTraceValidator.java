@@ -19,6 +19,10 @@ public class MobileReadingTraceValidator {
 
     public void validate(LecturaUploadItemDto item, Long userId) {
         if (item == null || item.getTrackingSessionId() == null) reject("Falta la sesion GPS de la lectura");
+        if (item.getReadingSource() != null && !"CAPTURED".equals(item.getReadingSource()))
+            throw new com.epmapat.erp_epmapat.excepciones.MobileSyncValidationException("GPS_SOURCE_REQUIRES_REVIEW", "La fuente GPS requiere revision; conserva la captura");
+        if (item.getReadingCaptureAgeMillis() != null && (item.getReadingCaptureAgeMillis() < 0 || item.getReadingCaptureAgeMillis() > 30000))
+            throw new com.epmapat.erp_epmapat.excepciones.MobileSyncValidationException("GPS_CAPTURE_TOO_OLD", "La antiguedad GPS al capturar no es valida");
         String id = item.getTrackingSessionId();
         try {
             if (!UUID.fromString(id).toString().equalsIgnoreCase(id)) reject("La sesion GPS debe usar su UUID remoto");
@@ -31,7 +35,7 @@ public class MobileReadingTraceValidator {
         if (accuracy == null || !Double.isFinite(accuracy) || accuracy < 0) reject("Falta precision GPS valida");
         if (item.getReadingCapturedAt() == null) reject("Falta la fecha de captura GPS");
         TrackingSession session = sessions.findById(id).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sincroniza la sesion GPS antes de enviar sus lecturas"));
+                new com.epmapat.erp_epmapat.excepciones.MobileSyncValidationException("SESSION_NOT_REGISTERED", "Sincroniza la sesion GPS antes de enviar sus lecturas"));
         if (userId == null || !userId.equals(session.getReaderId())
                 || !userId.equals(item.getUsuariolectura())) reject("La lectura y la sesion GPS deben pertenecer al mismo usuario");
         java.time.LocalDate captureDate = item.getReadingCapturedAt().toInstant()
@@ -48,6 +52,12 @@ public class MobileReadingTraceValidator {
     }
 
     private void reject(String message) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+        String code = message.contains("UUID") ? "SESSION_UUID_INVALID"
+                : message.contains("fecha de la jornada") ? "SESSION_CAPTURE_DATE_MISMATCH"
+                : message.contains("usuario") ? "SESSION_OWNER_MISMATCH"
+                : message.contains("coordenadas") ? "GPS_COORDINATES_INVALID"
+                : message.contains("precision") ? "GPS_ACCURACY_INVALID"
+                : message.contains("fecha") ? "GPS_CAPTURE_TIME_MISSING" : "SESSION_MISSING";
+        throw new com.epmapat.erp_epmapat.excepciones.MobileSyncValidationException(code, message);
     }
 }

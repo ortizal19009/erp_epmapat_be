@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class TrackingSessionDto {
+    private Boolean confirmIdentity;
     private String id;
     private Long readerId;
     private Long routeId;
