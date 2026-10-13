@@ -21,3 +21,5 @@ La prueba se ejecuta en userdata temporal independiente; no reinstala ni borra u
 No se midi? un antes/despu?s de rendimiento. Se agregaron m?tricas de cantidad, confirmados/rechazados y duraci?n con percentiles p50/p95 para observarlas en el despliegue. La pantalla muestra pendientes, antig?edad, ?ltima sincronizaci?n y reparaciones GPS.
 
 Falta piloto con celular f?sico actualizado con firma original, corte de red contra backend desplegado y Nextcloud real. Verificar especialmente cierre de app durante upload/foto, respuesta perdida, 429, renovaci?n de login, migraci?n con datos reales y la lectura 3032370. No se modific? la base de producci?n ni se corrigieron manualmente sus jornadas. El ?xito de pruebas no recupera datos que versiones previas hayan borrado.
+
+Actualizacion 1.1.5: se ejecutaron 11 pruebas instrumentadas (las siete anteriores y cuatro de ReadingUploadRecoveryTest) mediante adb am instrument en AVD separado, todas correctas; las 16 JVM siguen pasando. Evidencia: EpmpatMobile/app/build/sync-review/reading-recovery-device-tests.log y reading-recovery-build.log.

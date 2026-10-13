@@ -71,11 +71,24 @@ public class TrackingServicio {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "MISSING_SESSION_IDENTITY");
         entityManager.createNativeQuery("SELECT 1 FROM pg_advisory_xact_lock(hashtextextended(:key, 0))")
             .setParameter("key", "tracking-session:" + dto.getId()).getSingleResult();
+        if (dto.getSourceSessionId() != null) {
+            TrackingSession source = trackingSessionR.findById(dto.getSourceSessionId()).orElseThrow(() ->
+                new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "SESSION_SOURCE_NOT_REGISTERED"));
+            String expectedId = java.util.UUID.nameUUIDFromBytes(("historical-day:" + source.getId() + ":" + dto.getWorkDate())
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
+            if (source.getSourceSessionId() != null || !expectedId.equals(dto.getId())
+                || !java.util.Objects.equals(source.getReaderId(), dto.getReaderId())
+                || !java.util.Objects.equals(source.getDeviceId(), dto.getDeviceId())
+                || !java.util.Objects.equals(source.getRouteId(), dto.getRouteId())
+                || dto.getStartTime() == null || !dto.getStartTime().toLocalDate().equals(dto.getWorkDate()))
+                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "SESSION_SOURCE_IDENTITY_CONFLICT");
+        }
         TrackingSession existente = trackingSessionR.findById(dto.getId()).orElse(null);
         if (existente != null) {
             if (Boolean.TRUE.equals(dto.getConfirmIdentity()) && (!java.util.Objects.equals(existente.getWorkDate(), dto.getWorkDate())
                     || !java.util.Objects.equals(existente.getDeviceId(), dto.getDeviceId())
-                    || !java.util.Objects.equals(existente.getRouteId(), dto.getRouteId())))
+                    || !java.util.Objects.equals(existente.getRouteId(), dto.getRouteId())
+                    || !java.util.Objects.equals(existente.getSourceSessionId(), dto.getSourceSessionId())))
                 throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "SESSION_IDENTITY_CONFLICT");
             if (!existente.getReaderId().equals(dto.getReaderId())) {
                 throw new IllegalArgumentException("La sesión pertenece a otro lector");
@@ -88,6 +101,7 @@ public class TrackingServicio {
                 .readerId(dto.getReaderId())
                 .routeId(dto.getRouteId())
                 .deviceId(dto.getDeviceId())
+                .sourceSessionId(dto.getSourceSessionId())
                 .workDate(dto.getWorkDate())
                 .startTime(dto.getStartTime())
                 .startBatteryLevel(dto.getStartBatteryLevel())

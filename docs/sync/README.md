@@ -8,3 +8,5 @@ Implementaci?n de 2026-10-13 para conservar capturas y reintentar de forma contr
 - [Despliegue y rollback](DEPLOY_ROLLBACK.md)
 
 Los archivos de c?digo permanecen disponibles para revisi?n; no se despleg? a producci?n. Los contratos finales sustituyen descripciones hist?ricas de reintento infinito o borrado al cambiar de usuario.
+
+- [Capturas historicas: version vigente 1.1.6, SQL y despliegue](CAPTURAS_HISTORICAS.md)

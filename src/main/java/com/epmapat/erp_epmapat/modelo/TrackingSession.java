@@ -37,6 +37,9 @@ public class TrackingSession {
 
     private Long routeId;
 
+    @Column(name="source_session_id", length=50, updatable=false)
+    private String sourceSessionId;
+
     @Column(length = 100)
     private String deviceId;
 

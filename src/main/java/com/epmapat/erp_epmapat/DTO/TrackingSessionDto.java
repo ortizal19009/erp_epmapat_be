@@ -8,6 +8,7 @@ import lombok.Data;
 public class TrackingSessionDto {
     private Boolean confirmIdentity;
     private String id;
+    private String sourceSessionId;
     private Long readerId;
     private Long routeId;
     private String deviceId;

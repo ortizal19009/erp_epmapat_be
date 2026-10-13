@@ -30,3 +30,17 @@ Certificado SHA-256: 4ee223dccd2d8e9972afc7b1286af44df4835431d9e8b05ad58bec6add4
 APK SHA-256: 9F25C374FDD8493EA4F3A8DF9C57D49E8E6552E6F77A52B1F6A66D89E2338D2C.
 
 No se conecto el celular fisico; su firma instalada aun debe coincidir. El backend y SQL deben desplegarse primero. El emulador temporal se cerro despues de las pruebas.
+
+## Diagnostico de sincronizacion inteligente
+
+Se reviso el boton del dashboard: no vuelve a enviar registros NEEDS_REPAIR ni AUTH_REQUIRED. Antes terminaba con un mensaje generico de bandeja pendiente. Ahora muestra tipo, registro, estado, detalle guardado y accion recomendada; mantiene la descarga pausada y conserva la captura. Los errores locales controlados de GPS/sesion se guardan con su detalle en lugar de ocultarse como VALIDATION_OR_CONFLICT. Para actualizar un diagnostico antiguo, usar Reintentar en el registro de Cambios pendientes. No se repara automaticamente una jornada ambigua.
+
+## Correccion del envio de lecturas - version 1.1.5 (versionCode 7)
+
+El boton manual ahora reevalua una vez las lecturas propias NEEDS_REPAIR con el diagnostico antiguo DEPENDENCY_FAILED/VALIDATION_OR_CONFLICT. Conserva operationId, payload y confirmacion de datos/foto. Si vuelve a fallar, guarda DEPENDENCY_VALIDATION con el detalle actual; no se crea un bucle de reintentos ni se habilitan errores definitivos nuevos indiscriminadamente.
+
+ReadingSessionResolver puede encontrar la sesion original por un punto exacto cuando la referencia local falta, apunta a otro dia o no puede resolverse. Busca puntos enviados y pendientes con el mismo instante, coordenadas, precision, lector y jornada. Solo una coincidencia es recuperable. No reconstruye fecha ni GPS. Las lecturas se envian independientemente de los puntos pendientes despues del acuse de sesion.
+
+Pruebas: 16 JVM y 11 instrumentadas correctas. Cuatro pruebas nuevas ejecutan el repositorio real de upload con Room real y APIs simuladas: lectura enviada con 1000 puntos pendientes, referencia ausente recuperada por punto ya enviado, antiguo NEEDS_REPAIR confirmado sin cambiar operationId y fecha incompatible conservada tras una unica reevaluacion. El instrumento se ejecuto explicitamente en emulator-5556, un AVD independiente temporal; no se cambio el emulator-5554 existente ni un telefono fisico.
+
+APK vigente: EpmpatMobile/app/build/outputs/apk/release/EpmpatMobile-1.1.5-piloto-debug-signed.apk. Firma debug de esta computadora verificada. Instalar como actualizacion, sin desinstalar. No se requieren cambios adicionales de backend para esta correccion; el esquema completo y backend anterior siguen siendo requisitos. Los 424 datos reales del celular aun no han sido inspeccionados: la correccion permite enviar los recuperables y conserva los casos sin evidencia suficiente.

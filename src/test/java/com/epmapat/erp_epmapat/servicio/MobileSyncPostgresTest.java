@@ -63,6 +63,9 @@ class MobileSyncPostgresTest {
             var script=new org.springframework.core.io.FileSystemResource("src/main/resources/sql/2026-10-13_mobile_sync_receipts.sql");
             org.springframework.jdbc.datasource.init.ScriptUtils.executeSqlScript(connection,script);
             org.springframework.jdbc.datasource.init.ScriptUtils.executeSqlScript(connection,script);
+            var history=new org.springframework.core.io.FileSystemResource("src/main/resources/sql/2026-10-13_historical_tracking_days.sql");
+            org.springframework.jdbc.datasource.init.ScriptUtils.executeSqlScript(connection,history);
+            org.springframework.jdbc.datasource.init.ScriptUtils.executeSqlScript(connection,history);
         }
     }
     @AfterAll static void close() { if(factory!=null) factory.close(); }
@@ -129,5 +132,23 @@ class MobileSyncPostgresTest {
             for(var future:futures) assertEquals(dto.getId(),future.get(20,TimeUnit.SECONDS));
             assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM tracking_sessions",Integer.class));
         } finally {executor.shutdownNow();}
+    }
+    @Test void historicalRegistrationIsStableAndPreservesOriginalWorkDate() {
+        var target=new TrackingServicio();
+        ReflectionTestUtils.setField(target,"trackingSessionR",new JpaRepositoryFactory(em).getRepository(TrackingSessionR.class));
+        ReflectionTestUtils.setField(target,"entityManager",em);
+        var service=transactional(target); var source=new TrackingSessionDto();
+        source.setId(UUID.randomUUID().toString()); source.setReaderId(7L);
+        source.setWorkDate(LocalDate.of(2026,10,6)); source.setDeviceId("device"); source.setRouteId(8L);
+        source.setConfirmIdentity(true); service.startSession(source);
+        var historical=new TrackingSessionDto(); historical.setSourceSessionId(source.getId());
+        historical.setWorkDate(LocalDate.of(2026,10,12)); historical.setStartTime(historical.getWorkDate().atTime(10,0));
+        historical.setReaderId(7L); historical.setDeviceId("device"); historical.setRouteId(8L); historical.setConfirmIdentity(true);
+        historical.setId(UUID.nameUUIDFromBytes(("historical-day:"+source.getId()+":"+historical.getWorkDate())
+            .getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString());
+        assertEquals(source.getId(),service.startSession(historical).getSourceSessionId());
+        assertEquals(historical.getId(),service.startSession(historical).getId());
+        assertEquals(2,jdbc.queryForObject("SELECT count(*) FROM tracking_sessions",Integer.class));
+        assertEquals("2026-10-06",jdbc.queryForObject("SELECT work_date::text FROM tracking_sessions WHERE id=?",String.class,source.getId()));
     }
 }
