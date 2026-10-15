@@ -51,4 +51,20 @@ public class ThEmployeeFile {
     private Long usucrea;
     private LocalDate fecmodi;
     private Long usumodi;
+    @javax.persistence.Column(length = 2000)
+    private String descripcion;
+    @javax.persistence.Column(length = 120)
+    private String numero_documento;
+    @javax.persistence.Column(length = 150)
+    private String emisor;
+    private LocalDate fecha_emision;
+    private LocalDate fecha_vencimiento;
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private String origen;
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private String nombre_original;
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private String content_type;
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    private Long tamano_bytes;
 }

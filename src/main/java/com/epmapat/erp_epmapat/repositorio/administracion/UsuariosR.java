@@ -11,6 +11,17 @@ import com.epmapat.erp_epmapat.modelo.administracion.Usuarios;
 
 public interface UsuariosR extends JpaRepository<Usuarios, Long> {
 
+   interface PersonalVinculo {
+      Long getIdpersonal();
+      Long getIdusuario();
+      String getUsuario();
+   }
+
+   // Solo metadatos del vínculo real; nunca cargar contraseñas para el listado de personal.
+   @Query("SELECT u.personal.idpersonal AS idpersonal, u.idusuario AS idusuario, u.alias AS usuario "
+         + "FROM Usuarios u WHERE u.personal.idpersonal IN :ids ORDER BY u.idusuario")
+   List<PersonalVinculo> findPersonalVinculos(@Param("ids") List<Long> ids);
+
    // Todos (Excepto el Administrador)
    @Query("SELECT u FROM Usuarios u LEFT JOIN FETCH u.personal ORDER BY u.identificausu")
    List<Usuarios> findAll();

@@ -29,10 +29,13 @@ public class PersonalServicio {
     private final ContemergenciasR contemergenciasR;
     private final CargosR cargosR;
     private final TpcontratosR tpcontratosR;
+    private final com.epmapat.erp_epmapat.repositorio.administracion.UsuariosR usuarios;
 
     @Transactional(readOnly = true)
     public List<Personal> findAll() {
-        return dao.findAll();
+        List<Personal> result = dao.findAll();
+        completarUsuarios(result);
+        return result;
     }
 
     @Transactional(readOnly = true)
@@ -40,13 +43,36 @@ public class PersonalServicio {
         int p = (page == null || page < 0) ? 0 : page;
         int s = (size == null || size <= 0 || size > 200) ? 20 : size;
         Pageable pageable = PageRequest.of(p, s);
-        return dao.search(q == null ? "" : q.trim(), estado, pageable);
+        Page<Personal> result = dao.search(q == null ? "" : q.trim(), estado, pageable);
+        completarUsuarios(result.getContent());
+        return result;
     }
 
     @Transactional(readOnly = true)
     public Personal findById(Long id) {
-        return dao.findById(id)
+        Personal result = dao.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal no encontrado: " + id));
+        completarUsuarios(List.of(result));
+        return result;
+    }
+
+    private void completarUsuarios(List<Personal> personal) {
+        if (personal.isEmpty()) return;
+        java.util.Map<Long, Personal> byId = new java.util.HashMap<>();
+        for (Personal p : personal) {
+            p.setTieneUsuario(false);
+            p.setIdusuarioVinculado(null);
+            p.setUsuarioSistema(null);
+            byId.put(p.getIdpersonal(), p);
+        }
+        for (var link : usuarios.findPersonalVinculos(new java.util.ArrayList<>(byId.keySet()))) {
+            Personal p = byId.get(link.getIdpersonal());
+            if (p != null && !Boolean.TRUE.equals(p.getTieneUsuario())) {
+                p.setTieneUsuario(true);
+                p.setIdusuarioVinculado(link.getIdusuario());
+                p.setUsuarioSistema(link.getUsuario());
+            }
+        }
     }
 
     @Transactional
