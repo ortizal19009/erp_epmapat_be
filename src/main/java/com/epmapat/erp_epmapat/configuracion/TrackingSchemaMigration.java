@@ -7,7 +7,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-/** Ensures deployments created before GPS point deduplication have the required column. */
+/** Keeps existing GPS tables compatible with point deduplication and historical sessions. */
 @Component
 public class TrackingSchemaMigration implements ApplicationRunner {
 
@@ -21,6 +21,10 @@ public class TrackingSchemaMigration implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        jdbcTemplate.execute("ALTER TABLE tracking_sessions "
+                + "ADD COLUMN IF NOT EXISTS source_session_id VARCHAR(50)");
+        jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS tracking_sessions_source_idx "
+                + "ON tracking_sessions (source_session_id)");
         jdbcTemplate.execute("ALTER TABLE IF EXISTS tracking_points "
                 + "ADD COLUMN IF NOT EXISTS client_point_id VARCHAR(100)");
         jdbcTemplate.execute("CREATE UNIQUE INDEX IF NOT EXISTS uk_tracking_point_client "

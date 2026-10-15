@@ -24,6 +24,10 @@ CREATE TABLE IF NOT EXISTS tracking_sessions (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tambien actualiza instalaciones existentes creadas antes de las sesiones historicas.
+ALTER TABLE tracking_sessions ADD COLUMN IF NOT EXISTS source_session_id VARCHAR(50);
+CREATE INDEX IF NOT EXISTS tracking_sessions_source_idx ON tracking_sessions (source_session_id);
+
 CREATE TABLE IF NOT EXISTS tracking_points (
     id BIGSERIAL PRIMARY KEY,
     client_point_id VARCHAR(100),
