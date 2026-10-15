@@ -24,13 +24,13 @@ public class LecturaFotoStorageService {
         try {
             return storageService.store(file, subfolder);
         } catch (Exception ex) {
-            throw new IOException("No se pudo guardar la foto de la lectura", ex);
+            throw com.epmapat.erp_epmapat.excepciones.PhotoStorageException.from(ex);
         }
     }
 
     public String saveIdempotent(Long readingId, MultipartFile file, String folder, String key) throws IOException {
         try { return storageService.storeIdempotent(file, folder, key); }
-        catch (Exception ex) { throw new IOException("PHOTO_STORAGE_UNAVAILABLE", ex); }
+        catch (Exception ex) { throw com.epmapat.erp_epmapat.excepciones.PhotoStorageException.from(ex); }
     }
 
     public Resource loadAsResource(String storedPath) throws IOException {

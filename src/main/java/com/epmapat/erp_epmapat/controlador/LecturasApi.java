@@ -220,6 +220,7 @@ public class LecturasApi {
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
 			@RequestParam(required = false, defaultValue = "Upload foto de lectura") String observacion,
             @RequestParam(required=false) String operationId) throws IOException {
+		log.info("PHOTO_UPLOAD_STARTED readingId={} bytes={} idempotent={}", idlectura, file.getSize(), operationId != null);
 		Lecturas lectura = lecServicio.findById(idlectura)
 				.orElseThrow(() -> new com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones(
 					"No existe la Lectura con Id: " + idlectura));
@@ -228,12 +229,16 @@ public class LecturasApi {
             String path = mobileReadingCommitService.commitPhoto(operationId, idlectura, file, resolveLecturaFolder(lectura), usumodi, observacion, tipo);
             com.epmapat.erp_epmapat.DTO.LecturaDto dto = LecturaMapper.toDto(lectura);
             dto.setFotoPath(path);
+            dto.setPhotoOperationId(java.util.UUID.fromString(operationId).toString());
+            log.info("PHOTO_UPLOAD_CONFIRMED readingId={} idempotent=true", idlectura);
             return ResponseEntity.ok(dto);
         }
         try {
             String fotoPath = lecturaFotoStorageService.saveImageFile(idlectura, file, resolveLecturaFolder(lectura));
 			lectura = lecServicio.actualizarFotoConAuditoria(idlectura, fotoPath, usumodi, observacion, tipo);
-		} catch (IOException ex) {
+		} catch (com.epmapat.erp_epmapat.excepciones.PhotoStorageException ex) {
+            throw ex;
+        } catch (IOException ex) {
 			return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
 					.body(Map.of(
 							"message", ex.getMessage(),

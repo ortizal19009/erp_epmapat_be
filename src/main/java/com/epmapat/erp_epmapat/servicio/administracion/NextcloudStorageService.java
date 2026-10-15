@@ -275,7 +275,9 @@ public class NextcloudStorageService implements StorageService {
     }
 
     private String buildRemoteUrl(String relativePath) {
-        return davBase() + "/" + normalizeRelativePath(relativePath);
+        return davBase() + "/" + java.util.Arrays.stream(normalizeRelativePath(relativePath).split("/"))
+            .map(part -> org.springframework.web.util.UriUtils.encodePathSegment(part, java.nio.charset.StandardCharsets.UTF_8))
+            .collect(java.util.stream.Collectors.joining("/"));
     }
 
     private String buildDirectoryRemoteUrl(String relativePath) {
@@ -306,7 +308,12 @@ public class NextcloudStorageService implements StorageService {
     }
 
     private String normalizeRelativePath(String path) {
-        return path.replace("\\", "/").replaceAll("^/+", "").replaceAll("/+$", "");
+        String normalized=path.replace("\\", "/").replaceAll("/+", "/").replaceAll("^/+", "").replaceAll("/+$", "");
+        for (String part : normalized.split("/")) {
+            if (part.equals("..") || part.equals(".") || part.chars().anyMatch(Character::isISOControl))
+                throw new IllegalArgumentException("Invalid storage path");
+        }
+        return normalized;
     }
 
     private String trimTrailingSlash(String value) {

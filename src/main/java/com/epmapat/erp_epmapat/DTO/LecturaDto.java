@@ -12,6 +12,7 @@ import lombok.Data;
 public class LecturaDto {
 
     private Long idlectura;
+    private String photoOperationId;
     private Integer estado;
     private Long idrutaxemision;
     @JsonDeserialize(using = FlexibleDateDeserializer.class)

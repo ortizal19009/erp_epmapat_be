@@ -14,3 +14,7 @@ Los archivos de c?digo permanecen disponibles para revisi?n; no se despleg? a pr
 - [Version vigente 1.1.7: lecturas sin GPS, pruebas y despliegue](LECTURAS_SIN_GPS.md)
 
 - [Revision vigente 1.1.8](REVISION_1_1_8.md)
+
+- [Version vigente 1.1.9: fotos pendientes sin bloqueo operativo](FOTOS_PENDIENTES_1_1_9.md)
+
+- [Revision vigente 1.1.10: sincronizacion de fotos y Nextcloud](FOTOS_NEXTCLOUD_2026_10_15.md)
