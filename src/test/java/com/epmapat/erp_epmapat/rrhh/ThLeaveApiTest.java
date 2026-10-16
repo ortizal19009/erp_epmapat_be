@@ -39,6 +39,22 @@ class ThLeaveApiTest {
         verify(movements).ajustar(3L, java.math.BigDecimal.ONE, "Revision", "00000000-0000-0000-0000-000000000001", 8L);
     }
 
+    @Test void reposicionUsesWritePermissionAndSessionActor() throws Exception {
+        mvc.perform(post("/api/th-leave/balances/persona/7/reposicion").contentType(MediaType.APPLICATION_JSON)
+            .content("{\"anio\":2026,\"dias\":2.5,\"motivo\":\"Jornada adicional\",\"clave\":\"00000000-0000-0000-0000-000000000001\",\"usuario\":1}"))
+            .andExpect(status().isNoContent());
+        verify(access).require(any(),eq(true));
+        verify(balances).reposicion(7L,2026,new java.math.BigDecimal("2.5"),"Jornada adicional","00000000-0000-0000-0000-000000000001",8L);
+    }
+
+    @Test void readOnlyUserCannotAssignReposicion() throws Exception {
+        when(access.require(any(),eq(true))).thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN));
+        mvc.perform(post("/api/th-leave/balances/persona/7/reposicion").contentType(MediaType.APPLICATION_JSON)
+            .content("{\"anio\":2026,\"dias\":2,\"motivo\":\"Prueba\",\"clave\":\"00000000-0000-0000-0000-000000000001\"}"))
+            .andExpect(status().isForbidden());
+        verifyNoInteractions(balances);
+    }
+
     @Test void bookExportUsesReadPermissionAndSelectedYear() throws Exception {
         when(movements.byPersonal(7L, 2026)).thenReturn(java.util.List.of());
         mvc.perform(get("/api/th-leave/movements/persona/7/libro.csv").param("anio", "2026"))

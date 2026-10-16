@@ -49,6 +49,21 @@ public class ThLeaveApi {
     private final ThLeaveHistoryServicio historyServicio;
     private final ThLeaveBalanceStateServicio balanceStateServicio;
 
+    @PostMapping("/balances/persona/{idpersonal}/reposicion")
+    public ResponseEntity<Void> reposicion(@PathVariable Long idpersonal, @RequestBody ReposicionBody body,
+            HttpServletRequest request) {
+        balanceServicio.reposicion(idpersonal, body.getAnio(), body.getDias(), body.getMotivo(), body.getClave(),
+                access.require(request, true));
+        return ResponseEntity.noContent().build();
+    }
+
+    @Data public static class ReposicionBody {
+        private Integer anio;
+        private java.math.BigDecimal dias;
+        private String motivo;
+        private String clave;
+    }
+
     @PostMapping("/balances/{idbalance}/estado")
     public ResponseEntity<Void> cambiarEstadoSaldo(@PathVariable Long idbalance, @RequestBody EstadoSaldoBody body,
             HttpServletRequest request) {

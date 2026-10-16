@@ -75,7 +75,19 @@ public class ThLeaveMovementServicio {
 
     @Transactional
     public void ajustar(Long idbalance, BigDecimal dias, String motivo, String clave, Long actor) {
-        if (actor == null || actor <= 0 || dias == null || dias.signum() == 0
+        ajustarInterno(idbalance, dias, motivo, clave, actor, false);
+    }
+
+    /** Only the internal anniversary worker can write as system actor 0. */
+    @Transactional
+    public void acreditarAniversario(Long idbalance, Long idpersonal, LocalDate fecha) {
+        String key = java.util.UUID.nameUUIDFromBytes(("VACACION_ANUAL:" + idpersonal + ":" + fecha.getYear())
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
+        ajustarInterno(idbalance, new BigDecimal("30.00"), "ANIVERSARIO: " + fecha + " - 30 dias por ano cumplido", key, 0L, true);
+    }
+
+    private void ajustarInterno(Long idbalance, BigDecimal dias, String motivo, String clave, Long actor, boolean automatico) {
+        if (actor == null || (automatico ? actor != 0L : actor <= 0) || dias == null || dias.signum() == 0
                 || dias.stripTrailingZeros().scale() > 2 || dias.abs().compareTo(new BigDecimal("99999999.99")) > 0
                 || motivo == null || motivo.trim().isEmpty() || motivo.length() > 2000
                 || clave == null || !clave.matches("[a-fA-F0-9]{8}(-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}"))

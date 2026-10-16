@@ -50,6 +50,25 @@ public class ThLeaveBalanceServicio {
         return dao.findByPersonal(idpersonal);
     }
 
+    @Transactional
+    public void reposicion(Long idpersonal, Integer anio, BigDecimal dias, String motivo, String clave, Long actor) {
+        if (anio == null || anio < 1900 || anio > 9999 || dias == null || dias.signum() <= 0
+                || dias.stripTrailingZeros().scale() > 2 || motivo == null || motivo.isBlank() || motivo.length() > 1950)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indique ano, dias positivos (hasta dos decimales) y motivo de reposicion");
+        var personal = personalR.findByIdForUpdate(idpersonal)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal no existe"));
+        ThLeaveBalance balance = dao.findByPersonalAndAnioForUpdate(idpersonal, anio).orElse(null);
+        if (balance == null) {
+            balance = new ThLeaveBalance(); balance.setIdpersonal_personal(personal); balance.setAnio(anio);
+            balance.setDias_asignados(BigDecimal.ZERO); balance.setDias_usados(BigDecimal.ZERO);
+            balance.setDias_disponibles(BigDecimal.ZERO); balance.setEstado(true);
+            balance.setFeccrea(LocalDate.now()); balance.setUsucrea(actor);
+            balance = dao.saveAndFlush(balance);
+            movements.apertura(balance, actor);
+        }
+        movements.ajustar(balance.getIdbalance(), dias, "REPOSICION: " + motivo.trim(), clave, actor);
+    }
+
     private void validar(ThLeaveBalance b) {
         if (b == null || b.getIdpersonal_personal() == null || b.getIdpersonal_personal().getIdpersonal() == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "idpersonal_personal es obligatorio");

@@ -603,6 +603,52 @@ class ThLeavePostgresTest {
                 .getDias_disponibles().compareTo(new BigDecimal("3"))));
     }
 
+    @Test void annualCreditIsIdempotentAcrossConcurrentWorkersAndConservesUsedDays() throws Exception {
+        tx.executeWithoutResult(s -> {
+            var person = context.getBean(PersonalR.class).findById(employeeId).orElseThrow();
+            person.setFecinicio(LocalDate.of(2018,10,20));
+        });
+        service.aprobar(service.save(request(10)).getIdrequest(),8L,"Consumo original");
+        var worker=context.getBean(ThLeaveAnniversaryServicio.class);
+        var pool=Executors.newFixedThreadPool(2);
+        try {
+            Runnable work=() -> worker.acreditar(employeeId,LocalDate.of(2026,10,16),LocalDate.of(2026,10,20));
+            var first=pool.submit(work); var second=pool.submit(work);
+            first.get(30,TimeUnit.SECONDS); second.get(30,TimeUnit.SECONDS);
+        } finally { pool.shutdownNow(); }
+        tx.executeWithoutResult(s -> {
+            var b=balances.findByPersonalAndAnio(employeeId,2026).orElseThrow();
+            assertEquals(0,b.getDias_asignados().compareTo(new BigDecimal("33")));
+            assertEquals(0,b.getDias_usados().compareTo(new BigDecimal("2")));
+            assertEquals(0,b.getDias_disponibles().compareTo(new BigDecimal("31")));
+            assertEquals(1,ledger.findByPersonal(employeeId,2026).stream().filter(m -> m.getUsuario()==0L && m.getTipo()==ThLeaveMovement.Tipo.AJUSTE).count());
+        });
+        assertEquals("COINCIDE",context.getBean(ThLeaveReconciliationServicio.class).verificar(employeeId,2026).getEjercicios().get(0).getEstado_libro());
+    }
+
+    @Test void reposicionCreatesAnAnnualBalanceAndRetriesNeverDuplicateDays() {
+        var service=context.getBean(ThLeaveBalanceServicio.class);
+        var clave=key();
+        service.reposicion(employeeId,2027,new BigDecimal("5"),"Jornada extraordinaria",clave,8L);
+        service.reposicion(employeeId,2027,new BigDecimal("5"),"Jornada extraordinaria",clave,8L);
+        tx.executeWithoutResult(s -> {
+            var b=balances.findByPersonalAndAnio(employeeId,2027).orElseThrow();
+            assertEquals(0,b.getDias_disponibles().compareTo(new BigDecimal("5")));
+            assertEquals(0,b.getDias_usados().compareTo(BigDecimal.ZERO));
+        });
+        assertEquals(2,movements().byPersonal(employeeId,2027).size());
+        assertThrows(ResponseStatusException.class,() -> service.reposicion(employeeId,2027,new BigDecimal("6"),"Jornada extraordinaria",clave,8L));
+    }
+
+    @Test void automaticActivationDatePersistsAcrossRestarts() {
+        var jdbc=new JdbcTemplate(context.getBean(DataSource.class));
+        var scheduler=new ThLeaveAnniversaryScheduler(jdbc,context.getBean(ThLeaveAnniversaryServicio.class));
+        scheduler.run(null);
+        jdbc.update("UPDATE th_leave_annual_control SET activacion=DATE '2026-10-16' WHERE id=1");
+        scheduler.run(null);
+        assertEquals(LocalDate.of(2026,10,16),jdbc.queryForObject("SELECT activacion FROM th_leave_annual_control WHERE id=1",java.sql.Date.class).toLocalDate());
+    }
+
     @Configuration
     @EnableTransactionManagement
     static class Config {
@@ -625,6 +671,9 @@ class ThLeavePostgresTest {
         @Bean ThLeaveMovementR ledger(EntityManager em) { return new JpaRepositoryFactory(em).getRepository(ThLeaveMovementR.class); }
         @Bean ThLeaveMovementServicio movements(ThLeaveMovementR ledger, ThLeaveBalanceR balances) {
             return new ThLeaveMovementServicio(ledger, balances);
+        }
+        @Bean ThLeaveAnniversaryServicio annual(PersonalR people, ThLeaveBalanceR balances, ThLeaveMovementServicio movements) {
+            return new ThLeaveAnniversaryServicio(people,balances,movements);
         }
         @Bean ThLeaveReconciliationServicio reconciliation(PersonalR people, ThLeaveBalanceR balances,
                 ThLeaveMovementR ledger, ThLeaveRequestR requests) {
