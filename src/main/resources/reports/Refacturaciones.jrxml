@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -120,7 +120,7 @@ JOIN rubros r ON rf.idrubro_rubros = r.idrubro
 LEFT JOIN emisionindividual ei ON l.idlectura = ei.idlecturaanterior 
 LEFT JOIN lecturas l2 ON ei.idlecturanueva = l2.idlectura
 LEFT JOIN rubroxfac rf2 ON l2.idfactura = rf2.idfactura_facturas AND rf2.idrubro_rubros = rf.idrubro_rubros AND (rf2.estado IS NULL OR rf2.estado <> 0)  
-WHERE f.fechaeliminacion BETWEEN $P{desde}  AND $P{hasta}
+WHERE f.fechaeliminacion >= CAST($P{desde} AS date) AND f.fechaeliminacion < CAST($P{hasta} AS date) + INTERVAL '1 day'
   AND rf.idrubro_rubros NOT IN (5, 165)
 GROUP BY 
     r.descripcion,
@@ -147,17 +147,28 @@ ORDER BY
 		<parameter name="desde" class="java.util.Date"/>
 		<parameter name="hasta" class="java.util.Date"/>
 		<queryString>
-			<![CDATA[WITH valor_anterior AS (
+			<![CDATA[WITH facturas_periodo AS (
+    SELECT l.idfactura AS factura_original, l2.idfactura AS factura_nueva
+    FROM facturas f
+    JOIN lecturas l ON l.idfactura = f.idfactura
+    LEFT JOIN emisionindividual ei ON ei.idlecturaanterior = l.idlectura
+    LEFT JOIN lecturas l2 ON l2.idlectura = ei.idlecturanueva
+    WHERE f.fechaeliminacion >= CAST($P{desde} AS date)
+      AND f.fechaeliminacion < CAST($P{hasta} AS date) + INTERVAL '1 day'
+),
+valor_anterior AS (
     SELECT idfactura_facturas, SUM(cantidad * valorunitario) AS total_anterior
     FROM rubroxfac
-    WHERE (estado IS NULL OR estado <> 0) AND idrubro_rubros NOT IN (5, 165)
+    WHERE idfactura_facturas IN (SELECT factura_original FROM facturas_periodo)
+      AND (estado IS NULL OR estado <> 0) AND idrubro_rubros NOT IN (5, 165)
     GROUP BY idfactura_facturas
 ),
 valor_nuevo AS (
     SELECT l2.idfactura, SUM(rf2.cantidad * rf2.valorunitario) AS total_nuevo
     FROM lecturas l2
     JOIN rubroxfac rf2 ON l2.idfactura = rf2.idfactura_facturas
-    WHERE (rf2.estado IS NULL OR rf2.estado <> 0) AND rf2.idrubro_rubros NOT IN (5, 165)
+    WHERE l2.idfactura IN (SELECT factura_nueva FROM facturas_periodo WHERE factura_nueva IS NOT NULL)
+      AND (rf2.estado IS NULL OR rf2.estado <> 0) AND rf2.idrubro_rubros NOT IN (5, 165)
     GROUP BY l2.idfactura
 )
 SELECT
@@ -180,7 +191,7 @@ LEFT JOIN emisionindividual ei ON l.idlectura = ei.idlecturaanterior
 LEFT JOIN lecturas l2 ON ei.idlecturanueva = l2.idlectura
 LEFT JOIN valor_anterior va ON va.idfactura_facturas = l.idfactura
 LEFT JOIN valor_nuevo vn ON vn.idfactura = l2.idfactura
-WHERE f.fechaeliminacion BETWEEN $P{desde} AND $P{hasta}
+WHERE f.fechaeliminacion >= CAST($P{desde} AS date) AND f.fechaeliminacion < CAST($P{hasta} AS date) + INTERVAL '1 day'
 ORDER BY c.nombre, e.emision;]]>
 		</queryString>
 		<field name="emision" class="java.lang.String">
@@ -240,7 +251,7 @@ ORDER BY c.nombre, e.emision;]]>
 	<parameter name="hasta" class="java.util.Date"/>
 	<parameter name="idusuario" class="java.lang.Integer"/>
 	<queryString language="SQL">
-		<![CDATA[select count (* ) from lecturas l join facturas f on l.idfactura = f.idfactura where f.fechaeliminacion between $P{desde} and $P{hasta}]]>
+		<![CDATA[select count (* ) from lecturas l join facturas f on l.idfactura = f.idfactura where f.fechaeliminacion >= CAST($P{desde} AS date) AND f.fechaeliminacion < CAST($P{hasta} AS date) + INTERVAL '1 day']]>
 	</queryString>
 	<field name="count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.name" value="count"/>

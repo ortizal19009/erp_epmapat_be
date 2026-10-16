@@ -34,9 +34,12 @@ import net.sf.jasperreports.export.SimpleWriterExporterOutput;
 @RequiredArgsConstructor
 @Service
 public class ReporteSqlService {
+   private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ReporteSqlService.class);
 
    private final ReportejrService repojrService; // Servicio para buscar Reportesjr por nombre
    private final DataSource dataSource;
+   private final com.epmapat.erp_epmapat.jasperReports.utils.RefacturacionesReportOptimizer refacturaciones =
+         new com.epmapat.erp_epmapat.jasperReports.utils.RefacturacionesReportOptimizer();
 
    public JasperPrint fillSqlReport(JasperDTO dto) throws Exception {
 
@@ -44,14 +47,21 @@ public class ReporteSqlService {
 
       Map<String, Object> params = convertParams(dto.getParameters());
 
-      JasperReport jasperReport = (JasperReport) JRLoader.loadObject(
-            new ByteArrayInputStream(reporte.getJasper()));
+      JasperReport jasperReport = "Refacturaciones".equals(dto.getReportName())
+            ? refacturaciones.load(reporte.getJasper())
+            : (JasperReport) JRLoader.loadObject(new ByteArrayInputStream(reporte.getJasper()));
       params.forEach((k, v) -> {
          System.out.println(k + " => " + v + " (" + v.getClass().getName() + ")");
       });
 
       try (Connection conn = dataSource.getConnection()) {
-         return JasperFillManager.fillReport(jasperReport, params, conn);
+         long started = System.nanoTime();
+         JasperPrint print = JasperFillManager.fillReport(jasperReport, params, conn);
+         if ("Refacturaciones".equals(dto.getReportName())) {
+            log.info("Reporte Refacturaciones generado paginas={} duracionMs={}", print.getPages().size(),
+                  java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started));
+         }
+         return print;
       }
    }
 
