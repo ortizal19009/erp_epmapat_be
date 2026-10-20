@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="TemplateReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d2ba8ff1-4cc2-4396-b1cb-d6a8e2821923">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Erp_epmapat"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="SERVIDOR EPMAPAT"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -107,27 +107,74 @@ WHERE
 		<parameter name="hasta" class="java.util.Date"/>
 		<parameter name="idusuario" class="java.lang.Integer"/>
 		<queryString>
-			<![CDATA[SELECT
-    r.descripcion  AS nombre_rubro,
-    r.idrubro AS codigo_rubro,
-    SUM(rf.cantidad * rf.valorunitario) AS valor_original,
-    SUM(CASE WHEN ei.idlecturaanterior IS NOT NULL THEN rf2.cantidad * rf2.valorunitario ELSE 0 END) AS valor_nuevo,
-    SUM(CASE WHEN ei.idlecturaanterior IS NOT NULL THEN (rf2.cantidad * rf2.valorunitario) - (rf.cantidad * rf.valorunitario) ELSE 0 END) AS diferencia
+			<![CDATA[WITH detalle AS (WITH facturas_periodo AS (
+    SELECT l.idfactura AS factura_original, l2.idfactura AS factura_nueva
+    FROM facturas f
+    JOIN lecturas l ON l.idfactura = f.idfactura
+    LEFT JOIN emisionindividual ei ON ei.idlecturaanterior = l.idlectura
+    LEFT JOIN lecturas l2 ON l2.idlectura = ei.idlecturanueva
+    WHERE f.fechaeliminacion >= CAST($P{desde} AS date)
+      AND f.fechaeliminacion < CAST($P{hasta} AS date) + INTERVAL '1 day'
+),
+valor_anterior AS (
+    SELECT idfactura_facturas, SUM(cantidad * valorunitario) AS total_anterior
+    FROM rubroxfac
+    WHERE idfactura_facturas IN (SELECT factura_original FROM facturas_periodo)
+      AND (estado IS NULL OR estado <> 0) AND idrubro_rubros NOT IN (5, 165) AND idrubro_rubros NOT IN (SELECT idrubro FROM rubros WHERE LOWER(TRANSLATE(COALESCE(descripcion, ''), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) ~ '(^|[^a-z])interes(es)?([^a-z]|$)')
+    GROUP BY idfactura_facturas
+    UNION ALL
+    SELECT f.idfactura, 0::numeric AS total_anterior
+    FROM facturas f
+    WHERE f.idfactura IN (SELECT factura_original FROM facturas_periodo)
+      AND f.totaltarifa = 0
+      AND NOT EXISTS (SELECT 1 FROM rubroxfac r WHERE r.idfactura_facturas = f.idfactura)
+),
+valor_nuevo AS (
+    SELECT l2.idfactura, SUM(rf2.cantidad * rf2.valorunitario) AS total_nuevo
+    FROM lecturas l2
+    JOIN rubroxfac rf2 ON l2.idfactura = rf2.idfactura_facturas
+    WHERE l2.idfactura IN (SELECT factura_nueva FROM facturas_periodo WHERE factura_nueva IS NOT NULL)
+      AND (rf2.estado IS NULL OR rf2.estado <> 0) AND rf2.idrubro_rubros NOT IN (5, 165) AND rf2.idrubro_rubros NOT IN (SELECT idrubro FROM rubros WHERE LOWER(TRANSLATE(COALESCE(descripcion, ''), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) ~ '(^|[^a-z])interes(es)?([^a-z]|$)')
+    GROUP BY l2.idfactura
+)
+SELECT
+    e.emision,
+    c.nombre,
+    l.idabonado_abonados AS cuenta,
+    f.idfactura AS factura_original,
+    f.razoneliminacion,
+    f.fechaeliminacion,
+    va.total_anterior AS valoranterior,
+    l2.idfactura AS factura_nueva,
+    CASE WHEN ei.idlecturaanterior IS NULL THEN 0::numeric ELSE vn.total_nuevo END AS valornuevo,
+    ((CASE WHEN ei.idlecturaanterior IS NULL THEN 0::numeric ELSE vn.total_nuevo END) - va.total_anterior) AS diferencia
 FROM lecturas l
+JOIN emisiones e ON l.idemision = e.idemision
 JOIN facturas f ON l.idfactura = f.idfactura
-JOIN rubroxfac rf ON l.idfactura = rf.idfactura_facturas AND (rf.estado IS NULL OR rf.estado <> 0)
-JOIN rubros r ON rf.idrubro_rubros = r.idrubro
-LEFT JOIN emisionindividual ei ON l.idlectura = ei.idlecturaanterior 
+JOIN abonados a ON l.idabonado_abonados = a.idabonado
+JOIN clientes c ON a.idresponsable = c.idcliente
+LEFT JOIN emisionindividual ei ON l.idlectura = ei.idlecturaanterior
 LEFT JOIN lecturas l2 ON ei.idlecturanueva = l2.idlectura
-LEFT JOIN rubroxfac rf2 ON l2.idfactura = rf2.idfactura_facturas AND rf2.idrubro_rubros = rf.idrubro_rubros AND (rf2.estado IS NULL OR rf2.estado <> 0)  
+LEFT JOIN valor_anterior va ON va.idfactura_facturas = l.idfactura
+LEFT JOIN valor_nuevo vn ON vn.idfactura = l2.idfactura
 WHERE f.fechaeliminacion >= CAST($P{desde} AS date) AND f.fechaeliminacion < CAST($P{hasta} AS date) + INTERVAL '1 day'
-  AND rf.idrubro_rubros NOT IN (5, 165)
-GROUP BY 
-    r.descripcion,
-    r.idrubro
-ORDER BY
-	r.idrubro,
-    ABS(SUM(rf.cantidad * rf.valorunitario)) DESC;]]>
+ORDER BY c.nombre, e.emision), anteriores AS (
+ SELECT idrubro_rubros AS codigo, SUM(cantidad * valorunitario) AS importe
+ FROM rubroxfac WHERE idfactura_facturas IN (SELECT factura_original FROM detalle)
+ AND (estado IS NULL OR estado <> 0) GROUP BY idrubro_rubros
+), nuevas AS (
+ SELECT idrubro_rubros AS codigo, SUM(cantidad * valorunitario) AS importe
+ FROM rubroxfac WHERE idfactura_facturas IN (SELECT factura_nueva FROM detalle)
+ AND (estado IS NULL OR estado <> 0) GROUP BY idrubro_rubros
+)
+SELECT r.descripcion AS nombre_rubro, r.idrubro AS codigo_rubro,
+ COALESCE(a.importe, 0) AS valor_original, COALESCE(n.importe, 0) AS valor_nuevo,
+ COALESCE(n.importe, 0) - COALESCE(a.importe, 0) AS diferencia
+FROM anteriores a FULL JOIN nuevas n ON a.codigo=n.codigo
+JOIN rubros r ON r.idrubro=COALESCE(a.codigo,n.codigo)
+WHERE r.idrubro NOT IN (5,165)
+AND LOWER(TRANSLATE(COALESCE(r.descripcion,''), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) !~ '(^|[^a-z])interes(es)?([^a-z]|$)'
+ORDER BY r.idrubro]]>
 		</queryString>
 		<field name="nombre_rubro" class="java.lang.String"/>
 		<field name="codigo_rubro" class="java.lang.Long"/>
@@ -160,15 +207,21 @@ valor_anterior AS (
     SELECT idfactura_facturas, SUM(cantidad * valorunitario) AS total_anterior
     FROM rubroxfac
     WHERE idfactura_facturas IN (SELECT factura_original FROM facturas_periodo)
-      AND (estado IS NULL OR estado <> 0) AND idrubro_rubros NOT IN (5, 165)
+      AND (estado IS NULL OR estado <> 0) AND idrubro_rubros NOT IN (5, 165) AND idrubro_rubros NOT IN (SELECT idrubro FROM rubros WHERE LOWER(TRANSLATE(COALESCE(descripcion, ''), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) ~ '(^|[^a-z])interes(es)?([^a-z]|$)')
     GROUP BY idfactura_facturas
+    UNION ALL
+    SELECT f.idfactura, 0::numeric AS total_anterior
+    FROM facturas f
+    WHERE f.idfactura IN (SELECT factura_original FROM facturas_periodo)
+      AND f.totaltarifa = 0
+      AND NOT EXISTS (SELECT 1 FROM rubroxfac r WHERE r.idfactura_facturas = f.idfactura)
 ),
 valor_nuevo AS (
     SELECT l2.idfactura, SUM(rf2.cantidad * rf2.valorunitario) AS total_nuevo
     FROM lecturas l2
     JOIN rubroxfac rf2 ON l2.idfactura = rf2.idfactura_facturas
     WHERE l2.idfactura IN (SELECT factura_nueva FROM facturas_periodo WHERE factura_nueva IS NOT NULL)
-      AND (rf2.estado IS NULL OR rf2.estado <> 0) AND rf2.idrubro_rubros NOT IN (5, 165)
+      AND (rf2.estado IS NULL OR rf2.estado <> 0) AND rf2.idrubro_rubros NOT IN (5, 165) AND rf2.idrubro_rubros NOT IN (SELECT idrubro FROM rubros WHERE LOWER(TRANSLATE(COALESCE(descripcion, ''), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou')) ~ '(^|[^a-z])interes(es)?([^a-z]|$)')
     GROUP BY l2.idfactura
 )
 SELECT
@@ -180,8 +233,8 @@ SELECT
     f.fechaeliminacion,
     va.total_anterior AS valoranterior,
     l2.idfactura AS factura_nueva,
-    vn.total_nuevo AS valornuevo,
-    (vn.total_nuevo - va.total_anterior) AS diferencia
+    CASE WHEN ei.idlecturaanterior IS NULL THEN 0::numeric ELSE vn.total_nuevo END AS valornuevo,
+    ((CASE WHEN ei.idlecturaanterior IS NULL THEN 0::numeric ELSE vn.total_nuevo END) - va.total_anterior) AS diferencia
 FROM lecturas l
 JOIN emisiones e ON l.idemision = e.idemision
 JOIN facturas f ON l.idfactura = f.idfactura
@@ -237,11 +290,17 @@ ORDER BY c.nombre, e.emision;]]>
 			<property name="com.jaspersoft.studio.field.label" value="diferencia"/>
 		</field>
 		<field name="fechaeliminacion" class="java.sql.Date"/>
+		<variable name="resCuentas" class="java.lang.Integer" calculation="DistinctCount">
+			<variableExpression><![CDATA[$F{cuenta}]]></variableExpression>
+		</variable>
+		<variable name="resFacturas" class="java.lang.Integer" calculation="DistinctCount">
+			<variableExpression><![CDATA[$F{factura_original}]]></variableExpression>
+		</variable>
 		<variable name="tfacturado" class="java.math.BigDecimal" calculation="Sum">
-			<variableExpression><![CDATA[SUM($F{valoranterior})]]></variableExpression>
+			<variableExpression><![CDATA[$F{valoranterior}]]></variableExpression>
 		</variable>
 		<variable name="trefacturado" class="java.math.BigDecimal" calculation="Sum">
-			<variableExpression><![CDATA[SUM($F{valornuevo})]]></variableExpression>
+			<variableExpression><![CDATA[$F{valornuevo}]]></variableExpression>
 		</variable>
 		<variable name="tdiferencias" class="java.math.BigDecimal" calculation="Sum">
 			<variableExpression><![CDATA[$F{diferencia}]]></variableExpression>
@@ -257,6 +316,21 @@ ORDER BY c.nombre, e.emision;]]>
 		<property name="com.jaspersoft.studio.field.name" value="count"/>
 		<property name="com.jaspersoft.studio.field.label" value="count"/>
 	</field>
+	<variable name="resCuentas" class="java.lang.Integer" calculation="System">
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="resFacturas" class="java.lang.Integer" calculation="System">
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="resRubros" class="java.lang.Integer" calculation="System">
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="resFacturado" class="java.math.BigDecimal" calculation="System">
+		<initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
+	<variable name="resRefacturado" class="java.math.BigDecimal" calculation="System">
+		<initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
 	<background>
 		<band height="518" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -277,7 +351,7 @@ ORDER BY c.nombre, e.emision;]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="15" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["FACTURAS EMITIDAS  " +
+				<textFieldExpression><![CDATA["REFACTURACIONES Y BAJAS  " +
 (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{desde}) +
 " - " +
 (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{hasta})]]></textFieldExpression>
@@ -308,6 +382,7 @@ ORDER BY c.nombre, e.emision;]]>
 							<datasetParameterExpression><![CDATA[$P{hasta}]]></datasetParameterExpression>
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<returnValue fromVariable="REPORT_COUNT" toVariable="resRubros"/>
 					</datasetRun>
 					<jr:column width="110" uuid="59e1043d-f4b9-4ff7-a4a1-dbd385f27772">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
@@ -318,7 +393,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<text><![CDATA[CÃ“DIGO]]></text>
+								<text><![CDATA[CÓDIGO]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell height="15">
@@ -400,7 +475,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f",$V{tbajas} ) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{tbajas} == null ? "N/D" : String.format("%.2f", $V{tbajas}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:tableFooter>
 						<jr:columnHeader height="15" rowSpan="1">
@@ -426,7 +501,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $F{valor_original}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{valor_original} == null ? "N/D" : String.format("%.2f", $F{valor_original}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -446,7 +521,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f",$V{tnuevo} ) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{tnuevo} == null ? "N/D" : String.format("%.2f", $V{tnuevo}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:tableFooter>
 						<jr:columnHeader height="15" rowSpan="1">
@@ -472,7 +547,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[($F{valor_nuevo} == null ? "0.00" : String.format("%.2f", $F{valor_nuevo})) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{valor_nuevo} == null ? "N/D" : String.format("%.2f", $F{valor_nuevo}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -501,7 +576,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $F{diferencia}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{diferencia} == null ? "N/D" : String.format("%.2f", $F{diferencia}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -525,6 +600,10 @@ ORDER BY c.nombre, e.emision;]]>
 							<datasetParameterExpression><![CDATA[$P{hasta}]]></datasetParameterExpression>
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<returnValue fromVariable="resCuentas" toVariable="resCuentas"/>
+						<returnValue fromVariable="resFacturas" toVariable="resFacturas"/>
+						<returnValue fromVariable="tfacturado" toVariable="resFacturado"/>
+						<returnValue fromVariable="trefacturado" toVariable="resRefacturado"/>
 					</datasetRun>
 					<jr:column width="40" uuid="c0938c5f-bb28-4768-beba-3ff800adc1fc">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
@@ -547,7 +626,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="7" isBold="true"/>
 								</textElement>
-								<text><![CDATA[EMISION]]></text>
+								<text><![CDATA[EMISIÓN]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell height="15">
@@ -722,7 +801,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="9" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $V{tfacturado}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{tfacturado} == null ? "N/D" : String.format("%.2f", $V{tfacturado}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:columnFooter>
 						<jr:detailCell height="15">
@@ -744,7 +823,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="7.5"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $F{valoranterior}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{valoranterior} == null ? "N/D" : String.format("%.2f", $F{valoranterior}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -769,7 +848,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="7" isBold="true"/>
 								</textElement>
-								<text><![CDATA[RE FACTURADO]]></text>
+								<text><![CDATA[REFACTURADO]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:columnFooter height="15" rowSpan="1">
@@ -786,7 +865,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="9" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $V{trefacturado}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{trefacturado} == null ? "N/D" : String.format("%.2f", $V{trefacturado}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:columnFooter>
 						<jr:detailCell height="15">
@@ -808,7 +887,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="7.5"/>
 								</textElement>
-								<textFieldExpression><![CDATA[($F{valornuevo} == null ? "0.00" : String.format("%.2f", $F{valornuevo})) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{valornuevo} == null ? "N/D" : String.format("%.2f", $F{valornuevo}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -850,7 +929,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="9" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $V{tdiferencias}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{tdiferencias} == null ? "N/D" : String.format("%.2f", $V{tdiferencias}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:columnFooter>
 						<jr:detailCell height="15">
@@ -872,7 +951,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="7.5"/>
 								</textElement>
-								<textFieldExpression><![CDATA[($F{diferencia} == null ? "0.00" : String.format("%.2f", $F{diferencia})) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{diferencia} == null ? "N/D" : String.format("%.2f", $F{diferencia}) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -944,7 +1023,7 @@ ORDER BY c.nombre, e.emision;]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="7" isBold="true"/>
 								</textElement>
-								<text><![CDATA[RAZÃ“N ELIMINACIÃ“N]]></text>
+								<text><![CDATA[RAZÓN ELIMINACIÓN]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell height="15">
@@ -1000,7 +1079,7 @@ ORDER BY c.nombre, e.emision;]]>
 					<textElement verticalAlignment="Middle">
 						<font size="10" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Â© " + new java.text.SimpleDateFormat("yyyy").format(new java.util.Date()) + " EPMAPA-TulcÃ¡n - Todos los derechos reservados"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["© " + new java.text.SimpleDateFormat("yyyy").format(new java.util.Date()) + " EPMAPA-Tulcán - Todos los derechos reservados"]]></textFieldExpression>
 				</textField>
 			</frame>
 			<componentElement>
@@ -1096,13 +1175,144 @@ ORDER BY c.nombre, e.emision;]]>
 		</band>
 	</pageFooter>
 	<summary>
-		<band splitType="Stretch">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+		<band height="100" splitType="Prevent">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="4" width="555" height="20" backcolor="#F0F5FA" uuid="3ca06258-bd42-4db1-98b2-9497ff0a25be"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[RESUMEN DE REFACTURACIONES Y BAJAS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="24" width="135" height="20" backcolor="#F0F5FA" uuid="1bff22a3-85d0-409c-aec9-891048b19309"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cuentas incluidas]]></text>
+			</staticText>
+			<textField>
+				<reportElement mode="Opaque" x="135" y="24" width="50" height="20" backcolor="#FFFFFF" uuid="27d4a082-4ebb-4d68-9b55-e61a0f8bb12c"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{resCuentas}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="185" y="24" width="135" height="20" backcolor="#F0F5FA" uuid="1037d2a1-2b4e-46d1-8c2d-5156b5d38e06"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Facturas eliminadas]]></text>
+			</staticText>
+			<textField>
+				<reportElement mode="Opaque" x="320" y="24" width="50" height="20" backcolor="#FFFFFF" uuid="03000d6e-e4ae-452e-87f3-4a7c1a5ee54b"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{resFacturas}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="370" y="24" width="135" height="20" backcolor="#F0F5FA" uuid="355767c8-0ab7-4a86-919f-092740db3cdd"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rubros distintos]]></text>
+			</staticText>
+			<textField>
+				<reportElement mode="Opaque" x="505" y="24" width="50" height="20" backcolor="#FFFFFF" uuid="71a6a666-bece-4d2e-97bc-748c865b5184"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{resRubros}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="44" width="110" height="20" backcolor="#F0F5FA" uuid="133bab71-5f07-4d7a-8c22-80ec8d024a9f"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total facturado]]></text>
+			</staticText>
+			<textField>
+				<reportElement mode="Opaque" x="110" y="44" width="75" height="20" backcolor="#FFFFFF" uuid="a7475264-af86-41b0-98fa-7b46c4c9a30b"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format(($V{resFacturado} == null ? java.math.BigDecimal.ZERO : $V{resFacturado}))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="185" y="44" width="110" height="20" backcolor="#F0F5FA" uuid="ab0cd277-83d7-4260-980b-62cdded0c378"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total refacturado]]></text>
+			</staticText>
+			<textField>
+				<reportElement mode="Opaque" x="295" y="44" width="75" height="20" backcolor="#FFFFFF" uuid="163aa102-93e8-43dc-ae55-f811ca63462d"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format(($V{resRefacturado} == null ? java.math.BigDecimal.ZERO : $V{resRefacturado}))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="370" y="44" width="110" height="20" backcolor="#F0F5FA" uuid="747af590-b823-4459-b052-9f7a693a9413"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Diferencia]]></text>
+			</staticText>
+			<textField>
+				<reportElement mode="Opaque" x="480" y="44" width="75" height="20" backcolor="#FFFFFF" uuid="f9c5cad1-b524-4ad7-8801-ac89d7a3b6f2"/>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5" lineColor="#C4D2DE"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format(($V{resRefacturado} == null ? java.math.BigDecimal.ZERO : $V{resRefacturado}).subtract(($V{resFacturado} == null ? java.math.BigDecimal.ZERO : $V{resFacturado})))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="69" width="555" height="18" uuid="e06e62f0-3eac-48ca-81ee-04209cbd4691"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Incluye bajas sin nueva emision: refacturado = 0. Conteos sin duplicados de cuentas, facturas y rubros.]]></text>
+			</staticText>
 		</band>
 	</summary>
 </jasperReport>
-
-
-
-
-

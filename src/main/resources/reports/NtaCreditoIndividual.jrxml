@@ -47,22 +47,12 @@
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ErpEpmapaT"/>
 		<parameter name="idntacredito_ntacredito" class="java.lang.Integer"/>
 		<queryString language="SQL">
-			<![CDATA[select
-	vnc.fechaaplicado,
-	f.valornotacredito as valor,
-	sum(rf.valorunitario * rf.cantidad) as saldo,
-	rf.idfactura_facturas as idfactura
-from
-	facxnc fnc
-join valoresnc vnc on
-	fnc.idvaloresnc_valoresnc = vnc.idvaloresnc
-join facturas f on
-	f.idfactura = fnc.idfactura_facturas 
-join rubroxfac rf on 
-	rf.idfactura_facturas = f.idfactura
-where vnc.idntacredito_ntacredito = $P{idntacredito_ntacredito}
-and (rf.estado IS NULL OR rf.estado = 1)
-group by rf.idfactura_facturas, vnc.fechaaplicado, f.valornotacredito]]>
+            <![CDATA[select vnc.fechaaplicado, vnc.valor, vnc.saldo,
+ f.idfactura
+ from facxnc fnc join valoresnc vnc on fnc.idvaloresnc_valoresnc=vnc.idvaloresnc
+ join facturas f on f.idfactura=fnc.idfactura_facturas
+ where vnc.idntacredito_ntacredito=$P{idntacredito_ntacredito} and vnc.estado=1
+ order by vnc.fechaaplicado,vnc.idvaloresnc]]>
 		</queryString>
 		<field name="fechaaplicado" class="java.util.Date"/>
 		<field name="valor" class="java.math.BigDecimal"/>
@@ -76,7 +66,7 @@ group by rf.idfactura_facturas, vnc.fechaaplicado, f.valornotacredito]]>
 		<queryString>
 			<![CDATA[SELECT nomusu
 FROM usuarios
-WHERE 
+WHERE
 	 usuarios.idusuario = $P{idusuario}]]>
 		</queryString>
 		<field name="nomusu" class="java.lang.String">
@@ -88,7 +78,7 @@ WHERE
 	<parameter name="idntacredito" class="java.lang.Integer"/>
 	<parameter name="idusuario" class="java.lang.Integer"/>
 	<queryString language="SQL">
-		<![CDATA[SELECT 
+		<![CDATA[SELECT
 	nc.idntacredito,
 	nc.idabonado_abonados AS cuenta,
 	c.nombre AS cliente,
@@ -96,17 +86,17 @@ WHERE
 	f.nrofactura,
 	f.idfactura AS planilla,
 	nc.valor,
-	nc.devengado,
+	coalesce(nc.devengado,0) AS devengado,
 	nc.feccrea,
 	nc.observacion,
 	nc.refdocumento,
 	d.nomdoc
-FROM 
+FROM
 	ntacredito nc
-	JOIN clientes c ON nc.idcliente_clientes = c.idcliente 
+	JOIN clientes c ON nc.idcliente_clientes = c.idcliente
 	LEFT JOIN facturas f ON nc.nrofactura = f.idfactura::text -- ✅ CORREGIDO
-	JOIN documentos d ON nc.iddocumento_documentos = d.intdoc 
-WHERE 
+	LEFT JOIN documentos d ON nc.iddocumento_documentos = d.intdoc
+WHERE
 	nc.idntacredito = $P{idntacredito}]]>
 	</queryString>
 	<field name="idntacredito" class="java.lang.Long">
@@ -263,7 +253,7 @@ WHERE
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA["DOCUMENTO: " +$F{nomdoc}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["DOCUMENTO: " + ($F{nomdoc} == null ? "No registrado" : $F{nomdoc})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="238" y="227" width="316" height="30" uuid="f01f9593-2324-4235-9873-d6685b5d7da7"/>
@@ -337,7 +327,7 @@ WHERE
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="19" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["HISTORIAL DE PAGOS"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["HISTORIAL DE APLICACIONES"]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnHeader>
@@ -398,7 +388,7 @@ WHERE
 							<staticText>
 								<reportElement x="0" y="0" width="90" height="30" uuid="f3bbcf12-6666-4303-b245-4a3921680894"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle"/>
-								<text><![CDATA[EFECTIVO]]></text>
+								<text><![CDATA[SALDO ANTERIOR]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
@@ -406,7 +396,7 @@ WHERE
 								<reportElement x="0" y="0" width="90" height="30" uuid="707fe810-b92c-46e4-9df6-c11a70903e82"/>
 								<box rightPadding="5"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[String.format("%.2f", $F{saldo}.subtract($F{valor})) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[String.format("%.2f", $F{saldo}.add($F{valor})) + " $"]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -416,7 +406,7 @@ WHERE
 							<staticText>
 								<reportElement x="0" y="0" width="90" height="30" uuid="39e54907-b672-405a-a884-8b33d35de2c0"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle"/>
-								<text><![CDATA[TOTAL FACTURA]]></text>
+								<text><![CDATA[SALDO RESTANTE]]></text>
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">

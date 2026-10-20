@@ -19,9 +19,7 @@ import com.epmapat.erp_epmapat.modelo.ClienteMergeFactura;
 import com.epmapat.erp_epmapat.modelo.ClienteMergeLectura;
 import com.epmapat.erp_epmapat.repositorio.*;
 
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Service
 public class ClienteMergeService {
 
@@ -35,6 +33,21 @@ public class ClienteMergeService {
     private final ClienteMergeAbonadoR mergeAbonadoRepo;
     private final ClienteMergeFacturaR mergeFacturaRepo;
     private final ClienteMergeLecturaR mergeLecturaRepo;
+
+    public ClienteMergeService(ClientesR clienteRepo, AbonadosR abonadoRepo,
+            FacturasR facturaRepo, LecturasR lecturasRepo, ClienteMergeR mergeRepo,
+            ClienteMergeClienteR mergeClienteRepo, ClienteMergeAbonadoR mergeAbonadoRepo,
+            ClienteMergeFacturaR mergeFacturaRepo, ClienteMergeLecturaR mergeLecturaRepo) {
+        this.clienteRepo = clienteRepo;
+        this.abonadoRepo = abonadoRepo;
+        this.facturaRepo = facturaRepo;
+        this.lecturasRepo = lecturasRepo;
+        this.mergeRepo = mergeRepo;
+        this.mergeClienteRepo = mergeClienteRepo;
+        this.mergeAbonadoRepo = mergeAbonadoRepo;
+        this.mergeFacturaRepo = mergeFacturaRepo;
+        this.mergeLecturaRepo = mergeLecturaRepo;
+    }
 
     @Transactional
     public void merge(Long masterId, List<Long> duplicateIds, Long usuario) {

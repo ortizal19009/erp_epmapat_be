@@ -13,11 +13,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class ReportCache {
+    @org.springframework.beans.factory.annotation.Value("${erp.nc-endosos.enabled:false}") private boolean endososEnabled;
+    @org.springframework.beans.factory.annotation.Autowired private com.epmapat.erp_epmapat.nc.NcSchemaState ncSchema;
     private final ConcurrentHashMap<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
     public JasperReport getCompiled(String reportName) throws JRException {
         return cache.compute(reportName, (rn, existing) -> {
-            try (InputStream is = new ClassPathResource("reports/" + rn + ".jrxml").getInputStream()) {
+            try (InputStream is = new ClassPathResource(resource(rn)).getInputStream()) {
                 long signature = resolveSignature(rn);
                 if (existing != null && existing.signature == signature) {
                     return existing;
@@ -30,8 +32,9 @@ public class ReportCache {
         }).report;
     }
 
+    private String resource(String name) {return "NtaCreditoIndividual".equals(name) && (endososEnabled || (ncSchema!=null && ncSchema.migrated())) ? "nc-reports/NtaCreditoConEndosos.jrxml" : "reports/"+name+".jrxml";}
     private long resolveSignature(String reportName) throws Exception {
-        return new ClassPathResource("reports/" + reportName + ".jrxml").lastModified();
+        return new ClassPathResource(resource(reportName)).lastModified();
     }
 
     private static final class CacheEntry {

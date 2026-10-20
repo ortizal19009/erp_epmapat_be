@@ -153,6 +153,10 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			BigDecimal totaltarifa,
 			Pageable pageable);
 
+	@EntityGraph(attributePaths = { "idmodulo", "idcliente" })
+	@Query("SELECT f FROM Facturas f WHERE f.idcliente.idcliente = :cliente AND f.totaltarifa > 0 ORDER BY f.idfactura DESC")
+	Page<Facturas> findPlanillasClientePage(@Param("cliente") Long cliente, Pageable pageable);
+
 	// 15 Planillas de un Abonado
 	@Query("""
 			SELECT f

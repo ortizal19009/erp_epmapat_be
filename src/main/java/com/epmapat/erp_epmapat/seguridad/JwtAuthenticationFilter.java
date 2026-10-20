@@ -53,7 +53,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean requiresWebJwt(String uri) {
-        return uri.startsWith("/usrxmodulos")
+        return uri.equals("/api/nc-endosos") || uri.startsWith("/api/nc-endosos/")
+                || uri.startsWith("/usrxmodulos")
                 || uri.startsWith("/ventanas")
                 || uri.startsWith("/access/")
                 || uri.startsWith("/usuarios/session")

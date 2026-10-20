@@ -24,6 +24,8 @@ import com.epmapat.erp_epmapat.servicio.NtacreditoServicio;
 @RequestMapping("/ntacredito")
 
 public class NtacreditoApi {
+    @org.springframework.beans.factory.annotation.Value("${erp.nc-endosos.enabled:false}") private boolean endososEnabled;
+    @Autowired private com.epmapat.erp_epmapat.nc.NcSchemaState ncSchema;
     @Autowired
     private NtacreditoServicio ntacreditoServicio;
 
@@ -39,6 +41,8 @@ public class NtacreditoApi {
 
     @PostMapping
     public ResponseEntity<Ntacredito> save(@RequestBody Ntacredito ntacredito) {
+        if((endososEnabled || ncSchema.migrated()) && (ntacredito.getIdntacredito()!=null || (ntacredito.getDevengado()!=null && ntacredito.getDevengado().signum()!=0)))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,"No modificar saldo mediante alta de nota");
         return ResponseEntity.ok(ntacreditoServicio.save(ntacredito));
     }
 
@@ -56,12 +60,13 @@ public class NtacreditoApi {
     @PutMapping("/upall")
     public ResponseEntity<Ntacredito> updateNtaCredito(@RequestParam Long idntacredito,
             @RequestBody Ntacredito ntacredito) {
+        if(endososEnabled || ncSchema.migrated()) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Actualizacion manual deshabilitada; usar cobro transaccional o endosos");
         Ntacredito _ntacredito = ntacreditoServicio.findById(idntacredito)
                 .orElseThrow(() -> new ResourceNotFoundExcepciones("No se encontro el dato"));
         _ntacredito.setValor(ntacredito.getValor());
         _ntacredito.setObservacion(ntacredito.getObservacion());
         _ntacredito.setDevengado(ntacredito.getDevengado());
-        _ntacredito.setIdtransfernota(ntacredito.getIdntacredito());
+        _ntacredito.setIdtransfernota(ntacredito.getIdtransfernota());
         _ntacredito.setRazontransferencia(ntacredito.getRazontransferencia());
         _ntacredito.setNrofactura(ntacredito.getNrofactura());
         _ntacredito.setUsuarioeliminacion(ntacredito.getUsuarioeliminacion());
@@ -79,6 +84,7 @@ public class NtacreditoApi {
     @PutMapping("/up")
     public ResponseEntity<Ntacredito> updatealcobrar(@RequestParam Long idntacredito,
             @RequestBody Ntacredito ntacredito) {
+        if(endososEnabled || ncSchema.migrated()) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Actualizacion manual deshabilitada; usar cobro transaccional o endosos");
         Ntacredito _ntacredito = ntacreditoServicio.findById(idntacredito)
                 .orElseThrow(() -> new ResourceNotFoundExcepciones("No se encontro el dato"));
         _ntacredito.setDevengado(ntacredito.getDevengado());

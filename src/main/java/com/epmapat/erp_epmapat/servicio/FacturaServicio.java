@@ -168,6 +168,12 @@ public class FacturaServicio {
 				PageRequest.of(0, max));
 	}
 
+	public Page<Facturas> findPlanillasClientePage(Long cliente, int page, int size) {
+		if (cliente == null || cliente <= 0 || page < 0 || size < 1 || size > 100)
+			throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Paginacion o cliente invalido");
+		return dao.findPlanillasClientePage(cliente, PageRequest.of(page, size));
+	}
+
 	// Planillas por Abonado
 	public List<Facturas> findByIdabonado(Long idabonado) {
 		return dao.findByIdabonado(idabonado);

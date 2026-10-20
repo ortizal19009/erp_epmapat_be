@@ -19,11 +19,14 @@ import com.epmapat.erp_epmapat.servicio.FacxncService;
 @RequestMapping("/facxnc")
 
 public class FacxncApi {
+    @org.springframework.beans.factory.annotation.Value("${erp.nc-endosos.enabled:false}") private boolean endososEnabled;
+    @Autowired private com.epmapat.erp_epmapat.nc.NcSchemaState ncSchema;
     @Autowired
     private FacxncService facxncService;
 
     @PostMapping
     public ResponseEntity<Facxnc> saveFacturaPorNotaCredito(@RequestBody Facxnc facxnc) {
+        if(endososEnabled || ncSchema.migrated()) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,"Usar cobro transaccional del backend");
         return ResponseEntity.ok(facxncService.save(facxnc));
     }
 

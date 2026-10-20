@@ -38,6 +38,7 @@ public class ReporteSqlService {
 
    private final ReportejrService repojrService; // Servicio para buscar Reportesjr por nombre
    private final DataSource dataSource;
+   @org.springframework.beans.factory.annotation.Autowired private com.epmapat.erp_epmapat.jasperReports.utils.ReportCache reportCache;
    private final com.epmapat.erp_epmapat.jasperReports.utils.RefacturacionesReportOptimizer refacturaciones =
          new com.epmapat.erp_epmapat.jasperReports.utils.RefacturacionesReportOptimizer();
 
@@ -50,6 +51,7 @@ public class ReporteSqlService {
       JasperReport jasperReport = "Refacturaciones".equals(dto.getReportName())
             ? refacturaciones.load(reporte.getJasper())
             : (JasperReport) JRLoader.loadObject(new ByteArrayInputStream(reporte.getJasper()));
+      if("NtaCreditoIndividual".equals(dto.getReportName())) jasperReport=reportCache.getCompiled(dto.getReportName());
       params.forEach((k, v) -> {
          System.out.println(k + " => " + v + " (" + v.getClass().getName() + ")");
       });

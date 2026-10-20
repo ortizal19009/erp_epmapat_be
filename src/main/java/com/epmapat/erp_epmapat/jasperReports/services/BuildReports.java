@@ -43,7 +43,7 @@ public class BuildReports {
 
             parameters.put(JRParameter.REPORT_CONNECTION, conn); // Pasamos la conexión a los subreportes
 
-            JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
+            JasperReport jasperReport = reportCache.getCompiled(jasperDTO.getReportName());
             parameters = normalizeParametersForReport(jasperReport, parameters);
 
             // Usa JREmptyDataSource si el reporte principal no usa datos directamente
@@ -85,7 +85,7 @@ public class BuildReports {
         } catch (Exception ignore) {
         }
 
-        JasperReport jr = loader.load(reportName);
+        JasperReport jr = "NtaCreditoIndividual".equals(reportName) ? reportCache.getCompiled(reportName) : loader.load(reportName);
         JasperPrint jasperPrint = JasperFillManager.fillReport(jr, normalizeParametersForReport(jr, params), conn);
         trimReceiptPaper(reportName, jasperPrint);
         return jasperPrint;

@@ -34,6 +34,9 @@ public class Ntacredito {
     private String observacion;
     private BigDecimal valor;
     private BigDecimal devengado;
+    @javax.persistence.Transient private BigDecimal saldoDisponible;
+    @javax.persistence.Transient private BigDecimal totalEndosado;
+
     private Long idtransfernota;
     private String razontransferencia;
     private String nrofactura;

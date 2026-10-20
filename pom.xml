@@ -280,4 +280,14 @@
 
 		</plugins>
 	</build>
+    <profiles>
+        <profile>
+            <id>nc-tests-isolated</id>
+            <build><directory>${project.basedir}/target/nc-tests-build</directory></build>
+        </profile>
+        <profile>
+            <id>local-runtime</id>
+            <build><directory>${project.basedir}/target/local-runtime</directory></build>
+        </profile>
+    </profiles>
 </project>

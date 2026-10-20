@@ -117,6 +117,12 @@ public class FacturasApi {
 		}
 	}
 
+	@GetMapping("/cliente/{idcliente}/page")
+	public Page<Facturas> planillasClientePage(@PathVariable Long idcliente,
+			@RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size) {
+		return facServicio.findPlanillasClientePage(idcliente, page, size);
+	}
+
 	@GetMapping("/idabonado/{idabonado}")
 	public List<Facturas> getByIdabonado(@PathVariable Long idabonado) {
 		return facServicio.findByIdabonado(idabonado);

@@ -108,4 +108,21 @@ class RecaudacionMontosTest {
         verifyNoInteractions(rubros);
     }
 
+    @Test void creditoSolicitadoNoPuedeSuperarElCobroNiTenerFraccionesDeCentavo() {
+        for (String importe : List.of("-1.00", "25.001", "100.01")) {
+            assertThrows(IllegalArgumentException.class, () -> ReflectionTestUtils.invokeMethod(servicio,
+                    "validarCreditoSolicitado", new BigDecimal(importe), new BigDecimal("100.00")));
+        }
+    }
+
+    @Test void creditoParcialTotalYCeroMantienenImporteConciliable() {
+        for (String importe : List.of("0", "25", "100")) {
+            BigDecimal validado = ReflectionTestUtils.invokeMethod(servicio, "validarCreditoSolicitado",
+                    new BigDecimal(importe), new BigDecimal("100.00"));
+            assertEquals(new BigDecimal(importe).setScale(2), validado);
+        }
+        assertEquals(new BigDecimal("0.00"), ReflectionTestUtils.invokeMethod(servicio,
+                "validarCreditoSolicitado", null, new BigDecimal("100.00")));
+    }
+
 }
