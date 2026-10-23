@@ -17,6 +17,9 @@ import com.epmapat.erp_epmapat.interfaces.EstadoConvenios;
 import com.epmapat.erp_epmapat.modelo.Convenios;
 
 public interface ConveniosR extends JpaRepository<Convenios, Long> {
+  @Query(value = "SELECT COUNT(*) FROM convenios WHERE idabonado = ?1 AND fechaeliminacion IS NULL AND COALESCE(estado, 1) NOT IN (0, 2, 3)", nativeQuery = true)
+  long contarConveniosActivosParaTitularidad(Long idabonado);
+
 
   @EntityGraph(attributePaths = {
       "idabonado",

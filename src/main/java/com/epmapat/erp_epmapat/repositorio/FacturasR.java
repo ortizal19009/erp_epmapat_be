@@ -22,6 +22,28 @@ import com.epmapat.erp_epmapat.modelo.Facturas;
 
 @Repository
 public interface FacturasR extends JpaRepository<Facturas, Long> {
+    // Se permite ?nicamente el consumo de la ?ltima emisi?n abierta; convenios y otras deudas bloquean.
+    @Query(value = """
+        SELECT COUNT(*) FROM facturas f
+        WHERE f.idabonado = ?1 AND f.totaltarifa > 0
+          AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL
+          AND (((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL) OR f.estado = 3)
+          AND NOT EXISTS (
+              SELECT 1 FROM lecturas l
+              WHERE l.idfactura = f.idfactura AND l.idabonado_abonados = f.idabonado
+                AND f.idmodulo = 4
+                AND f.fechaconvenio IS NULL
+                AND COALESCE(f.estadoconvenio, 0) <> 1
+                AND COALESCE(f.conveniopago, 0) = 0
+                AND l.idemision = (
+                    SELECT e.idemision FROM emisiones e
+                    WHERE e.estado = 0 AND e.fechaanulacion IS NULL
+                    ORDER BY e.emision DESC, e.idemision DESC LIMIT 1
+                )
+          )
+        """, nativeQuery = true)
+    long contarDeudasParaCambioTitularidad(Long idabonado);
+
 
 	@Query(value = """
 			SELECT

@@ -31,6 +31,20 @@ public class AguaTramiteApi {
    @Autowired
    private AguaTramiteServicio aguatServicio;
 
+   @Autowired
+   private com.epmapat.erp_epmapat.servicio.ValidacionTitularidadServicio validacionTitularidad;
+
+   @GetMapping("/validar-titularidad/{idabonado}")
+   public ResponseEntity<Void> validarTitularidad(@PathVariable Long idabonado) {
+      validacionTitularidad.validar(idabonado);
+      return ResponseEntity.noContent().build();
+   }
+
+   @org.springframework.web.bind.annotation.ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+   public ResponseEntity<java.util.Map<String, String>> errorValidacion(org.springframework.web.server.ResponseStatusException error) {
+      return ResponseEntity.status(error.getStatus()).body(java.util.Collections.singletonMap("message", error.getReason()));
+   }
+
    @GetMapping
    public List<AguaTramite> getAll(@Param(value = "desde") Long desde,
          @Param(value = "hasta") Long hasta, @Param(value = "nombre") String nombre) {
@@ -79,6 +93,7 @@ public class AguaTramiteApi {
          @RequestBody AguaTramite x) {
       AguaTramite y = aguatServicio.findById(idaguatramite)
             .orElseThrow(() -> new ResourceNotFoundExcepciones("No Existe el id: " + idaguatramite));
+      if (x.getIdabonado() != null) y.setIdabonado(x.getIdabonado());
       y.setCodmedidor(x.getCodmedidor());
       y.setComentario(x.getComentario());
       y.setEstado(x.getEstado());

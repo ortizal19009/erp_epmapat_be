@@ -30,6 +30,7 @@ public class AguaTramite {
    @Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idaguatramite;
+   private Long idabonado;
    private String codmedidor;
    private String comentario;
    private Integer estado;

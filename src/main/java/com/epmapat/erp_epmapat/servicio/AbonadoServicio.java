@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +25,7 @@ import com.epmapat.erp_epmapat.interfaces.AbonadoI;
 import com.epmapat.erp_epmapat.interfaces.EstadisticasAbonados;
 import com.epmapat.erp_epmapat.interfaces.mobile.AbonadosMobile;
 import com.epmapat.erp_epmapat.modelo.Abonados;
-import com.epmapat.erp_epmapat.modelo.Emisiones;
-import com.epmapat.erp_epmapat.modelo.Lecturas;
 import com.epmapat.erp_epmapat.repositorio.AbonadosR;
-import com.epmapat.erp_epmapat.repositorio.EmisionesR;
 // import com.epmapat.erp_epmapat.repositorio.ClientesR;
 
 @Service
@@ -38,14 +34,12 @@ public class AbonadoServicio {
 	@Autowired
 	private AbonadosR dao;
 	@Autowired
+	private ValidacionTitularidadServicio validacionTitularidad;
+	@Autowired
 	private AuditoriaGenericaService auditoriaService;
 	@Autowired
 	@Lazy
 	private FacturaServicio facturaServicio;
-	@Autowired
-	private EmisionesR emisionesR;
-	@Autowired
-	private LecturaServicio lecturaServicio;
 
 	private static final Map<Integer, String> estados = new HashMap<>();
 
@@ -334,11 +328,19 @@ public class AbonadoServicio {
 		return dao.save(abonadoOriginal);
 	}
 
+	@org.springframework.transaction.annotation.Transactional
 	public Abonados actualizarAbonadoConAuditoria(Long idabonado, Abonados abonadosM, Long usumodi, String observacion, String tipo) {
 		Abonados abonadoOriginal = dao.findById(idabonado)
 				.orElseThrow(() -> new RuntimeException("Abonado no encontrado: " + idabonado));
-		boolean cambioMedidor = !Objects.equals(abonadoOriginal.getNromedidor(), abonadosM.getNromedidor());
-		boolean reiniciaLecturaInicial = abonadosM.getLecturainicial() != null && abonadosM.getLecturainicial() == 0;
+
+        if (!java.util.Objects.equals(
+                abonadoOriginal.getIdcliente_clientes() == null ? null : abonadoOriginal.getIdcliente_clientes().getIdcliente(),
+                abonadosM.getIdcliente_clientes() == null ? null : abonadosM.getIdcliente_clientes().getIdcliente())
+                || !java.util.Objects.equals(
+                abonadoOriginal.getIdresponsable() == null ? null : abonadoOriginal.getIdresponsable().getIdcliente(),
+                abonadosM.getIdresponsable() == null ? null : abonadosM.getIdresponsable().getIdcliente())) {
+            validacionTitularidad.validar(idabonado);
+        }
 
 		AbonadosAuditDTO auditDTO = buildAuditDTO(abonadoOriginal);
 
@@ -383,43 +385,7 @@ public class AbonadoServicio {
 
 		Abonados abonadoActualizado = dao.save(abonadoOriginal);
 
-		if (cambioMedidor && reiniciaLecturaInicial) {
-			reiniciarLecturaAnteriorEnEmisionAbierta(abonadoActualizado, usumodi, observacion, tipo);
-		}
-
 		return abonadoActualizado;
-	}
-
-	private void reiniciarLecturaAnteriorEnEmisionAbierta(Abonados abonado, Long usumodi, String observacion, String tipo) {
-		Emisiones emisionAbierta = emisionesR.findFirstByEstadoOrderByEmisionDesc(0);
-		if (emisionAbierta == null || abonado.getIdabonado() == null) {
-			return;
-		}
-
-		List<Lecturas> lecturas = lecturaServicio.findByIdemisionIdAbonado(emisionAbierta.getIdemision(), abonado.getIdabonado());
-		if (lecturas == null || lecturas.isEmpty()) {
-			return;
-		}
-
-		Lecturas lecturaActual = lecturas.stream()
-				.filter(lectura -> lectura != null && lectura.getEstado() != null && lectura.getEstado() == 0)
-				.findFirst()
-				.orElse(null);
-		if (lecturaActual == null) {
-			return;
-		}
-
-		lecturaActual.setLecturaanterior(0F);
-		String observacionLectura = (observacion == null || observacion.isBlank())
-				? "CAMBIO DE MEDIDOR - REINICIO LECTURA ANTERIOR EN EMISION ABIERTA"
-				: observacion;
-		String tipoAuditoria = (tipo == null || tipo.isBlank()) ? "MODIFICACION" : tipo;
-		lecturaServicio.actualizarLecturaConAuditoria(
-				lecturaActual.getIdlectura(),
-				lecturaActual,
-				usumodi,
-				observacionLectura,
-				tipoAuditoria);
 	}
 
 	public Abonados actualizarFotosAbonadoConAuditoria(Long idabonado, String fotocasaPath, String fotomedidorPath,

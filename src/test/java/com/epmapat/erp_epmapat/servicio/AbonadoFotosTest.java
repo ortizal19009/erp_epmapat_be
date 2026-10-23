@@ -46,6 +46,15 @@ class AbonadoFotosTest {
         mvc = MockMvcBuilders.standaloneSetup(api).build();
     }
 
+    @Test void cambioMedidorSoloActualizaAbonadoSinReiniciarHistorial() {
+        Abonados cambios = new Abonados();
+        cambios.setNromedidor("NUEVO-456");
+        cambios.setLecturainicial(0L);
+        Abonados actualizado = service.actualizarAbonadoConAuditoria(123L, cambios, 1L, "Cambio medidor", "MODIFICACION");
+        assertEquals("NUEVO-456", actualizado.getNromedidor());
+        assertEquals(0L, actualizado.getLecturainicial());
+    }
+
     @Test void editarSinFotosConservaAmbasReferencias() {
         Abonados cambios = new Abonados();
         cambios.setNromedidor("MED-123");

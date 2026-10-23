@@ -7,7 +7,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-/** Keeps existing GPS tables compatible with point deduplication and historical sessions. */
+/** Keeps existing GPS tables compatible with point/event deduplication and historical sessions. */
 @Component
 public class TrackingSchemaMigration implements ApplicationRunner {
 
@@ -29,6 +29,14 @@ public class TrackingSchemaMigration implements ApplicationRunner {
                 + "ADD COLUMN IF NOT EXISTS client_point_id VARCHAR(100)");
         jdbcTemplate.execute("CREATE UNIQUE INDEX IF NOT EXISTS uk_tracking_point_client "
                 + "ON tracking_points (client_point_id) WHERE client_point_id IS NOT NULL");
+        jdbcTemplate.execute("ALTER TABLE route_deviation_events "
+                + "ADD COLUMN IF NOT EXISTS client_event_id VARCHAR(120)");
+        jdbcTemplate.execute("ALTER TABLE gps_gap_events "
+                + "ADD COLUMN IF NOT EXISTS client_event_id VARCHAR(120)");
+        jdbcTemplate.execute("CREATE UNIQUE INDEX IF NOT EXISTS uk_route_deviation_client_event "
+                + "ON route_deviation_events (client_event_id)");
+        jdbcTemplate.execute("CREATE UNIQUE INDEX IF NOT EXISTS uk_gps_gap_client_event "
+                + "ON gps_gap_events (client_event_id)");
         log.info("Esquema de trazabilidad GPS verificado");
     }
 }

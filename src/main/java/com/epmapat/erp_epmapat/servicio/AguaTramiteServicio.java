@@ -28,6 +28,9 @@ public class AguaTramiteServicio {
    @Autowired
    private AguaTramiteR dao;
 
+   @Autowired
+   private ValidacionTitularidadServicio validacionTitularidad;
+
    public List<AguaTramite> findAll(Long desde, Long hasta) {
       if (desde != null || hasta != null) {
          return dao.findAll(desde, hasta);
@@ -86,7 +89,13 @@ public class AguaTramiteServicio {
    }
 
    public <S extends AguaTramite> S save(S entity) {
-		return dao.save(entity);
+		if (entity.getIdtipotramite_tipotramite() != null) {
+         Long tipo = entity.getIdtipotramite_tipotramite().getIdtipotramite();
+         if (Long.valueOf(5).equals(tipo) || Long.valueOf(10).equals(tipo)) {
+            validacionTitularidad.validar(entity.getIdabonado());
+         }
+      }
+      return dao.save(entity);
 	}
 
    public void deleteById(Long id) {
