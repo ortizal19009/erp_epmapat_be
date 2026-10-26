@@ -27,7 +27,14 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
         SELECT COUNT(*) FROM facturas f
         WHERE f.idabonado = ?1 AND f.totaltarifa > 0
           AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL
+          AND COALESCE(f.pagado, 0) = 0
           AND (((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL) OR f.estado = 3)
+          -- Las facturas originales se sustituyen por las cuotas del convenio (modulo 27).
+          AND (f.idmodulo = 27 OR (
+              f.fechaconvenio IS NULL
+              AND COALESCE(f.estadoconvenio, 0) <> 1
+              AND COALESCE(f.conveniopago, 0) = 0
+          ))
           AND NOT EXISTS (
               SELECT 1 FROM lecturas l
               WHERE l.idfactura = f.idfactura AND l.idabonado_abonados = f.idabonado
