@@ -26,24 +26,28 @@ public class NcEndosoService {
  private final BigDecimal maximo;
  private final boolean entreTitulares;
  public NcEndosoService(JdbcTemplate db,ObjectMapper json,
- @Value("${erp.nc-endosos.enabled:false}") boolean enabled,
+ @Value("${erp.nc-endosos.enabled:${ERP_NC_ENDOSOS_ENABLED:true}}") boolean enabled,
  @Value("${erp.nc-endosos.maximo:1000000.00}") BigDecimal maximo,
  @Value("${erp.nc-endosos.entre-titulares:false}") boolean entreTitulares) {
   this.db=db;this.json=json;this.enabled=enabled;this.maximo=maximo;this.entreTitulares=entreTitulares;
  }
+ private static final List<String> PERMISOS = List.of("CONSULTAR","SOLICITAR","AUTORIZAR","EJECUTAR","REVERTIR","REPORTES");
  public long actor(HttpServletRequest request,String permiso) {
-  if(!enabled) throw error(HttpStatus.SERVICE_UNAVAILABLE,"Endosos deshabilitados: requiere migracion y validacion institucional");
-  Object id=request.getAttribute("jwtUserId");
-  if(id==null) throw error(HttpStatus.UNAUTHORIZED,"Sesion WEB requerida");
-  long actor=Long.parseLong(id.toString());
-  int count=db.queryForObject("SELECT count(*) FROM nc_endoso_permiso p JOIN usuarios u ON u.idusuario=p.usuario_id WHERE p.usuario_id=? AND p.permiso=? AND u.estado=true",Integer.class,actor,permiso);
-  if(count==0) throw error(HttpStatus.FORBIDDEN,"Sin permiso NC_ENDOSO_"+permiso);
-  return actor;
+  List<String> permisos = permisos(request);
+  if(!permisos.contains(permiso)) throw error(HttpStatus.FORBIDDEN,"Sin permiso NC_ENDOSO_"+permiso);
+  return Long.parseLong(request.getAttribute("jwtUserId").toString());
  }
  public List<String> permisos(HttpServletRequest request) {
-  if(!enabled)return List.of();
-  Object id=request.getAttribute("jwtUserId");if(id==null)throw error(HttpStatus.UNAUTHORIZED,"Sesion requerida");
-  return db.queryForList("SELECT p.permiso FROM nc_endoso_permiso p JOIN usuarios u ON u.idusuario=p.usuario_id WHERE p.usuario_id=? AND u.estado=true ORDER BY permiso",String.class,Long.valueOf(id.toString()));
+  Object id=request.getAttribute("jwtUserId");
+  if(id==null)throw error(HttpStatus.UNAUTHORIZED,"Sesion WEB requerida");
+  if(!enabled)throw error(HttpStatus.SERVICE_UNAVAILABLE,"Endosos deshabilitados por configuracion (ERP_NC_ENDOSOS_ENABLED)");
+  long actor=Long.parseLong(id.toString());
+  Integer activos=db.queryForObject("SELECT count(*) FROM usuarios WHERE idusuario=? AND estado=true",Integer.class,actor);
+  if(activos==null || activos==0)throw error(HttpStatus.FORBIDDEN,"Usuario inactivo o inexistente");
+  if(!new NcSchemaState(db).migrated())throw error(HttpStatus.SERVICE_UNAVAILABLE,"Falta aplicar la migracion de Endosos: 2026-10-19_nc_endosos.sql");
+  // The system administrator has every module permission. Business rules still apply.
+  if(actor==1L)return PERMISOS;
+  return db.queryForList("SELECT p.permiso FROM nc_endoso_permiso p JOIN usuarios u ON u.idusuario=p.usuario_id WHERE p.usuario_id=? AND u.estado=true ORDER BY permiso",String.class,actor);
  }
  public Map<String,Object> disponibilidad(long nota) {
   return one("SELECT s.idntacredito, s.idabonado_abonados cuenta, s.valor, coalesce(s.devengado,0) aplicado, s.endosado, s.disponible, s.tipo_origen, s.estado, s.fechaeliminacion, n.feccrea, n.nrofactura, n.refdocumento, n.observacion, c.nombre titular, c.cedula identificacion FROM nc_saldos s JOIN ntacredito n ON n.idntacredito=s.idntacredito LEFT JOIN clientes c ON c.idcliente=n.idcliente_clientes WHERE s.idntacredito=?",nota);

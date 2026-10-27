@@ -299,3 +299,13 @@ Reiniciar el backend con perfil local para aplicar la configuracion.
   endosos encontrados, para conservar el detalle de la transferencia completa.
 - El enlace a detalle abre `/nc-endosos?id=...` con su historial. Se mantienen los
   permisos explicitos `CONSULTAR` y `REPORTES`; no se modifican saldos al consultar.
+
+
+## Actualizacion de acceso (2026-10-27)
+
+El administrador activo ID 1 ahora recibe todos los permisos de Endosos.
+Los operadores conservan permisos explicitos por accion en nc_endoso_permiso.
+El servicio se habilita por defecto sin configuracion explicita, verifica la
+migracion y conserva la deshabilitacion explicita. Las reglas de separacion
+de solicitante/autorizador y las validaciones monetarias siguen vigentes.
+Ver ENDOSOS_ACCESO_PRODUCCION.md para despliegue y asignaciones.
