@@ -27,33 +27,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        if (!requiresWebJwt(path)) {
-            // Mobile still uses a legacy session token; only WEB routes consume JWTs.
-            filterChain.doFilter(request, response);
-            return;
-        }
+        boolean required = requiresWebJwt(path);
         String authorization = request.getHeader("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            if (requiresWebJwt(path)) {
+            if (required) {
                 unauthorized(response, "Token WEB requerido");
                 return;
             }
-            // Mobile conserva su esquema actual mientras se completa su propia migración.
-            filterChain.doFilter(request, response);
-            return;
+        } else {
+            try {
+                // Identify valid WEB sessions on legacy routes too, for request auditing.
+                // Legacy/mobile tokens remain optional outside protected WEB routes.
+                Map<String, Object> claims = jwtService.validateWebToken(authorization.substring(7).trim());
+                Long userId = Long.valueOf(String.valueOf(claims.get("sub")));
+                request.setAttribute("jwtUserId", userId);
+                request.setAttribute("jwtPlatform", claims.get("platform"));
+            } catch (IllegalArgumentException ex) {
+                if (required) {
+                    unauthorized(response, "Sesion web invalida o expirada");
+                    return;
+                }
+            }
         }
-        try {
-            Map<String, Object> claims = jwtService.validateWebToken(authorization.substring(7).trim());
-            request.setAttribute("jwtUserId", Long.valueOf(String.valueOf(claims.get("sub"))));
-            request.setAttribute("jwtPlatform", claims.get("platform"));
-            filterChain.doFilter(request, response);
-        } catch (IllegalArgumentException ex) {
-            unauthorized(response, "Sesión web inválida o expirada");
-        }
+        filterChain.doFilter(request, response);
     }
 
     private boolean requiresWebJwt(String uri) {
-        return uri.equals("/api/nc-endosos") || uri.startsWith("/api/nc-endosos/")
+        return uri.equals("/request-audit") || uri.startsWith("/request-audit/")
+                || uri.equals("/api/nc-endosos") || uri.startsWith("/api/nc-endosos/")
                 || uri.startsWith("/usrxmodulos")
                 || uri.startsWith("/ventanas")
                 || uri.startsWith("/access/")

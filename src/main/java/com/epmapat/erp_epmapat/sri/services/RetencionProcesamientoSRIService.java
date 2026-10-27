@@ -133,31 +133,24 @@ public class RetencionProcesamientoSRIService {
 
       retencionSRIService.actualizarXmlAutorizado(idretencion, xmlAutorizado, "AUTORIZADA", null);
 
-      Map<String, Object> mail = retencionEmailService.enviarRetencion(
-            idretencion,
-            destinatario,
-            asunto,
-            mensaje,
-            false);
-
-      correosEnviadosServicio.registrarEnvio(
-            "RETENCIONES",
-            idretencion,
-            "RETENCION",
-            safeValue(mail.get("email"), destinatario),
-            safeValue(asunto, "Comprobante de retencion"),
-            "sri",
-            safeValue(mail.get("archivo"), "retencion.pdf"),
-            "ENVIADO",
-            "Retencion autorizada y enviada por correo");
-
-      Map<String, Object> response = Map.of(
-            "idretencion", idretencion,
-            "estado", "AUTORIZADA",
-            "numeroAutorizacion", numeroAutorizacion,
-            "fechaAutorizacion", fechaAutorizacion,
-            "xmlautorizado", xmlAutorizado,
-            "email", safeValue(mail.get("email"), destinatario));
+      // La autorizacion debe conservarse aunque falle PDF/SMTP.
+      Map<String, Object> response = new LinkedHashMap<>();
+      response.put("idretencion", idretencion);
+      response.put("estado", "AUTORIZADA");
+      response.put("claveAcceso", retencion.getClaveacceso());
+      response.put("numeroAutorizacion", numeroAutorizacion);
+      response.put("fechaAutorizacion", fechaAutorizacion);
+      response.put("xmlautorizado", xmlAutorizado);
+      try {
+         Map<String, Object> mail = retencionEmailService.enviarRetencion(
+               idretencion, destinatario, asunto, mensaje, true);
+         response.put("email", safeValue(mail.get("email"), ""));
+         response.put("emailEnviado", true);
+         response.put("estado", "ENVIADA");
+      } catch (RuntimeException errorCorreo) {
+         response.put("emailEnviado", false);
+         response.put("detalle", "Retencion autorizada. Pendiente de enviar correo: " + errorCorreo.getMessage());
+      }
       publicarActualizacion(response);
       return response;
    }
@@ -166,6 +159,18 @@ public class RetencionProcesamientoSRIService {
    public Map<String, Object> consultarEstadoPendiente(Long idretencion) {
       Retenciones retencion = retencionesR.findById(idretencion)
             .orElseThrow(() -> new IllegalArgumentException("No existe la retencion " + idretencion));
+
+      if (Integer.valueOf(1).equals(retencion.getEstado())) {
+         try {
+            String xmlGuardado = retencionSRIService.obtenerXmlAutorizado(idretencion);
+            return Map.of("idretencion", idretencion, "estado", "AUTORIZADA",
+                  "claveAcceso", safeValue(retencion.getClaveacceso(), ""),
+                  "numeroAutorizacion", firstNonBlank(retencion.getNumautoriza_e(), retencion.getNumautoriza()),
+                  "fechaAutorizacion", safeValue(retencion.getFecautoriza(), ""), "xmlautorizado", xmlGuardado);
+         } catch (IllegalArgumentException | IllegalStateException sinXml) {
+            // Las retenciones historicas con metadatos incompletos se recuperan del SRI.
+         }
+      }
 
       String claveAcceso = firstNonBlank(retencion.getClaveacceso(), retencion.getNumautoriza(), retencion.getNumautoriza_e());
       if (!StringUtils.hasText(claveAcceso)) {
@@ -242,7 +247,7 @@ public class RetencionProcesamientoSRIService {
             return Map.of(
                   "idretencion", retencion.getIdrete(),
                   "estado", "CLAVE_DUPLICADA",
-                  "detalle", "La clave de acceso ya existe en otra retencion autorizada o enviada.",
+                  "detalle", "La clave de acceso ya fue enviada. Consulte su autorizacion antes de intentar emitir nuevamente.",
                   "claveAcceso", claveAcceso);
          }
       }
@@ -251,115 +256,78 @@ public class RetencionProcesamientoSRIService {
    }
 
    private AutorizacionResultado enviarFirmarYAutorizar(String xmlPlano) {
-      String url = sriMicroserviceBaseUrl + "/api/singsend/retencion/string?modo=XADES_BES&download=false";
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_XML);
-      HttpEntity<String> request = new HttpEntity<>(xmlPlano, headers);
+      headers.setAccept(List.of(MediaType.APPLICATION_JSON));
       try {
-         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
-         String body = response.getBody() == null ? "" : response.getBody().trim();
-
-         if (response.getStatusCode().is2xxSuccessful() && body.startsWith("<")) {
-            return AutorizacionResultado.autorizado(body);
+         ResponseEntity<String> response = restTemplate.exchange(
+               sriMicroserviceBaseUrl + "/api/v1/retenciones", HttpMethod.POST,
+               new HttpEntity<>(xmlPlano, headers), String.class);
+         String body = safeValue(response.getBody(), "");
+         String estado = extraerCampoJson(body, "estado");
+         if (response.getStatusCode().value() == 202 || estado.startsWith("PENDIENTE")) {
+            return AutorizacionResultado.pendiente("La autorizacion aun no esta disponible", 202, body);
          }
-
-         if (response.getStatusCode().value() == 202 || contienePendiente(body)) {
-            return AutorizacionResultado.pendiente(
-                  "La autorizacion aun no esta disponible",
-                  response.getStatusCode().value(),
-                  body);
+         if ("AUTORIZADO".equals(estado)) {
+            // Compatible con el servicio desplegado que solo retorna metadatos.
+            return consultarAutorizacionPorClave(extraerTag(xmlPlano, "claveAcceso"));
          }
-
-         if (response.getStatusCode().value() == 502 && contieneAutorizadoSinXml(body)) {
-            return AutorizacionResultado.pendiente(
-                  "El SRI ya respondio la autorizacion, pero todavia no entrega el XML autorizado",
-                  response.getStatusCode().value(),
-                  body);
+         if ("NO_AUTORIZADO".equals(estado)) {
+            return AutorizacionResultado.noAutorizado(construirMensajeNoAutorizado(body), 200, body,
+                  extraerTag(xmlPlano, "claveAcceso"), "", "");
          }
-
-         throw new IllegalStateException("Respuesta inesperada del servicio SRI (" + response.getStatusCode() + "): "
-               + body);
+         throw new IllegalStateException("Respuesta inesperada del servicio SRI: " + body);
       } catch (HttpStatusCodeException ex) {
-         String responseBody = ex.getResponseBodyAsString();
-         if (ex.getStatusCode().value() == 502 && contieneAutorizadoSinXml(responseBody)) {
-            return AutorizacionResultado.pendiente(
-                  "La retencion sigue pendiente de autorizacion: el SRI aun no devuelve el XML autorizado. Intente consultarla nuevamente en unos minutos.",
-                  ex.getStatusCode().value(),
-                  responseBody);
+         String body = ex.getResponseBodyAsString();
+         if (contieneLimiteDiario(body)) {
+            return AutorizacionResultado.limiteDiario("El SRI alcanzo el limite diario de intentos", ex.getRawStatusCode(), body);
          }
-         if (ex.getStatusCode().value() == 400 && contieneLimiteDiario(responseBody)) {
-            return AutorizacionResultado.limiteDiario(
-                  "El SRI ya alcanzo el limite diario de intentos para esta retencion. Intente nuevamente el siguiente dia.",
-                  ex.getStatusCode().value(),
-                  responseBody);
+         if (contieneNoAutorizado(body)) {
+            return AutorizacionResultado.noAutorizado(construirMensajeNoAutorizado(body), ex.getRawStatusCode(), body,
+                  extraerTag(xmlPlano, "claveAcceso"), "", "");
          }
-         if (ex.getStatusCode().value() == 400 && contieneNoAutorizado(responseBody)) {
-            return AutorizacionResultado.noAutorizado(
-                  construirMensajeNoAutorizado(responseBody),
-                  ex.getStatusCode().value(),
-                  responseBody,
-                  extraerCampoJson(responseBody, "claveAcceso"),
-                  extraerCampoJson(responseBody, "numeroAutorizacion"),
-                  extraerCampoJson(responseBody, "fechaAutorizacion"));
-         }
-         throw new IllegalStateException(
-               "El microservicio SRI devolvio " + ex.getStatusCode().value() + ": "
-                     + (responseBody == null || responseBody.isBlank() ? ex.getMessage() : responseBody),
-               ex);
+         throw new IllegalStateException("El microservicio SRI devolvio " + ex.getRawStatusCode() + ": " + body, ex);
       }
    }
 
    private AutorizacionResultado consultarAutorizacionPorClave(String claveAcceso) {
-      String url = sriMicroserviceBaseUrl + "/api/singsend/retenciones/xml?claveAcceso=" + claveAcceso;
-      try {
-         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, String.class);
-         String body = response.getBody() == null ? "" : response.getBody().trim();
-
-         if (response.getStatusCode().is2xxSuccessful() && body.startsWith("<")) {
-            return AutorizacionResultado.autorizado(body);
-         }
-         if (response.getStatusCode().value() == 202 || contienePendiente(body)) {
-            return AutorizacionResultado.pendiente(
-                  "La autorizacion aun sigue pendiente en el SRI",
-                  response.getStatusCode().value(),
-                  body);
-         }
-         if (response.getStatusCode().value() == 502 && contieneAutorizadoSinXml(body)) {
-            return AutorizacionResultado.pendiente(
-                  "El SRI reporta autorizacion, pero todavia no entrega el XML autorizado",
-                  response.getStatusCode().value(),
-                  body);
-         }
-
-         throw new IllegalStateException("Respuesta inesperada al consultar el SRI (" + response.getStatusCode() + "): " + body);
-      } catch (HttpStatusCodeException ex) {
-         String responseBody = ex.getResponseBodyAsString();
-         if (ex.getStatusCode().value() == 502 && contieneAutorizadoSinXml(responseBody)) {
-            return AutorizacionResultado.pendiente(
-                  "La retencion sigue pendiente de autorizacion: el SRI aun no devuelve el XML autorizado. Intente consultarla nuevamente en unos minutos.",
-                  ex.getStatusCode().value(),
-                  responseBody);
-         }
-         if (ex.getStatusCode().value() == 400 && contieneNoAutorizado(responseBody)) {
-            return AutorizacionResultado.noAutorizado(
-                  construirMensajeNoAutorizado(responseBody),
-                  ex.getStatusCode().value(),
-                  responseBody,
-                  firstNonBlank(extraerCampoJson(responseBody, "claveAcceso"), claveAcceso),
-                  extraerCampoJson(responseBody, "numeroAutorizacion"),
-                  extraerCampoJson(responseBody, "fechaAutorizacion"));
-         }
-         if (ex.getStatusCode().value() == 202 || contienePendiente(responseBody)) {
-            return AutorizacionResultado.pendiente(
-                  "La autorizacion aun sigue pendiente en el SRI",
-                  ex.getStatusCode().value(),
-                  responseBody);
-         }
-         throw new IllegalStateException(
-               "El microservicio SRI devolvio " + ex.getStatusCode().value() + " al consultar clave "
-                     + claveAcceso + ": " + (responseBody == null || responseBody.isBlank() ? ex.getMessage() : responseBody),
-               ex);
+      if (claveAcceso == null || !claveAcceso.matches("[0-9]{49}")) {
+         throw new IllegalArgumentException("Clave de acceso invalida para consultar la retencion");
       }
+      String url = sriMicroserviceBaseUrl + "/api/v1/autorizacion/" + claveAcceso + "?includeXml=true";
+      HttpHeaders headers = new HttpHeaders();
+      headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+      String body = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
+      try {
+         com.fasterxml.jackson.databind.JsonNode auth = objectMapper.readTree(body).path("autorizacion");
+         String estado = auth.path("estado").asText();
+         if ("NO AUTORIZADO".equals(estado) || "NO_AUTORIZADO".equals(estado)) {
+            return AutorizacionResultado.noAutorizado("El SRI devolvio la retencion como NO AUTORIZADO", 200, body,
+                  claveAcceso, auth.path("numeroAutorizacion").asText(), auth.path("fechaAutorizacion").asText());
+         }
+         String comprobante = auth.path("comprobante").asText();
+         String numero = auth.path("numeroAutorizacion").asText();
+         String fecha = auth.path("fechaAutorizacion").asText();
+         if (!"AUTORIZADO".equals(estado) || comprobante.isBlank() || numero.isBlank() || fecha.isBlank()) {
+            return AutorizacionResultado.pendiente("El SRI aun no devuelve XML y metadatos de autorizacion completos", 202, body);
+         }
+         if (!claveAcceso.equals(extraerTag(comprobante, "claveAcceso"))
+               || !comprobante.contains("<comprobanteRetencion")) {
+            throw new IllegalStateException("El SRI devolvio un comprobante distinto a la retencion solicitada");
+         }
+         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><autorizacion><estado>AUTORIZADO</estado>"
+               + "<numeroAutorizacion>" + escaparXml(numero) + "</numeroAutorizacion>"
+               + "<fechaAutorizacion>" + escaparXml(fecha) + "</fechaAutorizacion>"
+               + "<ambiente>" + escaparXml(auth.path("ambiente").asText()) + "</ambiente>"
+               + "<comprobante><![CDATA[" + comprobante.replace("]]>", "]]]]><![CDATA[>") + "]]></comprobante></autorizacion>";
+         return AutorizacionResultado.autorizado(xml);
+      } catch (java.io.IOException error) {
+         throw new IllegalStateException("Respuesta de autorizacion SRI invalida", error);
+      }
+   }
+
+   private String escaparXml(String value) {
+      return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
    }
 
    private boolean contienePendiente(String value) {
@@ -399,6 +367,8 @@ public class RetencionProcesamientoSRIService {
       String fecha = normalizarFechaAutorizacion(fechaAutorizacion);
 
       retencion.setClaveacceso(claveAcceso);
+      String ambiente = extraerTag(xmlAutorizado, "ambiente");
+      if (StringUtils.hasText(ambiente)) retencion.setAmbiente(ambiente);
       retencion.setNumautoriza(numero);
       retencion.setNumautoriza_e(numero);
       retencion.setFecautoriza(fecha);
@@ -410,6 +380,9 @@ public class RetencionProcesamientoSRIService {
    private String extraerTag(String xml, String tagName) {
       try {
          DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+         dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+         dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+         dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
          dbf.setNamespaceAware(true);
          Document doc = dbf.newDocumentBuilder()
                .parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));

@@ -73,6 +73,9 @@ public class RetencionSRIService {
    public Fec_retenciones generarYGuardar(Long idretencion) {
       long inicio = System.currentTimeMillis();
       Retenciones retencion = cargarRetencion(idretencion);
+      if (Integer.valueOf(1).equals(retencion.getEstado())) {
+         throw new IllegalStateException("La retencion ya esta autorizada; no se puede regenerar su XML");
+      }
       asegurarClaveAcceso(retencion);
       retencion.setEstado(0);
       retencion = retencionesServicio.updateRetencion(idretencion, retencion);
@@ -113,6 +116,16 @@ public class RetencionSRIService {
       fec.setEstado(estado);
       fec.setErrores(errores);
       return guardarFecRetencion(fec);
+   }
+
+   public String obtenerXmlAutorizado(Long idretencion) {
+      Fec_retenciones fec = fecRetencionesR.findById(idretencion)
+            .orElseThrow(() -> new IllegalArgumentException("No existe la retencion " + idretencion));
+      String xml = fec.getXmlautorizado();
+      if (xml == null || !xml.contains("<autorizacion") || !xml.contains("<numeroAutorizacion>")) {
+         throw new IllegalStateException("La retencion aun no tiene XML autorizado completo");
+      }
+      return xml;
    }
 
    public List<Fec_retenciones> listarTodas() {
@@ -189,8 +202,11 @@ public class RetencionSRIService {
             .setParameter("emailsujetoretenido", fec.getEmailsujetoretenido())
             .executeUpdate();
 
-      return fecRetencionesR.findById(fec.getIdretencion())
+      Fec_retenciones actualizada = fecRetencionesR.findById(fec.getIdretencion())
             .orElseThrow(() -> new IllegalStateException("No se pudo guardar fec_retenciones " + fec.getIdretencion()));
+      // El upsert nativo no actualiza las entidades que JPA ya tiene en memoria.
+      entityManager.refresh(actualizada);
+      return actualizada;
    }
 
    private Retenciones cargarRetencion(Long idretencion) {

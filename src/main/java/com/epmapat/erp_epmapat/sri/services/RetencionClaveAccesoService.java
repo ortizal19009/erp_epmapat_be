@@ -65,6 +65,9 @@ public class RetencionClaveAccesoService {
    public Retenciones regenerarClaveAcceso(Long idretencion) {
       Retenciones retencion = retencionesR.findById(idretencion)
             .orElseThrow(() -> new IllegalArgumentException("No existe la retencion " + idretencion));
+      if (Integer.valueOf(1).equals(retencion.getEstado())) {
+         throw new IllegalStateException("No se puede regenerar la clave de una retencion autorizada");
+      }
       Definir definir = getDefinir();
       retencion.setClaveacceso(generarClaveUnica(retencion, definir));
       log.info("Clave de acceso regenerada para retencion {}", idretencion);

@@ -69,6 +69,19 @@ public class RetencionSRIController {
       }
    }
 
+   @GetMapping("/xml-autorizado")
+   public ResponseEntity<String> descargarXmlAutorizado(@RequestParam Long idretencion) {
+      try {
+         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
+               .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=retencion_" + idretencion + ".xml")
+               .body(retencionSRIService.obtenerXmlAutorizado(idretencion));
+      } catch (IllegalArgumentException e) {
+         return ResponseEntity.notFound().build();
+      } catch (IllegalStateException e) {
+         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+      }
+   }
+
    @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
    public SseEmitter streamRetenciones() {
       return retencionSseService.subscribe();

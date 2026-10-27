@@ -122,9 +122,7 @@ public class RetencionEmailService {
       if (estaAutorizada(retencion) && tieneXmlAutorizado(existente)) {
          return existente;
       }
-      return actualizarEstado
-            ? retencionSRIService.generarYGuardar(idretencion)
-            : retencionSRIService.actualizarXmlAutorizado(idretencion, null, "AUTORIZADA", null);
+      throw new IllegalStateException("Recupere primero la autorizacion y el XML autorizado de la retencion " + idretencion);
    }
 
    private boolean estaAutorizada(Retenciones retencion) {
@@ -140,8 +138,8 @@ public class RetencionEmailService {
       if (fec == null || fec.getXmlautorizado() == null || fec.getXmlautorizado().isBlank()) {
          return false;
       }
-      String estado = fec.getEstado() == null ? "" : fec.getEstado().trim().toUpperCase();
-      return estado.contains("AUTORIZADA") || estado.contains("ENVIADA");
+      return fec.getXmlautorizado().contains("<autorizacion")
+            && fec.getXmlautorizado().contains("<numeroAutorizacion>");
    }
 
    private String obtenerEmailBeneficiario(Retenciones retencion) {
@@ -191,8 +189,9 @@ public class RetencionEmailService {
       if (values == null) {
          return resultado;
       }
-      Pattern separador = Pattern.compile("[;\\s]+");
+      Pattern separador = Pattern.compile("[,;\\s]+");
       for (String value : values) {
+         if (!resultado.isEmpty()) break; // El destinatario explicito reemplaza el correo registrado.
          if (value == null || value.trim().isEmpty()) {
             continue;
          }

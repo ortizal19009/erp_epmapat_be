@@ -37,6 +37,7 @@ public class VentanaServicio {
          "admin-access-control",
          "admin-correos",
          "admin-mobile-apk",
+         "admin-request-audit",
          "tabla4",
          "definir",
          "condonaciones",
