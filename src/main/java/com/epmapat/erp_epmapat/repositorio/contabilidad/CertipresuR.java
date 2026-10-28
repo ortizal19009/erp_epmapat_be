@@ -11,24 +11,23 @@ import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.modelo.contabilidad.Certipresu;
 
-public interface CertipresuR extends JpaRepository<Certipresu, Long> {
+public interface CertipresuR extends JpaRepository<Certipresu, Long>, org.springframework.data.jpa.repository.JpaSpecificationExecutor<Certipresu> {
 
-	@Query("""
-			SELECT c
-			FROM Certipresu c
-			LEFT JOIN FETCH c.intdoc
-			LEFT JOIN FETCH c.idbene
-			LEFT JOIN FETCH c.idbeneres
-			WHERE c.tipo = :tipo
-			  AND (:desdeNum IS NULL OR c.numero >= :desdeNum)
-              AND (:hastaNum IS NULL OR c.numero <= :hastaNum)
-			  AND (:desdeFecha IS NULL OR c.fecha >= :desdeFecha)
-              AND (:hastaFecha IS NULL OR c.fecha <= :hastaFecha)
-			ORDER BY c.numero ASC
-			""")
-	List<Certipresu> findDesdeHasta(@Param("tipo") Integer tipo, @Param("desdeNum") Long desdeNum,
-			@Param("hastaNum") Long hastaNum, @Param("desdeFecha") LocalDate desdeFecha,
-			@Param("hastaFecha") LocalDate hastaFecha);
+    default List<Certipresu> findDesdeHasta(Integer tipo, Long desdeNum, Long hastaNum,
+            LocalDate desdeFecha, LocalDate hastaFecha) {
+        return findAll((root, query, cb) -> {
+            root.fetch("intdoc", javax.persistence.criteria.JoinType.LEFT);
+            root.fetch("idbene", javax.persistence.criteria.JoinType.LEFT);
+            root.fetch("idbeneres", javax.persistence.criteria.JoinType.LEFT);
+            var filtros = new java.util.ArrayList<javax.persistence.criteria.Predicate>();
+            filtros.add(cb.equal(root.get("tipo"), tipo));
+            if (desdeNum != null) filtros.add(cb.greaterThanOrEqualTo(root.get("numero"), desdeNum));
+            if (hastaNum != null) filtros.add(cb.lessThanOrEqualTo(root.get("numero"), hastaNum));
+            if (desdeFecha != null) filtros.add(cb.greaterThanOrEqualTo(root.get("fecha"), desdeFecha));
+            if (hastaFecha != null) filtros.add(cb.lessThanOrEqualTo(root.get("fecha"), hastaFecha));
+            return cb.and(filtros.toArray(new javax.persistence.criteria.Predicate[0]));
+        }, org.springframework.data.domain.Sort.by("numero", "idcerti"));
+    }
 
 	// Ultima Certificación o Reintegrada
 	@EntityGraph(attributePaths = { "intdoc", "idbene", "idbeneres" })
