@@ -177,7 +177,7 @@ public class EmisionGeneracionServicio {
         Date fechaEmision = Date.from(fechaEmisionLocal.atStartOfDay(APP_ZONE).toInstant());
         Date fechaCreacion = new Date();
 
-        List<Rutas> rutasActivas = rutasR.findAllActive();
+        List<Rutas> rutasActivas = rutasR.findRutasParaApertura();
         AperturaProgreso progreso = generarFaltantes ? new AperturaProgreso() : null;
         if (progreso != null) {
             progreso.iniciar(rutasActivas.size(), emision.getEmision());
@@ -269,7 +269,11 @@ public class EmisionGeneracionServicio {
         }
 
         long rutasPendientes = detalleRutas.stream().filter(r -> r.getLecturasPendientes() > 0).count();
-        long lecturasPendientes = Math.max(totalLecturasEsperadas - (lecturasExistentes + lecturasCreadas), 0);
+        List<Long> cuentasPendientes = abonadosR.findCuentasPendientesApertura(idemision);
+        List<Long> cuentasSinRuta = abonadosR.findCuentasSinRutaParaApertura();
+        long lecturasPendientes = cuentasPendientes.size();
+        // Incluye cuentas sin ruta, para que nunca se informe una apertura completa por omision.
+        totalLecturasEsperadas += cuentasSinRuta.size();
         logResumenRutasLentas(accion, emision.getEmision(), tiemposRuta);
 
         if (progreso != null) {
@@ -288,6 +292,9 @@ public class EmisionGeneracionServicio {
                 .lecturasExistentes(lecturasExistentes)
                 .lecturasCreadas(lecturasCreadas)
                 .lecturasPendientes(lecturasPendientes)
+                .cuentasPendientes(cuentasPendientes)
+                .cuentasSinRuta(cuentasSinRuta)
+                .aperturaCompleta(lecturasPendientes == 0 && cuentasSinRuta.isEmpty())
                 .rutas(detalleRutas)
                 .build();
     }
@@ -343,11 +350,9 @@ public class EmisionGeneracionServicio {
             rutaCreada = true;
         }
 
-        List<Abonados> abonados = abonadosR.findByIdruta(ruta.getIdruta());
+        List<Abonados> abonados = abonadosR.findParaAperturaByRuta(ruta.getIdruta());
         long esperadosRuta = abonados.size();
-        long existentesRuta = rutaXEmision == null
-                ? 0
-                : lecturasR.countDistinctAbonadosByRutaXEmision(rutaXEmision.getIdrutaxemision());
+        long existentesRuta = 0;
         long creadasRuta = 0;
 
         if (rutaXEmision != null) {
@@ -357,11 +362,11 @@ public class EmisionGeneracionServicio {
                         .findFirstByIdemisionAndIdabonado(emision.getIdemision(), abonado.getIdabonado());
 
                 if (lecturaExistente.isPresent()) {
-                    corregirFacturaDeLecturaSiCorresponde(
-                            lecturaExistente.get(),
-                            abonado,
-                            fechaEmisionLocal,
-                            idusuario);
+                    existentesRuta++;
+                    if (generarFaltantes) {
+                        corregirFacturaDeLecturaSiCorresponde(
+                                lecturaExistente.get(), abonado, fechaEmisionLocal, idusuario);
+                    }
                     actualizarProgresoAbonado(progreso, indiceRuta, indiceAbonado + 1, esperadosRuta, false);
                     continue;
                 }

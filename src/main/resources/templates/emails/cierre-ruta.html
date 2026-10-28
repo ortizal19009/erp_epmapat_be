@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Su resumen de cuenta | EPMAPA-T</title>
+  <style>
+    body { margin:0; padding:0; background:#eef3f7; }
+    table { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+    img { border:0; outline:none; text-decoration:none; }
+    @media only screen and (max-width:600px) {
+      .outer { padding:16px 8px !important; }
+      .content { padding-left:22px !important; padding-right:22px !important; }
+      .amount { font-size:38px !important; }
+      .logo { width:230px !important; }
+      .contact-column { display:block !important; width:100% !important; padding:0 0 14px !important; }
+      .data-column { display:block !important; width:100% !important; padding-bottom:10px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#eef3f7;font-family:Arial,Helvetica,sans-serif;color:#20334a;">
+  <div style="display:none;font-size:1px;line-height:1px;color:#eef3f7;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">Su valor actual generado es USD <span th:text="${actual}">12.35</span>. Consulte el resumen de su cuenta EPMAPA-T.</div>
+  <table role="presentation" width="100%" style="width:100%;background-color:#eef3f7;">
+    <tr><td class="outer" align="center" style="padding:32px 16px;">
+      <!--[if mso]><table role="presentation" width="640" align="center"><tr><td><![endif]-->
+      <table role="presentation" width="100%" style="width:100%;max-width:640px;background-color:#ffffff;border:1px solid #dce5ed;">
+        <tr><td class="content" style="padding:28px 36px;background-color:#19365b;border-top:5px solid #33b6d2;">
+          <a href="https://epmapatulcan.gob.ec/" style="text-decoration:none;">
+            <img class="logo" th:src="${logoUrl}" src="https://epmapatulcan.gob.ec/emapat/wp-content/uploads/2026/03/LOGO-blanco-1.png" width="270" alt="EPMAPA-T | Agua potable y alcantarillado de Tulcán" style="display:block;width:270px;max-width:100%;height:auto;color:#ffffff;font-size:18px;">
+          </a>
+          <p style="margin:17px 0 0;font-size:11px;line-height:18px;letter-spacing:2px;color:#b8e6f1;">SERVICIOS PARA LA CIUDADANÍA</p>
+        </td></tr>
+        <tr th:if="${esPrueba}"><td class="content" style="padding:9px 36px;background-color:#fff4d9;color:#795400;font-size:11px;line-height:17px;">AMBIENTE DE PRUEBAS · Notificación dirigida exclusivamente al correo de pruebas.</td></tr>
+        <tr><td class="content" style="padding:32px 36px 22px;">
+          <p style="margin:0 0 9px;font-size:11px;letter-spacing:1.7px;font-weight:bold;color:#16829b;">RESUMEN DE CUENTA</p>
+          <h1 style="margin:0 0 20px;font-size:27px;line-height:35px;font-weight:bold;color:#19365b;">Su información, clara y al día.</h1>
+          <p style="margin:0 0 10px;font-size:14px;line-height:23px;">Estimado/a <strong th:text="${nombre}">María Ejemplo</strong>:</p>
+          <p style="margin:0;font-size:14px;line-height:23px;color:#56667a;">Le compartimos el valor generado en la emisión actual y el detalle de los valores anteriores pendientes de su cuenta.</p>
+        </td></tr>
+        <tr><td class="content" style="padding:0 36px 22px;">
+          <table role="presentation" width="100%" style="width:100%;border-top:1px solid #e1e9ef;border-bottom:1px solid #e1e9ef;">
+            <tr><td class="data-column" width="45%" style="padding:15px 0;vertical-align:top;"><span style="font-size:10px;letter-spacing:1px;color:#738297;">NÚMERO DE CUENTA</span><br><strong th:text="${cuenta}" style="font-size:17px;line-height:28px;color:#19365b;">12345</strong></td>
+            <td class="data-column" width="55%" style="padding:15px 0;vertical-align:top;"><span style="font-size:10px;letter-spacing:1px;color:#738297;">PERÍODO DE EMISIÓN</span><br><strong th:text="${emision}" style="font-size:15px;line-height:28px;color:#19365b;">Octubre de 2026</strong></td></tr>
+          </table>
+        </td></tr>
+        <tr><td class="content" style="padding:0 36px 26px;">
+          <table role="presentation" width="100%" style="width:100%;background-color:#eaf5fa;border-left:5px solid #149cbb;">
+            <tr><td style="padding:23px 25px;">
+              <p style="margin:0 0 10px;font-size:11px;letter-spacing:1px;font-weight:bold;color:#12647e;">VALOR ACTUAL GENERADO</p>
+              <p style="margin:0;color:#19365b;line-height:53px;"><span style="font-size:18px;vertical-align:top;line-height:37px;">USD</span> <strong class="amount" th:text="${actual}" style="font-size:44px;font-weight:bold;letter-spacing:-1px;">12.35</strong></p>
+              <p style="margin:7px 0 0;font-size:12px;line-height:19px;color:#527084;">Corresponde únicamente a la emisión actual.</p>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td class="content" style="padding:0 36px 28px;">
+          <h2 style="margin:0 0 6px;font-size:17px;line-height:24px;color:#19365b;">Valores anteriores pendientes</h2>
+          <p style="margin:0 0 15px;font-size:12px;line-height:19px;color:#738297;"><span th:text="${facturasPendientes}">3</span> factura(s) pendiente(s), sin incluir la emisión actual.</p>
+          <table width="100%" aria-label="Desglose de valores anteriores pendientes" style="width:100%;font-size:13px;line-height:20px;">
+            <thead><tr><th scope="col" align="left" style="padding:10px 12px;background-color:#f2f5f8;color:#607086;font-size:10px;letter-spacing:1px;">CONCEPTO</th><th scope="col" align="right" style="padding:10px 12px;background-color:#f2f5f8;color:#607086;font-size:10px;letter-spacing:1px;">VALOR USD</th></tr></thead>
+            <tbody>
+              <tr><td style="padding:12px;border-bottom:1px solid #e9eef3;">Consumo de agua</td><td align="right" th:text="${consumo}" style="padding:12px;border-bottom:1px solid #e9eef3;white-space:nowrap;">35.00</td></tr>
+              <tr><td style="padding:12px;border-bottom:1px solid #e9eef3;">Servicios</td><td align="right" th:text="${servicios}" style="padding:12px;border-bottom:1px solid #e9eef3;white-space:nowrap;">10.00</td></tr>
+              <tr><td style="padding:12px;border-bottom:1px solid #e9eef3;">Cuotas de convenios</td><td align="right" th:text="${convenios}" style="padding:12px;border-bottom:1px solid #e9eef3;white-space:nowrap;">5.00</td></tr>
+              <tr><th scope="row" align="left" style="padding:14px 12px;">Total anterior pendiente</th><td align="right" style="padding:14px 12px;font-weight:bold;white-space:nowrap;">USD <span th:text="${anterior}">50.00</span></td></tr>
+            </tbody>
+          </table>
+          <p style="margin:3px 12px 18px;font-size:11px;line-height:18px;color:#738297;">Los importes anteriores ya incluyen USD <span th:text="${intereses}">1.20</span> de intereses. Este valor no se suma nuevamente.</p>
+          <table role="presentation" width="100%" style="width:100%;background-color:#19365b;">
+            <tr><td style="padding:18px 18px;color:#ffffff;font-size:12px;line-height:18px;">TOTAL PENDIENTE<br><span style="font-size:11px;color:#c5d5e6;">Incluye el valor actual generado</span></td><td align="right" style="padding:18px;color:#ffffff;font-size:23px;line-height:30px;font-weight:bold;white-space:nowrap;">USD <span th:text="${total}">62.35</span></td></tr>
+          </table>
+        </td></tr>
+        <tr><td class="content" style="padding:0 36px 30px;">
+          <p style="margin:0 0 19px;font-size:12px;line-height:20px;color:#607086;">Si ya realizó un pago, tenga en cuenta que este resumen refleja los valores consultados al cierre. Para conocer su saldo actualizado o solicitar asistencia, comuníquese con nosotros.</p>
+          <table role="presentation"><tr><td align="center" bgcolor="#1688a4" style="background-color:#1688a4;border-radius:4px;"><a href="https://epmapatulcan.gob.ec/puntos-de-recaudacion/" style="display:inline-block;padding:13px 19px;border:1px solid #1688a4;font-size:12px;line-height:18px;font-weight:bold;text-decoration:none;color:#ffffff;">Ver puntos de atención y recaudación &rarr;</a></td></tr></table>
+        </td></tr>
+        <tr><td class="content" style="padding:25px 36px;background-color:#f3f7fa;border-top:1px solid #e1e9ef;">
+          <h2 style="margin:0 0 17px;font-size:16px;line-height:23px;color:#19365b;">Estamos para atenderle</h2>
+          <table role="presentation" width="100%" style="width:100%;"><tr>
+            <td class="contact-column" width="54%" style="width:54%;vertical-align:top;padding:0 20px 0 0;"><p style="margin:0 0 5px;font-size:11px;font-weight:bold;color:#19365b;">OFICINA MATRIZ · TULCÁN</p><p th:text="${direccion}" style="margin:0 0 6px;font-size:12px;line-height:20px;color:#607086;">Juan Ramón Arellano y Bolívar, esquina.</p><p style="margin:0;font-size:11px;line-height:19px;color:#607086;">Horario de recaudación:<br><strong th:text="${horario}">07:30 a 16:30</strong></p></td>
+            <td class="contact-column" width="46%" style="width:46%;vertical-align:top;"><p style="margin:0 0 5px;font-size:11px;font-weight:bold;color:#19365b;">CANALES DE CONTACTO</p><p style="margin:0 0 7px;font-size:12px;line-height:20px;"><a th:href="${telefonoUrl}" href="tel:+59362980021" th:text="${telefono}" style="color:#126c87;text-decoration:none;">(06) 2980 021</a><br><a th:href="${'mailto:' + correoContacto}" href="mailto:info@epmapatulcan.gob.ec" th:text="${correoContacto}" style="color:#126c87;text-decoration:none;">info@epmapatulcan.gob.ec</a></p><a href="https://epmapatulcan.gob.ec/contactenos/" style="font-size:12px;line-height:20px;color:#126c87;">Más información de contacto</a></td>
+          </tr></table>
+          <p style="margin:18px 0 0;padding-top:14px;border-top:1px solid #dce5ed;font-size:11px;line-height:18px;color:#607086;">Para agilizar su atención, tenga a mano su número de cuenta: <strong th:text="${cuenta}">12345</strong>.</p>
+        </td></tr>
+        <tr><td class="content" align="center" style="padding:23px 36px;background-color:#ffffff;"><p style="margin:0 0 5px;font-size:11px;font-weight:bold;line-height:18px;color:#19365b;">EPMAPA-T</p><p style="margin:0;font-size:10px;line-height:17px;color:#8090a2;">Empresa Pública Municipal de Agua Potable y Alcantarillado de Tulcán.<br>Notificación informativa generada automáticamente.</p></td></tr>
+      </table>
+      <!--[if mso]></td></tr></table><![endif]-->
+      <p style="margin:18px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:16px;color:#8090a2;">Agua potable y saneamiento al servicio de Tulcán.</p>
+    </td></tr>
+  </table>
+</body>
+</html>

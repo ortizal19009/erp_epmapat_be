@@ -37,6 +37,8 @@ public class AbonadoServicio {
 	private ValidacionTitularidadServicio validacionTitularidad;
 	@Autowired
 	private AuditoriaGenericaService auditoriaService;
+    @Autowired private RutaHistorialServicio rutaHistorial;
+    @javax.persistence.PersistenceContext private javax.persistence.EntityManager entityManager;
 	@Autowired
 	@Lazy
 	private FacturaServicio facturaServicio;
@@ -98,6 +100,11 @@ public class AbonadoServicio {
 	public Page<Abonados> findByIdruta(Long idruta, Pageable pageable) {
 		return hydratePage(dao.findByIdruta(idruta, pageable));
 	}
+
+    public Page<Abonados> buscarEnRuta(Long idruta, String filtro, Pageable pageable) {
+        if (filtro == null || filtro.isBlank()) return findByIdruta(idruta, pageable);
+        return hydratePage(dao.buscarEnRuta(idruta, filtro.trim(), pageable));
+    }
 
 	// Abonados por Categoría
 	public List<Abonados> findByIdcategoria(Long idcategoria) {
@@ -333,6 +340,8 @@ public class AbonadoServicio {
 		Abonados abonadoOriginal = dao.findById(idabonado)
 				.orElseThrow(() -> new RuntimeException("Abonado no encontrado: " + idabonado));
 
+        entityManager.refresh(abonadoOriginal, javax.persistence.LockModeType.PESSIMISTIC_WRITE);
+
         if (!java.util.Objects.equals(
                 abonadoOriginal.getIdcliente_clientes() == null ? null : abonadoOriginal.getIdcliente_clientes().getIdcliente(),
                 abonadosM.getIdcliente_clientes() == null ? null : abonadosM.getIdcliente_clientes().getIdcliente())
@@ -341,6 +350,8 @@ public class AbonadoServicio {
                 abonadosM.getIdresponsable() == null ? null : abonadosM.getIdresponsable().getIdcliente())) {
             validacionTitularidad.validar(idabonado);
         }
+
+        rutaHistorial.registrar(abonadoOriginal, abonadosM.getIdruta_rutas(), abonadosM.getSecuencia(), usumodi, observacion, "ABONADOS");
 
 		AbonadosAuditDTO auditDTO = buildAuditDTO(abonadoOriginal);
 
@@ -405,6 +416,21 @@ public class AbonadoServicio {
 		abonadoOriginal.setUsumodi(usumodi);
 		return dao.save(abonadoOriginal);
 	}
+
+    @org.springframework.transaction.annotation.Transactional
+    public Abonados retirarMedidorConAuditoria(Long cuenta, Long usuario, String observacion) {
+        Abonados abonado = dao.findById(cuenta).orElseThrow(() ->
+            new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "No existe la cuenta " + cuenta));
+        if (!Long.valueOf(2).equals(abonado.getEstado())) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,
+                "La cuenta " + cuenta + " ya no esta suspendida. Recargue el detalle.");
+        }
+        auditoriaService.saveAuditAtomic("abonados", cuenta, buildAuditDTO(abonado), usuario, observacion, "RETIRO_MEDIDOR");
+        abonado.setEstado(3L);
+        abonado.setUsumodi(usuario);
+        abonado.setFecmodi(java.time.LocalDate.now(java.time.ZoneId.of("America/Guayaquil")));
+        return dao.save(abonado);
+    }
 
 	private AbonadosAuditDTO buildAuditDTO(Abonados abonadoOriginal) {
 		return new AbonadosAuditDTO(

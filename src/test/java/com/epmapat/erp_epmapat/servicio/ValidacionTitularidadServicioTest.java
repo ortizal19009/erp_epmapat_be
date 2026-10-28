@@ -40,6 +40,7 @@ class ValidacionTitularidadServicioTest {
         AguaTramiteR dao = mock(AguaTramiteR.class);
         AguaTramiteServicio tramites = new AguaTramiteServicio();
         org.springframework.test.util.ReflectionTestUtils.setField(tramites, "dao", dao);
+        org.springframework.test.util.ReflectionTestUtils.setField(tramites, "abonadosR", abonados);
         org.springframework.test.util.ReflectionTestUtils.setField(tramites, "validacionTitularidad", servicio);
         when(facturas.contarDeudasParaCambioTitularidad(123L)).thenReturn(1L);
         for (long idtipo : new long[] {5L, 10L}) {

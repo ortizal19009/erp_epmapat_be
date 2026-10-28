@@ -508,7 +508,7 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd-MMMM", new java.util.Locale("es", "EC")).format($F{fechacobro})]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField pattern="#,##0.00 &apos;$&apos;">
 				<reportElement x="444" y="0" width="46" height="15" uuid="76beb605-8405-49b3-8203-a2fecdd17fd1">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dada4363-7412-4631-95f7-65bc2ccbffbc"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -522,7 +522,7 @@ ORDER BY
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[String.format("%.2f", $F{valor}.add($F{interescobrado}).add($F{swiva})) + " $"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valor}.add($F{interescobrado}).add($F{swiva})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="490" y="0" width="65" height="15" uuid="dad0fb28-3b4e-4f09-8584-76c76fa3e744">
@@ -788,33 +788,33 @@ ORDER BY
 					<jr:column width="110" uuid="7fdca638-8a9b-46ae-b752-00d8cfb6838e">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
 						<jr:tableHeader style="Table 1_TH" height="15" rowSpan="1">
-							<textField>
+							<textField pattern="#,##0.00 &apos;$&apos;">
 								<reportElement style="Table_TD" x="0" y="0" width="110" height="15" uuid="db884c9b-0a67-4512-9d21-0684f16f8011"/>
 								<box leftPadding="5" rightPadding="5"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="9" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $F{subtotal}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{subtotal}]]></textFieldExpression>
 							</textField>
 						</jr:tableHeader>
 						<jr:columnHeader style="Table 1_CH" height="15" rowSpan="1">
-							<textField>
+							<textField pattern="#,##0.00 &apos;$&apos;">
 								<reportElement style="Table_TD" x="0" y="0" width="110" height="15" uuid="b5a144a6-b203-4b74-8613-b925ad35e725"/>
 								<box leftPadding="5" rightPadding="5"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="9" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $F{sumaiva}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{sumaiva}]]></textFieldExpression>
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="Table 1_TD" height="15">
-							<textField>
+							<textField pattern="#,##0.00 &apos;$&apos;">
 								<reportElement style="Table_TD" x="0" y="0" width="110" height="15" uuid="0b32be3c-0746-42b0-8161-f27653b40666"/>
 								<box leftPadding="5" rightPadding="5"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="9" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $V{total}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{total}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

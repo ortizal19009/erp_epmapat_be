@@ -36,9 +36,9 @@ public class CertipresuApi {
 
 	// Certificaciones o Reintegradas por numero y fechas
 	@GetMapping
-	public List<Certipresu> desdeHasta(@RequestParam int tipo, @RequestParam Long desdeNum, @RequestParam Long hastaNum,
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desdeFecha,
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hastaFecha) {
+	public List<Certipresu> desdeHasta(@RequestParam(defaultValue = "1") int tipo, @RequestParam(required = false) Long desdeNum, @RequestParam(required = false) Long hastaNum,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate desdeFecha,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hastaFecha) {
 		return certiServicio.findDesdeHasta(tipo, desdeNum, hastaNum, desdeFecha, hastaFecha);
 	}
 

@@ -21,6 +21,10 @@ import com.epmapat.erp_epmapat.modelo.Abonados;
 
 public interface AbonadosR extends JpaRepository<Abonados, Long> {
 
+    @org.springframework.data.jpa.repository.Lock(javax.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM Abonados a WHERE a.idabonado IN (:ids) ORDER BY a.idabonado")
+    List<Abonados> lockParaRetiro(@Param("ids") List<Long> ids);
+
 	@Query(value = "SELECT * FROM abonados AS a JOIN clientes AS c ON a.idcliente_clientes = c.idcliente ORDER BY c.nombre ASC LIMIT 3000", nativeQuery = true)
 	public List<Abonados> tmpTodos();
 
@@ -96,6 +100,33 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 			  AND a.idruta_rutas.idruta = :idruta
 			""")
 	public Page<Abonados> findByIdruta(@Param("idruta") Long idruta, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"idresponsable", "idcliente_clientes", "idcategoria_categorias", "idruta_rutas", "idestadom_estadom"})
+    @Query("""
+        SELECT a FROM Abonados a
+        LEFT JOIN a.idcliente_clientes cliente
+        LEFT JOIN a.idresponsable responsable
+        WHERE a.estado IN (1, 2) AND a.idruta_rutas.idruta = :idruta
+          AND (CAST(a.idabonado AS string) LIKE CONCAT('%', :filtro, '%')
+            OR LOWER(COALESCE(cliente.nombre, '')) LIKE LOWER(CONCAT('%', :filtro, '%'))
+            OR LOWER(COALESCE(responsable.nombre, '')) LIKE LOWER(CONCAT('%', :filtro, '%')))
+        """)
+    Page<Abonados> buscarEnRuta(@Param("idruta") Long idruta, @Param("filtro") String filtro, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"idresponsable", "idcliente_clientes", "idcategoria_categorias", "idruta_rutas"})
+    @Query("SELECT a FROM Abonados a WHERE a.estado IN (1, 2) AND a.idruta_rutas.idruta = :idruta ORDER BY a.idabonado")
+    List<Abonados> findParaAperturaByRuta(@Param("idruta") Long idruta);
+
+    @Query(value = """
+        SELECT a.idabonado FROM abonados a
+        WHERE a.estado IN (1, 2)
+          AND NOT EXISTS (SELECT 1 FROM lecturas l WHERE l.idemision = :idemision AND l.idabonado_abonados = a.idabonado)
+        ORDER BY a.idabonado
+        """, nativeQuery = true)
+    List<Long> findCuentasPendientesApertura(@Param("idemision") Long idemision);
+
+    @Query(value = "SELECT idabonado FROM abonados WHERE estado IN (1, 2) AND idruta_rutas IS NULL ORDER BY idabonado", nativeQuery = true)
+    List<Long> findCuentasSinRutaParaApertura();
 
 	// Abonados de una Categoria
 	@Query(value = "SELECT * FROM abonados WHERE idcategoria_categorias=?1", nativeQuery = true)

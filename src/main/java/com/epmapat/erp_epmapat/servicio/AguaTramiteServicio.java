@@ -31,6 +31,9 @@ public class AguaTramiteServicio {
    @Autowired
    private ValidacionTitularidadServicio validacionTitularidad;
 
+   @Autowired
+   private com.epmapat.erp_epmapat.repositorio.AbonadosR abonadosR;
+
    public List<AguaTramite> findAll(Long desde, Long hasta) {
       if (desde != null || hasta != null) {
          return dao.findAll(desde, hasta);
@@ -89,6 +92,11 @@ public class AguaTramiteServicio {
    }
 
    public <S extends AguaTramite> S save(S entity) {
+      Long cuenta = entity.getIdabonado();
+      if (cuenta != null && (cuenta <= 0 || !abonadosR.existsById(cuenta))) {
+         throw new org.springframework.web.server.ResponseStatusException(
+            org.springframework.http.HttpStatus.BAD_REQUEST, "La cuenta debe ser el idabonado de un abonado existente");
+      }
 		if (entity.getIdtipotramite_tipotramite() != null) {
          Long tipo = entity.getIdtipotramite_tipotramite().getIdtipotramite();
          if (Long.valueOf(5).equals(tipo) || Long.valueOf(10).equals(tipo)) {

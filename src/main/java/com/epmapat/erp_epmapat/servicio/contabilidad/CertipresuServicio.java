@@ -28,7 +28,13 @@ public class CertipresuServicio {
 	// Busca Certificaciones o Reintegradas (desde/hasta)
 	public List<Certipresu> findDesdeHasta(int tipo, Long desdeNum, Long hastaNum, LocalDate desdeFecha,
 			LocalDate hastaFecha) {
-		return dao.findDesdeHasta(tipo, desdeNum, hastaNum, desdeFecha, hastaFecha);
+        if ((desdeNum != null && desdeNum < 1) || (hastaNum != null && hastaNum < 1)
+                || (desdeNum != null && hastaNum != null && desdeNum > hastaNum)
+                || (desdeFecha != null && hastaFecha != null && desdeFecha.isAfter(hastaFecha))) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,
+                "Revise los rangos de numeros y fechas: desde no puede ser mayor que hasta");
+        }
+        return dao.findDesdeHasta(tipo, desdeNum, hastaNum, desdeFecha, hastaFecha);
 	}
 
 	// Ultima (certificacion o reintegro)

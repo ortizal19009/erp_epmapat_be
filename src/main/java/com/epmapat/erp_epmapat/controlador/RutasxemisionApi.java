@@ -37,6 +37,15 @@ public class RutasxemisionApi {
 	@Autowired
 	RutasxemisionServicio ruxemiServicio;
 
+    @Autowired
+    private com.epmapat.erp_epmapat.servicio.CierreRutaNotificacionServicio notificaciones;
+
+    @PostMapping("/{idrutaxemision}/notificar-cierre")
+    public ResponseEntity<com.epmapat.erp_epmapat.servicio.CierreRutaNotificacionServicio.Resultado> notificarCierre(
+            @PathVariable Long idrutaxemision) {
+        return ResponseEntity.ok(notificaciones.notificar(idrutaxemision));
+    }
+
 	@GetMapping
 	public List<Rutasxemision> getByIdemision(@Param(value = "idemision") Long idemision) {
 		if (idemision != null) {

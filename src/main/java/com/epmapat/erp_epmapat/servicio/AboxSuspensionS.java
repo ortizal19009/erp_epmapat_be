@@ -20,6 +20,11 @@ public class AboxSuspensionS implements AboxSuspensionR{
 	@Autowired
 	private AboxSuspensionR aboxsuspensionR;
 
+    @Override
+    public List<com.epmapat.erp_epmapat.interfaces.SuspensionCuentaResumen> findCuentasPorSuspensiones(List<Long> ids) {
+        return aboxsuspensionR.findCuentasPorSuspensiones(ids);
+    }
+
 	@Override
 	public List<AboxSuspensionM> findByIdsuspension(Long idsuspension) {
 		return aboxsuspensionR.findByIdsuspension(idsuspension);

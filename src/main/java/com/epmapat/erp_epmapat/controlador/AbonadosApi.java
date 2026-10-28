@@ -538,8 +538,8 @@ public class AbonadosApi {
 	}
 
 	@GetMapping("/ruta/{idruta}/pageable")
-	public ResponseEntity<Page<Abonados>> getAbonadosByRutaPageable(@PathVariable Long idruta, @PageableDefault(size = 20) Pageable pageable) {
-		return ResponseEntity.ok(aboServicio.findByIdruta(idruta, pageable));
+	public ResponseEntity<Page<Abonados>> getAbonadosByRutaPageable(@PathVariable Long idruta, @RequestParam(required = false) String filtro, @PageableDefault(size = 20) Pageable pageable) {
+		return ResponseEntity.ok(aboServicio.buscarEnRuta(idruta, filtro, pageable));
 	}
 
 	@GetMapping("/buscar")

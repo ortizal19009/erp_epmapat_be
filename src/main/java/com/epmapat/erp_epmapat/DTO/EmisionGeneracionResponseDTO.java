@@ -25,5 +25,10 @@ public class EmisionGeneracionResponseDTO {
     private long lecturasCreadas;
     private long lecturasPendientes;
     @Builder.Default
+    private List<Long> cuentasPendientes = new ArrayList<>();
+    @Builder.Default
+    private List<Long> cuentasSinRuta = new ArrayList<>();
+    private boolean aperturaCompleta;
+    @Builder.Default
     private List<EmisionGeneracionRutaDetalleDTO> rutas = new ArrayList<>();
 }

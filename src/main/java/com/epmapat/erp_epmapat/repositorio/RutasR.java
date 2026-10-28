@@ -7,12 +7,31 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.epmapat.erp_epmapat.interfaces.CuentasByRutas;
+import com.epmapat.erp_epmapat.interfaces.RutaCuentaMapa;
 import com.epmapat.erp_epmapat.interfaces.RutaAsignacionResumen;
 import com.epmapat.erp_epmapat.interfaces.RutaResumen;
 import com.epmapat.erp_epmapat.modelo.Rutas;
 
 // @Repository
 public interface RutasR extends JpaRepository<Rutas, Long> {
+
+    @Query(value = """
+        SELECT r.* FROM rutas r
+        WHERE r.estado = true OR EXISTS (
+            SELECT 1 FROM abonados a WHERE a.idruta_rutas = r.idruta AND a.estado IN (1, 2)
+        ) ORDER BY r.idruta
+        """, nativeQuery = true)
+    List<Rutas> findRutasParaApertura();
+
+    @Query(value = """
+        SELECT a.idabonado AS idabonado, c.nombre AS nombre,
+               a.direccionubicacion AS direccion, a.geolocalizacion AS geolocalizacion
+        FROM abonados a
+        LEFT JOIN clientes c ON c.idcliente = a.idcliente_clientes
+        WHERE a.idruta_rutas = :idruta AND a.estado IN (1, 2)
+        ORDER BY a.idabonado
+        """, nativeQuery = true)
+    List<RutaCuentaMapa> findCuentasMapa(@Param("idruta") Long idruta);
 
 	// @Query(value = "SELECT * FROM rutas where codigo=?1", nativeQuery=true)
 	// List<Rutas> findByCodigo(String codigo);

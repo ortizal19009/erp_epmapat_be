@@ -42,6 +42,14 @@ public class SuspensionesM {
 	private Date fecmodi;
 	private Long total;
 
+    // No se persiste. Se usa el modificador Java para que Hibernate5Module no omita el getter JSON.
+    private transient java.util.List<Long> cuentasAfectadas = new java.util.ArrayList<>();
+
+    @com.fasterxml.jackson.annotation.JsonGetter("cuentasAfectadas")
+    public java.util.List<Long> getCuentasAfectadas() { return cuentasAfectadas; }
+    public void setCuentasAfectadas(java.util.List<Long> cuentas) { this.cuentasAfectadas = cuentas; }
+    public int getTotalCuentas() { return cuentasAfectadas == null ? 0 : cuentasAfectadas.size(); }
+
 	public SuspensionesM() {
 		super();
 		

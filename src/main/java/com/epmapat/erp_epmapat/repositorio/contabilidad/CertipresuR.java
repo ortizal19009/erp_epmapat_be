@@ -20,8 +20,10 @@ public interface CertipresuR extends JpaRepository<Certipresu, Long> {
 			LEFT JOIN FETCH c.idbene
 			LEFT JOIN FETCH c.idbeneres
 			WHERE c.tipo = :tipo
-			  AND c.numero BETWEEN :desdeNum AND :hastaNum
-			  AND c.fecha BETWEEN :desdeFecha AND :hastaFecha
+			  AND (:desdeNum IS NULL OR c.numero >= :desdeNum)
+              AND (:hastaNum IS NULL OR c.numero <= :hastaNum)
+			  AND (:desdeFecha IS NULL OR c.fecha >= :desdeFecha)
+              AND (:hastaFecha IS NULL OR c.fecha <= :hastaFecha)
 			ORDER BY c.numero ASC
 			""")
 	List<Certipresu> findDesdeHasta(@Param("tipo") Integer tipo, @Param("desdeNum") Long desdeNum,

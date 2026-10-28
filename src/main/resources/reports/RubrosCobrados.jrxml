@@ -516,19 +516,19 @@ SELECT
 								</staticText>
 							</jr:columnHeader>
 							<jr:columnFooter style="Table 1_CH" height="15" rowSpan="1">
-								<textField>
+								<textField pattern="#,##0.00 &apos;$&apos;">
 									<reportElement x="0" y="0" width="65" height="15" uuid="273cdeaf-57f0-461c-8516-424936678361"/>
 									<box leftPadding="5" rightPadding="5"/>
 									<textElement textAlignment="Right" verticalAlignment="Middle"/>
-									<textFieldExpression><![CDATA[String.format("%.2f", $V{sumaAnteriores}) + " $"]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$V{sumaAnteriores}]]></textFieldExpression>
 								</textField>
 							</jr:columnFooter>
 							<jr:detailCell style="Table 1_TD" height="15">
-								<textField>
+								<textField pattern="#,##0.00 &apos;$&apos;">
 									<reportElement x="0" y="0" width="65" height="15" uuid="6bacd11b-5528-4703-89f4-89da6a28855f"/>
 									<box leftPadding="5" rightPadding="5"/>
 									<textElement textAlignment="Right" verticalAlignment="Middle"/>
-									<textFieldExpression><![CDATA[String.format("%.2f", $F{total}) + " $"]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -622,19 +622,19 @@ SELECT
 								</staticText>
 							</jr:columnHeader>
 							<jr:columnFooter style="Table 1_CH" height="15" rowSpan="1">
-								<textField>
+								<textField pattern="#,##0.00 &apos;$&apos;">
 									<reportElement x="0" y="0" width="66" height="15" uuid="7ca82fe2-cdc0-4fd1-b8f7-ca9e6d60472a"/>
 									<box leftPadding="5" rightPadding="5"/>
 									<textElement textAlignment="Right" verticalAlignment="Middle"/>
-									<textFieldExpression><![CDATA[String.format("%.2f", $V{sumaActuales}) + " $"]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$V{sumaActuales}]]></textFieldExpression>
 								</textField>
 							</jr:columnFooter>
 							<jr:detailCell style="Table 1_TD" height="15">
-								<textField>
+								<textField pattern="#,##0.00 &apos;$&apos;">
 									<reportElement x="0" y="0" width="66" height="15" uuid="b17fccea-773b-40e6-9cfd-a138d58a4e4b"/>
 									<box leftPadding="5" rightPadding="5"/>
 									<textElement textAlignment="Right" verticalAlignment="Middle"/>
-									<textFieldExpression><![CDATA[String.format("%.2f", $F{total}) + " $"]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -658,7 +658,7 @@ SELECT
 				</textElement>
 				<textFieldExpression><![CDATA[$F{nfacturas}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField pattern="#,##0.00 &apos;$&apos;">
 				<reportElement x="100" y="2" width="95" height="15" uuid="2aa6c7e7-d2a8-4a7d-b99c-16087e1195de"/>
 				<box leftPadding="5" rightPadding="5">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -669,9 +669,9 @@ SELECT
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[String.format("%.2f", $F{subtotal}) + " $"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{subtotal}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField pattern="#,##0.00 &apos;$&apos;">
 				<reportElement x="100" y="17" width="95" height="15" uuid="5d60c7bc-1f0d-4898-8b23-97544d51cab1"/>
 				<box leftPadding="5" rightPadding="5">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -682,7 +682,7 @@ SELECT
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[String.format("%.2f", $F{sumaiva}) + " $"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{sumaiva}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="59" width="78" height="15" uuid="a8ed8875-de25-4852-8d2c-6020db54d3c7"/>
@@ -723,7 +723,7 @@ SELECT
 				</textElement>
 				<text><![CDATA[Iva]]></text>
 			</staticText>
-			<textField>
+			<textField pattern="#,##0.00 &apos;$&apos;">
 				<reportElement x="100" y="32" width="95" height="15" uuid="602ed712-b211-4ef6-b87a-9f79243b0b57"/>
 				<box leftPadding="5" rightPadding="5">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -734,7 +734,7 @@ SELECT
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[String.format("%.2f",$F{subtotal}.add( $F{sumaiva})) + " $"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{subtotal}.add( $F{sumaiva})]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="32" width="100" height="15" uuid="457e86fb-b092-4599-ad4e-fb8217ee3854"/>
@@ -822,13 +822,13 @@ SELECT
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table 2_TD" height="15">
-							<textField>
+							<textField pattern="#,##0.00 &apos;$&apos;">
 								<reportElement x="0" y="0" width="75" height="15" uuid="64b64c6b-f316-4a79-820a-39d8fea40a85"/>
 								<box leftPadding="3" rightPadding="3"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f", $F{valornotacredito}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{valornotacredito}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -844,13 +844,13 @@ SELECT
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table 2_TD" height="15">
-							<textField>
+							<textField pattern="#,##0.00 &apos;$&apos;">
 								<reportElement x="0" y="0" width="82" height="15" uuid="23afe0f2-11ee-4713-80a2-123b11efe733"/>
 								<box leftPadding="3" rightPadding="3"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[String.format("%.2f",$F{sumaiva} +$F{subtotal}-$F{valornotacredito}) + " $"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{sumaiva} +$F{subtotal}-$F{valornotacredito}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

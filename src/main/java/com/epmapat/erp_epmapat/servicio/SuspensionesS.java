@@ -24,6 +24,27 @@ public class SuspensionesS implements SuspensionesR{
 	@Autowired
 	private DocumentosR documentosR;
 
+    @Autowired
+    @org.springframework.beans.factory.annotation.Qualifier("aboxSuspensionR")
+    private com.epmapat.erp_epmapat.repositorio.AboxSuspensionR relaciones;
+
+    @Override
+    public Integer bloquearNumeracion() { return suspensionesR.bloquearNumeracion(); }
+
+    public List<SuspensionesM> conCuentas(List<SuspensionesM> registros) {
+        if (registros == null || registros.isEmpty()) return registros;
+        List<Long> ids = registros.stream().map(SuspensionesM::getIdsuspension).distinct().toList();
+        var cuentas = relaciones.findCuentasPorSuspensiones(ids).stream()
+            .collect(java.util.stream.Collectors.groupingBy(
+                com.epmapat.erp_epmapat.interfaces.SuspensionCuentaResumen::getIdsuspension,
+                java.util.stream.Collectors.mapping(
+                    com.epmapat.erp_epmapat.interfaces.SuspensionCuentaResumen::getCuenta,
+                    java.util.stream.Collectors.toCollection(java.util.TreeSet::new))));
+        registros.forEach(registro -> registro.setCuentasAfectadas(
+            new java.util.ArrayList<>(cuentas.getOrDefault(registro.getIdsuspension(), new java.util.TreeSet<>()))));
+        return registros;
+    }
+
 	@Override
 	public List<SuspensionesM> findAll() {
 		
@@ -121,7 +142,9 @@ public class SuspensionesS implements SuspensionesR{
 	}
 
 	@Override
+    @org.springframework.transaction.annotation.Transactional
 	public <S extends SuspensionesM> S save(S entity) {
+        suspensionesR.bloquearNumeracion();
 		if (entity != null && entity.getIdsuspension() == null) {
 			entity.setIdsuspension(suspensionesR.findNextIdsuspension());
 		}

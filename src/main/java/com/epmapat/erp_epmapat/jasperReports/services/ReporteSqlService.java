@@ -80,6 +80,9 @@ public class ReporteSqlService {
             JRXlsxExporter xlsx = new JRXlsxExporter();
             xlsx.setExporterInput(new SimpleExporterInput(print));
             xlsx.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
+            net.sf.jasperreports.export.SimpleXlsxReportConfiguration config = new net.sf.jasperreports.export.SimpleXlsxReportConfiguration();
+            config.setDetectCellType(true);
+            xlsx.setConfiguration(config);
             xlsx.exportReport();
             break;
 

@@ -37,6 +37,8 @@ class AbonadoFotosTest {
         when(repository.save(any(Abonados.class))).thenAnswer(inv -> inv.getArgument(0));
         service = new AbonadoServicio();
         ReflectionTestUtils.setField(service, "dao", repository);
+        ReflectionTestUtils.setField(service, "entityManager", mock(javax.persistence.EntityManager.class));
+        ReflectionTestUtils.setField(service, "rutaHistorial", mock(RutaHistorialServicio.class));
         ReflectionTestUtils.setField(service, "auditoriaService", mock(AuditoriaGenericaService.class));
         LocalStorageService storage = new LocalStorageService(mock(RuntimeEnvironmentService.class));
         ReflectionTestUtils.setField(storage, "basePath", storageDirectory.toString());

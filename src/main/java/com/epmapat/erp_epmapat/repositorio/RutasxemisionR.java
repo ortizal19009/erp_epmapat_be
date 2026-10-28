@@ -11,6 +11,10 @@ import com.epmapat.erp_epmapat.modelo.Rutasxemision;
 
 public interface RutasxemisionR extends JpaRepository<Rutasxemision, Long> {
 
+    @org.springframework.data.jpa.repository.Lock(javax.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM Rutasxemision r WHERE r.idrutaxemision = ?1")
+    Optional<Rutasxemision> lockParaNotificar(Long id);
+
 	// Rutas por Emision
 	@Query("""
 			SELECT rxe
