@@ -20,6 +20,8 @@ import com.epmapat.erp_epmapat.servicio.administracion.DefinirServicio;
 
 @Service
 public class FacturaPostAuthorizationService {
+   @org.springframework.beans.factory.annotation.Autowired
+   private org.springframework.jdbc.core.JdbcTemplate jdbc;
    private static final LocalDate FECHA_LIMITE_PDF = LocalDate.of(2025, 5, 6);
 
    private final Fec_facturaService fecFacturaService;
@@ -47,52 +49,20 @@ public class FacturaPostAuthorizationService {
       this.correosEnviadosServicio = correosEnviadosServicio;
    }
 
+   @org.springframework.transaction.annotation.Transactional
    public void procesarFacturaAutorizada(Fec_factura factura) {
-      if (factura == null || factura.getIdfactura() == null) {
-         return;
-      }
-      if (!"X".equals(factura.getEstado()) || Boolean.TRUE.equals(factura.getMailEnviado())) {
-         return;
-      }
-
-      try {
-         validarFacturaLista(factura);
-         byte[] pdf = generarPdf(factura);
-         MultipartFile adjunto = new InMemoryMultipartFile(
-               "file",
-               "factura-" + factura.getSecuencial() + ".pdf",
-               "application/pdf",
-               pdf);
-
-         DefinirProjection definir = definirServicio.findDefinirWithoutFirma(1L);
-         String asunto = construirAsunto(definir, factura);
-         String mensaje = construirMensaje(definir, factura);
-         List<String> destinatarios = List.of(factura.getEmailcomprador().trim());
-         EmailAccount account = emailAccountService.resolveAccount(null, EmailType.DOC_ELECTRONICO);
-
-         boolean enviado = emailService.envioEmail(account.getFromAddress(), account.getPassword(), destinatarios, asunto, mensaje, adjunto);
-         if (!enviado) {
-            throw new IllegalStateException("El servicio SMTP no confirmo el envio del correo");
-         }
-
-         fecFacturaService.marcarCorreoEnviado(factura);
-         logService.registrar(factura.getIdfactura(), "C", "Correo enviado con PDF adjunto a " + factura.getEmailcomprador());
-         correosEnviadosServicio.registrarEnvio(
-               "FACTURACION",
-               factura.getIdfactura(),
-               "FACTURA",
-               factura.getEmailcomprador(),
-               asunto,
-               account.getFromAddress(),
-               "factura-" + factura.getSecuencial() + ".pdf",
-               "ENVIADO",
-               "Factura autorizada enviada por correo");
-      } catch (Exception e) {
-         fecFacturaService.marcarErrorPostAutorizacion(factura, "Error en post-autorizacion: " + e.getMessage());
-         logService.registrar(factura.getIdfactura(), "E", "Post-autorizacion fallida: " + e.getMessage());
-      }
+      if(factura==null || factura.getIdfactura()==null || !"X".equals(factura.getEstado())
+            || Boolean.TRUE.equals(factura.getMailEnviado()))return;
+      if(factura.getXmlautorizado()==null || factura.getXmlautorizado().isBlank())
+         throw new IllegalArgumentException("Falta XML autorizado para notificar");
+      int changed=jdbc.update("UPDATE public.fec_factura SET estado='O',mail_enviado=false WHERE idfactura=? AND estado='X' AND mail_enviado IS DISTINCT FROM TRUE",factura.getIdfactura());
+      if(changed==0)return;
+      jdbc.update("INSERT INTO public.evento_outbox(factura_id,version) SELECT idfactura,notificacion_version FROM public.fec_factura WHERE idfactura=? ON CONFLICT(factura_id,tipo,version) DO NOTHING",factura.getIdfactura());
+      factura.setEstado("O");factura.setMailEnviado(false);
+      logService.registrar(factura.getIdfactura(),"O","Autorizada; notificacion delegada a la outbox de msvc-sri");
    }
 
+   @org.springframework.transaction.annotation.Transactional
    public void procesarFacturaAutorizada(Long idfactura) {
       Optional<Fec_factura> factura = fecFacturaService.findById(idfactura);
       factura.ifPresent(this::procesarFacturaAutorizada);

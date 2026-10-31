@@ -31,6 +31,8 @@ import com.epmapat.erp_epmapat.sri.services.XmlToPdfService;
 
 @Service
 public class FecMailQueueService {
+   @org.springframework.beans.factory.annotation.Autowired
+   private org.springframework.jdbc.core.JdbcTemplate jdbc;
    private static final int MAX_INTENTOS = 5;
    private static final int LOTE = 20;
    private static final Set<String> ESTADOS_ACTIVOS = Set.of("PENDIENTE", "ENVIANDO", "REINTENTO");
@@ -72,7 +74,7 @@ public class FecMailQueueService {
          }
 
          Fec_factura factura = optionalFactura.get();
-         if (!estaListaParaCola(factura)) {
+         if (!estaListaParaCola(factura) || Boolean.TRUE.equals(factura.getMailEnviado())) {
             omitidas.add(idfactura);
             continue;
          }
@@ -120,7 +122,9 @@ public class FecMailQueueService {
          if (item.getCorrelationId() == null || item.getCorrelationId().isBlank()) {
             continue;
          }
-         Optional<EmailMessage> opt = emailMessageR.findFirstByCorrelationIdOrderByCreatedAtDesc(item.getCorrelationId());
+         List<Map<String,Object>> refs=jdbc.queryForList("SELECT email_message_id FROM public.fec_factura WHERE idfactura=?",item.getIdfactura());
+         if(refs.isEmpty() || refs.get(0).get("email_message_id")==null)continue;
+         Optional<EmailMessage> opt = emailMessageR.findById((UUID)refs.get(0).get("email_message_id"));
          if (opt.isEmpty()) {
             continue;
          }
@@ -139,10 +143,12 @@ public class FecMailQueueService {
             factura.setMailIntentos(item.getIntentos());
             fecFacturaService.marcarCorreoEnviado(factura);
             logService.registrar(factura.getIdfactura(), "MAIL", "Correo enviado por cola asincrona");
+         } else if(email.getStatus()==EmailStatus.UNCERTAIN) {
+            item.setUltimoError("Resultado SMTP incierto; conciliar en el monitor SRI");queueR.save(item);
          } else if (email.getStatus() == EmailStatus.FAILED) {
             String lastError = email.getLastError();
             item.setUltimoError(lastError);
-            item.setEstado(item.getIntentos() >= MAX_INTENTOS ? "ERROR" : "REINTENTO");
+            item.setEstado("ENVIANDO");
             queueR.save(item);
 
             factura.setMailEnviado(Boolean.FALSE);
@@ -156,48 +162,16 @@ public class FecMailQueueService {
    }
 
    private void procesarItem(Fec_mail_queue item) {
-      Fec_factura factura = fecFacturaService.findById(item.getIdfactura()).orElse(null);
-      if (factura == null || !estaListaParaCola(factura)) {
-         item.setEstado("CANCELADO");
-         item.setUltimoError("Factura no disponible o sin XML/correo valido");
-         queueR.save(item);
-         return;
+      Fec_factura factura=fecFacturaService.findById(item.getIdfactura()).orElse(null);
+      if(!estaListaParaCola(factura) || Boolean.TRUE.equals(factura.getMailEnviado())) {
+         item.setEstado("CANCELADO");item.setUltimoError("Factura no disponible o ya notificada");queueR.save(item);return;
       }
-
-      try {
-         item.setEstado("ENVIANDO");
-         item.setIntentos((item.getIntentos() == null ? 0 : item.getIntentos()) + 1);
-         item.setUltimoError(null);
-
-         String correlationId = "FACTURA-QUEUE-" + factura.getIdfactura() + "-" + item.getId() + "-" + System.currentTimeMillis();
-         item.setCorrelationId(correlationId);
-         queueR.save(item);
-
-         SendEmailRequest request = new SendEmailRequest();
-         request.to = List.of(item.getCorreo());
-         request.subject = "Factura electronica " + factura.getEstablecimiento() + "-" + factura.getPuntoemision() + "-" + factura.getSecuencial();
-         request.html = buildFacturaEmailHtml(factura);
-         request.text = stripHtml(request.html);
-         request.correlationId = correlationId;
-         request.attachments = buildAttachments(factura);
-
-         emailComposerService.enqueue(EmailType.DOC_ELECTRONICO, request);
-
-         factura.setMailIntentos(item.getIntentos());
-         factura.setMailError(null);
-         factura.setEmailEstado("PENDIENTE");
-         fecFacturaService.save(factura);
-      } catch (Exception e) {
-         item.setUltimoError(e.getMessage());
-         item.setEstado(item.getIntentos() >= MAX_INTENTOS ? "ERROR" : "REINTENTO");
-         queueR.save(item);
-
-         factura.setMailEnviado(Boolean.FALSE);
-         factura.setMailIntentos(item.getIntentos());
-         factura.setMailError(e.getMessage());
-         factura.setEmailEstado(item.getEstado().equals("ERROR") ? "ERROR_ENVIO" : "REINTENTO");
-         fecFacturaService.save(factura);
-      }
+      int changed=jdbc.update("UPDATE public.fec_factura SET estado='O',mail_enviado=false WHERE idfactura=? AND mail_enviado IS DISTINCT FROM TRUE",factura.getIdfactura());
+      if(changed==0){item.setEstado("CANCELADO");queueR.save(item);return;}
+      jdbc.update("INSERT INTO public.evento_outbox(factura_id,version) SELECT idfactura,notificacion_version FROM public.fec_factura WHERE idfactura=? ON CONFLICT(factura_id,tipo,version) DO NOTHING",factura.getIdfactura());
+      item.setEstado("ENVIANDO");item.setIntentos((item.getIntentos()==null?0:item.getIntentos())+1);
+      item.setCorrelationId("factura:"+factura.getIdfactura());item.setUltimoError(null);queueR.save(item);
+      factura.setEstado("O");factura.setEmailEstado("PENDIENTE");factura.setMailEnviado(false);fecFacturaService.save(factura);
    }
 
    private boolean estaListaParaCola(Fec_factura factura) {

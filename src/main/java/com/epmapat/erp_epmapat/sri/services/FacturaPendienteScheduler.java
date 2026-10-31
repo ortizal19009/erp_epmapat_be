@@ -9,6 +9,7 @@ import com.epmapat.erp_epmapat.modelo.Fec_factura;
 import com.epmapat.erp_epmapat.servicio.Fec_facturaService;
 
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="erp.sri.local-processing-enabled",havingValue="true",matchIfMissing=false)
 public class FacturaPendienteScheduler {
    private static final int LOTE_PENDIENTES = 25;
 

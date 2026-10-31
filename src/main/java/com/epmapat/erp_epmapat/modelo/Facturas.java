@@ -41,9 +41,11 @@ public class Facturas implements Serializable {
 	private Long estado;
 	private Long usuarioanulacion;
 	private LocalDate fechaanulacion;
+	@Column(length = 254)
 	private String razonanulacion;
 	private Long usuarioeliminacion;
 	private LocalDate fechaeliminacion;
+	@Column(length = 254)
 	private String razoneliminacion;
 	private Long conveniopago;
 	private LocalDate fechaconvenio;

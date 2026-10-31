@@ -10,6 +10,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+        name="erp.mail.local-worker-enabled",havingValue="true",matchIfMissing=false)
 public class OutboxWorker {
 
     private final EmailMessageR emailRepo;

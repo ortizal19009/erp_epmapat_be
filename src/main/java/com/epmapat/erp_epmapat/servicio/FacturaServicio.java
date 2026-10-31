@@ -58,6 +58,14 @@ import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
 
 @Service
 public class FacturaServicio {
+    public static final int MAX_MOTIVO_FACTURA = 254;
+    static void validarMotivoFactura(String motivo) {
+        if (motivo != null && motivo.length() > MAX_MOTIVO_FACTURA) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,
+                "El motivo de anulacion o baja no puede superar los 254 caracteres. Reduzca el texto antes de confirmar.");
+        }
+    }
+
 
 	@Autowired
 	private FacturasR dao;
@@ -296,6 +304,8 @@ public class FacturaServicio {
 
 	@Transactional
 	public <S extends Facturas> S save(S entity) {
+        validarMotivoFactura(entity.getRazonanulacion());
+        validarMotivoFactura(entity.getRazoneliminacion());
 		prepararFechaCreacionSiEsNueva(entity);
 		S saved = dao.save(entity);
 		if (saved.getFechaanulacion() != null) {
@@ -444,6 +454,7 @@ public class FacturaServicio {
 
 	@Transactional
 	public Facturas ejecutarAnulacion(Long idfactura, String motivo, Long idusuario) {
+        validarMotivoFactura(motivo);
 		Facturas factura = findById(idfactura)
 				.orElseThrow(() -> new RuntimeErrorException(null, "FACTURA NO ENCONTRADA"));
 
@@ -478,6 +489,7 @@ public class FacturaServicio {
 
 	@Transactional
 	public Facturas ejecutarEliminacionLogica(Long idfactura, String motivo, Long idusuario) {
+        validarMotivoFactura(motivo);
 		Facturas factura = findById(idfactura)
 				.orElseThrow(() -> new RuntimeErrorException(null, "FACTURA NO ENCONTRADA"));
 

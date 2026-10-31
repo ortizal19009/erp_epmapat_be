@@ -349,6 +349,12 @@ public class FacturasApi {
 		return ResponseEntity.ok(updateFacturas);
 	}
 
+    @org.springframework.web.bind.annotation.ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> errorOperacionFactura(ResponseStatusException error) {
+        return ResponseEntity.status(error.getStatus()).body(Map.of("message",
+            error.getReason() == null ? "No se pudo completar la operacion" : error.getReason()));
+    }
+
 	@PostMapping("/anulaciones-bajas")
 	public ResponseEntity<Facturas> ejecutarAnulacionOBaja(@RequestBody FacturaAnulacionBajaRequestDto request) {
 		if (request.getIdfactura() == null) {
