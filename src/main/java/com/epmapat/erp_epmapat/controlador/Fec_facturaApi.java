@@ -12,9 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -315,5 +317,14 @@ public class Fec_facturaApi {
             .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
       fecfacServicio.delete(idfactura);
       return ResponseEntity.ok(factura);
+   }
+
+   @ExceptionHandler(DataIntegrityViolationException.class)
+   public ResponseEntity<Map<String, Object>> conflictoIntegridad(DataIntegrityViolationException ex) {
+      log.warn("Operacion de factura electronica bloqueada por integridad de datos", ex);
+      return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+            "code", "FEC_FACTURA_INTEGRIDAD",
+            "message", "No se pudo modificar o eliminar la factura electronica porque existen datos relacionados "
+                  + "o una restriccion de integridad. Revise los eventos de notificacion y las dependencias de la factura."));
    }
 }

@@ -34,6 +34,28 @@ import com.epmapat.erp_epmapat.modelo.Lecturas;
 
 public interface LecturasR extends JpaRepository<Lecturas, Long> {
 
+    // Una lectura por mes; los meses sin historial no cuentan como consumo cero.
+    @Query(value = """
+            SELECT COALESCE(ROUND(AVG(CAST(h.consumo AS numeric)), 2), 0)
+            FROM (
+                SELECT DISTINCT ON (e.emision) e.emision,
+                       l.lecturaactual - l.lecturaanterior AS consumo
+                FROM lecturas l
+                JOIN emisiones e ON e.idemision = l.idemision
+                LEFT JOIN facturas f ON f.idfactura = l.idfactura
+                WHERE l.idabonado_abonados = :idabonado
+                  AND e.estado = 1
+                  AND e.emision >= :desde AND e.emision < :hasta
+                  AND l.lecturaactual IS NOT NULL AND l.lecturaanterior IS NOT NULL
+                  AND l.lecturaactual >= l.lecturaanterior
+                  AND f.fechaeliminacion IS NULL AND f.fechaanulacion IS NULL
+                ORDER BY e.emision, l.idlectura DESC
+            ) h
+            """, nativeQuery = true)
+    BigDecimal calcularPromedioSeisMeses(@Param("idabonado") Long idabonado,
+            @Param("desde") String desde, @Param("hasta") String hasta);
+
+
 	@EntityGraph(attributePaths = {
 			"idrutaxemision_rutasxemision",
 			"idnovedad_novedades",

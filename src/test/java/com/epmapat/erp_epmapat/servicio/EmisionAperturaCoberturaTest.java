@@ -49,7 +49,10 @@ class EmisionAperturaCoberturaTest {
         verify(lecturas, never()).save(any());
     }
 
-    @Test void generaLecturaYFacturaParaCuentaSuspendidaConEstadoDos() {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({"2610,2604,18.75", "2601,2507,0.00"})
+    void generaLecturaYFacturaParaCuentaSuspendidaConEstadoDos(String periodo, String desde, String promedio) {
+        emisiones.findById(5L).orElseThrow().setEmision(periodo);
         when(transactionManager.getTransaction(any())).thenReturn(new org.springframework.transaction.support.SimpleTransactionStatus());
         Abonados cuenta = new Abonados(); cuenta.setIdabonado(3L); cuenta.setEstado(2L);
         Clientes responsable = new Clientes(); responsable.setIdcliente(7L); cuenta.setIdresponsable(responsable);
@@ -58,6 +61,8 @@ class EmisionAperturaCoberturaTest {
         when(lecturas.findFirstByIdemisionAndIdabonado(5L, 3L)).thenReturn(Optional.empty());
         when(facturas.save(any())).thenAnswer(inv -> { Facturas f = inv.getArgument(0); f.setIdfactura(20L); return f; });
         when(abonados.findCuentasPendientesApertura(5L)).thenReturn(List.of());
+        when(lecturas.calcularPromedioSeisMeses(3L, desde, periodo))
+                .thenReturn(new java.math.BigDecimal(promedio));
         var resultado = servicio.generarPendientes(5L, 1L);
         assertTrue(resultado.isAperturaCompleta());
         assertEquals(1, resultado.getLecturasCreadas());
@@ -66,6 +71,18 @@ class EmisionAperturaCoberturaTest {
         assertEquals(3L, captura.getValue().getIdabonado_abonados().getIdabonado());
         assertEquals(20L, captura.getValue().getIdfactura());
         assertEquals(5L, captura.getValue().getIdemision());
+        assertEquals(new java.math.BigDecimal(promedio), captura.getValue().getPromedio());
+        verify(lecturas).calcularPromedioSeisMeses(3L, desde, periodo);
+    }
+
+    @Test void reintentarAperturaConservaPromedioExistente() {
+        Abonados cuenta = new Abonados(); cuenta.setIdabonado(3L);
+        Lecturas existente = new Lecturas(); existente.setPromedio(new java.math.BigDecimal("12.50"));
+        when(abonados.findParaAperturaByRuta(1L)).thenReturn(List.of(cuenta));
+        when(lecturas.findFirstByIdemisionAndIdabonado(5L, 3L)).thenReturn(Optional.of(existente));
+        servicio.generarPendientes(5L, 1L);
+        verify(lecturas, never()).calcularPromedioSeisMeses(any(), any(), any());
+        assertEquals(new java.math.BigDecimal("12.50"), existente.getPromedio());
     }
 
     @Test void cuentasSinRutaImpidenMarcarLaAperturaComoCompleta() {

@@ -37,6 +37,15 @@ public class EmisionServicio {
 	}
 
 	public <S extends Emisiones> S save(S entity) {
+        if (entity.getIdemision() == null) {
+            Emisiones ultima = dao.findFirstByOrderByEmisionDesc();
+            if (dao.findFirstByEstadoOrderByEmisionDesc(0) != null
+                    || (ultima != null && !Integer.valueOf(1).equals(ultima.getEstado()))) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.CONFLICT,
+                        "Debe cerrar la emision anterior antes de crear una nueva.");
+            }
+        }
 		return dao.save(entity);
 	}
 

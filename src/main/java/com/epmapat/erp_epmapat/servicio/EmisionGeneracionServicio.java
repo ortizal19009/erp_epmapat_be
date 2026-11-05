@@ -596,6 +596,11 @@ public class EmisionGeneracionServicio {
         lectura.setLecturaanterior(resolveUltimaLectura(abonado.getIdabonado()));
         lectura.setLecturaactual(0F);
         lectura.setLecturadigitada(0F);
+        LocalDate periodo = parseFechaEmision(emision.getEmision());
+        java.time.format.DateTimeFormatter formato = java.time.format.DateTimeFormatter.ofPattern("yyMM");
+        BigDecimal promedio = lecturasR.calcularPromedioSeisMeses(abonado.getIdabonado(),
+                periodo.minusMonths(6).format(formato), periodo.format(formato));
+        lectura.setPromedio(promedio == null ? BigDecimal.ZERO : promedio);
         lectura.setMesesmulta(0);
 
         Novedad novedad = new Novedad();

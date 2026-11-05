@@ -47,6 +47,8 @@ public class Lecturas implements Serializable {
    Float lecturaanterior;
    Float lecturaactual;
    Float lecturadigitada;
+   @Column(precision = 14, scale = 2, updatable = false)
+   private BigDecimal promedio;
    Integer mesesmulta;
    String observaciones;
    @ManyToOne(fetch = FetchType.LAZY)
