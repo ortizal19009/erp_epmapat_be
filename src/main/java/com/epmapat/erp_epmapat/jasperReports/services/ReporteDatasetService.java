@@ -36,7 +36,7 @@ public class ReporteDatasetService {
 
       // Recupera el reporte compilado desde la tabla
       Reportesjr reporte = repojrService.findByNomrep(dto.getReportName());
-      byte[] jasperBytes = reporte.getJasper();
+      byte[] jasperBytes = repojrService.leerJasper(reporte);
 
       // Cargar JasperReport desde bytes
       ByteArrayInputStream jasperStream = new ByteArrayInputStream(jasperBytes);
@@ -67,7 +67,7 @@ public class ReporteDatasetService {
 
    // // Recupera el reporte compilado desde la tabla
    // Reportesjr reporte = repojrService.findByNomrep(dto.getReportName());
-   // byte[] jasperBytes = reporte.getJasper();
+   // byte[] jasperBytes = repojrService.leerJasper(reporte);
 
    // // Cargar JasperReport desde bytes
    // ByteArrayInputStream jasperStream = new ByteArrayInputStream(jasperBytes);
@@ -98,7 +98,7 @@ public class ReporteDatasetService {
 
    // // Recupera el reporte compilado desde la tabla
    // Reportesjr reporte = repojrService.findByNomrep(dto.getReportName());
-   // byte[] jasperBytes = reporte.getJasper();
+   // byte[] jasperBytes = repojrService.leerJasper(reporte);
 
    // // Cargar JasperReport desde bytes
    // ByteArrayInputStream jasperStream = new ByteArrayInputStream(jasperBytes);

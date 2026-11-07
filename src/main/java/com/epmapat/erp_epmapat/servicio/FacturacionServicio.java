@@ -57,6 +57,7 @@ public class FacturacionServicio {
          Date del,
          Date al,
          String cliente) {
+      java.time.LocalDate hoy = java.time.LocalDate.now(java.time.ZoneId.of("America/Guayaquil"));
       String clienteFiltro = cliente == null ? "" : cliente.trim().toLowerCase();
 
       List<Liquidafac> liquidaciones = liquidafacR.findPendientesFacturacionConDetalle();
@@ -68,6 +69,12 @@ public class FacturacionServicio {
             continue;
          }
 
+         var factura = liquidacion.getIdfactura_facturas();
+         // Una liquidacion sin planilla o anulada/eliminada no es deuda exigible.
+         if (factura == null || liquidacion.getFechaeliminacion() != null
+               || factura.getFechaeliminacion() != null || factura.getFechaanulacion() != null) {
+            continue;
+         }
          Facturacion facturacion = liquidacion.getIdfacturacion_facturacion();
          Long idfacturacion = facturacion.getIdfacturacion();
          if (idfacturacion == null) {
@@ -134,6 +141,15 @@ public class FacturacionServicio {
          } else {
             item.setPlanillasPendientes(item.getPlanillasPendientes() + 1);
             item.setValorPendiente(item.getValorPendiente().add(valorPlanilla));
+            // feccrea de la planilla contiene la fecha programada de esta cuota.
+            java.time.LocalDate fechaPago = factura.getFeccrea();
+            if (fechaPago != null && fechaPago.isBefore(hoy)) {
+               item.setCuotasVencidas(item.getCuotasVencidas() + 1);
+               item.setValorVencido(item.getValorVencido().add(valorPlanilla));
+               if (item.getPrimeraCuotaVencida() == null || fechaPago.isBefore(item.getPrimeraCuotaVencida())) {
+                  item.setPrimeraCuotaVencida(fechaPago);
+               }
+            }
          }
       }
 

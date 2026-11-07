@@ -25,9 +25,40 @@ import java.io.ByteArrayInputStream;
 
 @RequiredArgsConstructor
 @Service
+@org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
 public class ReportejrService {
 
    private final ReportesjrR dao;
+   private final ReporteArchivoService archivos;
+   private final com.epmapat.erp_epmapat.repositorio.administracion.RepoxopcionR opcionesDao;
+
+   public byte[] leerJasper(Reportesjr reporte) throws IOException {
+      return archivos.leerJasper(reporte);
+   }
+
+   public Reportesjr asignarOpciones(Short id, java.util.Set<Short> ids) {
+      Reportesjr reporte = dao.findById(id).orElseThrow(() -> new EntityNotFoundException("No existe el reporte " + id));
+      aplicarOpciones(reporte, ids);
+      return dao.save(reporte);
+   }
+
+   private void aplicarOpciones(Reportesjr reporte, java.util.Set<Short> ids) {
+      java.util.Set<Short> seleccion = new java.util.LinkedHashSet<>(ids);
+      seleccion.remove(reporte.getRepoxopcion().getIdrepoxopcion());
+      java.util.List<Repoxopcion> opciones = opcionesDao.findAllById(seleccion);
+      if (opciones.size() != seleccion.size()) throw new IllegalArgumentException("Una opcion seleccionada no existe");
+      reporte.setOpciones(new java.util.LinkedHashSet<>(opciones));
+   }
+
+   public Reportesjr migrarArchivos(Short id) throws IOException {
+      Reportesjr reporte = dao.findById(id).orElseThrow(() -> new EntityNotFoundException("No existe el reporte " + id));
+      if (reporte.getJasperPath() == null) {
+         if (reporte.getJrxml() == null || reporte.getJasper() == null)
+            throw new IllegalArgumentException("El reporte no tiene ambos archivos para migrar");
+         archivos.guardar(reporte, reporte.getJrxml(), reporte.getJasper());
+      }
+      return dao.save(reporte);
+   }
 
    // Buscar reportesjr por nombre y desrep ordenados por codrep
    public List<Reportesjr> buscarPorOpcionNomrepYDesrep(String codigo, String nomrep, String desrep) {
@@ -67,21 +98,20 @@ public class ReportejrService {
          Short metodo,
          String desrep,
          MultipartFile jrxml,
-         MultipartFile jasper) throws JRException, IOException {
+         MultipartFile jasper, java.util.Set<Short> opciones) throws JRException, IOException {
       Reportesjr reporte = new Reportesjr();
       reporte.setNomrep(nomrep);
       reporte.setMetodo(metodo);
       reporte.setDesrep(desrep);
-      reporte.setJrxml(jrxml.getBytes());
-      reporte.setJasper(jasper.getBytes());
+      validarArchivos(jrxml, jasper);
 
-      Repoxopcion repoxopcion = new Repoxopcion();
-      repoxopcion.setIdrepoxopcion(idrepoxopcion);
-      reporte.setRepoxopcion(repoxopcion);
+      reporte.setRepoxopcion(opcionesDao.findById(idrepoxopcion).orElseThrow(() -> new IllegalArgumentException("La opcion no existe")));
 
+      if (opciones != null) aplicarOpciones(reporte, opciones);
       JasperReport jasperReport = JasperCompileManager.compileReport(new ByteArrayInputStream(jrxml.getBytes()));
       JsonNode parametrosJson = construirParametrosJson(jasperReport);
       reporte.setParametros(parametrosJson);
+      archivos.guardar(reporte, jrxml.getBytes(), compilarBytes(jasperReport));
 
       return dao.save(reporte);
    }
@@ -91,7 +121,7 @@ public class ReportejrService {
          Short idrepoxopcion,
          String nomrep,
          Short metodo,
-         String desrep) {
+         String desrep, java.util.Set<Short> opciones) {
       Reportesjr reporte = dao.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("No existe el reporte con id " + id));
 
@@ -99,10 +129,9 @@ public class ReportejrService {
       reporte.setMetodo(metodo);
       reporte.setDesrep(desrep);
 
-      Repoxopcion repoxopcion = new Repoxopcion();
-      repoxopcion.setIdrepoxopcion(idrepoxopcion);
-      reporte.setRepoxopcion(repoxopcion);
+      reporte.setRepoxopcion(opcionesDao.findById(idrepoxopcion).orElseThrow(() -> new IllegalArgumentException("La opcion no existe")));
 
+      if (opciones != null) aplicarOpciones(reporte, opciones);
       return dao.save(reporte);
    }
 
@@ -113,22 +142,23 @@ public class ReportejrService {
          Short metodo,
          String desrep,
          MultipartFile jrxml,
-         MultipartFile jasper) throws JRException, IOException {
+         MultipartFile jasper, java.util.Set<Short> opciones) throws JRException, IOException {
       Reportesjr reporte = dao.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("No existe el reporte con id " + id));
       // Metadatos
       reporte.setNomrep(nomrep);
       reporte.setMetodo(metodo);
       reporte.setDesrep(desrep);
-      reporte.setRepoxopcion(new Repoxopcion(idrepoxopcion));
+      reporte.setRepoxopcion(opcionesDao.findById(idrepoxopcion).orElseThrow(() -> new IllegalArgumentException("La opcion no existe")));
       // Archivos
-      reporte.setJrxml(jrxml.getBytes());
-      reporte.setJasper(jasper.getBytes());
+      validarArchivos(jrxml, jasper);
 
+      if (opciones != null) aplicarOpciones(reporte, opciones);
       JasperReport jasperReport = JasperCompileManager.compileReport(new ByteArrayInputStream(jrxml.getBytes()));
 
       JsonNode parametrosJson = construirParametrosJson(jasperReport);
       reporte.setParametros(parametrosJson);
+      archivos.guardar(reporte, jrxml.getBytes(), compilarBytes(jasperReport));
 
       return dao.save(reporte);
    }
@@ -156,7 +186,26 @@ public class ReportejrService {
    }
 
    public void deleteById(Short idreporte) {
-      dao.deleteById(idreporte);
+      Reportesjr reporte = dao.findById(idreporte).orElseThrow(() -> new EntityNotFoundException("No existe el reporte " + idreporte));
+      archivos.eliminarAlConfirmar(reporte);
+      dao.delete(reporte);
+   }
+
+   private byte[] compilarBytes(JasperReport report) throws JRException {
+      java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
+      net.sf.jasperreports.engine.util.JRSaver.saveObject(report, output);
+      return output.toByteArray();
+   }
+
+   private void validarArchivos(MultipartFile jrxml, MultipartFile jasper) {
+      if (jrxml == null || jrxml.isEmpty() || jasper == null || jasper.isEmpty())
+         throw new IllegalArgumentException("Debe seleccionar JRXML y Jasper");
+      String xmlName = jrxml.getOriginalFilename(), jasperName = jasper.getOriginalFilename();
+      if (xmlName == null || jasperName == null || !xmlName.toLowerCase().endsWith(".jrxml")
+            || !jasperName.toLowerCase().endsWith(".jasper")
+            || !xmlName.substring(0, xmlName.length() - 6).equals(jasperName.substring(0, jasperName.length() - 7)))
+         throw new IllegalArgumentException("Los archivos JRXML y Jasper deben tener el mismo nombre base");
+      // Se guarda el compilado del JRXML para que los parametros y el ejecutable coincidan.
    }
 
 }

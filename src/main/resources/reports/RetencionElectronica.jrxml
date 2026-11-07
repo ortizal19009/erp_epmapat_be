@@ -39,6 +39,8 @@
 		<![CDATA[]]>
 	</queryString>
 	<field name="codigo" class="java.lang.String"/>
+	<field name="Codigo" class="java.lang.String"/>
+	<field name="Descripcion" class="java.lang.String"/>
 	<field name="codigoRetencion" class="java.lang.String"/>
 	<field name="Cantidad" class="java.lang.String"/>
 	<field name="PrecioUnitario" class="java.lang.String"/>

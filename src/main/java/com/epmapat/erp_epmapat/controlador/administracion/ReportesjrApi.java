@@ -33,7 +33,8 @@ public class ReportesjrApi {
    @GetMapping("/busca")
    public ResponseEntity<List<Reportesjr>> buscarPorOpcionNomrepYDesrep(@RequestParam("codigo") String codigo,
          @RequestParam("nomrep") String nomrep,
-         @RequestParam("desrep") String desrep) {
+         @RequestParam("desrep") String desrep,
+         @RequestParam(value = "opciones", required = false) java.util.Set<Short> opciones) {
       List<Reportesjr> resultados = repojrService.buscarPorOpcionNomrepYDesrep(codigo, nomrep, desrep);
       return ResponseEntity.ok(resultados);
    }
@@ -86,10 +87,13 @@ public class ReportesjrApi {
          @RequestParam("metodo") Short metodo,
          @RequestParam("desrep") String desrep,
          @RequestParam("jrxml") MultipartFile jrxml,
-         @RequestParam("jasper") MultipartFile jasper) {
+         @RequestParam("jasper") MultipartFile jasper,
+         @RequestParam(value = "opciones", required = false) java.util.Set<Short> opciones) {
       try {
-         Reportesjr nuevo = repojrService.crearReporte(idrepoxopcion, nomrep, metodo, desrep, jrxml, jasper);
+         Reportesjr nuevo = repojrService.crearReporte(idrepoxopcion, nomrep, metodo, desrep, jrxml, jasper, opciones);
          return ResponseEntity.ok(nuevo);
+      } catch (IllegalArgumentException e) {
+         throw e;
       } catch (Exception e) {
          e.printStackTrace();
          return ResponseEntity.badRequest().build();
@@ -102,9 +106,10 @@ public class ReportesjrApi {
          @RequestParam("idrepoxopcion") Short idrepoxopcion,
          @RequestParam("nomrep") String nomrep,
          @RequestParam("metodo") Short metodo,
-         @RequestParam("desrep") String desrep) {
+         @RequestParam("desrep") String desrep,
+         @RequestParam(value = "opciones", required = false) java.util.Set<Short> opciones) {
 
-      Reportesjr actualizado = repojrService.actualizarSoloCampos(id, idrepoxopcion, nomrep, metodo, desrep);
+      Reportesjr actualizado = repojrService.actualizarSoloCampos(id, idrepoxopcion, nomrep, metodo, desrep, opciones);
       return ResponseEntity.ok(actualizado);
    }
 
@@ -116,11 +121,14 @@ public class ReportesjrApi {
          @RequestParam("metodo") Short metodo,
          @RequestParam("desrep") String desrep,
          @RequestParam("jrxml") MultipartFile jrxml,
-         @RequestParam("jasper") MultipartFile jasper) {
+         @RequestParam("jasper") MultipartFile jasper,
+         @RequestParam(value = "opciones", required = false) java.util.Set<Short> opciones) {
       try {
          Reportesjr actualizado = repojrService.actualizarCompleto(id, idrepoxopcion, nomrep, metodo, desrep, jrxml,
-               jasper);
+               jasper, opciones);
          return ResponseEntity.ok(actualizado);
+      } catch (IllegalArgumentException e) {
+         throw e;
       } catch (Exception e) {
          e.printStackTrace();
          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -132,6 +140,27 @@ public class ReportesjrApi {
    public ResponseEntity<Void> delete(@PathVariable("idreporte") Short idreporte) {
       repojrService.deleteById(idreporte);
       return ResponseEntity.noContent().build();
+   }
+
+   @PostMapping("/{id}/migrar-archivos")
+   public ResponseEntity<Reportesjr> migrarArchivos(@PathVariable Short id) throws java.io.IOException {
+      return ResponseEntity.ok(repojrService.migrarArchivos(id));
+   }
+
+   @PutMapping("/{id}/opciones")
+   public ResponseEntity<Reportesjr> asignarOpciones(@PathVariable Short id,
+         @org.springframework.web.bind.annotation.RequestBody java.util.Set<Short> opciones) {
+      return ResponseEntity.ok(repojrService.asignarOpciones(id, opciones));
+   }
+
+   @org.springframework.web.bind.annotation.ExceptionHandler(IllegalArgumentException.class)
+   public ResponseEntity<java.util.Map<String, String>> datosInvalidos(IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(java.util.Collections.singletonMap("message", e.getMessage()));
+   }
+
+   @org.springframework.web.bind.annotation.ExceptionHandler(javax.persistence.EntityNotFoundException.class)
+   public ResponseEntity<Void> noExiste(javax.persistence.EntityNotFoundException e) {
+      return ResponseEntity.notFound().build();
    }
 
 }

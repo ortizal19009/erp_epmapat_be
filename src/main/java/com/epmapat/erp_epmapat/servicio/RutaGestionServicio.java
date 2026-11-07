@@ -36,6 +36,9 @@ public class RutaGestionServicio {
       ruta.setCodigo(codigo);ruta.setDescripcion(solicitud.descripcion().trim());ruta.setOrden(id==null?siguienteOrden():solicitud.orden());ruta.setEstado(solicitud.estado());
       ruta=rutas.saveAndFlush(ruta);
       if(elegidas.isEmpty())return ruta;
+      jdbc.queryForObject("SELECT set_config('epmapat.historial_modulo', 'RUTAS', true)", String.class);
+      jdbc.queryForObject("SELECT set_config('epmapat.historial_usuario', ?, true)", String.class, usuario.toString());
+      jdbc.queryForObject("SELECT set_config('epmapat.historial_observacion', ?, true)", String.class, solicitud.motivo());
       var ids=elegidas.stream().map(RutaGuardarRequest.CuentaTraslado::cuenta).sorted().toList();
       var cuentas=abonados.lockParaRetiro(ids);cuentas.forEach(em::refresh);
       if(cuentas.size()!=ids.size())throw error(HttpStatus.NOT_FOUND,"Una de las cuentas ya no existe");

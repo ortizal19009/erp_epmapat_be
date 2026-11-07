@@ -243,6 +243,7 @@ public class AbonadosApi {
 			@PathVariable Long idabonado,
 			@RequestBody Abonados abonadosm,
 			@RequestParam Long usumodi,
+            @RequestParam(required = false, defaultValue = "ABONADOS") String modulo,
 			@RequestParam(required = false, defaultValue = "MODIFICACION") String tipo,
 			@RequestParam(required = false, defaultValue = "Actualización de abonado") String observacion) {
 
@@ -253,7 +254,7 @@ public class AbonadosApi {
 				prepararAbonadoParaPersistencia(abonadosm, original),
 				usumodi,
 				observacion,
-				tipo);
+				tipo, modulo);
 		return ResponseEntity.ok(updated);
 	}
 
@@ -423,7 +424,7 @@ public class AbonadosApi {
 				buildAbonadoFromMobileDto(idabonado, abonadosm),
 				usumodi,
 				observacion,
-				tipo);
+				tipo, "MOVIL");
 		return ResponseEntity.ok(updated);
 	}
 

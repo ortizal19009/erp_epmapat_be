@@ -1,0 +1,32 @@
+reporte	metodo	parametros	estado	observacion
+CompPagoConsumoAgua	1	1	LISTO	SQL directo; requiere conexion y parametros
+CompPagoConsumoAgua_con_subtotales	1	1	LISTO	SQL directo; requiere conexion y parametros
+CompPagoConvenios	1	1	LISTO	SQL directo; requiere conexion y parametros
+CompPagoServicios	1	1	LISTO	SQL directo; requiere conexion y parametros
+EmisionFinal	1	2	LISTO	SQL directo; requiere conexion y parametros
+EmisionInicial	1	3	LISTO	SQL directo; requiere conexion y parametros
+EmisionInicialConEliminadas	1	3	LISTO	SQL directo; requiere conexion y parametros
+factura_template	3	37	LISTO	Dataset/plantilla; requiere datos del consumidor
+FacturaElectronica	3	34	LISTO	Dataset/plantilla; requiere datos del consumidor
+FacturasCobradas	1	3	LISTO	SQL directo; requiere conexion y parametros
+facturasCobradasCaja	1	3	LISTO	SQL directo; requiere conexion y parametros
+FacturasCobradasFacilito	1	4	LISTO	SQL directo; requiere conexion y parametros
+FacturasCobradasFacilitoHoras	1	4	LISTO	SQL directo; requiere conexion y parametros
+FacturasCobradasRec	1	4	LISTO	SQL directo; requiere conexion y parametros
+FacturasCobradasXEmision	1	2	LISTO	SQL directo; requiere conexion y parametros
+nacionalidades	1	0	LISTO	SQL directo; requiere conexion y parametros; solo compilado, sin JRXML
+NotasCobradas	1	3	LISTO	SQL directo; requiere conexion y parametros
+NtaCreditoIndividual	1	2	LISTO	SQL directo; requiere conexion y parametros
+Ref_Facturas_Fecha	1	2	LISTO	SQL directo; requiere conexion y parametros
+Refacturaciones	1	3	LISTO	SQL directo; requiere conexion y parametros
+RefacturacionesRubros	1	2	LISTO	SQL directo; requiere conexion y parametros
+RepFacturas	1	3	LISTO	SQL directo; requiere conexion y parametros
+report_template	3	2	LISTO	Dataset/plantilla; requiere datos del consumidor
+ResumenEmision	1	1	LISTO	SQL directo; requiere conexion y parametros
+ResumenFacturacion	1	23	LISTO	SQL directo; requiere conexion y parametros
+retencion_template	3	21	LISTO	Dataset/plantilla; requiere datos del consumidor
+RetencionElectronica	3	34	LISTO	Dataset/plantilla; requiere datos del consumidor
+RubrosCobrados	1	4	LISTO	SQL directo; requiere conexion y parametros
+RubrosCobradosRec	1	5	LISTO	SQL directo; requiere conexion y parametros
+TramitesAgua	1	3	LISTO	SQL directo; requiere conexion y parametros
+TramitesDeAgua	1	3	LISTO	SQL directo; requiere conexion y parametros

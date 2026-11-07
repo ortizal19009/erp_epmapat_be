@@ -39,11 +39,25 @@ public class Reportesjr {
    @Column(nullable = false, length = 100)
    private String desrep;
 
-   @Column(name = "jrxml", nullable = false)
+   @com.fasterxml.jackson.annotation.JsonIgnore
+   @Column(name = "jrxml")
    private byte[] jrxml;
 
-   @Column(name = "jasper", nullable = false)
+   @com.fasterxml.jackson.annotation.JsonIgnore
+   @Column(name = "jasper")
    private byte[] jasper;
+
+   @Column(name = "jrxml_path")
+   private String jrxmlPath;
+
+   @Column(name = "jasper_path")
+   private String jasperPath;
+
+   @javax.persistence.ManyToMany
+   @javax.persistence.JoinTable(name = "reportesjr_opciones",
+         joinColumns = @JoinColumn(name = "idreporte"),
+         inverseJoinColumns = @JoinColumn(name = "idrepoxopcion"))
+   private java.util.Set<Repoxopcion> opciones = new java.util.LinkedHashSet<>();
 
    // @Type(JsonType.class)
    // @Column(columnDefinition = "json")

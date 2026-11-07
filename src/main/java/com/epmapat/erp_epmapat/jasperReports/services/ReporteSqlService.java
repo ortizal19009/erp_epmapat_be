@@ -49,8 +49,8 @@ public class ReporteSqlService {
       Map<String, Object> params = convertParams(dto.getParameters());
 
       JasperReport jasperReport = "Refacturaciones".equals(dto.getReportName())
-            ? refacturaciones.load(reporte.getJasper())
-            : (JasperReport) JRLoader.loadObject(new ByteArrayInputStream(reporte.getJasper()));
+            ? refacturaciones.load(repojrService.leerJasper(reporte))
+            : (JasperReport) JRLoader.loadObject(new ByteArrayInputStream(repojrService.leerJasper(reporte)));
       if("NtaCreditoIndividual".equals(dto.getReportName())) jasperReport=reportCache.getCompiled(dto.getReportName());
       params.forEach((k, v) -> {
          System.out.println(k + " => " + v + " (" + v.getClass().getName() + ")");
@@ -121,6 +121,24 @@ public class ReporteSqlService {
                   break;
                case "java.lang.Boolean":
                   valorConvertido = Boolean.valueOf(p.getValue().toString());
+                  break;
+               case "java.sql.Timestamp":
+                  valorConvertido = java.sql.Timestamp.valueOf(valorTexto.replace('T', ' '));
+                  break;
+               case "java.sql.Date":
+                  valorConvertido = java.sql.Date.valueOf(valorTexto);
+                  break;
+               case "java.math.BigDecimal":
+                  valorConvertido = new java.math.BigDecimal(valorTexto);
+                  break;
+               case "java.lang.Double":
+                  valorConvertido = Double.valueOf(valorTexto);
+                  break;
+               case "java.lang.Float":
+                  valorConvertido = Float.valueOf(valorTexto);
+                  break;
+               case "java.lang.Short":
+                  valorConvertido = Short.valueOf(valorTexto);
                   break;
                case "java.util.Date":
                   try {

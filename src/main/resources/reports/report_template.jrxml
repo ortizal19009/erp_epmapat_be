@@ -13,12 +13,11 @@
               uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b3b">
     <property name="com.jasperassistant.designer.GridHeight" value="60"/>
     <property name="com.jasperassistant.designer.GridWidth" value="60"/>
-    <parameter name="param1" class="java.lang.String"/>
-    <parameter name="param2" class="java.lang.Integer"/>
-    <!-- Moved subDataset to the correct position -->
     <subDataset name="itemsDataset" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b4e">
         <field name="this" class="java.lang.String"/>
     </subDataset>
+    <parameter name="param1" class="java.lang.String"/>
+    <parameter name="param2" class="java.lang.Integer"/>
     <title>
         <band height="79" splitType="Stretch">
             <!-- ... rest of your title band ... -->

@@ -31,7 +31,7 @@ public class ReporteBeanService {
       Map<String, Object> params = paramConverter.convert(dto.getParameters());
       JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(dto.getBeanCollection());
       JasperReport jasperReport = (JasperReport) JRLoader.loadObject(
-            new ByteArrayInputStream(reporte.getJasper()));
+            new ByteArrayInputStream(repojrService.leerJasper(reporte)));
       return JasperFillManager.fillReport(jasperReport, params, dataSource);
    }
 

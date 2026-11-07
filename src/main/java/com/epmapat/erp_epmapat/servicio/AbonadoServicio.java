@@ -335,6 +335,17 @@ public class AbonadoServicio {
 		return dao.save(abonadoOriginal);
 	}
 
+    @org.springframework.transaction.annotation.Transactional
+    public Abonados actualizarAbonadoConAuditoria(Long id, Abonados datos, Long usuario, String observacion, String tipo, String modulo) {
+        if (!java.util.Set.of("ABONADOS", "TRAMITES_AGUA", "SUSPENSIONES", "HABILITACIONES", "MOVIL").contains(modulo)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Modulo invalido");
+        }
+        entityManager.createNativeQuery("SELECT set_config('epmapat.historial_modulo', :modulo, true), set_config('epmapat.historial_usuario', :usuario, true), set_config('epmapat.historial_observacion', :observacion, true)")
+            .setParameter("modulo", modulo).setParameter("usuario", usuario == null ? "" : usuario.toString())
+            .setParameter("observacion", observacion == null ? "" : observacion).getSingleResult();
+        return actualizarAbonadoConAuditoria(id, datos, usuario, observacion, tipo);
+    }
+
 	@org.springframework.transaction.annotation.Transactional
 	public Abonados actualizarAbonadoConAuditoria(Long idabonado, Abonados abonadosM, Long usumodi, String observacion, String tipo) {
 		Abonados abonadoOriginal = dao.findById(idabonado)

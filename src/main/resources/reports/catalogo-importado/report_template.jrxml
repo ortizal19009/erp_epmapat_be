@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
+              name="report_template" 
+              pageWidth="595" 
+              pageHeight="842" 
+              columnWidth="555" 
+              leftMargin="20" 
+              rightMargin="20" 
+              topMargin="20" 
+              bottomMargin="20" 
+              uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b3b">
+    <property name="com.jasperassistant.designer.GridHeight" value="60"/>
+    <property name="com.jasperassistant.designer.GridWidth" value="60"/>
+    <subDataset name="itemsDataset" uuid="a6b0a8e7-1a1b-4b8f-bf9a-9c9b3b3b3b4e">
+        <field name="this" class="java.lang.String"/>
+    </subDataset>
+    <parameter name="param1" class="java.lang.String"/>
+    <parameter name="param2" class="java.lang.Integer"/>
+    <title>
+        <band height="79" splitType="Stretch">
+            <!-- ... rest of your title band ... -->
+        </band>
+    </title>
+    <detail>
+        <band height="125" splitType="Stretch">
+            <!-- ... rest of your detail band ... -->
+        </band>
+    </detail>
+</jasperReport>

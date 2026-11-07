@@ -5,6 +5,17 @@ import java.util.Date;
 
 public class FacturacionCuotasPendientesDTO {
 
+   private Long cuotasVencidas = 0L;
+   private BigDecimal valorVencido = BigDecimal.ZERO;
+   private java.time.LocalDate primeraCuotaVencida;
+
+   public Long getCuotasVencidas() { return cuotasVencidas; }
+   public void setCuotasVencidas(Long valor) { cuotasVencidas = valor; }
+   public BigDecimal getValorVencido() { return valorVencido; }
+   public void setValorVencido(BigDecimal valor) { valorVencido = valor; }
+   public java.time.LocalDate getPrimeraCuotaVencida() { return primeraCuotaVencida; }
+   public void setPrimeraCuotaVencida(java.time.LocalDate valor) { primeraCuotaVencida = valor; }
+
    private Long idfacturacion;
    private Date feccrea;
    private String cliente;
