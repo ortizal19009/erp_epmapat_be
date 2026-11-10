@@ -340,7 +340,7 @@ public class AbonadoServicio {
         if (!java.util.Set.of("ABONADOS", "TRAMITES_AGUA", "SUSPENSIONES", "HABILITACIONES", "MOVIL").contains(modulo)) {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Modulo invalido");
         }
-        entityManager.createNativeQuery("SELECT set_config('epmapat.historial_modulo', :modulo, true), set_config('epmapat.historial_usuario', :usuario, true), set_config('epmapat.historial_observacion', :observacion, true)")
+        entityManager.createNativeQuery("SELECT set_config('epmapat.historial_modulo', :modulo, true) AS historial_modulo, set_config('epmapat.historial_usuario', :usuario, true) AS historial_usuario, set_config('epmapat.historial_observacion', :observacion, true) AS historial_observacion")
             .setParameter("modulo", modulo).setParameter("usuario", usuario == null ? "" : usuario.toString())
             .setParameter("observacion", observacion == null ? "" : observacion).getSingleResult();
         return actualizarAbonadoConAuditoria(id, datos, usuario, observacion, tipo);

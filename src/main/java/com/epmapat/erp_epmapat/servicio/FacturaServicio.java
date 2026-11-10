@@ -352,6 +352,7 @@ public class FacturaServicio {
 			return;
 		}
 		auditarFacturaElectronica(idfactura, idusuario, observacion);
+		eliminarDependenciasSri(idfactura, idusuario, observacion);
 		List<Long> detalleIds = fecFacturaDetallesR.findByIdfactura(idfactura)
 				.stream()
 				.map(Fec_factura_detalles::getIdfacturadetalle)
@@ -363,6 +364,25 @@ public class FacturaServicio {
 		fecFacturaPagosR.deleteByIdfactura(idfactura);
 		fecFacturaLogR.deleteByIdfactura(idfactura);
 		fecFacturaR.deleteByIdfactura(idfactura);
+	}
+
+	private void eliminarDependenciasSri(Long idfactura, Long idusuario, String observacion) {
+		// Older installations may not yet have the post-authorization tables.
+		for (String tabla : List.of("evento_outbox", "comprobante_documento", "sri_autorizacion_control")) {
+			Object existe = entityManager.createNativeQuery("SELECT CAST(to_regclass(:tabla) AS text)")
+					.setParameter("tabla", "public." + tabla).getSingleResult();
+			if (existe == null) continue;
+			// Keep XML, RIDE and delivery state before deleting any dependent rows.
+			Object respaldo = entityManager.createNativeQuery(
+					"SELECT CAST(COALESCE(jsonb_agg(to_jsonb(t)), '[]'::jsonb) AS text) FROM public."
+					+ tabla + " t WHERE factura_id = :id")
+					.setParameter("id", idfactura).getSingleResult();
+			auditoriaGenericaService.saveAuditAtomic(tabla, idfactura,
+					Map.of("registrosJson", respaldo.toString()), idusuario == null ? 0L : idusuario,
+					observacion, "ELIMINACION");
+			entityManager.createNativeQuery("DELETE FROM public." + tabla + " WHERE factura_id = :id")
+					.setParameter("id", idfactura).executeUpdate();
+		}
 	}
 
 	private void auditarFacturaElectronica(Long idfactura, Long idusuario, String observacion) {
@@ -598,6 +618,8 @@ public class FacturaServicio {
 				motivo == null || motivo.isBlank() ? "REASIGNACION DE NUMERO DE FACTURA" : motivo,
 				"MODIFICACION");
 
+		// A regenerated number must not reuse the previous XML/RIDE or delivery job.
+		eliminarDependenciasSri(idfactura, idusuarioAccion, motivo);
 		factura.setNrofactura(nuevoNumero);
 		factura.setUsumodi(idusuarioAccion);
 		factura.setFecmodi(LocalDate.now());

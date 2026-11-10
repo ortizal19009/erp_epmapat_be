@@ -32,6 +32,15 @@ public class AguaTramiteApi {
    private AguaTramiteServicio aguatServicio;
 
    @Autowired
+   private com.epmapat.erp_epmapat.servicio.AguaTramiteAplicacionServicio aplicacionServicio;
+
+   @PostMapping("/aplicar")
+   @ResponseStatus(HttpStatus.CREATED)
+   public AguaTramite aplicar(@RequestBody com.epmapat.erp_epmapat.DTO.AguaTramiteAplicacionRequest request) {
+      return aplicacionServicio.aplicar(request);
+   }
+
+   @Autowired
    private com.epmapat.erp_epmapat.servicio.ValidacionTitularidadServicio validacionTitularidad;
 
    @GetMapping("/validar-titularidad/{idabonado}")

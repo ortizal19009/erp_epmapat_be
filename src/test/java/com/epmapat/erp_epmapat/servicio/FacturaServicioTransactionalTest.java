@@ -14,7 +14,7 @@ class FacturaServicioTransactionalTest {
     @Test
     void saveAndCascadeDeleteShouldUseSpringTransactions() throws NoSuchMethodException {
         Method saveMethod = FacturaServicio.class.getDeclaredMethod("save", Facturas.class);
-        Method deleteMethod = FacturaServicio.class.getDeclaredMethod("eliminarFacturaElectronicaEnCascada", Long.class);
+        Method deleteMethod = FacturaServicio.class.getDeclaredMethod("eliminarFacturaElectronicaEnCascada", Long.class, Long.class, String.class);
 
         assertTrue(saveMethod.isAnnotationPresent(Transactional.class),
                 "save() must be annotated with Spring @Transactional to keep the cascade-delete query in an active transaction");
