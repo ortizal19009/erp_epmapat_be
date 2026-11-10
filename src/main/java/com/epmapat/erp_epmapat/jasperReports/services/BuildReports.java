@@ -156,6 +156,10 @@ public class BuildReports {
             return value.toString();
         }
 
+        if (targetType == java.sql.Date.class && value instanceof Date date) {
+            return new java.sql.Date(date.getTime());
+        }
+
         if (targetType == Timestamp.class && value instanceof Date date) {
             return new Timestamp(date.getTime());
         }

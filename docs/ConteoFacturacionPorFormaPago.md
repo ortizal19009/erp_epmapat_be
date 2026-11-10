@@ -6,6 +6,10 @@ Plantilla: src/main/resources/reports/ConteoFacturacionPorFormaPago.jrxml.
 Conserva el nombre tecnico para no romper llamadas existentes.
 
 Solo recibe desde / hasta (java.sql.Date) e idusuario (java.lang.Integer).
+El endpoint general interpreta fechas de entrada como Timestamp. BuildReports
+las normaliza a la clase declarada en la plantilla, incluida java.sql.Date,
+antes de evaluar expresiones o ejecutar el reporte. Esto evita el
+ClassCastException Timestamp -> Date observado al mostrar el periodo.
 El usuario se obtiene de usuarios.nomusu. Logo y marca de agua incrustados.
 Actualizar la copia externa y recompilar cualquier .jasper que use el servidor.
 
