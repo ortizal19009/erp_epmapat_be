@@ -11,6 +11,8 @@ las normaliza a la clase declarada en la plantilla, incluida java.sql.Date,
 antes de evaluar expresiones o ejecutar el reporte. Esto evita el
 ClassCastException Timestamp -> Date observado al mostrar el periodo.
 El usuario se obtiene de usuarios.nomusu. Logo y marca de agua incrustados.
+El pie incluye una tabla con usuario y fecha/hora de impresion (dd/MM/yyyy
+HH:mm:ss, zona America/Guayaquil), con el mismo instante en todas las paginas.
 Actualizar la copia externa y recompilar cualquier .jasper que use el servidor.
 
 ## Fechas y corte

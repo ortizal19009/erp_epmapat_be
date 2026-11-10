@@ -107,6 +107,9 @@ ORDER BY r.formapago NULLS LAST, r.orden]]>
 		<variableExpression><![CDATA[$F{valor_total}]]></variableExpression>
 		<initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
 	</variable>
+	<variable name="FechaHoraImpresion" class="java.util.Date" calculation="System">
+        <initialValueExpression><![CDATA[new java.util.Date()]]></initialValueExpression>
+    </variable>
 	<background>
 		<band height="518">
 			<image scaleImage="FillFrame" hAlign="Center" vAlign="Middle" isUsingCache="true">
@@ -219,23 +222,38 @@ ORDER BY r.formapago NULLS LAST, r.orden]]>
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="25">
-			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="0" width="440" height="25" uuid="70826b19-9fab-4238-9a85-1c1c3abf53dc"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Impreso por: " + ($F{usuarioimpresion} == null ? String.valueOf($P{idusuario}) : $F{usuarioimpresion})]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="440" y="0" width="115" height="25" uuid="8d9c3de8-3305-4d49-9075-56ac2e3d63a5"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
-		</band>
-	</pageFooter>
+        <band height="48">
+            <staticText>
+                <reportElement mode="Opaque" x="0" y="4" width="90" height="18" backcolor="#FFFFFF"/>
+                <box leftPadding="5" rightPadding="5"><pen lineWidth="0.5" lineColor="#000000"/></box>
+                <textElement verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="true"/></textElement>
+                <text><![CDATA[Usuario imprime]]></text>
+            </staticText>
+            <textField>
+                <reportElement mode="Opaque" x="90" y="4" width="250" height="18" backcolor="#FFFFFF"/>
+                <box leftPadding="5" rightPadding="5"><pen lineWidth="0.5" lineColor="#000000"/></box>
+                <textElement verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement>
+                <textFieldExpression><![CDATA[$F{usuarioimpresion} == null ? String.valueOf($P{idusuario}) : $F{usuarioimpresion}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement mode="Opaque" x="0" y="22" width="90" height="18" backcolor="#F0F8FF"/>
+                <box leftPadding="5" rightPadding="5"><pen lineWidth="0.5" lineColor="#000000"/></box>
+                <textElement verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="true"/></textElement>
+                <text><![CDATA[Fecha imprime]]></text>
+            </staticText>
+            <textField>
+                <reportElement mode="Opaque" x="90" y="22" width="250" height="18" backcolor="#F0F8FF"/>
+                <box leftPadding="5" rightPadding="5"><pen lineWidth="0.5" lineColor="#000000"/></box>
+                <textElement verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8" isBold="false"/></textElement>
+                <textFieldExpression><![CDATA[java.time.Instant.ofEpochMilli($V{FechaHoraImpresion}.getTime()).atZone(java.time.ZoneId.of("America/Guayaquil")).format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="440" y="22" width="115" height="18"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="DejaVu Sans" size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
 	<summary>
 		<band height="155">
 			<textField isBlankWhenNull="true">
