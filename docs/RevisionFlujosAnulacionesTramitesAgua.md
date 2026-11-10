@@ -36,6 +36,8 @@ Esto identifica un impedimento concreto para la eliminación electrónica. No se
 
 La corrección respalda las tres dependencias adicionales mediante auditoría atómica antes de eliminarlas. Si falla el respaldo, se aborta la operación. En reasignaciones también se retiran los documentos y trabajos asociados al número anterior para que no se reutilicen tras regenerar el comprobante. Se admite la ausencia de estas tablas en instalaciones antiguas.
 
+El log de producción de las 14:12:46 identificó un fallo en el respaldo JSON: Hibernate 5 interpreta el operador PostgreSQL `::jsonb` al analizar parámetros y produce SQL inválido. Se sustituye `'[]'::jsonb` por `CAST('[]' AS jsonb)`. La prueba PostgreSQL ejecuta las consultas de respaldo y borrado con Hibernate sobre tablas temporales, comprueba conservación de XML/RIDE en el respaldo, mantiene otra factura y cubre tablas sin registros. Toda la prueba se revierte; no anula facturas reales.
+
 La anulación implementada es una operación interna del ERP: este endpoint no invoca una cancelación externa del SRI. Se mantiene el comportamiento previo del sistema.
 
 Después de la anulación, el frontend aún registra `facturamodificaciones` mediante otra petición y recarga históricos mediante varias consultas. Un fallo en esas peticiones puede mostrar un error aunque la primera operación haya terminado. Para la factura revisada, la fecha de anulación continúa vacía.

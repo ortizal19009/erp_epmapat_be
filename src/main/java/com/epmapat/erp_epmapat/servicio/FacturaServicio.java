@@ -374,7 +374,7 @@ public class FacturaServicio {
 			if (existe == null) continue;
 			// Keep XML, RIDE and delivery state before deleting any dependent rows.
 			Object respaldo = entityManager.createNativeQuery(
-					"SELECT CAST(COALESCE(jsonb_agg(to_jsonb(t)), '[]'::jsonb) AS text) FROM public."
+					"SELECT CAST(COALESCE(jsonb_agg(to_jsonb(t)), CAST('[]' AS jsonb)) AS text) FROM public."
 					+ tabla + " t WHERE factura_id = :id")
 					.setParameter("id", idfactura).getSingleResult();
 			auditoriaGenericaService.saveAuditAtomic(tabla, idfactura,
