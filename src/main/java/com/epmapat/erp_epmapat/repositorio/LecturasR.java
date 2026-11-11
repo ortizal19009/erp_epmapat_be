@@ -425,7 +425,25 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 	@Query(value = "select rf.idfactura_facturas as idfactura, sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as suma, e.feccrea, f.formapago, f.fechatransferencia from lecturas l join rubroxfac rf on l.idfactura = rf.idfactura_facturas and (rf.estado is null or rf.estado <> 0) join emisiones e on l.idemision = e.idemision join facturas f on l.idfactura = f.idfactura where l.idfactura = ?1 and not (rf.idrubro_rubros = 165 or rf.idrubro_rubros = 5 ) group by rf.idfactura_facturas, e.feccrea, f.formapago, f.fechatransferencia", nativeQuery = true)
 	public List<FacIntereses> getForIntereses(Long idfactura);
 
-	@Query(value = "select cl.nombre, a.idabonado as cuenta, sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as valEmitido, c.descripcion as categoria, l.lecturaactual - l.lecturaanterior as m3 from lecturas l join clientes cl on l.idresponsable = cl.idcliente join abonados a on l.idabonado_abonados = a.idabonado join rubroxfac rf on rf.idfactura_facturas = l.idfactura and (rf.estado is null or rf.estado <> 0) join categorias c on l.idcategoria = c.idcategoria where idemision = ?1 and not rf.idrubro_rubros = 6 and l.observaciones is null group by a.idabonado, c.descripcion, cl.idcliente, l.lecturaanterior, l.lecturaactual order by a.idabonado asc", nativeQuery = true)
+	// Las observaciones pueden ser vac?as o contener novedades de una lectura v?lida.
+	// La vigencia del valor emitido se determina por la factura, no por ese texto.
+	@Query(value = """
+			select cl.nombre, a.idabonado as cuenta,
+			       sum(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) as valEmitido,
+			       c.descripcion as categoria, l.lecturaactual - l.lecturaanterior as m3
+			from lecturas l
+			join clientes cl on l.idresponsable = cl.idcliente
+			join abonados a on l.idabonado_abonados = a.idabonado
+			join facturas f on l.idfactura = f.idfactura
+			join rubroxfac rf on rf.idfactura_facturas = l.idfactura
+			    and (rf.estado is null or rf.estado <> 0)
+			join categorias c on l.idcategoria = c.idcategoria
+			where l.idemision = ?1 and rf.idrubro_rubros <> 6
+			    and (f.estado is null or f.estado <> 0)
+			    and f.fechaeliminacion is null and f.fechaanulacion is null
+			group by a.idabonado, c.descripcion, cl.idcliente, l.lecturaanterior, l.lecturaactual
+			order by a.idabonado asc
+			""", nativeQuery = true)
 	public List<RepEmisionEmi> getReporteValEmitidosxEmision(Long idemision);
 
 	// REPORTE DE EMISIONES X CATEGORIA

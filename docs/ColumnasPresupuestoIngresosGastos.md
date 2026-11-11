@@ -16,3 +16,11 @@ Validacion: 3 pruebas backend (enriquecimiento por lote, partidas sin movimiento
 Correccion del error de carga: Hibernate5Module omitia las propiedades con @Transient. Se usa el modificador Java transient, que evita persistirlas y permite serializar los getters. No requiere migracion de esquema.
 
 Cuando falten datos de ejecucion, las tablas conservan las partidas y sus importes Inicial, Reforma y Codificado. Las etapas y saldos no disponibles muestran un guion largo; sus totales tambien quedan pendientes para evitar sumas parciales o ceros aparentes. Desplegar backend y frontend actualizados.
+
+## Filas agrupadoras de la cedula
+
+Las pantallas construyen la jerarquia con el clasificador presupuestario y, en gastos, la estructura funcional. Ejemplo: 11, 11.5, 11.51, 11.51.01, 11.51.01.05 y el detalle. Solo se incluyen grupos con detalles en el resultado de la busqueda; sus importes corresponden a esos detalles.
+
+Las filas agrupadoras se muestran en negrita, sin opciones Modificar/Eliminar ni navegacion al auxiliar de una partida inexistente. Las filas de movimiento mantienen tipografia normal y sus acciones. Cada subtotal suma directamente los detalles; el total general y el contador excluyen las filas agrupadoras. La ejecucion ausente se propaga tambien a los subtotales sin convertirla en cero.
+
+Validacion: 10 pruebas frontend de calculo y jerarquia, incluyendo orden de grupos y descendientes, aislamiento de actividades, ingresos, totales y datos ausentes. Lectura de datos del servidor: inicial de 11 = 2195141.47; inicial de 11.51 = 866695.47, coincidentes con la imagen de referencia. Este ajuste requiere desplegar el frontend; no crea registros presupuestarios ni modifica la base.

@@ -48,9 +48,9 @@ public interface BenexTranR extends JpaRepository<BenexTran, Long> {
 	@Query("""
 			    SELECT x
 			    FROM BenexTran x
-			    JOIN x.idbene b
-			    JOIN x.inttra t
-			    JOIN t.idasiento a
+			    JOIN FETCH x.idbene b
+			    JOIN FETCH x.inttra t
+			    JOIN FETCH t.idasiento a
 			    WHERE a.fecha <= :hasta
 			      AND LOWER(b.nomben) LIKE LOWER(CONCAT('%', :nomben, '%'))
 			      AND t.tiptran = :tiptran
