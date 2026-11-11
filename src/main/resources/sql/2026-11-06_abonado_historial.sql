@@ -52,6 +52,12 @@ BEGIN
  RETURN NEW;
 END
 $body$;;
-DROP TRIGGER IF EXISTS abonado_historial_update ON abonados;;
-CREATE TRIGGER abonado_historial_update AFTER UPDATE ON abonados
- FOR EACH ROW EXECUTE FUNCTION registrar_abonado_historial();;
+DO $body$
+BEGIN
+ IF NOT EXISTS (SELECT 1 FROM pg_trigger
+    WHERE tgrelid = 'public.abonados'::regclass AND tgname = 'abonado_historial_update' AND NOT tgisinternal) THEN
+  CREATE TRIGGER abonado_historial_update AFTER UPDATE ON abonados
+   FOR EACH ROW EXECUTE FUNCTION registrar_abonado_historial();
+ END IF;
+END
+$body$;;
