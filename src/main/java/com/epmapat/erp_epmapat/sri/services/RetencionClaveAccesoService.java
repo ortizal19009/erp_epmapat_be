@@ -65,9 +65,7 @@ public class RetencionClaveAccesoService {
    public Retenciones regenerarClaveAcceso(Long idretencion) {
       Retenciones retencion = retencionesR.findById(idretencion)
             .orElseThrow(() -> new IllegalArgumentException("No existe la retencion " + idretencion));
-      if (Integer.valueOf(1).equals(retencion.getEstado())) {
-         throw new IllegalStateException("No se puede regenerar la clave de una retencion autorizada");
-      }
+      RetencionDatosEmision.validarRegeneracion(retencion, fecRetencionesR.findById(idretencion).orElse(null));
       Definir definir = getDefinir();
       retencion.setClaveacceso(generarClaveUnica(retencion, definir));
       log.info("Clave de acceso regenerada para retencion {}", idretencion);
@@ -106,7 +104,7 @@ public class RetencionClaveAccesoService {
       }
 
       if (retencion != null) {
-         String prefijoEsperado = formatearFechaClave(retencion.getFechaemision())
+         String prefijoEsperado = formatearFechaClave(RetencionDatosEmision.fecha(retencion))
                + COD_DOC_RETENCION
                + (ruc.matches("\\d{13}") ? ruc : "0000000000000")
                + ambiente
@@ -140,7 +138,7 @@ public class RetencionClaveAccesoService {
       if (!ruc.matches("\\d{13}")) {
          throw new IllegalStateException("El RUC emisor debe tener 13 digitos para generar la clave de acceso");
       }
-      String base48 = formatearFechaClave(retencion.getFechaemision())
+      String base48 = formatearFechaClave(RetencionDatosEmision.fecha(retencion))
             + COD_DOC_RETENCION
             + ruc
             + ambiente(definir)

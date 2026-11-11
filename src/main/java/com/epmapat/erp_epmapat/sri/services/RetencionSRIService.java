@@ -64,6 +64,10 @@ public class RetencionSRIService {
    public String generarXml(Long idretencion) {
       Retenciones retencion = cargarRetencion(idretencion);
       Definir definir = getDefinir();
+      String clave = normalizarNumero(retencion.getClaveacceso());
+      if (clave.length() == 49 && !clave.startsWith(formatearFechaClave(obtenerFechaEmisionRetencion(retencion)))) {
+         throw new IllegalStateException("La fecha de la clave no coincide con la emision de la retencion. Regenere el XML antes de enviarlo.");
+      }
       List<Fec_reteimpu> impuestos = cargarImpuestosSeguro(idretencion);
       List<ImpuestoRetencionXml> lineas = construirLineasImpuesto(retencion, impuestos);
       return construirXml(retencion, definir, lineas);
@@ -73,9 +77,7 @@ public class RetencionSRIService {
    public Fec_retenciones generarYGuardar(Long idretencion) {
       long inicio = System.currentTimeMillis();
       Retenciones retencion = cargarRetencion(idretencion);
-      if (Integer.valueOf(1).equals(retencion.getEstado())) {
-         throw new IllegalStateException("La retencion ya esta autorizada; no se puede regenerar su XML");
-      }
+      RetencionDatosEmision.validarRegeneracion(retencion, fecRetencionesR.findById(idretencion).orElse(null));
       asegurarClaveAcceso(retencion);
       retencion.setEstado(0);
       retencion = retencionesServicio.updateRetencion(idretencion, retencion);
@@ -92,11 +94,11 @@ public class RetencionSRIService {
       fec.setEstablecimiento(obtenerEstablecimiento(retencion));
       fec.setPuntoemision(obtenerPuntoEmision(retencion));
       fec.setDireccionestablecimiento(obtenerDireccionEstablecimiento());
-      fec.setFechaemision(toLocalDate(retencion.getFechaemision()));
+      fec.setFechaemision(toLocalDate(obtenerFechaEmisionRetencion(retencion)));
       fec.setTipoidentificacionsujetoretenid(obtenerTipoIdentificacion(retencion));
       fec.setRazonsocialsujetoretenido(obtenerRazonSocial(retencion));
       fec.setIdentificacionsujetoretenido(obtenerIdentificacion(retencion));
-      fec.setPeriodofiscal(formatearPeriodoFiscal(retencion.getFechaemision()));
+      fec.setPeriodofiscal(formatearPeriodoFiscal(obtenerFechaEmisionRetencion(retencion)));
       fec.setTelefonosujetoretenido(obtenerTelefono(retencion));
       fec.setEmailsujetoretenido(obtenerEmail(retencion));
       Fec_retenciones guardada = guardarFecRetencion(fec);
@@ -262,7 +264,7 @@ public class RetencionSRIService {
             linea.numDocSustento = resolverNumeroDocumentoSustento(retencion, referencia);
             linea.fechaEmisionDocSustento = referencia.getFechaemisiondocumentosustento() != null
                   ? referencia.getFechaemisiondocumentosustento()
-                  : obtenerFechaEmisionRetencion(retencion);
+                  : retencion.getFechaemision();
             if (debeIncluirLinea(linea)) {
                resultado.add(linea);
             }
@@ -776,19 +778,7 @@ public class RetencionSRIService {
    }
 
    private Date obtenerFechaEmisionRetencion(Retenciones retencion) {
-      String clave = normalizarNumero(firstNonBlank(
-            retencion != null ? retencion.getClaveacceso() : null,
-            retencion != null ? retencion.getNumautoriza() : null));
-      if (clave.length() >= 8) {
-         try {
-            return new SimpleDateFormat("ddMMyyyy", Locale.US).parse(clave.substring(0, 8));
-         } catch (Exception ignored) {
-         }
-      }
-      if (retencion != null && retencion.getFechaemision() != null) {
-         return retencion.getFechaemision();
-      }
-      return retencion != null ? retencion.getFechaemiret1() : null;
+      return retencion == null ? null : RetencionDatosEmision.fecha(retencion);
    }
 
    private String normalizarSerie(String serie) {

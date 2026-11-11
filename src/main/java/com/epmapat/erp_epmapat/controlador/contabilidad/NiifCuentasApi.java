@@ -33,7 +33,8 @@ public class NiifCuentasApi {
 	@GetMapping
 	public List<NiifCuentas> getByCodigoyNombre(@Param(value = "codcue") String codcue,
 			@Param(value = "nomcue") String nomcue) {
-		return niifcueServicio.findByCodigoyNombre(codcue, nomcue.toLowerCase());
+		return niifcueServicio.findByCodigoyNombre(codcue == null ? "" : codcue,
+				nomcue == null ? "" : nomcue.toLowerCase(java.util.Locale.ROOT));
 	}
 
 	// @GetMapping("/codCue/{codcue}")

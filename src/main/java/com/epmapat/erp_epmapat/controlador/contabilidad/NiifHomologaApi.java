@@ -49,7 +49,7 @@ public class NiifHomologaApi {
    @DeleteMapping("/{idhomologa}")
    public ResponseEntity<Boolean> deleteHomologa(@PathVariable("idhomologa") Long idhomologa) {
       niifhomoServicio.deleteById(idhomologa);
-      return ResponseEntity.ok(!(niifhomoServicio.findById(idhomologa) != null));
+      return ResponseEntity.ok(niifhomoServicio.findById(idhomologa).isEmpty());
    }
 
    @PutMapping("/upd/{idhomologa}")

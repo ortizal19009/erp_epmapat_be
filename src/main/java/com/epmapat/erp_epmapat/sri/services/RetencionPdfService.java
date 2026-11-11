@@ -96,7 +96,7 @@ public class RetencionPdfService {
       parameters.put("ptoEmi", obtenerPuntoEmision(retencion));
       parameters.put("secuencial", formatearSecuencial(retencion.getSecretencion1(), retencion.getIdrete()));
       parameters.put("dirMatriz", valueOf(definir != null ? firstNonBlank(definir.getDirmatriz(), definir.getDireccion()) : null));
-      parameters.put("fechaEmision", formatearFecha(retencion.getFechaemision()));
+      parameters.put("fechaEmision", formatearFecha(RetencionDatosEmision.fecha(retencion)));
       parameters.put("obligadoContabilidad", "SI");
       parameters.put("tipoIdentificacionSujetoRetenido", beneficiario != null && beneficiario.getTpidben() != null && !beneficiario.getTpidben().isBlank()
             ? beneficiario.getTpidben().trim()
@@ -105,7 +105,7 @@ public class RetencionPdfService {
       parameters.put("identificacionSujetoRetenido", firstNonBlank(
             beneficiario != null ? beneficiario.getRucben() : null,
             beneficiario != null ? beneficiario.getCiben() : null));
-      parameters.put("periodoFiscal", formatearPeriodoFiscal(retencion.getFechaemision()));
+      parameters.put("periodoFiscal", formatearPeriodoFiscal(RetencionDatosEmision.fecha(retencion)));
       parameters.put("direccionSujetoRetenido", valueOf(beneficiario != null ? beneficiario.getDirben() : null));
       parameters.put("telefonoSujetoRetenido", valueOf(beneficiario != null ? beneficiario.getTlfben() : null));
       parameters.put("emailSujetoRetenido", valueOf(beneficiario != null ? beneficiario.getMailben() : null));

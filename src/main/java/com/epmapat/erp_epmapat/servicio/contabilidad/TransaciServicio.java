@@ -108,6 +108,7 @@ public class TransaciServicio {
 	// nueva.setIdcuenta(daoCuentas.getReferenceById(nueva.getIdcuenta().getIdcuenta()));
 	// nueva.setIntdoc(daoDocumentos.getReferenceById(nueva.getIntdoc().getIntdoc()));
 	// nueva.setIdbene(daoBeneficiarios.getReferenceById(nueva.getIdbene().getIdbene()));
+	@Transactional
 	public Transaci save(Transaci nueva) {
 		Transaci guardada = dao.save(nueva);
 		// Llamar al servicio de Asientos que actualiza totales
@@ -122,6 +123,22 @@ public class TransaciServicio {
 				.orElseThrow(() -> new ResourceNotFoundExcepciones(
 						"No se encuentra este Id " + inttra));
 		boolean swmodifi = false;
+		if (data.getSwconcili() != null) {
+			if (data.getSwconcili() != 0 && data.getSwconcili() != 1) {
+				throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Conciliacion debe ser 0 o 1");
+			}
+			Integer mes = data.getMesconcili() != null ? data.getMesconcili() : transaci.getMesconcili();
+			if (data.getSwconcili() == 1 && (mes == null || mes < 1 || mes > 12)) {
+				throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Seleccione el mes de conciliacion entre 1 y 12");
+			}
+			transaci.setSwconcili(data.getSwconcili());
+			transaci.setMesconcili(data.getSwconcili() == 0 ? 0 : mes);
+		} else if (data.getMesconcili() != null) {
+			if (data.getMesconcili() < 0 || data.getMesconcili() > 12) {
+				throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Mes de conciliacion invalido");
+			}
+			transaci.setMesconcili(data.getMesconcili());
+		}
 		// Coloca campos (solo los modificados)
 		if (data.getOrden() != null)
 			transaci.setOrden(data.getOrden());

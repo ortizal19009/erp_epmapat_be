@@ -50,6 +50,7 @@ public class RetencionSRIServiceTest {
       assertTrue(xml.contains("<razonSocial>EPMAPA-T</razonSocial>"));
       assertTrue(xml.contains("<nombreComercial>EPMAPA-T</nombreComercial>"));
       assertTrue(xml.contains("<fechaEmision>25/08/2026</fechaEmision>"));
+      assertTrue(xml.contains("<fechaEmisionDocSustento>19/08/2026</fechaEmisionDocSustento>"));
       assertTrue(xml.contains("<estab>001</estab>"));
       assertTrue(xml.contains("<ptoEmi>001</ptoEmi>"));
       assertTrue(xml.contains("<numDocSustento>001003000876481</numDocSustento>"));
@@ -73,7 +74,7 @@ public class RetencionSRIServiceTest {
       retencion.setIdrete(6935L);
       retencion.setSecretencion1("6935");
       retencion.setFechaemision(df.parse("19/08/2026"));
-      retencion.setFechaemiret1(df.parse("19/08/2026"));
+      retencion.setFechaemiret1(df.parse("25/08/2026"));
       retencion.setNumdoc("876481");
       retencion.setNumserie("001003");
       retencion.setClaveacceso("2508202607046002881000120010010000069355396000017");

@@ -103,7 +103,7 @@ public class RetencionProcesamientoSRIService {
          return response;
       }
       if (resultado.noAutorizado) {
-         retencionSRIService.actualizarEstado(idretencion, "NO_AUTORIZADO", resultado.mensaje);
+         registrarRechazo(retencion, resultado.mensaje);
          Map<String, Object> response = construirRespuestaNoAutorizada(idretencion, resultado);
          publicarActualizacion(response);
          return response;
@@ -129,7 +129,7 @@ public class RetencionProcesamientoSRIService {
 
       aplicarAutorizacion(retencion, xmlAutorizado, numeroAutorizacion, fechaAutorizacion);
       retencion.setEstado(1);
-      retencionesServicio.updateRetencion(idretencion, retencion);
+      retencionesServicio.guardarAutorizacionSri(idretencion, retencion);
 
       retencionSRIService.actualizarXmlAutorizado(idretencion, xmlAutorizado, "AUTORIZADA", null);
 
@@ -179,7 +179,7 @@ public class RetencionProcesamientoSRIService {
 
       AutorizacionResultado resultado = consultarAutorizacionPorClave(claveAcceso);
       if (resultado.noAutorizado) {
-         retencionSRIService.actualizarEstado(idretencion, "NO_AUTORIZADO", resultado.mensaje);
+         registrarRechazo(retencion, resultado.mensaje);
          Map<String, Object> response = construirRespuestaNoAutorizada(idretencion, resultado);
          publicarActualizacion(response);
          return response;
@@ -211,7 +211,7 @@ public class RetencionProcesamientoSRIService {
 
       aplicarAutorizacion(retencion, xmlAutorizado, numeroAutorizacion, fechaAutorizacion);
       retencion.setEstado(1);
-      retencionesServicio.updateRetencion(idretencion, retencion);
+      retencionesServicio.guardarAutorizacionSri(idretencion, retencion);
       retencionSRIService.actualizarXmlAutorizado(idretencion, xmlAutorizado, "AUTORIZADA", null);
 
       Map<String, Object> response = Map.of(
@@ -227,7 +227,10 @@ public class RetencionProcesamientoSRIService {
 
    private Map<String, Object> validarRetencionYaProcesada(Retenciones retencion) {
       String claveAcceso = firstNonBlank(retencion.getClaveacceso(), "");
-      String numeroAutorizacion = firstNonBlank(retencion.getNumautoriza_e(), retencion.getNumautoriza(), "");
+      String numeroAutorizacion = firstNonBlank(retencion.getNumautoriza_e(), "");
+      if (!StringUtils.hasText(numeroAutorizacion) && StringUtils.hasText(retencion.getFecautoriza())) {
+         numeroAutorizacion = firstNonBlank(retencion.getNumautoriza(), "");
+      }
       Integer estado = retencion.getEstado();
 
       if (estado != null && estado == 1 && StringUtils.hasText(numeroAutorizacion)) {
@@ -302,7 +305,7 @@ public class RetencionProcesamientoSRIService {
          com.fasterxml.jackson.databind.JsonNode auth = objectMapper.readTree(body).path("autorizacion");
          String estado = auth.path("estado").asText();
          if ("NO AUTORIZADO".equals(estado) || "NO_AUTORIZADO".equals(estado)) {
-            return AutorizacionResultado.noAutorizado("El SRI devolvio la retencion como NO AUTORIZADO", 200, body,
+            return AutorizacionResultado.noAutorizado(construirMensajeNoAutorizado(body), 200, body,
                   claveAcceso, auth.path("numeroAutorizacion").asText(), auth.path("fechaAutorizacion").asText());
          }
          String comprobante = auth.path("comprobante").asText();
@@ -362,9 +365,15 @@ public class RetencionProcesamientoSRIService {
 
    private void aplicarAutorizacion(Retenciones retencion, String xmlAutorizado, String numeroAutorizacion,
          String fechaAutorizacion) {
-      String numero = firstNonBlank(numeroAutorizacion, retencion.getNumautoriza_e(), retencion.getNumautoriza());
-      String claveAcceso = firstNonBlank(retencion.getClaveacceso(), retencion.getNumautoriza(), numero);
+      String numero = safeValue(numeroAutorizacion, "");
+      String comprobante = extraerTag(xmlAutorizado, "comprobante");
+      String claveAcceso = extraerTag(comprobante, "claveAcceso");
       String fecha = normalizarFechaAutorizacion(fechaAutorizacion);
+      if (!"AUTORIZADO".equals(extraerTag(xmlAutorizado, "estado"))
+            || !StringUtils.hasText(numero) || !StringUtils.hasText(fecha)
+            || !claveAcceso.matches("[0-9]{49}") || !claveAcceso.equals(retencion.getClaveacceso())) {
+         throw new IllegalStateException("No se puede guardar la autorizacion: respuesta SRI incompleta o de otra retencion");
+      }
 
       retencion.setClaveacceso(claveAcceso);
       String ambiente = extraerTag(xmlAutorizado, "ambiente");
@@ -455,7 +464,36 @@ public class RetencionProcesamientoSRIService {
       if (StringUtils.hasText(claveAcceso)) {
          base += " Clave de acceso: " + claveAcceso + ".";
       }
+      try {
+         var mensajes = new java.util.LinkedHashSet<String>();
+         extraerMensajesSri(objectMapper.readTree(responseBody), mensajes);
+         if (!mensajes.isEmpty()) base += " " + String.join("; ", mensajes);
+      } catch (Exception ignored) {
+         // Retain the rejection status even if the upstream body is not JSON.
+      }
       return base;
+   }
+
+   private void extraerMensajesSri(com.fasterxml.jackson.databind.JsonNode node, java.util.Set<String> mensajes) {
+      if (node == null) return;
+      if (node.isObject()) {
+         String codigo = node.path("identificador").asText("");
+         for (String campo : List.of("mensaje", "message", "informacionAdicional", "detalle", "error")) {
+            var valor = node.get(campo);
+            if (valor != null && valor.isTextual() && !valor.asText().isBlank()) {
+               mensajes.add((codigo.isBlank() ? "" : "[" + codigo + "] ") + valor.asText().trim());
+            }
+         }
+      }
+      if (node.isContainerNode()) node.forEach(child -> extraerMensajesSri(child, mensajes));
+   }
+
+   private void registrarRechazo(Retenciones retencion, String mensaje) {
+      retencionSRIService.actualizarEstado(retencion.getIdrete(), "NO_AUTORIZADO", mensaje);
+      if (!StringUtils.hasText(retencion.getNumautoriza_e()) && !StringUtils.hasText(retencion.getFecautoriza())) {
+         retencion.setEstado(0);
+         retencionesServicio.updateRetencion(retencion.getIdrete(), retencion);
+      }
    }
 
    private String extraerCampoJson(String responseBody, String fieldName) {

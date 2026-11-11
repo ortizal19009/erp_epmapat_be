@@ -20,6 +20,12 @@ import com.epmapat.erp_epmapat.modelo.contabilidad.Presupue;
 
 public interface EjecucioR extends JpaRepository<Ejecucio, Long> {
 
+   @Query("SELECT e.intpre.intpre AS intpre, COALESCE(SUM(e.prmiso), 0) AS compromiso, "
+         + "COALESCE(SUM(e.devengado), 0) AS devengado, COALESCE(SUM(e.cobpagado), 0) AS cobpagado "
+         + "FROM Ejecucio e WHERE e.intpre.intpre IN :partidas GROUP BY e.intpre.intpre")
+   List<com.epmapat.erp_epmapat.interfaces.ResumenEjecucionPartida> resumenPorPartidas(
+         @Param("partidas") java.util.Collection<Long> partidas);
+
    @SuppressWarnings("null")
    @Query(value = "SELECT * FROM ejecucio order by codpar", nativeQuery = true)
    List<Ejecucio> findAll();

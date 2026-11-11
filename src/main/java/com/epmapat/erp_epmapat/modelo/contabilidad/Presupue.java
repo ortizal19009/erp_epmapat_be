@@ -32,6 +32,12 @@ public class Presupue {
    private BigDecimal totcerti;
    private BigDecimal totmisos;
    private Double totdeven;
+   @Transient
+   private BigDecimal ejecCompromiso;
+   @Transient
+   private BigDecimal ejecDevengado;
+   @Transient
+   private BigDecimal ejecCobpagado;
    private String funcion;
 
    // private Long intest;

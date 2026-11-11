@@ -79,6 +79,10 @@ public class RetencionProcesamientoSRIServiceTest {
       assertEquals(resultado.get("estado"), "AUTORIZADA");
       assertEquals(resultado.get("emailEnviado"), false);
       assertEquals(retencion.getFecautoriza(), "2026-10-27");
+      assertEquals(retencion.getClaveacceso(), CLAVE);
+      assertEquals(retencion.getNumautoriza_e(), CLAVE);
+      assertEquals(retencion.getNumautoriza(), CLAVE);
+      assertEquals(retencion.getEstado(), Integer.valueOf(1));
       String xml = (String) resultado.get("xmlautorizado");
       assertTrue(xml.contains("<comprobante><![CDATA[<?xml"));
       assertTrue(xml.contains("Retencion con \u00f1"));
@@ -92,6 +96,8 @@ public class RetencionProcesamientoSRIServiceTest {
             .andRespond(withStatus(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON)
                   .body("{\"estado\":\"PENDIENTE_AUTORIZACION\"}"));
       assertEquals(service.procesar(1L, null, null, null).get("estado"), "PENDIENTE_AUTORIZACION");
+      assertNull(retencion.getNumautoriza_e());
+      assertNull(retencion.getFecautoriza());
       verifyNoInteractions(correo);
       server.verify();
    }
@@ -100,6 +106,8 @@ public class RetencionProcesamientoSRIServiceTest {
    public void consultaSinEmitirYRechazoNoProducePdfNiCorreo() throws Exception {
       autorizacion("NO AUTORIZADO", CLAVE);
       assertEquals(service.consultarEstadoPendiente(1L).get("estado"), "NO_AUTORIZADO");
+      assertNull(retencion.getNumautoriza_e());
+      assertNull(retencion.getFecautoriza());
       verifyNoInteractions(correo);
       verify(documentos, never()).generarYGuardar(anyLong());
       server.verify();
@@ -117,6 +125,36 @@ public class RetencionProcesamientoSRIServiceTest {
       retencion.setNumautoriza_e(CLAVE);
       assertEquals(service.procesar(1L, null, null, null).get("estado"), "YA_AUTORIZADA");
       verifyNoInteractions(correo, documentos);
+      server.verify();
+   }
+
+   @Test
+   public void consultaConservaCodigoYMotivoDelRechazoSinEnviarOtraVez() {
+      retencion.setEstado(1);
+      when(documentos.obtenerXmlAutorizado(1L)).thenThrow(new IllegalStateException("Sin XML autorizado"));
+      server.expect(requestTo("http://sri/api/v1/autorizacion/" + CLAVE + "?includeXml=true"))
+         .andExpect(method(HttpMethod.GET)).andRespond(withSuccess(
+            "{\"autorizacion\":{\"estado\":\"NO AUTORIZADO\",\"mensajes\":{\"mensaje\":[{\"identificador\":\"TEST\",\"mensaje\":\"Motivo de prueba\",\"informacionAdicional\":\"Detalle de prueba\"}]}}}",
+            MediaType.APPLICATION_JSON));
+      service.consultarEstadoPendiente(1L);
+      verify(documentos).actualizarEstado(eq(1L), eq("NO_AUTORIZADO"), argThat(m ->
+         m.contains("[TEST]") && m.contains("Motivo de prueba") && m.contains("Detalle de prueba")));
+      assertEquals(retencion.getEstado(), Integer.valueOf(0));
+      verify(documentos, never()).generarYGuardar(anyLong());
+      verifyNoInteractions(correo);
+      server.verify();
+   }
+
+   @Test
+   public void consultaAutorizadaActualizaMetadatosDeRetencionSinReenviar() throws Exception {
+      autorizacion("AUTORIZADO", CLAVE);
+      assertEquals(service.consultarEstadoPendiente(1L).get("estado"), "AUTORIZADA");
+      assertEquals(retencion.getClaveacceso(), CLAVE);
+      assertEquals(retencion.getNumautoriza_e(), CLAVE);
+      assertEquals(retencion.getNumautoriza(), CLAVE);
+      assertEquals(retencion.getFecautoriza(), "2026-10-27");
+      assertEquals(retencion.getEstado(), Integer.valueOf(1));
+      verify(documentos, never()).generarYGuardar(anyLong());
       server.verify();
    }
 }

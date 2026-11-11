@@ -32,7 +32,7 @@ public class PresupueServicio {
       int tippar = 1; // Partidas de Ingresos
       String codparPattern = codpar + "%";
       String nomparPattern = "%" + nompar.toLowerCase() + "%";
-      return dao.findAllByTippar(tippar, codparPattern, nomparPattern);
+      return completarEjecucion(dao.findAllByTippar(tippar, codparPattern, nomparPattern));
    }
 
    // Busca por Código o Nombre
@@ -65,7 +65,21 @@ public class PresupueServicio {
 
    // Busca por Tipo, Código y Nombre
    public List<Presupue> findByTipoCodigoyNombre(Integer tippar, String codpar, String nompar) {
-      return dao.findByTipoCodigoyNombre(tippar, codpar, nompar);
+      return completarEjecucion(dao.findByTipoCodigoyNombre(tippar, codpar, nompar));
+   }
+
+   private List<Presupue> completarEjecucion(List<Presupue> partidas) {
+      if (partidas.isEmpty()) return partidas;
+      var ids = partidas.stream().map(Presupue::getIntpre).collect(java.util.stream.Collectors.toList());
+      var resumen = ejecucioDao.resumenPorPartidas(ids).stream().collect(java.util.stream.Collectors.toMap(
+            com.epmapat.erp_epmapat.interfaces.ResumenEjecucionPartida::getIntpre, r -> r));
+      for (Presupue partida : partidas) {
+         var valores = resumen.get(partida.getIntpre());
+         partida.setEjecCompromiso(valores == null ? BigDecimal.ZERO : valores.getCompromiso());
+         partida.setEjecDevengado(valores == null ? BigDecimal.ZERO : valores.getDevengado());
+         partida.setEjecCobpagado(valores == null ? BigDecimal.ZERO : valores.getCobpagado());
+      }
+      return partidas;
    }
 
    // Validar Código

@@ -100,6 +100,26 @@ public class RetencionesServicio {
    }
 
    // Actualiza
+   @Transactional
+   public Retenciones guardarAutorizacionSri(Long idrete, Retenciones autorizada) {
+      if (!Integer.valueOf(1).equals(autorizada.getEstado())
+            || autorizada.getClaveacceso() == null || !autorizada.getClaveacceso().matches("[0-9]{49}")
+            || autorizada.getNumautoriza_e() == null || autorizada.getNumautoriza_e().isBlank()
+            || autorizada.getFecautoriza() == null || autorizada.getFecautoriza().isBlank()) {
+         throw new IllegalArgumentException("La autorizacion SRI debe incluir clave, numero, fecha y estado autorizado");
+      }
+      Retenciones registro = dao.findById(idrete).orElseThrow(() ->
+            new ResourceNotFoundExcepciones("No se encuentra este Id " + idrete));
+      registro.setClaveacceso(autorizada.getClaveacceso());
+      registro.setNumautoriza_e(autorizada.getNumautoriza_e());
+      registro.setNumautoriza(autorizada.getNumautoriza_e());
+      registro.setFecautoriza(autorizada.getFecautoriza());
+      registro.setAmbiente(autorizada.getAmbiente());
+      registro.setEstado(1);
+      registro.setAutorizacion(null); // The full authorized XML is stored in fec_retenciones.
+      return dao.save(registro);
+   }
+
    public Retenciones updateRetencion(Long idrete, Retenciones data) {
       Retenciones retenciones = findById(idrete)
             .orElseThrow(() -> new ResourceNotFoundExcepciones(
