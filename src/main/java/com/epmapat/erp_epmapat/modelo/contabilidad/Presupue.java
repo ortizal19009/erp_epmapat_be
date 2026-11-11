@@ -32,12 +32,10 @@ public class Presupue {
    private BigDecimal totcerti;
    private BigDecimal totmisos;
    private Double totdeven;
-   @Transient
-   private BigDecimal ejecCompromiso;
-   @Transient
-   private BigDecimal ejecDevengado;
-   @Transient
-   private BigDecimal ejecCobpagado;
+   // Java transient excludes persistence without hiding Lombok getters from JacksonHibernateModule.
+   private transient BigDecimal ejecCompromiso;
+   private transient BigDecimal ejecDevengado;
+   private transient BigDecimal ejecCobpagado;
    private String funcion;
 
    // private Long intest;

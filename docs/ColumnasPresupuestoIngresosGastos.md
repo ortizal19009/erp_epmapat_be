@@ -11,6 +11,8 @@ Los listados existentes se enriquecen con una consulta agrupada de `ejecucio` po
 
 Las búsquedas, acceso al auxiliar y opciones Modificar/Eliminar se conservan. La tabla permite desplazamiento horizontal y mantiene el encabezado visible. En Gastos se eliminó el doble disparo de Buscar por click y submit.
 
-Validación: 2 pruebas backend sobre enriquecimiento por lote y partidas sin movimientos; 4 pruebas frontend sobre saldos, importes de texto, negativos, suma de centavos y datos de ejecución ausentes.
+Validacion: 3 pruebas backend (enriquecimiento por lote, partidas sin movimientos y serializacion con Hibernate5Module); 5 pruebas frontend sobre saldos, centavos y ejecucion ausente o parcial.
 
-Desplegar el backend antes del frontend. Si el servidor todavía no proporciona la ejecución, se informa que no puede cargarse el presupuesto completo en lugar de mostrar ceros aparentes. No requiere migración de esquema.
+Correccion del error de carga: Hibernate5Module omitia las propiedades con @Transient. Se usa el modificador Java transient, que evita persistirlas y permite serializar los getters. No requiere migracion de esquema.
+
+Cuando falten datos de ejecucion, las tablas conservan las partidas y sus importes Inicial, Reforma y Codificado. Las etapas y saldos no disponibles muestran un guion largo; sus totales tambien quedan pendientes para evitar sumas parciales o ceros aparentes. Desplegar backend y frontend actualizados.
