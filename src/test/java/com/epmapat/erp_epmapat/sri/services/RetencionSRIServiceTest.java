@@ -59,6 +59,38 @@ public class RetencionSRIServiceTest {
       assertTrue(xml.contains("<valorRetenido>8249.93</valorRetenido>"));
    }
 
+   @Test
+   public void revierteMetadatosSiFallaElGuardadoDelXmlAutorizado() throws Exception {
+      var service = org.mockito.Mockito.spy(new RetencionSRIService());
+      var metadatos = mock(com.epmapat.erp_epmapat.servicio.contabilidad.RetencionesServicio.class);
+      ReflectionTestUtils.setField(service, "retencionesServicio", metadatos);
+      var retencion = new Retenciones();
+      when(metadatos.guardarAutorizacionSri(1L, retencion)).thenAnswer(invocation -> {
+         assertTrue(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive());
+         return retencion;
+      });
+      org.mockito.Mockito.doAnswer(invocation -> {
+         assertTrue(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive());
+         throw new IllegalStateException("Fallo al guardar XML");
+      }).when(service).actualizarXmlAutorizado(1L, "xml", "AUTORIZADA", null);
+      var dataSource = mock(javax.sql.DataSource.class);
+      var connection = mock(java.sql.Connection.class);
+      when(dataSource.getConnection()).thenReturn(connection);
+      when(connection.getAutoCommit()).thenReturn(true);
+      var manager = new org.springframework.jdbc.datasource.DataSourceTransactionManager(dataSource);
+      var interceptor = new org.springframework.transaction.interceptor.TransactionInterceptor(manager,
+            new org.springframework.transaction.annotation.AnnotationTransactionAttributeSource());
+      var factory = new org.springframework.aop.framework.ProxyFactory(service);
+      factory.setProxyTargetClass(true);
+      factory.addAdvice(interceptor);
+      var proxy = (RetencionSRIService) factory.getProxy();
+      org.testng.Assert.expectThrows(IllegalStateException.class,
+            () -> proxy.guardarAutorizacion(1L, retencion, "xml"));
+      org.mockito.Mockito.verify(metadatos).guardarAutorizacionSri(1L, retencion);
+      org.mockito.Mockito.verify(connection).rollback();
+      org.mockito.Mockito.verify(connection, org.mockito.Mockito.never()).commit();
+   }
+
    private Retenciones buildRetencionCasoReferencia() throws Exception {
       SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
 

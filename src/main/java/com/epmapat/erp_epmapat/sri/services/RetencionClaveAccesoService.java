@@ -13,6 +13,7 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.epmapat.erp_epmapat.modelo.administracion.Definir;
 import com.epmapat.erp_epmapat.modelo.contabilidad.Retenciones;
@@ -29,6 +30,10 @@ public class RetencionClaveAccesoService {
    private static final String COD_DOC_RETENCION = "07";
    private static final String TIPO_EMISION_NORMAL = "1";
    private static final int MAX_INTENTOS_GENERACION = 10;
+
+   // Serie del emisor; numserie pertenece a la factura del proveedor.
+   @Value("${sri.retenciones.serie-emisor:001001}")
+   private String serieEmisor = "001001";
 
    private final RetencionesR retencionesR;
    private final Fec_retencionesR fecRetencionesR;
@@ -49,7 +54,7 @@ public class RetencionClaveAccesoService {
    @Transactional
    public Retenciones asegurarClaveAcceso(Retenciones retencion) {
       Definir definir = getDefinir();
-      String claveActual = normalizarNumero(retencion.getClaveacceso());
+      String claveActual = retencion.getClaveacceso() == null ? "" : retencion.getClaveacceso();
       ClaveAccesoValidationResult validacion = validarClaveAcceso(claveActual, retencion, definir);
       if (validacion.isValida() && !claveExisteEnOtraRetencion(claveActual, retencion.getIdrete())) {
          return retencion;
@@ -77,7 +82,7 @@ public class RetencionClaveAccesoService {
    }
 
    public ClaveAccesoValidationResult validarClaveAcceso(String claveAcceso, Retenciones retencion, Definir definir) {
-      String clave = normalizarNumero(claveAcceso);
+      String clave = claveAcceso == null ? "" : claveAcceso;
       List<String> errores = new ArrayList<>();
       if (!clave.matches("\\d{49}")) {
          errores.add("La clave de acceso debe tener exactamente 49 digitos.");
@@ -187,19 +192,18 @@ public class RetencionClaveAccesoService {
    }
 
    public String establecimiento(Retenciones retencion) {
-      String serie = normalizarNumero(retencion != null ? retencion.getNumserie() : null);
-      if (serie.length() < 3) {
-         throw new IllegalStateException("La serie debe contener establecimiento de 3 digitos");
-      }
-      return serie.substring(0, 3);
+      return serieEmisor().substring(0, 3);
    }
 
    public String puntoEmision(Retenciones retencion) {
-      String serie = normalizarNumero(retencion != null ? retencion.getNumserie() : null);
-      if (serie.length() < 6) {
-         throw new IllegalStateException("La serie debe contener punto de emision de 3 digitos");
+      return serieEmisor().substring(3, 6);
+   }
+
+   private String serieEmisor() {
+      if (serieEmisor == null || !serieEmisor.matches("[0-9]{6}")) {
+         throw new IllegalStateException("La serie del emisor de retenciones debe tener 6 digitos");
       }
-      return serie.substring(3, 6);
+      return serieEmisor;
    }
 
    public String secuencial(Retenciones retencion) {

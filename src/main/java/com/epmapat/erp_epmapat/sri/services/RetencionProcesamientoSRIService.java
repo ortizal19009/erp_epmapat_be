@@ -74,7 +74,7 @@ public class RetencionProcesamientoSRIService {
       this.retencionSseService = retencionSseService;
    }
 
-   @Transactional
+   @Transactional(Transactional.TxType.NOT_SUPPORTED)
    public Map<String, Object> procesar(Long idretencion, String destinatario, String asunto, String mensaje) {
       Retenciones retencion = retencionesR.findById(idretencion)
             .orElseThrow(() -> new IllegalArgumentException("No existe la retencion " + idretencion));
@@ -85,6 +85,9 @@ public class RetencionProcesamientoSRIService {
       }
 
       var generada = retencionSRIService.generarYGuardar(idretencion);
+      // La generacion puede regenerar la clave dentro de su propia transaccion.
+      retencion = retencionesR.findById(idretencion)
+            .orElseThrow(() -> new IllegalArgumentException("No existe la retencion " + idretencion));
       String xmlPlano = generada.getXmlautorizado();
       if (!StringUtils.hasText(xmlPlano)) {
          throw new IllegalStateException("No se pudo generar el XML de la retencion " + idretencion);
@@ -129,9 +132,7 @@ public class RetencionProcesamientoSRIService {
 
       aplicarAutorizacion(retencion, xmlAutorizado, numeroAutorizacion, fechaAutorizacion);
       retencion.setEstado(1);
-      retencionesServicio.guardarAutorizacionSri(idretencion, retencion);
-
-      retencionSRIService.actualizarXmlAutorizado(idretencion, xmlAutorizado, "AUTORIZADA", null);
+      retencionSRIService.guardarAutorizacion(idretencion, retencion, xmlAutorizado);
 
       // La autorizacion debe conservarse aunque falle PDF/SMTP.
       Map<String, Object> response = new LinkedHashMap<>();
@@ -155,7 +156,7 @@ public class RetencionProcesamientoSRIService {
       return response;
    }
 
-   @Transactional
+   @Transactional(Transactional.TxType.NOT_SUPPORTED)
    public Map<String, Object> consultarEstadoPendiente(Long idretencion) {
       Retenciones retencion = retencionesR.findById(idretencion)
             .orElseThrow(() -> new IllegalArgumentException("No existe la retencion " + idretencion));
@@ -211,8 +212,7 @@ public class RetencionProcesamientoSRIService {
 
       aplicarAutorizacion(retencion, xmlAutorizado, numeroAutorizacion, fechaAutorizacion);
       retencion.setEstado(1);
-      retencionesServicio.guardarAutorizacionSri(idretencion, retencion);
-      retencionSRIService.actualizarXmlAutorizado(idretencion, xmlAutorizado, "AUTORIZADA", null);
+      retencionSRIService.guardarAutorizacion(idretencion, retencion, xmlAutorizado);
 
       Map<String, Object> response = Map.of(
             "idretencion", idretencion,

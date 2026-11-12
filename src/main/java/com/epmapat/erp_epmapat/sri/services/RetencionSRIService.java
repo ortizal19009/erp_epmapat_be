@@ -107,6 +107,13 @@ public class RetencionSRIService {
       return guardada;
    }
 
+   // Una transaccion breve conserva juntos los metadatos y el XML autorizado.
+   @Transactional
+   public void guardarAutorizacion(Long idretencion, Retenciones retencion, String xmlAutorizado) {
+      retencionesServicio.guardarAutorizacionSri(idretencion, retencion);
+      actualizarXmlAutorizado(idretencion, xmlAutorizado, "AUTORIZADA", null);
+   }
+
    @Transactional
    public Fec_retenciones actualizarXmlAutorizado(Long idretencion, String xmlAutorizado, String estado,
          String errores) {
@@ -748,7 +755,8 @@ public class RetencionSRIService {
    private String obtenerEstablecimiento(Retenciones retencion) {
       String serie = extraerSerieDesdeClaveAcceso(retencion);
       if (serie.isBlank()) {
-         serie = normalizarSerie(retencion != null ? retencion.getNumserie() : null);
+         serie = retencionClaveAccesoService.establecimiento(retencion)
+               + retencionClaveAccesoService.puntoEmision(retencion);
       }
       if (serie.length() >= 3) {
          return serie.substring(0, 3);
@@ -759,7 +767,8 @@ public class RetencionSRIService {
    private String obtenerPuntoEmision(Retenciones retencion) {
       String serie = extraerSerieDesdeClaveAcceso(retencion);
       if (serie.isBlank()) {
-         serie = normalizarSerie(retencion != null ? retencion.getNumserie() : null);
+         serie = retencionClaveAccesoService.establecimiento(retencion)
+               + retencionClaveAccesoService.puntoEmision(retencion);
       }
       if (serie.length() >= 6) {
          return serie.substring(3, 6);

@@ -30,6 +30,7 @@ public class RetencionProcesamientoSRIServiceTest {
    private RetencionSRIService documentos;
    private RetencionEmailService correo;
    private Retenciones retencion;
+   private RetencionesR repo;
    private ObjectMapper mapper = new ObjectMapper();
 
    @BeforeMethod
@@ -38,7 +39,7 @@ public class RetencionProcesamientoSRIServiceTest {
       server = MockRestServiceServer.createServer(rest);
       documentos = mock(RetencionSRIService.class);
       correo = mock(RetencionEmailService.class);
-      RetencionesR repo = mock(RetencionesR.class);
+      repo = mock(RetencionesR.class);
       retencion = new Retenciones();
       retencion.setIdrete(1L);
       retencion.setEstado(0);
@@ -51,6 +52,55 @@ public class RetencionProcesamientoSRIServiceTest {
             mock(RetencionesServicio.class), mock(Fec_retencionesServicio.class), repo, rest,
             mock(CorreosEnviadosServicio.class), mapper, mock(RetencionSseService.class));
       ReflectionTestUtils.setField(service, "sriMicroserviceBaseUrl", "http://sri");
+   }
+
+   @Test
+   public void esperaHttpYCorreoSinTransaccionAunqueElLlamadorTengaUna() throws Exception {
+      javax.sql.DataSource dataSource = mock(javax.sql.DataSource.class);
+      java.sql.Connection connection = mock(java.sql.Connection.class);
+      when(dataSource.getConnection()).thenReturn(connection);
+      when(connection.getAutoCommit()).thenReturn(true);
+      var manager = new org.springframework.jdbc.datasource.DataSourceTransactionManager(dataSource);
+      var atributos = new org.springframework.transaction.annotation.AnnotationTransactionAttributeSource();
+      var interceptor = new org.springframework.transaction.interceptor.TransactionInterceptor(manager, atributos);
+      var factory = new org.springframework.aop.framework.ProxyFactory(service);
+      factory.setProxyTargetClass(true);
+      factory.addAdvice(interceptor);
+      var proxy = (RetencionProcesamientoSRIService) factory.getProxy();
+      server.expect(requestTo("http://sri/api/v1/retenciones"))
+            .andRespond(request -> {
+               assertFalse(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive());
+               return withSuccess("{\"estado\":\"AUTORIZADO\"}", MediaType.APPLICATION_JSON).createResponse(request);
+            });
+      autorizacion("AUTORIZADO", CLAVE);
+      when(correo.enviarRetencion(1L, null, null, null, true)).thenAnswer(invocation -> {
+         assertFalse(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive());
+         verify(documentos).guardarAutorizacion(eq(1L), eq(retencion), anyString());
+         return Map.of("email", "prueba@example.test");
+      });
+      new org.springframework.transaction.support.TransactionTemplate(manager).execute(status -> {
+         assertTrue(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive());
+         assertEquals(proxy.procesar(1L, null, null, null).get("estado"), "ENVIADA");
+         assertTrue(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive());
+         return null;
+      });
+      server.verify();
+   }
+
+   @Test
+   public void recargaLaClaveRegeneradaAntesDeGuardarLaAutorizacion() throws Exception {
+      Retenciones actualizada = new Retenciones();
+      actualizada.setIdrete(1L);
+      actualizada.setClaveacceso(CLAVE);
+      retencion.setClaveacceso(null);
+      when(repo.findById(1L)).thenReturn(Optional.of(retencion), Optional.of(actualizada));
+      server.expect(requestTo("http://sri/api/v1/retenciones"))
+            .andRespond(withSuccess("{\"estado\":\"AUTORIZADO\"}", MediaType.APPLICATION_JSON));
+      autorizacion("AUTORIZADO", CLAVE);
+      when(correo.enviarRetencion(1L, null, null, null, true)).thenReturn(Map.of("email", "prueba@example.test"));
+      assertEquals(service.procesar(1L, null, null, null).get("claveAcceso"), CLAVE);
+      verify(documentos).guardarAutorizacion(eq(1L), eq(actualizada), anyString());
+      server.verify();
    }
 
    private String comprobante(String clave) {
@@ -86,7 +136,7 @@ public class RetencionProcesamientoSRIServiceTest {
       String xml = (String) resultado.get("xmlautorizado");
       assertTrue(xml.contains("<comprobante><![CDATA[<?xml"));
       assertTrue(xml.contains("Retencion con \u00f1"));
-      verify(documentos).actualizarXmlAutorizado(1L, xml, "AUTORIZADA", null);
+      verify(documentos).guardarAutorizacion(1L, retencion, xml);
       server.verify();
    }
 
