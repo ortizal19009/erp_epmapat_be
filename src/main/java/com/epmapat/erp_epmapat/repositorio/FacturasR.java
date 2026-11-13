@@ -387,33 +387,27 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<FacSinCobrar> findByCuenta(Long cuenta);
 
 	@Query(value = """
-			SELECT
-			  f.idfactura,
-			  f.idmodulo,
-			  CAST(tf.total AS numeric(18,2)) AS total,
-			  f.idcliente,
-			  f.idabonado,
-			  f.feccrea,
-			  f.formapago,
-			  f.estado,
-			  f.pagado,
-			  f.swcondonar,
-			  m.descripcion AS modulo
-			FROM facturas f
-			JOIN (
-			  SELECT
-			    rf.idfactura_facturas,
+			WITH pendientes AS MATERIALIZED (
+			  SELECT f.* FROM facturas f
+			  WHERE f.idabonado = ?1
+			    AND (((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL) OR f.estado = 3)
+			    AND f.fechaeliminacion IS NULL
+			    AND f.fechaconvenio IS NULL
+			), totales AS (
+			  SELECT rf.idfactura_facturas,
 			    SUM(ROUND(CAST(rf.cantidad * rf.valorunitario AS numeric), 2)) AS total
 			  FROM rubroxfac rf
+			  JOIN pendientes p ON p.idfactura = rf.idfactura_facturas
 			  WHERE (rf.estado <> 0 OR rf.estado IS NULL)
 			  GROUP BY rf.idfactura_facturas
-			) tf ON tf.idfactura_facturas = f.idfactura
+			)
+			SELECT f.idfactura, f.idmodulo, CAST(tf.total AS numeric(18,2)) AS total,
+			  f.idcliente, f.idabonado, f.feccrea, f.formapago, f.estado, f.pagado,
+			  f.swcondonar, m.descripcion AS modulo
+			FROM pendientes f
+			JOIN totales tf ON tf.idfactura_facturas = f.idfactura
 			JOIN modulos m ON f.idmodulo = m.idmodulo
 			WHERE tf.total > 0
-			  AND f.idabonado = ?1
-			  AND (((f.estado = 1 OR f.estado = 2) AND f.fechacobro IS NULL) OR f.estado = 3)
-			  AND f.fechaeliminacion IS NULL
-			  AND f.fechaconvenio IS NULL
 			ORDER BY f.idabonado ASC, f.feccrea ASC
 			""", nativeQuery = true)
 	public List<FacSinCobrar> findSincobroByCuetna(Long cuenta);
